@@ -12,8 +12,11 @@
 //! ```
 
 
-use clap::{AppSettings, App, Arg};
+use clap::{self, AppSettings, App, Arg};
 use array_tool::vec::Uniq;
+use std::path::PathBuf;
+use std::env::home_dir;
+use std::fs;
 
 
 /// Representation of the application's all configurable values.
@@ -23,6 +26,8 @@ pub struct Options {
     ///
     /// If empty - update all.
     pub to_update: Vec<String>,
+    /// The `cargo` home directory. Default: `"$HOME/.cargo"`
+    pub cargo_dir: (String, PathBuf),
 }
 
 impl Options {
@@ -33,7 +38,8 @@ impl Options {
             .version(crate_version!())
             .author(crate_authors!())
             .about("A cargo subcommand for checking and applying updates to installed executables")
-            .args(&[Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
+            .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $HOME/.cargo'").validator(Options::cargo_dir_validator),
+                    Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
                     Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)])
             .get_matches();
 
@@ -44,6 +50,33 @@ impl Options {
                 let packages: Vec<_> = matches.values_of("PACKAGE").unwrap().map(String::from).collect();
                 packages.unique()
             },
+            cargo_dir: match matches.value_of("cargo-dir") {
+                Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
+                None => {
+                    match home_dir() {
+                        Some(mut hd) => {
+                            hd = hd.canonicalize().unwrap();
+                            hd.push(".cargo");
+
+                            fs::create_dir_all(&hd).unwrap();
+                            ("$HOME/.cargo".to_string(), hd)
+                        }
+                        None => {
+                            clap::Error {
+                                    message: "Couldn't automatically get home directory, please specify the cargo home directory with the -c option"
+                                        .to_string(),
+                                    kind: clap::ErrorKind::MissingRequiredArgument,
+                                    info: None,
+                                }
+                                .exit()
+                        }
+                    }
+                }
+            },
         }
+    }
+
+    fn cargo_dir_validator(s: String) -> Result<(), String> {
+        fs::canonicalize(&s).map(|_| ()).map_err(|_| format!("Cargo directory \"{}\" not found", s))
     }
 }
