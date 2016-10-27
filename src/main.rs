@@ -4,11 +4,11 @@ use std::process::exit;
 
 
 fn main() {
-    let result = actual_main();
+    let result = actual_main().err().unwrap_or(0);
     exit(result);
 }
 
-fn actual_main() -> i32 {
+fn actual_main() -> Result<(), i32> {
     let opts = cargo_update::Options::parse();
     println!("{:?}", opts);
 
@@ -22,5 +22,7 @@ fn actual_main() -> i32 {
         println!("{} v{}", package.name, package.version);
     }
 
-    0
+    let token = try!(cargo_update::ops::crates_token(&opts.cargo_dir.1));
+
+    Ok(())
 }

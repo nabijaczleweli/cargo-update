@@ -43,6 +43,18 @@ pub fn installed_main_repo_packages(cargo_dir: &Path) -> Vec<MainRepoPackage> {
     }
 }
 
+pub fn crates_token(cargo_dir: &Path) -> Result<String, i32> {
+    let config_path = cargo_dir.join("config");
+    if config_path.exists() {
+        let mut config = String::new();
+        File::open(config_path).unwrap().read_to_string(&mut config).unwrap();
+
+        Ok(toml::Parser::new(&config).parse().unwrap()["registry"].as_table().unwrap()["token"].as_str().unwrap().to_string())
+    } else {
+        Err(1)
+    }
+}
+
 pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &Vec<String>) -> Vec<MainRepoPackage> {
     installed.into_iter().filter(|p| to_update.contains(&p.name)).collect()
 }
