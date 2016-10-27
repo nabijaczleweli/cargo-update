@@ -61,7 +61,7 @@ pub fn crates_token(cargo_dir: &Path) -> Result<String, i32> {
 
         Ok(toml::Parser::new(&config).parse().unwrap()["registry"].as_table().unwrap()["token"].as_str().unwrap().to_string())
     } else {
-        Err(1)
+        Err(-1)
     }
 }
 
