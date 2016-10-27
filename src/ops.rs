@@ -1,9 +1,12 @@
+use hyper::header::{Authorization, Bearer};
+use hyper::Client as HttpClient;
 use semver::Version as Semver;
 use std::path::Path;
 use std::fs::File;
 use std::io::Read;
 use regex::Regex;
 use toml;
+use json;
 
 
 lazy_static! {
@@ -15,6 +18,7 @@ lazy_static! {
 pub struct MainRepoPackage {
     pub name: String,
     pub version: Semver,
+    pub newest_version: Option<Semver>,
 }
 
 impl MainRepoPackage {
@@ -23,10 +27,16 @@ impl MainRepoPackage {
             Some(MainRepoPackage {
                 name: c.at(1).unwrap().to_string(),
                 version: Semver::parse(c.at(2).unwrap()).unwrap(),
+                newest_version: None,
             })
         } else {
             None
         })
+    }
+
+    pub fn pull_version(&mut self, crates_token: &str) {
+        let vers = crate_versions(crate_versions_raw(crates_token, &self.name));
+        self.newest_version = vers.into_iter().max();
     }
 }
 
@@ -57,4 +67,20 @@ pub fn crates_token(cargo_dir: &Path) -> Result<String, i32> {
 
 pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &Vec<String>) -> Vec<MainRepoPackage> {
     installed.into_iter().filter(|p| to_update.contains(&p.name)).collect()
+}
+
+pub fn crate_versions_raw(token: &str, crate_name: &str) -> String {
+    let mut buf = String::new();
+    HttpClient::new()
+        .get(&format!("https://crates.io/api/v1/crates/{}/versions", crate_name))
+        .header(Authorization(Bearer { token: token.to_string() }))
+        .send()
+        .unwrap()
+        .read_to_string(&mut buf)
+        .unwrap();
+    buf
+}
+
+pub fn crate_versions(raw: String) -> Vec<Semver> {
+    json::parse(&raw).unwrap()["versions"].members().map(|v| Semver::parse(v["num"].as_str().unwrap()).unwrap()).collect()
 }
