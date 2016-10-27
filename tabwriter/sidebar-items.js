@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TabWriter","TabWriter wraps an arbitrary writer and aligns tabbed output."]]});
