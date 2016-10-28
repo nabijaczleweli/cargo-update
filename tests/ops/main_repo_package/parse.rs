@@ -17,3 +17,8 @@ fn git() {
     assert_eq!(MainRepoPackage::parse("treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#742aebb3e66bd14421eb148e7f7981d50c6d1423)"),
                None);
 }
+
+#[test]
+fn invalid() {
+    assert_eq!(MainRepoPackage::parse("treesize 0.2.1 (gi"), None);
+}

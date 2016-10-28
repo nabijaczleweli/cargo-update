@@ -1,3 +1,12 @@
+//! Main functions doing actual work.
+//!
+//! Use `installed_main_repo_packages()` to list the installed packages,
+//! then use `intersect_packages()` to confirm which ones should be updated,
+//! acquire the [`crates.io`](https://crates.io) auth token via `crates_token()`,
+//! use it to poll the packages' latest versions by calling `MainRepoPackage::pull_version` on them,
+//! continue with doing whatever you wish.
+
+
 use hyper::header::{Authorization, Bearer};
 use hyper::Client as HttpClient;
 use semver::Version as Semver;
@@ -14,14 +23,93 @@ lazy_static! {
 }
 
 
+/// A representation of a package from the main [`crates.io`](https://crates.io) repository.
+///
+/// The newest version of a package is pulled from [`crates.io`](https://crates.io) via `pull_version()`.
+///
+/// The `parse()` function parses the format used in `$HOME/.cargo/.crates.toml`.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate cargo_update;
+/// # extern crate semver;
+/// # use cargo_update::ops::MainRepoPackage;
+/// # use semver::Version as Semver;
+/// # fn main() {
+/// # let crates_token = "Da39A3Ee5e6B4B0D3255bfeF95601890";
+/// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
+/// let mut package = MainRepoPackage::parse(package_s).unwrap();
+/// assert_eq!(package,
+///            MainRepoPackage {
+///                name: "racer".to_string(),
+///                version: Semver::parse("1.2.10").unwrap(),
+///                newest_version: None,
+///            });
+///
+/// package.pull_version(crates_token);
+/// assert!(package.newest_version.is_some());
+/// # }
+/// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct MainRepoPackage {
+    /// The package's name.
+    ///
+    /// Go to `https://crates.io/crates/{name}` to get the crate info.
     pub name: String,
+    /// The package's locally installed version.
     pub version: Semver,
+    /// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.
+    ///
+    /// `None` by default, acquire via `MainRepoPackage::pull_version()`.
     pub newest_version: Option<Semver>,
 }
 
 impl MainRepoPackage {
+    /// Try to decypher a package descriptor into a `MainRepoPackage`.
+    ///
+    /// Will return `None` if:
+    ///
+    ///   * the given package descriptor is invalid, or
+    ///   * the package descriptor is not from the main [`crates.io`](https://crates.io) registry.
+    ///
+    /// In the returned instance, `newest_version` is always `None`, get it via `MainRepoPackage::pull_version()`.
+    ///
+    /// # Examples
+    ///
+    /// Main repository packages:
+    ///
+    /// ```
+    /// # extern crate cargo_update;
+    /// # extern crate semver;
+    /// # use cargo_update::ops::MainRepoPackage;
+    /// # use semver::Version as Semver;
+    /// # fn main() {
+    /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
+    /// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),
+    ///            MainRepoPackage {
+    ///                name: "racer".to_string(),
+    ///                version: Semver::parse("1.2.10").unwrap(),
+    ///                newest_version: None,
+    ///            });
+    ///
+    /// let package_s = "cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)";
+    /// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),
+    ///            MainRepoPackage {
+    ///                name: "cargo-outdated".to_string(),
+    ///                version: Semver::parse("0.2.0").unwrap(),
+    ///                newest_version: None,
+    ///            });
+    /// # }
+    /// ```
+    ///
+    /// Git repository:
+    ///
+    /// ```
+    /// # use cargo_update::ops::MainRepoPackage;
+    /// let package_s = "treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#v0.2.1)";
+    /// assert!(MainRepoPackage::parse(package_s).is_none());
+    /// ```
     pub fn parse(what: &str) -> Option<MainRepoPackage> {
         PACKAGE_RGX.captures(what).and_then(|c| if c.at(3).unwrap() == "registry" {
             Some(MainRepoPackage {
@@ -34,6 +122,20 @@ impl MainRepoPackage {
         })
     }
 
+    /// Download the version list for this crate off the main [`crates.io`](https://crates.io) registry.
+    ///
+    /// The provided token might or might not need to be valid, investigation ongoing.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use cargo_update::ops::MainRepoPackage;
+    /// # let crates_token = "Da39A3Ee5e6B4B0D3255bfeF95601890";
+    /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
+    /// let mut package = MainRepoPackage::parse(package_s).unwrap();
+    /// package.pull_version(crates_token);
+    /// assert!(package.newest_version.is_some());
+    /// ```
     pub fn pull_version(&mut self, crates_token: &str) {
         let vers = crate_versions(&crate_versions_raw(crates_token, &self.name));
         self.newest_version = vers.into_iter().max();
