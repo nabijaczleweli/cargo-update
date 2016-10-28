@@ -35,7 +35,7 @@ impl MainRepoPackage {
     }
 
     pub fn pull_version(&mut self, crates_token: &str) {
-        let vers = crate_versions(crate_versions_raw(crates_token, &self.name));
+        let vers = crate_versions(&crate_versions_raw(crates_token, &self.name));
         self.newest_version = vers.into_iter().max();
     }
 }
@@ -81,6 +81,6 @@ pub fn crate_versions_raw(token: &str, crate_name: &str) -> String {
     buf
 }
 
-pub fn crate_versions(raw: String) -> Vec<Semver> {
-    json::parse(&raw).unwrap()["versions"].members().map(|v| Semver::parse(v["num"].as_str().unwrap()).unwrap()).collect()
+pub fn crate_versions(raw: &str) -> Vec<Semver> {
+    json::parse(raw).unwrap()["versions"].members().map(|v| Semver::parse(v["num"].as_str().unwrap()).unwrap()).collect()
 }
