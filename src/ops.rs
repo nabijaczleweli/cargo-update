@@ -143,6 +143,22 @@ impl MainRepoPackage {
 }
 
 
+/// List the installed packages at the specified location that originate
+/// from the main [`crates.io`](https://crates.io) registry.
+///
+/// If the `.crates.toml` file doesn't exist an empty vector is returned.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::installed_main_repo_packages;
+/// # use std::env::temp_dir;
+/// # let cargo_dir = temp_dir();
+/// let packages = installed_main_repo_packages(&cargo_dir);
+/// for package in &packages {
+///     println!("{} v{}", package.name, package.version);
+/// }
+/// ```
 pub fn installed_main_repo_packages(cargo_dir: &Path) -> Vec<MainRepoPackage> {
     let crates_path = cargo_dir.join(".crates.toml");
     if crates_path.exists() {
@@ -155,6 +171,26 @@ pub fn installed_main_repo_packages(cargo_dir: &Path) -> Vec<MainRepoPackage> {
     }
 }
 
+/// Load the [`crates.io`](https://crates.io) authorisation token for API requests.
+///
+/// If the `config` file doesn't exist an `Err` is returned.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::{MainRepoPackage, crates_token};
+/// # use std::env::temp_dir;
+/// # fn main() {
+/// #     test();
+/// # }
+/// # fn test() -> Result<(), i32> {
+/// # let cargo_dir = temp_dir();
+/// # let mut package = MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap();
+/// let token = try!(crates_token(&cargo_dir));
+/// package.pull_version(&token);
+/// # Ok(())
+/// # }
+/// ```
 pub fn crates_token(cargo_dir: &Path) -> Result<String, i32> {
     let config_path = cargo_dir.join("config");
     if config_path.exists() {
@@ -167,10 +203,45 @@ pub fn crates_token(cargo_dir: &Path) -> Result<String, i32> {
     }
 }
 
-pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &Vec<String>) -> Vec<MainRepoPackage> {
+/// Filter out the installed packages not specified to be updated.
+///
+/// List installed packages with `installed_main_repo_packages()`.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::{MainRepoPackage, intersect_packages};
+/// # fn installed_main_repo_packages(_: &()) {}
+/// # let cargo_dir = ();
+/// # let packages_to_update = ["racer".to_string(), "cargo-outdated".to_string()];
+/// let mut installed_packages = installed_main_repo_packages(&cargo_dir);
+/// # let mut installed_packages =
+/// #     vec![MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
+/// #          MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
+/// #          MainRepoPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()];
+/// installed_packages = intersect_packages(installed_packages, &packages_to_update);
+/// # assert_eq!(&installed_packages,
+/// #   &[MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
+/// #     MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
+/// ```
+pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &[String]) -> Vec<MainRepoPackage> {
     installed.into_iter().filter(|p| to_update.contains(&p.name)).collect()
 }
 
+/// Download the list of versions of the specified package from the main [`crates.io`](https://crates.io) registry
+/// using the specified auth token.
+///
+/// Plug into `crate_versions()` to convert to machine-readable form.
+///
+/// Whether the token is required to be valid (or at all) is yet to be seen.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::crate_versions_raw;
+/// # let crates_token = "Da39A3Ee5e6B4B0D3255bfeF95601890";
+/// let raw_versions = crate_versions_raw(crates_token, "checksums");
+/// ```
 pub fn crate_versions_raw(token: &str, crate_name: &str) -> String {
     let mut buf = String::new();
     HttpClient::new()
@@ -183,6 +254,21 @@ pub fn crate_versions_raw(token: &str, crate_name: &str) -> String {
     buf
 }
 
+/// Parse the raw crate version list into a collection of `Semver`s.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::{crate_versions_raw, crate_versions};
+/// # let crates_token = "Da39A3Ee5e6B4B0D3255bfeF95601890";
+/// # let raw_versions = crate_versions_raw(crates_token, "checksums");
+/// let versions = crate_versions(&raw_versions);
+///
+/// println!("Released versions of checksums:");
+/// for ver in &versions {
+///     println!("  {}", ver);
+/// }
+/// ```
 pub fn crate_versions(raw: &str) -> Vec<Semver> {
     json::parse(raw).unwrap()["versions"].members().map(|v| Semver::parse(v["num"].as_str().unwrap()).unwrap()).collect()
 }
