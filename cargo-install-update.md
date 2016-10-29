@@ -3,7 +3,7 @@ cargo-install-update(1) -- Cargo subcommand for checking and applying updates to
 
 ## SYNOPSIS
 
-`cargo install-update` [--all] [PACKAGE...]
+`cargo install-update` [OPTIONS] [PACKAGE...]
 
 ## DESCRIPTION
 
