@@ -128,6 +128,10 @@
 <span id="84">84</span>
 <span id="85">85</span>
 <span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Option parsing and management.</span>
 <span class='doccomment'>//!</span>
@@ -157,6 +161,8 @@
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// If empty - update all.</span>
     <span class='kw'>pub</span> <span class='ident'>to_update</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>,
+    <span class='doccomment'>/// Whether to update packages or just list them. Default: `true`</span>
+    <span class='kw'>pub</span> <span class='ident'>update</span>: <span class='ident'>bool</span>,
     <span class='doccomment'>/// The `cargo` home directory. Default: `&quot;$HOME/.cargo&quot;`</span>
     <span class='kw'>pub</span> <span class='ident'>cargo_dir</span>: (<span class='ident'>String</span>, <span class='ident'>PathBuf</span>),
 }
@@ -174,6 +180,7 @@
                 .<span class='ident'>args</span>(<span class='kw-2'>&amp;</span>[<span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-c --cargo-dir=[CARGO_DIR] &#39;The cargo home directory. Default: $HOME/.cargo&#39;&quot;</span>)
                             .<span class='ident'>validator</span>(<span class='ident'>Options</span>::<span class='ident'>cargo_dir_validator</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-a --all &#39;Update all packages&#39;&quot;</span>).<span class='ident'>conflicts_with</span>(<span class='string'>&quot;PACKAGE&quot;</span>),
+                        <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-l --list &#39;Don&#39;t update packages, only list and check if they need an update&#39;&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;&lt;PACKAGE&gt;... &#39;Packages to update&#39;&quot;</span>).<span class='ident'>conflicts_with</span>(<span class='string'>&quot;all&quot;</span>).<span class='ident'>empty_values</span>(<span class='bool-val'>false</span>).<span class='ident'>min_values</span>(<span class='number'>1</span>)]))
             .<span class='ident'>get_matches</span>();
         <span class='kw'>let</span> <span class='ident'>matches</span> <span class='op'>=</span> <span class='ident'>matches</span>.<span class='ident'>subcommand_matches</span>(<span class='string'>&quot;install-update&quot;</span>).<span class='ident'>unwrap</span>();
@@ -185,6 +192,7 @@
                 <span class='kw'>let</span> <span class='ident'>packages</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>matches</span>.<span class='ident'>values_of</span>(<span class='string'>&quot;PACKAGE&quot;</span>).<span class='ident'>unwrap</span>().<span class='ident'>map</span>(<span class='ident'>String</span>::<span class='ident'>from</span>).<span class='ident'>collect</span>();
                 <span class='ident'>packages</span>.<span class='ident'>unique</span>()
             },
+            <span class='ident'>update</span>: <span class='op'>!</span><span class='ident'>matches</span>.<span class='ident'>is_present</span>(<span class='string'>&quot;list&quot;</span>),
             <span class='ident'>cargo_dir</span>: <span class='kw'>match</span> <span class='ident'>matches</span>.<span class='ident'>value_of</span>(<span class='string'>&quot;cargo-dir&quot;</span>) {
                 <span class='prelude-val'>Some</span>(<span class='ident'>dirs</span>) <span class='op'>=&gt;</span> (<span class='ident'>dirs</span>.<span class='ident'>to_string</span>(), <span class='ident'>fs</span>::<span class='ident'>canonicalize</span>(<span class='ident'>dirs</span>).<span class='ident'>unwrap</span>()),
                 <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> {
