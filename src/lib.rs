@@ -6,7 +6,7 @@
 //!
 //! ## Data flow
 //!
-//! ```plaintext
+//! ```text
 //! Options::parse()
 //! |> installed_main_repo_packages()
 //! |> intersect_packages()
@@ -15,15 +15,6 @@
 //! ```
 //!
 //! # Executable manpage
-//!
-//! Exit values and possible errors:
-//!
-//! ```text
-//! 1   - option parsing error
-//! 2   - hash lengths differ between selected and saved
-//! 3   - failed to parse hashes file
-//! N+3 - N files didn't match
-//! ```
 //!
 //! ## SYNOPSIS
 //!
@@ -40,10 +31,12 @@
 //!
 //! Exit values and possible errors:
 //!
-//!     -2 - cargo install process was terminated by a signal (Linux-only)
-//!     -1 - failed to acquire crates.io auth token
-//!     1  - option parsing error
-//!     X  - bubbled-up cargo install exit value
+//! ```text
+//! -2 - cargo install process was terminated by a signal (Linux-only)
+//! -1 - failed to acquire crates.io auth token
+//! 1  - option parsing error
+//! X  - bubbled-up cargo install exit value
+//! ```
 //!
 //! ## OPTIONS
 //!
