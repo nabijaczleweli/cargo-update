@@ -273,60 +273,15 @@
 <span id="229">229</span>
 <span id="230">230</span>
 <span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
-<span id="243">243</span>
-<span id="244">244</span>
-<span id="245">245</span>
-<span id="246">246</span>
-<span id="247">247</span>
-<span id="248">248</span>
-<span id="249">249</span>
-<span id="250">250</span>
-<span id="251">251</span>
-<span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Main functions doing actual work.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Use `installed_main_repo_packages()` to list the installed packages,</span>
 <span class='doccomment'>//! then use `intersect_packages()` to confirm which ones should be updated,</span>
-<span class='doccomment'>//! acquire the [`crates.io`](https://crates.io) auth token via `crates_token()`,</span>
-<span class='doccomment'>//! use it to poll the packages&#39; latest versions by calling `MainRepoPackage::pull_version` on them,</span>
+<span class='doccomment'>//! poll the packages&#39; latest versions by calling `MainRepoPackage::pull_version` on them,</span>
 <span class='doccomment'>//! continue with doing whatever you wish.</span>
 
 
-<span class='kw'>use</span> <span class='ident'>hyper</span>::<span class='ident'>header</span>::{<span class='ident'>Authorization</span>, <span class='ident'>Bearer</span>};
 <span class='kw'>use</span> <span class='ident'>hyper</span>::<span class='ident'>Client</span> <span class='kw'>as</span> <span class='ident'>HttpClient</span>;
 <span class='kw'>use</span> <span class='ident'>semver</span>::<span class='ident'>Version</span> <span class='kw'>as</span> <span class='ident'>Semver</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::<span class='ident'>Path</span>;
@@ -356,7 +311,6 @@
 <span class='doccomment'>/// # use cargo_update::ops::MainRepoPackage;</span>
 <span class='doccomment'>/// # use semver::Version as Semver;</span>
 <span class='doccomment'>/// # fn main() {</span>
-<span class='doccomment'>/// # let crates_token = &quot;Da39A3Ee5e6B4B0D3255bfeF95601890&quot;;</span>
 <span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
 <span class='doccomment'>/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
 <span class='doccomment'>/// assert_eq!(package,</span>
@@ -366,7 +320,7 @@
 <span class='doccomment'>///                newest_version: None,</span>
 <span class='doccomment'>///            });</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// package.pull_version(crates_token);</span>
+<span class='doccomment'>/// package.pull_version();</span>
 <span class='doccomment'>/// assert!(package.newest_version.is_some());</span>
 <span class='doccomment'>/// # }</span>
 <span class='doccomment'>/// ```</span>
@@ -443,20 +397,17 @@
 
     <span class='doccomment'>/// Download the version list for this crate off the main [`crates.io`](https://crates.io) registry.</span>
     <span class='doccomment'>///</span>
-    <span class='doccomment'>/// The provided token might or might not need to be valid, investigation ongoing.</span>
-    <span class='doccomment'>///</span>
     <span class='doccomment'>/// # Examples</span>
     <span class='doccomment'>///</span>
     <span class='doccomment'>/// ```</span>
     <span class='doccomment'>/// # use cargo_update::ops::MainRepoPackage;</span>
-    <span class='doccomment'>/// # let crates_token = &quot;Da39A3Ee5e6B4B0D3255bfeF95601890&quot;;</span>
     <span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
     <span class='doccomment'>/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
-    <span class='doccomment'>/// package.pull_version(crates_token);</span>
+    <span class='doccomment'>/// package.pull_version();</span>
     <span class='doccomment'>/// assert!(package.newest_version.is_some());</span>
     <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pull_version</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>crates_token</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) {
-        <span class='kw'>let</span> <span class='ident'>vers</span> <span class='op'>=</span> <span class='ident'>crate_versions</span>(<span class='kw-2'>&amp;</span><span class='ident'>crate_versions_raw</span>(<span class='ident'>crates_token</span>, <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>name</span>));
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pull_version</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
+        <span class='kw'>let</span> <span class='ident'>vers</span> <span class='op'>=</span> <span class='ident'>crate_versions</span>(<span class='kw-2'>&amp;</span><span class='ident'>crate_versions_raw</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>name</span>));
         <span class='self'>self</span>.<span class='ident'>newest_version</span> <span class='op'>=</span> <span class='ident'>vers</span>.<span class='ident'>into_iter</span>().<span class='ident'>max</span>();
     }
 }
@@ -490,38 +441,6 @@
     }
 }
 
-<span class='doccomment'>/// Load the [`crates.io`](https://crates.io) authorisation token for API requests.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// If the `config` file doesn&#39;t exist an `Err` is returned.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::{MainRepoPackage, crates_token};</span>
-<span class='doccomment'>/// # use std::env::temp_dir;</span>
-<span class='doccomment'>/// # fn main() {</span>
-<span class='doccomment'>/// #     test();</span>
-<span class='doccomment'>/// # }</span>
-<span class='doccomment'>/// # fn test() -&gt; Result&lt;(), i32&gt; {</span>
-<span class='doccomment'>/// # let cargo_dir = temp_dir();</span>
-<span class='doccomment'>/// # let mut package = MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap();</span>
-<span class='doccomment'>/// let token = try!(crates_token(&amp;cargo_dir));</span>
-<span class='doccomment'>/// package.pull_version(&amp;token);</span>
-<span class='doccomment'>/// # Ok(())</span>
-<span class='doccomment'>/// # }</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>crates_token</span>(<span class='ident'>cargo_dir</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>String</span>, <span class='ident'>i32</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>config_path</span> <span class='op'>=</span> <span class='ident'>cargo_dir</span>.<span class='ident'>join</span>(<span class='string'>&quot;config&quot;</span>);
-    <span class='kw'>if</span> <span class='ident'>config_path</span>.<span class='ident'>exists</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>config</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-        <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>config_path</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>config</span>).<span class='ident'>unwrap</span>();
-
-        <span class='prelude-val'>Ok</span>(<span class='ident'>toml</span>::<span class='ident'>Parser</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>config</span>).<span class='ident'>parse</span>().<span class='ident'>unwrap</span>()[<span class='string'>&quot;registry&quot;</span>].<span class='ident'>as_table</span>().<span class='ident'>unwrap</span>()[<span class='string'>&quot;token&quot;</span>].<span class='ident'>as_str</span>().<span class='ident'>unwrap</span>().<span class='ident'>to_string</span>())
-    } <span class='kw'>else</span> {
-        <span class='prelude-val'>Err</span>(<span class='op'>-</span><span class='number'>1</span>)
-    }
-}
-
 <span class='doccomment'>/// Filter out the installed packages not specified to be updated.</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// List installed packages with `installed_main_repo_packages()`.</span>
@@ -552,20 +471,16 @@
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// Plug into `crate_versions()` to convert to machine-readable form.</span>
 <span class='doccomment'>///</span>
-<span class='doccomment'>/// Whether the token is required to be valid (or at all) is yet to be seen.</span>
-<span class='doccomment'>///</span>
 <span class='doccomment'>/// # Examples</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// ```</span>
 <span class='doccomment'>/// # use cargo_update::ops::crate_versions_raw;</span>
-<span class='doccomment'>/// # let crates_token = &quot;Da39A3Ee5e6B4B0D3255bfeF95601890&quot;;</span>
-<span class='doccomment'>/// let raw_versions = crate_versions_raw(crates_token, &quot;checksums&quot;);</span>
+<span class='doccomment'>/// let raw_versions = crate_versions_raw(&quot;checksums&quot;);</span>
 <span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>crate_versions_raw</span>(<span class='ident'>token</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>crate_name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>crate_versions_raw</span>(<span class='ident'>crate_name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
     <span class='ident'>HttpClient</span>::<span class='ident'>new</span>()
         .<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;https://crates.io/api/v1/crates/{}/versions&quot;</span>, <span class='ident'>crate_name</span>))
-        .<span class='ident'>header</span>(<span class='ident'>Authorization</span>(<span class='ident'>Bearer</span> { <span class='ident'>token</span>: <span class='ident'>token</span>.<span class='ident'>to_string</span>() }))
         .<span class='ident'>send</span>()
         .<span class='ident'>unwrap</span>()
         .<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>)
@@ -579,8 +494,7 @@
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// ```</span>
 <span class='doccomment'>/// # use cargo_update::ops::{crate_versions_raw, crate_versions};</span>
-<span class='doccomment'>/// # let crates_token = &quot;Da39A3Ee5e6B4B0D3255bfeF95601890&quot;;</span>
-<span class='doccomment'>/// # let raw_versions = crate_versions_raw(crates_token, &quot;checksums&quot;);</span>
+<span class='doccomment'>/// # let raw_versions = crate_versions_raw(&quot;checksums&quot;);</span>
 <span class='doccomment'>/// let versions = crate_versions(&amp;raw_versions);</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// println!(&quot;Released versions of checksums:&quot;);</span>
