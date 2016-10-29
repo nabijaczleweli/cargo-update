@@ -28,9 +28,19 @@ fn actual_main() -> Result<(), i32> {
 
     {
         let mut out = TabWriter::new(stdout());
-        writeln!(out, "Package\tInstalled\tLatest").unwrap();
+        writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
         for package in &packages {
-            writeln!(out, "{}\tv{}\tv{}", package.name, package.version, package.newest_version.as_ref().unwrap()).unwrap();
+            writeln!(out,
+                     "{}\tv{}\tv{}\t{}",
+                     package.name,
+                     package.version,
+                     package.newest_version.as_ref().unwrap(),
+                     if package.version < *package.newest_version.as_ref().unwrap() {
+                         "Yes"
+                     } else {
+                         "No"
+                     })
+                .unwrap();
         }
         writeln!(out, "").unwrap();
         out.flush().unwrap();
