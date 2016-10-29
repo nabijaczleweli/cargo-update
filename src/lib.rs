@@ -10,7 +10,6 @@
 //! Options::parse()
 //! |> installed_main_repo_packages()
 //! |> intersect_packages()
-//! |> crates_token()
 //! |> MainRepoPackage::pull_version()
 //! ```
 //!
@@ -32,8 +31,7 @@
 //! Exit values and possible errors:
 //!
 //! ```text
-//! -2 - cargo install process was terminated by a signal (Linux-only)
-//! -1 - failed to acquire crates.io auth token
+//! -1 - cargo install process was terminated by a signal (Linux-only)
 //! 1  - option parsing error
 //! X  - bubbled-up cargo install exit value
 //! ```

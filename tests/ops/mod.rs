@@ -3,7 +3,6 @@ use semver::Version as Semver;
 
 mod installed_main_repo_packages;
 mod main_repo_package;
-mod crates_token;
 
 
 static CHECKSUMS_VERSIONS: &'static str = include_str!("../../test-data/checksums-versions.json");

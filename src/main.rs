@@ -20,10 +20,8 @@ fn actual_main() -> Result<(), i32> {
         packages = cargo_update::ops::intersect_packages(packages, &opts.to_update);
     }
 
-    let token = try!(cargo_update::ops::crates_token(&opts.cargo_dir.1));
-
     for package in &mut packages {
-        package.pull_version(&token);
+        package.pull_version();
     }
 
     {
@@ -55,7 +53,7 @@ fn actual_main() -> Result<(), i32> {
 
                 let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
                 if !install_res.success() {
-                    try!(Err(install_res.code().unwrap_or(-2)));
+                    try!(Err(install_res.code().unwrap_or(-1)));
                 }
 
                 println!("");
