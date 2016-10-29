@@ -56,6 +56,12 @@
 //! Exclusive with --all. Required if --all not given.
 //! ```
 //!
+//! -l --list
+//!
+//! ```text
+//! Don't update any packages, just list them.
+//! ```
+//!
 //! -c --cargo-dir &lt;CARGO_DIR&gt;
 //!
 //! ```text
@@ -117,6 +123,23 @@
 //!      Compiling treesize v0.2.1
 //!       Finished release [optimized] target(s) in 76.77 secs
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+//! ```
+//!
+//! `cargo install-update -al`
+//!
+//! ```text
+//! List all installed packages, don't update any.
+//!
+//! Example output:
+//!   Package         Installed  Latest   Needs update
+//!   cargo-count     v0.2.2     v0.2.2   No
+//!   cargo-graph     v0.3.0     v0.3.0   No
+//!   cargo-outdated  v0.2.0     v0.2.0   No
+//!   checksums       v0.5.0     v0.5.2   Yes
+//!   identicon       v0.1.1     v0.1.1   No
+//!   racer           v1.2.10    v1.2.10  No
+//!   rustfmt         v0.6.2     v0.6.2   No
+//!   treesize        v0.2.0     v0.2.1   Yes
 //! ```
 
 

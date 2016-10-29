@@ -46,21 +46,23 @@ fn actual_main() -> Result<(), i32> {
         out.flush().unwrap();
     }
 
-    packages = packages.into_iter().filter(|pkg| pkg.version < *pkg.newest_version.as_ref().unwrap()).collect();
+    if opts.update {
+        packages = packages.into_iter().filter(|pkg| pkg.version < *pkg.newest_version.as_ref().unwrap()).collect();
 
-    if !packages.is_empty() {
-        for package in &packages {
-            println!("Updating {}", package.name);
+        if !packages.is_empty() {
+            for package in &packages {
+                println!("Updating {}", package.name);
 
-            let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
-            if !install_res.success() {
-                try!(Err(install_res.code().unwrap_or(-2)));
+                let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
+                if !install_res.success() {
+                    try!(Err(install_res.code().unwrap_or(-2)));
+                }
+
+                println!("");
             }
-
-            println!("");
+        } else {
+            println!("No packages need updating.");
         }
-    } else {
-        println!("No packages need updating.");
     }
 
     Ok(())

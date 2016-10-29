@@ -26,6 +26,8 @@ pub struct Options {
     ///
     /// If empty - update all.
     pub to_update: Vec<String>,
+    /// Whether to update packages or just list them. Default: `true`
+    pub update: bool,
     /// The `cargo` home directory. Default: `"$HOME/.cargo"`
     pub cargo_dir: (String, PathBuf),
 }
@@ -43,6 +45,7 @@ impl Options {
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $HOME/.cargo'")
                             .validator(Options::cargo_dir_validator),
                         Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
+                        Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
@@ -54,6 +57,7 @@ impl Options {
                 let packages: Vec<_> = matches.values_of("PACKAGE").unwrap().map(String::from).collect();
                 packages.unique()
             },
+            update: !matches.is_present("list"),
             cargo_dir: match matches.value_of("cargo-dir") {
                 Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
                 None => {
