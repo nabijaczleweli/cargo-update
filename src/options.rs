@@ -12,7 +12,7 @@
 //! ```
 
 
-use clap::{self, AppSettings, App, Arg};
+use clap::{self, AppSettings, SubCommand, App, Arg};
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
 use std::env::home_dir;
@@ -33,15 +33,19 @@ pub struct Options {
 impl Options {
     /// Parse `env`-wide command-line arguments into an `Options` instance
     pub fn parse() -> Options {
-        let matches = App::new("cargo-update")
-            .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp])
-            .version(crate_version!())
-            .author(crate_authors!())
-            .about("A cargo subcommand for checking and applying updates to installed executables")
-            .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $HOME/.cargo'").validator(Options::cargo_dir_validator),
-                    Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
-                    Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)])
+        let matches = App::new("cargo-install-update")
+            .bin_name("cargo")
+            .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
+            .subcommand(SubCommand::with_name("install-update")
+                .version(crate_version!())
+                .author(crate_authors!())
+                .about("A cargo subcommand for checking and applying updates to installed executables")
+                .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $HOME/.cargo'")
+                            .validator(Options::cargo_dir_validator),
+                        Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
+                        Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)]))
             .get_matches();
+        let matches = matches.subcommand_matches("install-update").unwrap();
 
         Options {
             to_update: if matches.is_present("all") {
