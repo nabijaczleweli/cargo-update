@@ -5,7 +5,8 @@ A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo
 ## [Manpage](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html)
 
 ### Installation
-```
+
+```shell
 cargo install cargo-update
 ```
 
@@ -16,3 +17,7 @@ cargo install cargo-update
 `cargo install-update` *crate1 crate2 crate3* - check for newer versions and update selected packages, will not install new packages.
 
 For more information and examples see the [manpage](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html).
+
+#### Self-update
+
+`cargo-update` will attempt to update itself, for it discriminates not, and will work on Linux, but will fail on Windooze.
