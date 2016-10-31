@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.16.3/src/completions/zsh.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.16.4/src/completions/zsh.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>zsh.rs.html -- source</title>
@@ -405,6 +405,15 @@
 <span id="361">361</span>
 <span id="362">362</span>
 <span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
 </pre><pre class='rust '>
 
 <span class='comment'>// Std</span>
@@ -412,6 +421,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ascii</span>::<span class='ident'>AsciiExt</span>;
 
 <span class='comment'>// Internal</span>
+<span class='kw'>use</span> <span class='ident'>app</span>::<span class='ident'>App</span>;
 <span class='kw'>use</span> <span class='ident'>app</span>::<span class='ident'>parser</span>::<span class='ident'>Parser</span>;
 <span class='kw'>use</span> <span class='ident'>args</span>::{<span class='ident'>ArgSettings</span>, <span class='ident'>AnyArg</span>};
 <span class='kw'>use</span> <span class='ident'>completions</span>;
@@ -535,15 +545,23 @@ _{bin_name_underscore}_commands() {{
 <span class='kw'>fn</span> <span class='ident'>subcommands_and_args_of</span>(<span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Parser</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
     <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=subcommands_and_args_of;&quot;</span>);
     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
-
-    <span class='comment'>// Firs the subcommands</span>
-    <span class='kw'>for</span> <span class='ident'>sc</span> <span class='kw'>in</span> <span class='ident'>p</span>.<span class='ident'>subcommands</span>() {
-        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;subcommand={}&quot;</span>, <span class='ident'>sc</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>);
+    <span class='kw'>fn</span> <span class='ident'>add_sc</span>(<span class='ident'>sc</span>: <span class='kw-2'>&amp;</span><span class='ident'>App</span>, <span class='ident'>n</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>ret</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>) {
         <span class='kw'>let</span> <span class='ident'>s</span> <span class='op'>=</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;\&quot;{name}:{help}\&quot; \\&quot;</span>, 
-            <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>sc</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>, 
+            <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>n</span>, 
             <span class='ident'>help</span> <span class='op'>=</span> <span class='ident'>sc</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>about</span>.<span class='ident'>unwrap_or</span>(<span class='string'>&quot;&quot;</span>));
         <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>s</span>.<span class='ident'>is_empty</span>() {
             <span class='ident'>ret</span>.<span class='ident'>push</span>(<span class='ident'>s</span>);
+        }
+    }
+
+    <span class='comment'>// First the subcommands</span>
+    <span class='kw'>for</span> <span class='ident'>sc</span> <span class='kw'>in</span> <span class='ident'>p</span>.<span class='ident'>subcommands</span>() {
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;subcommand={}&quot;</span>, <span class='ident'>sc</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>);
+        <span class='ident'>add_sc</span>(<span class='ident'>sc</span>, <span class='kw-2'>&amp;</span><span class='ident'>sc</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ret</span>);
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>v</span>) <span class='op'>=</span> <span class='ident'>sc</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>aliases</span> {
+            <span class='kw'>for</span> <span class='ident'>alias</span> <span class='kw'>in</span> <span class='ident'>v</span>.<span class='ident'>iter</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='op'>&amp;&amp;</span>(_, <span class='ident'>vis</span>)<span class='op'>|</span> <span class='ident'>vis</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>n</span>,_)<span class='op'>|</span> <span class='ident'>n</span>) {
+                <span class='ident'>add_sc</span>(<span class='ident'>sc</span>, <span class='ident'>alias</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ret</span>);
+            }
         }
     }
 
