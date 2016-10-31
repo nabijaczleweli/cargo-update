@@ -4,6 +4,11 @@ A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo
 ## [Documentation](https://cdn.rawgit.com/nabijaczleweli/cargo-update/doc/cargo_update/index.html)
 ## [Manpage](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html)
 
+### Installation
+```
+cargo install cargo-update
+```
+
 ### Usage
 
 `cargo install-update -a` - check for newer versions and update all installed packages.
