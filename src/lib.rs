@@ -65,7 +65,7 @@
 //! ```text
 //! Set the directory containing cargo metadata.
 //!
-//! Default: "$HOME/.cargo".
+//! Required. Default: "$CARGO_HOME", then $HOME/.cargo", otherwise manual.
 //! ```
 //!
 //! ## EXAMPLES
