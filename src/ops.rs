@@ -239,3 +239,22 @@ pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
         .unwrap()
         .path()
 }
+
+pub fn find_package_data_path(cratename: &str, index_dir: &Path) -> Option<PathBuf> {
+    let maybepath = |pb: PathBuf| { if pb.exists() { Some(pb) } else { None } };
+
+    match cratename.len() {
+        0 => panic!("0-length cratename"),
+        1 | 2 => maybepath(index_dir.join(cratename.len().to_string())).and_then(|pb| maybepath(pb.join(cratename))),
+        3 => {
+            maybepath(index_dir.join("3"))
+                .and_then(|pb| maybepath(pb.join(&cratename[0..1])))
+                .and_then(|pb| maybepath(pb.join(cratename)))
+        }
+        _ => {
+            maybepath(index_dir.join(&cratename[0..2]))
+                .and_then(|pb| maybepath(pb.join(&cratename[2..4])))
+                .and_then(|pb| maybepath(pb.join(cratename)))
+        }
+    }
+}

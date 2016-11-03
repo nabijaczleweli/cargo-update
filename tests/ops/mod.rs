@@ -2,7 +2,9 @@ use cargo_update::ops::{self, MainRepoPackage};
 use semver::Version as Semver;
 
 mod installed_main_repo_packages;
+mod find_package_data_path;
 mod main_repo_package;
+mod get_index_path;
 
 
 static CHECKSUMS_VERSIONS: &'static str = include_str!("../../test-data/checksums-versions.json");

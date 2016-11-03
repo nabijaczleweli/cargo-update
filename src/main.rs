@@ -28,7 +28,8 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
-    println!("Latest registry: {:?}", cargo_update::ops::get_index_path(&opts.cargo_dir.1));
+    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
+    println!("Latest registry: {:?}", registry);
 
     for package in &mut packages {
         package.pull_version();
