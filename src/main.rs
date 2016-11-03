@@ -20,6 +20,16 @@ fn actual_main() -> Result<(), i32> {
         packages = cargo_update::ops::intersect_packages(packages, &opts.to_update);
     }
 
+    {
+        // Searching for "" will just update the registry
+        let search_res = Command::new("cargo").arg("search").arg("").status().unwrap();
+        if !search_res.success() {
+            try!(Err(search_res.code().unwrap_or(-1)));
+        }
+    }
+
+    println!("Latest registry: {:?}", cargo_update::ops::get_index_path(&opts.cargo_dir.1));
+
     for package in &mut packages {
         package.pull_version();
     }

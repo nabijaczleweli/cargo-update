@@ -31,7 +31,7 @@
 //! Exit values and possible errors:
 //!
 //! ```text
-//! -1 - cargo install process was terminated by a signal (Linux-only)
+//! -1 - cargo subprocess was terminated by a signal (Linux-only)
 //! 1  - option parsing error
 //! X  - bubbled-up cargo install exit value
 //! ```

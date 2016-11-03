@@ -7,9 +7,9 @@
 
 
 use hyper::Client as HttpClient;
+use std::path::{PathBuf, Path};
 use semver::Version as Semver;
-use std::path::Path;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Read;
 use regex::Regex;
 use toml;
@@ -228,4 +228,14 @@ pub fn crate_versions_raw(crate_name: &str) -> String {
 /// ```
 pub fn crate_versions(raw: &str) -> Vec<Semver> {
     json::parse(raw).unwrap()["versions"].members().map(|v| Semver::parse(v["num"].as_str().unwrap()).unwrap()).collect()
+}
+
+pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
+    fs::read_dir(cargo_dir.join("registry").join("index"))
+        .unwrap()
+        .map(Result::unwrap)
+        .filter(|i| i.file_type().unwrap().is_dir())
+        .max_by_key(|i| i.metadata().unwrap().modified().unwrap())
+        .unwrap()
+        .path()
 }
