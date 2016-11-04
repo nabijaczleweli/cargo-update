@@ -21,14 +21,12 @@ fn intersect_packages() {
 #[test]
 fn crate_versions() {
     assert_eq!(ops::crate_versions(&PathBuf::from("test-data/checksums-versions.json")),
-               vec![Semver::parse("0.5.2").unwrap(),
-                    Semver::parse("0.5.1").unwrap(),
-                    Semver::parse("0.5.0").unwrap(),
-                    Semver::parse("0.4.1").unwrap(),
-                    Semver::parse("0.4.0").unwrap(),
-                    Semver::parse("0.3.0").unwrap(),
+               vec![Semver::parse("0.2.0").unwrap(),
                     Semver::parse("0.2.1").unwrap(),
-                    Semver::parse("0.2.0").unwrap(),
-                    Semver::parse("0.1.1").unwrap(),
-                    Semver::parse("0.1.0").unwrap()]);
+                    Semver::parse("0.3.0").unwrap(),
+                    Semver::parse("0.4.0").unwrap(),
+                    Semver::parse("0.4.1").unwrap(),
+                    Semver::parse("0.5.0").unwrap(),
+                    Semver::parse("0.5.1").unwrap(),
+                    Semver::parse("0.5.2").unwrap()]);
 }
