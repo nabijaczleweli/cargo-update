@@ -319,6 +319,46 @@
 <span id="275">275</span>
 <span id="276">276</span>
 <span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Main functions doing actual work.</span>
 <span class='doccomment'>//!</span>
@@ -569,6 +609,26 @@
     <span class='ident'>buf</span>.<span class='ident'>lines</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>ver</span><span class='op'>|</span> <span class='ident'>Semver</span>::<span class='ident'>parse</span>(<span class='ident'>json</span>::<span class='ident'>parse</span>(<span class='ident'>ver</span>).<span class='ident'>unwrap</span>()[<span class='string'>&quot;vers&quot;</span>].<span class='ident'>as_str</span>().<span class='ident'>unwrap</span>()).<span class='ident'>unwrap</span>()).<span class='ident'>rev</span>().<span class='ident'>collect</span>()
 }
 
+<span class='doccomment'>/// Get the location of the latest registry index in the specified cargo directory.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// # Examples</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// ```</span>
+<span class='doccomment'>/// # use cargo_update::ops::get_index_path;</span>
+<span class='doccomment'>/// # use std::env::temp_dir;</span>
+<span class='doccomment'>/// # use std::fs;</span>
+<span class='doccomment'>/// # let mut cargo_dir = temp_dir();</span>
+<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class='doccomment'>/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
+<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class='doccomment'>/// # cargo_dir.push(&quot;get_index_path-0&quot;);</span>
+<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class='doccomment'>/// # let idx_dir = cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;);</span>
+<span class='doccomment'>/// # let _ = fs::create_dir_all(&amp;idx_dir);</span>
+<span class='doccomment'>/// let index = get_index_path(&amp;cargo_dir);</span>
+<span class='doccomment'>/// // Use find_package_data() to look for packages</span>
+<span class='doccomment'>/// # assert_eq!(index, idx_dir);</span>
+<span class='doccomment'>/// ```</span>
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_index_path</span>(<span class='ident'>cargo_dir</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='ident'>PathBuf</span> {
     <span class='ident'>fs</span>::<span class='ident'>read_dir</span>(<span class='ident'>cargo_dir</span>.<span class='ident'>join</span>(<span class='string'>&quot;registry&quot;</span>).<span class='ident'>join</span>(<span class='string'>&quot;index&quot;</span>))
         .<span class='ident'>unwrap</span>()
@@ -579,6 +639,26 @@
         .<span class='ident'>path</span>()
 }
 
+<span class='doccomment'>/// Find a package in the cargo index.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// # Examples</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// ```</span>
+<span class='doccomment'>/// # use cargo_update::ops::find_package_data;</span>
+<span class='doccomment'>/// # use std::fs::{self, File};</span>
+<span class='doccomment'>/// # use std::env::temp_dir;</span>
+<span class='doccomment'>/// # let mut index_dir = temp_dir();</span>
+<span class='doccomment'>/// # let _ = fs::create_dir(&amp;index_dir);</span>
+<span class='doccomment'>/// # index_dir.push(&quot;cargo_update-doctest&quot;);</span>
+<span class='doccomment'>/// # let _ = fs::create_dir(&amp;index_dir);</span>
+<span class='doccomment'>/// # index_dir.push(&quot;find_package_data-0&quot;);</span>
+<span class='doccomment'>/// # let _ = fs::create_dir(&amp;index_dir);</span>
+<span class='doccomment'>/// # let _ = fs::create_dir_all(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;));</span>
+<span class='doccomment'>/// # File::create(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;).join(&quot;cargo&quot;)).unwrap();</span>
+<span class='doccomment'>/// # let cargo =</span>
+<span class='doccomment'>/// find_package_data(&quot;cargo&quot;, &amp;index_dir);</span>
+<span class='doccomment'>/// # assert_eq!(cargo, Some(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;).join(&quot;cargo&quot;)));</span>
+<span class='doccomment'>/// ```</span>
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_package_data</span>(<span class='ident'>cratename</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>index_dir</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>PathBuf</span><span class='op'>&gt;</span> {
     <span class='kw'>let</span> <span class='ident'>maybepath</span> <span class='op'>=</span> <span class='op'>|</span><span class='ident'>pb</span>: <span class='ident'>PathBuf</span><span class='op'>|</span> { <span class='kw'>if</span> <span class='ident'>pb</span>.<span class='ident'>exists</span>() { <span class='prelude-val'>Some</span>(<span class='ident'>pb</span>) } <span class='kw'>else</span> { <span class='prelude-val'>None</span> } };
 
