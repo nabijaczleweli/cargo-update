@@ -359,6 +359,10 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Main functions doing actual work.</span>
 <span class='doccomment'>//!</span>
@@ -412,7 +416,7 @@
 <span class='doccomment'>/// # fs::create_dir(cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;).join(&quot;ra&quot;).join(&quot;ce&quot;));</span>
 <span class='doccomment'>/// # File::create(</span>
 <span class='doccomment'>/// #    cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;).join(&quot;ra&quot;).join(&quot;ce&quot;).join(&quot;racer&quot;)</span>
-<span class='doccomment'>/// # ).unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;}&quot;#);</span>
+<span class='doccomment'>/// # ).unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;, &quot;yanked&quot;: false}&quot;#).unwrap();</span>
 <span class='doccomment'>/// let registry = get_index_path(&amp;cargo_dir);</span>
 <span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
 <span class='doccomment'>/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
@@ -520,7 +524,7 @@
     <span class='doccomment'>/// # fs::create_dir(cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;).join(&quot;ra&quot;).join(&quot;ce&quot;));</span>
     <span class='doccomment'>/// # File::create(</span>
     <span class='doccomment'>/// #    cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;).join(&quot;ra&quot;).join(&quot;ce&quot;).join(&quot;racer&quot;)</span>
-    <span class='doccomment'>/// # ).unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;}&quot;#);</span>
+    <span class='doccomment'>/// # ).unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;, &quot;yanked&quot;: false}&quot;#).unwrap();</span>
     <span class='doccomment'>/// let registry = get_index_path(&amp;cargo_dir);</span>
     <span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
     <span class='doccomment'>/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
@@ -606,7 +610,11 @@
     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
     <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>package_desc</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>).<span class='ident'>unwrap</span>();
 
-    <span class='ident'>buf</span>.<span class='ident'>lines</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>ver</span><span class='op'>|</span> <span class='ident'>Semver</span>::<span class='ident'>parse</span>(<span class='ident'>json</span>::<span class='ident'>parse</span>(<span class='ident'>ver</span>).<span class='ident'>unwrap</span>()[<span class='string'>&quot;vers&quot;</span>].<span class='ident'>as_str</span>().<span class='ident'>unwrap</span>()).<span class='ident'>unwrap</span>()).<span class='ident'>rev</span>().<span class='ident'>collect</span>()
+    <span class='ident'>buf</span>.<span class='ident'>lines</span>()
+        .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>json</span>::<span class='ident'>parse</span>(<span class='ident'>p</span>).<span class='ident'>unwrap</span>())
+        .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>j</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>j</span>[<span class='string'>&quot;yanked&quot;</span>].<span class='ident'>as_bool</span>().<span class='ident'>unwrap</span>())
+        .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>j</span><span class='op'>|</span> <span class='ident'>Semver</span>::<span class='ident'>parse</span>(<span class='ident'>j</span>[<span class='string'>&quot;vers&quot;</span>].<span class='ident'>as_str</span>().<span class='ident'>unwrap</span>()).<span class='ident'>unwrap</span>())
+        .<span class='ident'>collect</span>()
 }
 
 <span class='doccomment'>/// Get the location of the latest registry index in the specified cargo directory.</span>
