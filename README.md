@@ -14,7 +14,7 @@ cargo install cargo-update
 
 `cargo install-update -a` - check for newer versions and update all installed packages.
 
-`cargo install-update` *crate1 crate2 crate3* - check for newer versions and update selected packages, will not install new packages.
+`cargo install-update crate1 crate2 ...` - check for newer versions and update selected packages, will not install new packages.
 
 For more information and examples see the [manpage](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html).
 
