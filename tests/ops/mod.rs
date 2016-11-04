@@ -1,13 +1,11 @@
 use cargo_update::ops::{self, MainRepoPackage};
 use semver::Version as Semver;
+use std::path::PathBuf;
 
 mod installed_main_repo_packages;
-mod find_package_data_path;
+mod find_package_data;
 mod main_repo_package;
 mod get_index_path;
-
-
-static CHECKSUMS_VERSIONS: &'static str = include_str!("../../test-data/checksums-versions.json");
 
 
 #[test]
@@ -22,7 +20,7 @@ fn intersect_packages() {
 
 #[test]
 fn crate_versions() {
-    assert_eq!(ops::crate_versions(CHECKSUMS_VERSIONS),
+    assert_eq!(ops::crate_versions(&PathBuf::from("test-data/checksums-versions.json")),
                vec![Semver::parse("0.5.2").unwrap(),
                     Semver::parse("0.5.1").unwrap(),
                     Semver::parse("0.5.0").unwrap(),

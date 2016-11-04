@@ -51,6 +51,8 @@ Exit values and possible errors:
     Update all installed packages.
 
     Example output:
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+
       Package         Installed  Latest   Needs update
       cargo-count     v0.2.2     v0.2.2   No
       cargo-graph     v0.3.0     v0.3.0   No
@@ -83,6 +85,8 @@ Exit values and possible errors:
     Since cargo-cln is not installed, it'll be ignored.
 
      Example output:
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+
       Package   Installed  Latest   Needs update
       racer     v1.2.10    v1.2.10  No
       treesize  v0.2.0     v0.2.1   Yes
@@ -100,6 +104,8 @@ Exit values and possible errors:
     List all installed packages, don't update any.
 
     Example output:
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+
       Package         Installed  Latest   Needs update
       cargo-count     v0.2.2     v0.2.2   No
       cargo-graph     v0.3.0     v0.3.0   No

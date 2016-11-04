@@ -10,6 +10,7 @@
 //! Options::parse()
 //! |> installed_main_repo_packages()
 //! |> intersect_packages()
+//! |> get_index_path()
 //! |> MainRepoPackage::pull_version()
 //! ```
 //!
@@ -76,6 +77,8 @@
 //! Update all installed packages.
 //!
 //! Example output:
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!
 //!   Package         Installed  Latest   Needs update
 //!   cargo-count     v0.2.2     v0.2.2   No
 //!   cargo-graph     v0.3.0     v0.3.0   No
@@ -110,6 +113,8 @@
 //! Since cargo-cln is not installed, it'll be ignored.
 //!
 //!  Example output:
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!
 //!   Package   Installed  Latest   Needs update
 //!   racer     v1.2.10    v1.2.10  No
 //!   treesize  v0.2.0     v0.2.1   Yes
@@ -129,6 +134,8 @@
 //! List all installed packages, don't update any.
 //!
 //! Example output:
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!
 //!   Package         Installed  Latest   Needs update
 //!   cargo-count     v0.2.2     v0.2.2   No
 //!   cargo-graph     v0.3.0     v0.3.0   No
@@ -145,7 +152,6 @@
 extern crate lazy_static;
 extern crate array_tool;
 extern crate semver;
-extern crate hyper;
 extern crate regex;
 #[macro_use]
 extern crate clap;

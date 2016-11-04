@@ -26,13 +26,13 @@ fn actual_main() -> Result<(), i32> {
         if !search_res.success() {
             try!(Err(search_res.code().unwrap_or(-1)));
         }
+        println!("");
     }
 
     let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
-    println!("Latest registry: {:?}", registry);
 
     for package in &mut packages {
-        package.pull_version();
+        package.pull_version(&registry);
     }
 
     {
