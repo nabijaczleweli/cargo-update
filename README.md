@@ -20,4 +20,9 @@ For more information and examples see the [manpage](https://cdn.rawgit.com/nabij
 
 #### Self-update
 
-`cargo-update` will attempt to update itself, for it discriminates not, and will work on Linux, but will fail on Windooze.
+`cargo-update` will update itself seamlessly on Linux and Windows.
+
+On Windows the following strategy is applied:
+  * Check for old versions, remove them
+  * Add the current version to the current executable's extension
+  * Create an empty file in place of the just-renamed file (this way `cargo install` will "replace" it and not duplicate the entry in `.crates.toml`)
