@@ -4,6 +4,8 @@ extern crate tabwriter;
 use std::process::{Command, exit};
 use std::io::{Write, stdout};
 use tabwriter::TabWriter;
+use std::env;
+use std::fs;
 
 
 fn main() {
@@ -61,6 +63,13 @@ fn actual_main() -> Result<(), i32> {
         if !packages.is_empty() {
             for package in &packages {
                 println!("Updating {}", package.name);
+
+                if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                    let cur_exe = env::current_exe().unwrap();
+                    let mut new_exe = cur_exe.clone();
+                    new_exe.set_extension(format!("exe-v{}", package.version));
+                    fs::rename(cur_exe, new_exe).unwrap();
+                }
 
                 let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
                 if !install_res.success() {
