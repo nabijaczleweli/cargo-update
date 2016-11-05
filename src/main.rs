@@ -1,11 +1,13 @@
 extern crate cargo_update;
 extern crate tabwriter;
+extern crate regex;
 
 use std::process::{Command, exit};
 use std::io::{Write, stdout};
+use std::fs::{self, File};
 use tabwriter::TabWriter;
+use regex::Regex;
 use std::env;
-use std::fs;
 
 
 fn main() {
@@ -15,6 +17,16 @@ fn main() {
 
 fn actual_main() -> Result<(), i32> {
     let opts = cargo_update::Options::parse();
+
+    if cfg!(target_os = "windows") {
+        let old_version_r = Regex::new(r"cargo-install-update\.exe-v.+").unwrap();
+        for old_version in fs::read_dir(env::current_exe().unwrap().parent().unwrap().canonicalize().unwrap())
+            .unwrap()
+            .map(Result::unwrap)
+            .filter(|f| old_version_r.is_match(&f.file_name().into_string().unwrap())) {
+            fs::remove_file(old_version.path()).unwrap();
+        }
+    }
 
     let mut packages = cargo_update::ops::installed_main_repo_packages(&opts.cargo_dir.1);
 
@@ -67,8 +79,11 @@ fn actual_main() -> Result<(), i32> {
                 if cfg!(target_os = "windows") && package.name == "cargo-update" {
                     let cur_exe = env::current_exe().unwrap();
                     let mut new_exe = cur_exe.clone();
+
                     new_exe.set_extension(format!("exe-v{}", package.version));
-                    fs::rename(cur_exe, new_exe).unwrap();
+                    fs::rename(&cur_exe, new_exe).unwrap();
+                    // This way the past-current exec will be "replaced" we'll get no dupes in .cargo.toml
+                    File::create(cur_exe).unwrap();
                 }
 
                 let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
