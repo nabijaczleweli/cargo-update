@@ -120,7 +120,7 @@ Exit values and possible errors:
 
 Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;
        and Yann Simon &lt;<yann.simon.fr@gmail.com>&gt;
-       and ven &lt<vendethiel@hotmail.fr>&gt;
+       and ven &lt;<vendethiel@hotmail.fr>&gt;
 
 ## REPORTING BUGS
 
