@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.17.1/src/completions/shell.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.18.0/src/completions/shell.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>shell.rs.html -- source</title>
@@ -94,6 +94,11 @@
 <span id="50">50</span>
 <span id="51">51</span>
 <span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ascii</span>::<span class='ident'>AsciiExt</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>FromStr</span>;
@@ -108,15 +113,18 @@
     <span class='ident'>Fish</span>,
     <span class='doccomment'>/// Generates a completion file for the Z SHell (ZSH)</span>
     <span class='ident'>Zsh</span>,
+    <span class='doccomment'>/// Generates a completion file for PowerShell</span>
+    <span class='ident'>PowerShell</span>,
 }
 
 <span class='kw'>impl</span> <span class='ident'>Shell</span> {
     <span class='doccomment'>/// A list of possible variants in `&amp;&#39;static str` form</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>variants</span>() <span class='op'>-&gt;</span> [<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>; <span class='number'>3</span>] {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>variants</span>() <span class='op'>-&gt;</span> [<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>; <span class='number'>4</span>] {
         [
             <span class='string'>&quot;zsh&quot;</span>,
             <span class='string'>&quot;bash&quot;</span>,
-            <span class='string'>&quot;fish&quot;</span>
+            <span class='string'>&quot;fish&quot;</span>,
+            <span class='string'>&quot;powershell&quot;</span>
         ]
     }
 }
@@ -130,8 +138,9 @@
             <span class='string'>&quot;ZSH&quot;</span> <span class='op'>|</span> _ <span class='kw'>if</span> <span class='ident'>s</span>.<span class='ident'>eq_ignore_ascii_case</span>(<span class='string'>&quot;zsh&quot;</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Shell</span>::<span class='ident'>Zsh</span>),
             <span class='string'>&quot;FISH&quot;</span> <span class='op'>|</span> _ <span class='kw'>if</span> <span class='ident'>s</span>.<span class='ident'>eq_ignore_ascii_case</span>(<span class='string'>&quot;fish&quot;</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Shell</span>::<span class='ident'>Fish</span>),
             <span class='string'>&quot;BASH&quot;</span> <span class='op'>|</span> _ <span class='kw'>if</span> <span class='ident'>s</span>.<span class='ident'>eq_ignore_ascii_case</span>(<span class='string'>&quot;bash&quot;</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Shell</span>::<span class='ident'>Bash</span>),
+            <span class='string'>&quot;POWERSHELL&quot;</span> <span class='op'>|</span> _ <span class='kw'>if</span> <span class='ident'>s</span>.<span class='ident'>eq_ignore_ascii_case</span>(<span class='string'>&quot;powershell&quot;</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>Shell</span>::<span class='ident'>PowerShell</span>),
             _ <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(
-                <span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;[valid values: bash, fish, zsh]&quot;</span>)
+                <span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;[valid values: bash, fish, zsh, powershell]&quot;</span>)
             ),
         }
     }
@@ -140,9 +149,10 @@
 <span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>Shell</span> {
     <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
         <span class='kw'>match</span> <span class='op'>*</span><span class='self'>self</span> {
-            <span class='ident'>Shell</span>::<span class='ident'>Bash</span> <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;BASH&quot;</span>),
-            <span class='ident'>Shell</span>::<span class='ident'>Fish</span> <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;FISH&quot;</span>),
-            <span class='ident'>Shell</span>::<span class='ident'>Zsh</span>  <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;ZSH&quot;</span>),
+            <span class='ident'>Shell</span>::<span class='ident'>Bash</span>       <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;BASH&quot;</span>),
+            <span class='ident'>Shell</span>::<span class='ident'>Fish</span>       <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;FISH&quot;</span>),
+            <span class='ident'>Shell</span>::<span class='ident'>Zsh</span>        <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;ZSH&quot;</span>),
+            <span class='ident'>Shell</span>::<span class='ident'>PowerShell</span> <span class='op'>=&gt;</span> <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;POWERSHELL&quot;</span>),
         }
     }
 }
