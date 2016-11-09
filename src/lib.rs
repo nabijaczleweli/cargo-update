@@ -61,6 +61,12 @@
 //! Don't update any packages, just list them.
 //! ```
 //!
+//! -f --force
+//!
+//! ```text
+//! Update all packages, regardless of whether they need to be version-wise.
+//! ```
+//!
 //! -c --cargo-dir &lt;CARGO_DIR&gt;
 //!
 //! ```text
@@ -145,6 +151,34 @@
 //!   racer           v1.2.10    v1.2.10  No
 //!   rustfmt         v0.6.2     v0.6.2   No
 //!   treesize        v0.2.0     v0.2.1   Yes
+//! ```
+//!
+//! `cargo install-update -af`
+//!
+//! ```text
+//! Update all installed packages.
+//! Example output:
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!
+//!   Package   Installed  Latest   Needs update
+//!   racer     v1.2.10    v1.2.10  No
+//!   treesize  v0.2.0     v0.2.1   Yes
+//!
+//!   Updating racer
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading racer v1.2.10
+//!      [...]
+//!      Compiling racer v1.2.10
+//!       Finished release [optimized] target(s) in 51.43 secs
+//!      Replacing D:\Users\nabijaczleweli\.cargo\bin\racer.exe
+//!
+//!   Updating treesize
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading treesize v0.2.1
+//!      [...]
+//!      Compiling treesize v0.2.1
+//!       Finished release [optimized] target(s) in 76.77 secs
+//!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
 //! ```
 
 

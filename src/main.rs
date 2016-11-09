@@ -70,7 +70,9 @@ fn actual_main() -> Result<(), i32> {
     }
 
     if opts.update {
-        packages = packages.into_iter().filter(|pkg| pkg.version < *pkg.newest_version.as_ref().unwrap()).collect();
+        if !opts.force {
+            packages = packages.into_iter().filter(|pkg| pkg.version < *pkg.newest_version.as_ref().unwrap()).collect();
+        }
 
         if !packages.is_empty() {
             for package in &packages {
