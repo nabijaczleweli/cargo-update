@@ -47,13 +47,45 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a id='src-4712' class='srclink' href='../src/rustc_serialize/serialize.rs.html#716-720' title='goto source code'>[src]</a></span></h1>
+               </span><a id='src-4736' class='srclink' href='../src/rustc_serialize/serialize.rs.html#1468-1501' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait DecoderHelpers: <a class='trait' href='../rustc_serialize/trait.Decoder.html' title='rustc_serialize::Decoder'>Decoder</a> {
     fn <a href='#tymethod.read_to_vec' class='fnname'>read_to_vec</a>&lt;T,&nbsp;F&gt;(&amp;mut self, f: F) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;T&gt;,&nbsp;Self::Error&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(&amp;mut Self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T,&nbsp;Self::Error&gt;</span>;
-}</pre>
+}</pre><div class='docblock'><p>Trait with helper functions for implementing <code>Decodable</code>.</p>
+
+<p>This trait is implemented for everything that implements <code>Decoder</code>.
+<code>Decodable</code> implementations can make use of it to make their implementations
+easier.</p>
+</div>
             <h2 id='required-methods'>Required Methods</h2>
             <div class='methods'>
-        <h3 id='tymethod.read_to_vec' class='method stab '><code>fn <a href='#tymethod.read_to_vec' class='fnname'>read_to_vec</a>&lt;T,&nbsp;F&gt;(&amp;mut self, f: F) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;T&gt;,&nbsp;Self::Error&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(&amp;mut Self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T,&nbsp;Self::Error&gt;</span></code></h3></div>
+        <h3 id='tymethod.read_to_vec' class='method stab '><span id='read_to_vec.v' class='invisible'><code>fn <a href='#tymethod.read_to_vec' class='fnname'>read_to_vec</a>&lt;T,&nbsp;F&gt;(&amp;mut self, f: F) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;T&gt;,&nbsp;Self::Error&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>(&amp;mut Self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T,&nbsp;Self::Error&gt;</span></code></span></h3><div class='docblock'><p>Read a sequence into a vector.</p>
+
+<p>Storing sequences as vectors is a common pattern. This method makes
+deserializing such sequences easier by wrapping the calls to
+<code>Decoder::read_seq</code> and <code>Decoder::read_seq_elt</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::<span class='ident'>Decodable</span>;
+<span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::<span class='ident'>Decoder</span>;
+<span class='kw'>use</span> <span class='ident'>rustc_serialize</span>::<span class='ident'>DecoderHelpers</span>;
+
+<span class='kw'>struct</span> <span class='ident'>NumberSequence</span> {
+    <span class='ident'>elements</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;</span>,
+}
+
+<span class='kw'>impl</span> <span class='ident'>Decodable</span> <span class='kw'>for</span> <span class='ident'>NumberSequence</span> {
+    <span class='kw'>fn</span> <span class='ident'>decode</span><span class='op'>&lt;</span><span class='ident'>D</span>: <span class='ident'>Decoder</span><span class='op'>&gt;</span>(<span class='ident'>d</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>D</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>NumberSequence</span>, <span class='ident'>D</span>::<span class='ident'>Error</span><span class='op'>&gt;</span> {
+        <span class='ident'>d</span>.<span class='ident'>read_struct</span>(<span class='string'>&quot;NumberSequence&quot;</span>, <span class='number'>2</span>, <span class='op'>|</span><span class='ident'>d</span><span class='op'>|</span> {
+            <span class='prelude-val'>Ok</span>(<span class='ident'>NumberSequence</span>{
+                <span class='ident'>elements</span>: <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>d</span>.<span class='ident'>read_struct_field</span>(<span class='string'>&quot;elements&quot;</span>, <span class='number'>0</span>, <span class='op'>|</span><span class='ident'>d</span><span class='op'>|</span> {
+                    <span class='ident'>d</span>.<span class='ident'>read_to_vec</span>(<span class='op'>|</span><span class='ident'>d</span><span class='op'>|</span> { <span class='ident'>d</span>.<span class='ident'>read_i32</span>() })
+                }))
+            })
+        })
+    }
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+</div></div>
         <h2 id='implementors'>Implementors</h2>
         <ul class='item-list' id='implementors-list'>
     <li><code>impl&lt;D:&nbsp;<a class='trait' href='../rustc_serialize/trait.Decoder.html' title='rustc_serialize::Decoder'>Decoder</a>&gt; DecoderHelpers for D</code></li>

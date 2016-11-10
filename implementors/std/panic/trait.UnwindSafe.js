@@ -1,5 +1,5 @@
 (function() {var implementors = {};
-implementors["openssl"] = [];
+implementors["lazy_static"] = [];implementors["regex_syntax"] = [];implementors["libc"] = [];implementors["semver_parser"] = [];implementors["cargo_update"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);

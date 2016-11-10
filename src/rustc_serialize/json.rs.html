@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rustc-serialize-0.3.19/src/json.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rustc-serialize-0.3.21/src/json.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>json.rs.html -- source</title>
@@ -3997,6 +3997,34 @@
 <span id="3953">3953</span>
 <span id="3954">3954</span>
 <span id="3955">3955</span>
+<span id="3956">3956</span>
+<span id="3957">3957</span>
+<span id="3958">3958</span>
+<span id="3959">3959</span>
+<span id="3960">3960</span>
+<span id="3961">3961</span>
+<span id="3962">3962</span>
+<span id="3963">3963</span>
+<span id="3964">3964</span>
+<span id="3965">3965</span>
+<span id="3966">3966</span>
+<span id="3967">3967</span>
+<span id="3968">3968</span>
+<span id="3969">3969</span>
+<span id="3970">3970</span>
+<span id="3971">3971</span>
+<span id="3972">3972</span>
+<span id="3973">3973</span>
+<span id="3974">3974</span>
+<span id="3975">3975</span>
+<span id="3976">3976</span>
+<span id="3977">3977</span>
+<span id="3978">3978</span>
+<span id="3979">3979</span>
+<span id="3980">3980</span>
+<span id="3981">3981</span>
+<span id="3982">3982</span>
+<span id="3983">3983</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2012-2014 The Rust Project Developers. See the COPYRIGHT</span>
 <span class='comment'>// file at the top-level directory of this distribution and at</span>
@@ -4335,6 +4363,16 @@
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>EncoderError</span> {
     <span class='ident'>FmtError</span>(<span class='ident'>fmt</span>::<span class='ident'>Error</span>),
     <span class='ident'>BadHashmapKey</span>,
+}
+
+<span class='kw'>impl</span> <span class='ident'>PartialEq</span> <span class='kw'>for</span> <span class='ident'>EncoderError</span> {
+    <span class='kw'>fn</span> <span class='ident'>eq</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>other</span>: <span class='kw-2'>&amp;</span><span class='ident'>EncoderError</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='kw'>match</span> (<span class='op'>*</span><span class='self'>self</span>, <span class='op'>*</span><span class='ident'>other</span>) {
+            (<span class='ident'>EncoderError</span>::<span class='ident'>FmtError</span>(_), <span class='ident'>EncoderError</span>::<span class='ident'>FmtError</span>(_)) <span class='op'>=&gt;</span> <span class='bool-val'>true</span>,
+            (<span class='ident'>EncoderError</span>::<span class='ident'>BadHashmapKey</span>, <span class='ident'>EncoderError</span>::<span class='ident'>BadHashmapKey</span>) <span class='op'>=&gt;</span> <span class='bool-val'>true</span>,
+            _ <span class='op'>=&gt;</span> <span class='bool-val'>false</span>,
+        }
+    }
 }
 
 <span class='kw'>impl</span> <span class='ident'>Clone</span> <span class='kw'>for</span> <span class='ident'>EncoderError</span> {
@@ -5023,7 +5061,7 @@
         <span class='self'>self</span>.<span class='ident'>as_object</span>().<span class='ident'>is_some</span>()
     }
 
-    <span class='doccomment'>/// If the Json value is an Object, returns the associated BTreeMap.</span>
+    <span class='doccomment'>/// If the Json value is an Object, returns a reference to the associated BTreeMap.</span>
     <span class='doccomment'>/// Returns None otherwise.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>as_object</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Object</span><span class='op'>&gt;</span> {
         <span class='kw'>match</span> <span class='self'>self</span> {
@@ -5032,11 +5070,20 @@
         }
     }
 
-    <span class='doccomment'>/// If the Json value is an Object, returns the associated mutable BTreeMap.</span>
+    <span class='doccomment'>/// If the Json value is an Object, returns a mutable reference to the associated BTreeMap.</span>
     <span class='doccomment'>/// Returns None otherwise.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>as_object_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Object</span><span class='op'>&gt;</span> {
         <span class='kw'>match</span> <span class='self'>self</span> {
             <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Json</span>::<span class='ident'>Object</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>map</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>(<span class='ident'>map</span>),
+            _ <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>
+        }
+    }
+
+    <span class='doccomment'>/// If the Json value is an Object, returns the associated BTreeMap.</span>
+    <span class='doccomment'>/// Returns None otherwise.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>into_object</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Object</span><span class='op'>&gt;</span> {
+        <span class='kw'>match</span> <span class='self'>self</span> {
+            <span class='ident'>Json</span>::<span class='ident'>Object</span>(<span class='ident'>map</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>(<span class='ident'>map</span>),
             _ <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>
         }
     }
@@ -5046,7 +5093,7 @@
         <span class='self'>self</span>.<span class='ident'>as_array</span>().<span class='ident'>is_some</span>()
     }
 
-    <span class='doccomment'>/// If the Json value is an Array, returns the associated vector.</span>
+    <span class='doccomment'>/// If the Json value is an Array, returns a reference to the associated vector.</span>
     <span class='doccomment'>/// Returns None otherwise.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>as_array</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Array</span><span class='op'>&gt;</span> {
         <span class='kw'>match</span> <span class='self'>self</span> {
@@ -5055,11 +5102,20 @@
         }
     }
 
-    <span class='doccomment'>/// If the Json value is an Array, returns the associated mutable vector.</span>
+    <span class='doccomment'>/// If the Json value is an Array, returns a mutable reference to the associated vector.</span>
     <span class='doccomment'>/// Returns None otherwise.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>as_array_mut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Array</span><span class='op'>&gt;</span> {
         <span class='kw'>match</span> <span class='self'>self</span> {
             <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Json</span>::<span class='ident'>Array</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>list</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>(<span class='ident'>list</span>),
+            _ <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>
+        }
+    }
+
+    <span class='doccomment'>/// If the Json value is an Array, returns the associated vector.</span>
+    <span class='doccomment'>/// Returns None otherwise.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>into_array</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Array</span><span class='op'>&gt;</span> {
+        <span class='kw'>match</span> <span class='self'>self</span> {
+            <span class='ident'>Json</span>::<span class='ident'>Array</span>(<span class='ident'>array</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>(<span class='ident'>array</span>),
             _ <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>
         }
     }
@@ -7426,7 +7482,7 @@
             _ <span class='op'>=&gt;</span> {} <span class='comment'>// it parsed and we are good to go</span>
         }
     }
-    
+
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_negative_zero</span>() {
         <span class='ident'>Json</span>::<span class='ident'>from_str</span>(<span class='string'>&quot;{\&quot;test\&quot;:-0}&quot;</span>).<span class='ident'>unwrap</span>();

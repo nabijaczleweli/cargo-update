@@ -1,5 +1,5 @@
 (function() {var implementors = {};
-implementors["openssl"] = [];implementors["hyper"] = ["impl <a class='trait' href='https://doc.rust-lang.org/nightly/std/sys/ext/io/trait.FromRawFd.html' title='std::sys::ext::io::FromRawFd'>FromRawFd</a> for <a class='struct' href='hyper/net/struct.HttpListener.html' title='hyper::net::HttpListener'>HttpListener</a>","impl <a class='trait' href='https://doc.rust-lang.org/nightly/std/sys/ext/io/trait.FromRawFd.html' title='std::sys::ext::io::FromRawFd'>FromRawFd</a> for <a class='struct' href='hyper/net/struct.HttpStream.html' title='hyper::net::HttpStream'>HttpStream</a>",];
+implementors["lazy_static"] = [];implementors["regex_syntax"] = [];implementors["libc"] = [];implementors["semver_parser"] = [];implementors["cargo_update"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);
