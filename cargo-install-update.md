@@ -149,9 +149,10 @@ Exit values and possible errors:
 
 ## AUTHOR
 
-Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;
-       and Yann Simon &lt;<yann.simon.fr@gmail.com>&gt;
-       and ven &lt;<vendethiel@hotmail.fr>&gt;
+Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
+           Yann Simon &lt;<yann.simon.fr@gmail.com>&gt;,
+           ven &lt;<vendethiel@hotmail.fr>&gt;,
+       and Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;
 
 ## REPORTING BUGS
 
