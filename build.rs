@@ -3,7 +3,7 @@ use std::path::Path;
 use std::env;
 
 fn main() {
-    if cfg!(target_os = "windows") {
+    if cfg!(target_os = "windows") && cfg!(target_env = "gnu") {
         let out_dir = env::var("OUT_DIR").unwrap();
 
         Command::new("windres")
