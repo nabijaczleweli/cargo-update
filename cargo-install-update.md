@@ -152,7 +152,8 @@ Exit values and possible errors:
 Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Yann Simon &lt;<yann.simon.fr@gmail.com>&gt;,
            ven &lt;<vendethiel@hotmail.fr>&gt;,
-       and Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;
+           Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;,
+       and Liigo &lt;<liigo@qq.com>&gt;
 
 ## REPORTING BUGS
 
