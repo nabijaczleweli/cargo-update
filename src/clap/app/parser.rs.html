@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.18.0/src/app/parser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.19.0/src/app/parser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parser.rs.html -- source</title>
@@ -2099,45 +2099,6 @@
 <span id="2055">2055</span>
 <span id="2056">2056</span>
 <span id="2057">2057</span>
-<span id="2058">2058</span>
-<span id="2059">2059</span>
-<span id="2060">2060</span>
-<span id="2061">2061</span>
-<span id="2062">2062</span>
-<span id="2063">2063</span>
-<span id="2064">2064</span>
-<span id="2065">2065</span>
-<span id="2066">2066</span>
-<span id="2067">2067</span>
-<span id="2068">2068</span>
-<span id="2069">2069</span>
-<span id="2070">2070</span>
-<span id="2071">2071</span>
-<span id="2072">2072</span>
-<span id="2073">2073</span>
-<span id="2074">2074</span>
-<span id="2075">2075</span>
-<span id="2076">2076</span>
-<span id="2077">2077</span>
-<span id="2078">2078</span>
-<span id="2079">2079</span>
-<span id="2080">2080</span>
-<span id="2081">2081</span>
-<span id="2082">2082</span>
-<span id="2083">2083</span>
-<span id="2084">2084</span>
-<span id="2085">2085</span>
-<span id="2086">2086</span>
-<span id="2087">2087</span>
-<span id="2088">2088</span>
-<span id="2089">2089</span>
-<span id="2090">2090</span>
-<span id="2091">2091</span>
-<span id="2092">2092</span>
-<span id="2093">2093</span>
-<span id="2094">2094</span>
-<span id="2095">2095</span>
-<span id="2096">2096</span>
 </pre><pre class='rust '>
 <span class='comment'>// Std</span>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::{<span class='ident'>BTreeMap</span>, <span class='ident'>HashMap</span>, <span class='ident'>VecDeque</span>};
@@ -2162,8 +2123,7 @@
 <span class='kw'>use</span> <span class='ident'>app</span>::<span class='ident'>help</span>::<span class='ident'>Help</span>;
 <span class='kw'>use</span> <span class='ident'>app</span>::<span class='ident'>meta</span>::<span class='ident'>AppMeta</span>;
 <span class='kw'>use</span> <span class='ident'>app</span>::<span class='ident'>settings</span>::{<span class='ident'>AppFlags</span>, <span class='ident'>AppSettings</span>};
-<span class='kw'>use</span> <span class='ident'>args</span>::{<span class='ident'>AnyArg</span>, <span class='ident'>ArgMatcher</span>};
-<span class='kw'>use</span> <span class='ident'>args</span>::{<span class='ident'>Arg</span>, <span class='ident'>ArgGroup</span>, <span class='ident'>FlagBuilder</span>, <span class='ident'>OptBuilder</span>, <span class='ident'>PosBuilder</span>};
+<span class='kw'>use</span> <span class='ident'>args</span>::{<span class='ident'>AnyArg</span>, <span class='ident'>ArgMatcher</span>, <span class='ident'>Base</span>, <span class='ident'>Switched</span>, <span class='ident'>Arg</span>, <span class='ident'>ArgGroup</span>, <span class='ident'>FlagBuilder</span>, <span class='ident'>OptBuilder</span>, <span class='ident'>PosBuilder</span>};
 <span class='kw'>use</span> <span class='ident'>args</span>::<span class='ident'>MatchedArg</span>;
 <span class='kw'>use</span> <span class='ident'>args</span>::<span class='ident'>settings</span>::<span class='ident'>ArgSettings</span>;
 <span class='kw'>use</span> <span class='ident'>completions</span>::<span class='ident'>ComplGen</span>;
@@ -2201,6 +2161,8 @@
     <span class='kw'>pub</span> <span class='ident'>g_settings</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>AppSettings</span><span class='op'>&gt;</span>,
     <span class='kw'>pub</span> <span class='ident'>meta</span>: <span class='ident'>AppMeta</span><span class='op'>&lt;</span><span class='lifetime'>&#39;b</span><span class='op'>&gt;</span>,
     <span class='ident'>trailing_vals</span>: <span class='ident'>bool</span>,
+    <span class='kw'>pub</span> <span class='ident'>id</span>: <span class='ident'>usize</span>,
+    <span class='ident'>valid_neg_num</span>: <span class='ident'>bool</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;</span> <span class='ident'>Default</span> <span class='kw'>for</span> <span class='ident'>Parser</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;</span> {
@@ -2223,6 +2185,8 @@
             <span class='ident'>settings</span>: <span class='ident'>AppFlags</span>::<span class='ident'>new</span>(),
             <span class='ident'>meta</span>: <span class='ident'>AppMeta</span>::<span class='ident'>new</span>(),
             <span class='ident'>trailing_vals</span>: <span class='bool-val'>false</span>,
+            <span class='ident'>id</span>: <span class='number'>0</span>,
+            <span class='ident'>valid_neg_num</span>: <span class='bool-val'>false</span>,
         }
     }
 }
@@ -2275,11 +2239,11 @@
 
     <span class='comment'>// actually adds the arguments</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>add_arg</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>a</span>: <span class='kw-2'>&amp;</span><span class='ident'>Arg</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;</span>) {
-        <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='op'>!</span>(<span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>a</span>.<span class='ident'>name</span>) <span class='op'>||</span>
-                        <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>a</span>.<span class='ident'>name</span>) <span class='op'>||</span>
-                        <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>a</span>.<span class='ident'>name</span>)),
+        <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='op'>!</span>(<span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>a</span>.<span class='ident'>name</span>) <span class='op'>||</span>
+                        <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>a</span>.<span class='ident'>name</span>) <span class='op'>||</span>
+                        <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>a</span>.<span class='ident'>name</span>)),
                       <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;Non-unique argument name: {} is already in use&quot;</span>, <span class='ident'>a</span>.<span class='ident'>name</span>));
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>grps</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>group</span> {
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>grps</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>groups</span> {
             <span class='kw'>for</span> <span class='ident'>g</span> <span class='kw'>in</span> <span class='ident'>grps</span> {
                 <span class='kw'>let</span> <span class='ident'>ag</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>entry</span>(<span class='ident'>g</span>).<span class='ident'>or_insert_with</span>(<span class='op'>||</span> <span class='ident'>ArgGroup</span>::<span class='ident'>with_name</span>(<span class='ident'>g</span>));
                 <span class='ident'>ag</span>.<span class='ident'>args</span>.<span class='ident'>push</span>(<span class='ident'>a</span>.<span class='ident'>name</span>);
@@ -2320,12 +2284,16 @@
             <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>insert</span>(<span class='ident'>i</span>, <span class='ident'>pb</span>);
         } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>a</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>TakesValue</span>) {
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>ob</span> <span class='op'>=</span> <span class='ident'>OptBuilder</span>::<span class='ident'>from_arg</span>(<span class='ident'>a</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>required</span>);
-            <span class='ident'>ob</span>.<span class='ident'>unified_ord</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>len</span>();
-            <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>push</span>(<span class='ident'>ob</span>);
+            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>len</span>();
+            <span class='ident'>ob</span>.<span class='ident'>b</span>.<span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>id</span>;
+            <span class='ident'>ob</span>.<span class='ident'>s</span>.<span class='ident'>unified_ord</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>len</span>();
+            <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>insert</span>(<span class='ident'>id</span>, <span class='ident'>ob</span>);
         } <span class='kw'>else</span> {
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>fb</span> <span class='op'>=</span> <span class='ident'>FlagBuilder</span>::<span class='ident'>from</span>(<span class='ident'>a</span>);
-            <span class='ident'>fb</span>.<span class='ident'>unified_ord</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>len</span>();
-            <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>push</span>(<span class='ident'>fb</span>);
+            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>();
+            <span class='ident'>fb</span>.<span class='ident'>b</span>.<span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>id</span>;
+            <span class='ident'>fb</span>.<span class='ident'>s</span>.<span class='ident'>unified_ord</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>() <span class='op'>+</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>len</span>();
+            <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>insert</span>(<span class='ident'>id</span>, <span class='ident'>fb</span>);
         }
         <span class='kw'>if</span> <span class='ident'>a</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Global</span>) {
             <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='op'>!</span><span class='ident'>a</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>),
@@ -2405,14 +2373,17 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>derive_display_order</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
         <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>DeriveDisplayOrder</span>) {
             <span class='kw'>let</span> <span class='ident'>unified</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>UnifiedHelpMessage</span>);
-            <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>o</span>) <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter_mut</span>().<span class='ident'>enumerate</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='kw-2'>ref</span> <span class='ident'>o</span>)<span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>disp_ord</span> <span class='op'>==</span> <span class='number'>999</span>) {
-                <span class='ident'>o</span>.<span class='ident'>disp_ord</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>unified</span> { <span class='ident'>o</span>.<span class='ident'>unified_ord</span> } <span class='kw'>else</span> { <span class='ident'>i</span> };
+            <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>o</span>) <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>opts</span>
+                .<span class='ident'>iter_mut</span>()
+                .<span class='ident'>enumerate</span>()
+                .<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='kw-2'>ref</span> <span class='ident'>o</span>)<span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>s</span>.<span class='ident'>disp_ord</span> <span class='op'>==</span> <span class='number'>999</span>) {
+                <span class='ident'>o</span>.<span class='ident'>s</span>.<span class='ident'>disp_ord</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>unified</span> { <span class='ident'>o</span>.<span class='ident'>s</span>.<span class='ident'>unified_ord</span> } <span class='kw'>else</span> { <span class='ident'>i</span> };
             }
             <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>f</span>) <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>flags</span>
                 .<span class='ident'>iter_mut</span>()
                 .<span class='ident'>enumerate</span>()
-                .<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='kw-2'>ref</span> <span class='ident'>f</span>)<span class='op'>|</span> <span class='ident'>f</span>.<span class='ident'>disp_ord</span> <span class='op'>==</span> <span class='number'>999</span>) {
-                <span class='ident'>f</span>.<span class='ident'>disp_ord</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>unified</span> { <span class='ident'>f</span>.<span class='ident'>unified_ord</span> } <span class='kw'>else</span> { <span class='ident'>i</span> };
+                .<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='kw-2'>ref</span> <span class='ident'>f</span>)<span class='op'>|</span> <span class='ident'>f</span>.<span class='ident'>s</span>.<span class='ident'>disp_ord</span> <span class='op'>==</span> <span class='number'>999</span>) {
+                <span class='ident'>f</span>.<span class='ident'>s</span>.<span class='ident'>disp_ord</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>unified</span> { <span class='ident'>f</span>.<span class='ident'>s</span>.<span class='ident'>unified_ord</span> } <span class='kw'>else</span> { <span class='ident'>i</span> };
             }
             <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='ident'>sc</span>) <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>subcommands</span>
                 .<span class='ident'>iter_mut</span>()
@@ -2426,9 +2397,7 @@
         }
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>required</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>required</span>.<span class='ident'>iter</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>required</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> { <span class='self'>self</span>.<span class='ident'>required</span>.<span class='ident'>iter</span>() }
 
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_required_from</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>,
                              <span class='ident'>reqs</span>: <span class='kw-2'>&amp;</span>[<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span>],
@@ -2439,9 +2408,9 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c_opt</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>grps</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
         <span class='kw'>for</span> <span class='ident'>name</span> <span class='kw'>in</span> <span class='ident'>reqs</span> {
-            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
                 <span class='ident'>c_flags</span>.<span class='ident'>push</span>(<span class='ident'>name</span>);
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
                 <span class='ident'>c_opt</span>.<span class='ident'>push</span>(<span class='ident'>name</span>);
             } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>contains_key</span>(<span class='ident'>name</span>) {
                 <span class='ident'>grps</span>.<span class='ident'>push</span>(<span class='ident'>name</span>);
@@ -2457,15 +2426,15 @@
                 <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>gv</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tmp</span>:<span class='ident'>ident</span>
             }) <span class='op'>=&gt;</span> {
                 <span class='kw'>for</span> <span class='ident'>a</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>v1</span> {
-                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t1</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i1</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>arg</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>arg</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>a</span>).<span class='ident'>next</span>() {
-                        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>rl</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>requires</span> {
+                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t1</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i1</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>arg</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>arg</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>a</span>).<span class='ident'>next</span>() {
+                        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>rl</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>b</span>.<span class='ident'>requires</span> {
                             <span class='kw'>for</span> <span class='ident'>r</span> <span class='kw'>in</span> <span class='ident'>rl</span> {
                                 <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>reqs</span>.<span class='ident'>contains</span>(<span class='ident'>r</span>) {
-                                    <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t1</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i1</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>r</span>) {
+                                    <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t1</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i1</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>r</span>) {
                                         <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tmp</span>.<span class='ident'>push</span>(<span class='op'>*</span><span class='ident'>r</span>);
-                                    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t2</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i2</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>r</span>) {
+                                    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t2</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i2</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>r</span>) {
                                         <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>v2</span>.<span class='ident'>push</span>(<span class='ident'>r</span>);
-                                    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t3</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i3</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>r</span>) {
+                                    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>t3</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i3</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>t</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>r</span>) {
                                         <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>v3</span>.<span class='ident'>push</span>(<span class='ident'>r</span>);
                                     } <span class='kw'>else</span> <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='ident'>groups</span>.<span class='ident'>contains_key</span>(<span class='ident'>r</span>) {
                                         <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>gv</span>.<span class='ident'>push</span>(<span class='ident'>r</span>);
@@ -2511,8 +2480,8 @@
 
         <span class='kw'>let</span> <span class='ident'>pmap</span> <span class='op'>=</span> <span class='ident'>c_pos</span>.<span class='ident'>into_iter</span>()
             .<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>matcher</span>.<span class='ident'>is_none</span>() <span class='op'>||</span> <span class='op'>!</span><span class='ident'>matcher</span>.<span class='ident'>as_ref</span>().<span class='ident'>unwrap</span>().<span class='ident'>contains</span>(<span class='ident'>p</span>))
-            .<span class='ident'>filter_map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>p</span>))
-            .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>args_in_groups</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span>))
+            .<span class='ident'>filter_map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>p</span>))
+            .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>args_in_groups</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span>))
             .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> (<span class='ident'>p</span>.<span class='ident'>index</span>, <span class='ident'>p</span>))
             .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>BTreeMap</span><span class='op'>&lt;</span><span class='ident'>u64</span>, <span class='kw-2'>&amp;</span><span class='ident'>PosBuilder</span><span class='op'>&gt;&gt;</span>();<span class='comment'>// sort by index</span>
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;args_in_groups={:?}&quot;</span>, <span class='ident'>args_in_groups</span>);
@@ -2528,7 +2497,7 @@
                     <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>.<span class='ident'>as_ref</span>().<span class='ident'>unwrap</span>().<span class='ident'>contains</span>(<span class='ident'>f</span>) <span class='op'>||</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>aig</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>f</span>) {
                         <span class='kw'>continue</span>;
                     }
-                    <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>r</span>.<span class='ident'>push_back</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i</span>.<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>flg</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>flg</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>).<span class='ident'>next</span>().<span class='ident'>unwrap</span>().<span class='ident'>to_string</span>());
+                    <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>r</span>.<span class='ident'>push_back</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>i</span>.<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>flg</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>flg</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>).<span class='ident'>next</span>().<span class='ident'>unwrap</span>().<span class='ident'>to_string</span>());
                 }
             }
         }
@@ -2551,7 +2520,7 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_args_tag</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='number'>0</span>;
         <span class='lifetime'>&#39;outer</span>: <span class='kw'>for</span> <span class='ident'>p</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>p</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) {
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>g_vec</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>p</span>.<span class='ident'>name</span>) {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>g_vec</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span>) {
                 <span class='kw'>for</span> <span class='ident'>grp_s</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>g_vec</span> {
                     <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;grp_s={};&quot;</span>, <span class='ident'>grp_s</span>);
                     <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>grp</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>get</span>(<span class='ident'>grp_s</span>) {
@@ -2582,14 +2551,14 @@
 
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>needs_flags_tag</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=needs_flags_tag;&quot;</span>);
-        <span class='lifetime'>&#39;outer</span>: <span class='kw'>for</span> <span class='ident'>f</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>flags</span> {
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;f={};&quot;</span>, <span class='ident'>f</span>.<span class='ident'>name</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>l</span>) <span class='op'>=</span> <span class='ident'>f</span>.<span class='ident'>long</span> {
+        <span class='lifetime'>&#39;outer</span>: <span class='kw'>for</span> <span class='ident'>f</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>() {
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;f={};&quot;</span>, <span class='ident'>f</span>.<span class='ident'>b</span>.<span class='ident'>name</span>);
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>l</span>) <span class='op'>=</span> <span class='ident'>f</span>.<span class='ident'>s</span>.<span class='ident'>long</span> {
                 <span class='kw'>if</span> <span class='ident'>l</span> <span class='op'>==</span> <span class='string'>&quot;help&quot;</span> <span class='op'>||</span> <span class='ident'>l</span> <span class='op'>==</span> <span class='string'>&quot;version&quot;</span> {
                     <span class='kw'>continue</span>;
                 }
             }
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>g_vec</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>f</span>.<span class='ident'>name</span>) {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>g_vec</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>f</span>.<span class='ident'>b</span>.<span class='ident'>name</span>) {
                 <span class='kw'>for</span> <span class='ident'>grp_s</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>g_vec</span> {
                     <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;grp_s={};&quot;</span>, <span class='ident'>grp_s</span>);
                     <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>grp</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>get</span>(<span class='ident'>grp_s</span>) {
@@ -2614,40 +2583,27 @@
     }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_opts</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>is_empty</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_opts</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> { <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>is_empty</span>() }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_flags</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>is_empty</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_flags</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> { <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>is_empty</span>() }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_positionals</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>is_empty</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_positionals</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> { <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>is_empty</span>() }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_subcommands</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>subcommands</span>.<span class='ident'>is_empty</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>has_subcommands</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> { <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>subcommands</span>.<span class='ident'>is_empty</span>() }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_set</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>s</span>: <span class='ident'>AppSettings</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>s</span>)
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_set</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>s</span>: <span class='ident'>AppSettings</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> { <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>s</span>) }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>set</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>s</span>: <span class='ident'>AppSettings</span>) {
-        <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>set</span>(<span class='ident'>s</span>)
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>set</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>s</span>: <span class='ident'>AppSettings</span>) { <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>set</span>(<span class='ident'>s</span>) }
 
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>unset</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>s</span>: <span class='ident'>AppSettings</span>) {
-        <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>unset</span>(<span class='ident'>s</span>)
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>unset</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>s</span>: <span class='ident'>AppSettings</span>) { <span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>unset</span>(<span class='ident'>s</span>) }
 
+    <span class='attribute'>#[<span class='ident'>cfg_attr</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;lints&quot;</span>, <span class='ident'>allow</span>(<span class='ident'>block_in_if_condition_stmt</span>))]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>verify_positionals</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
         <span class='comment'>// Because you must wait until all arguments have been supplied, this is the first chance</span>
         <span class='comment'>// to make assertions on positional argument indexes</span>
@@ -2659,23 +2615,24 @@
             <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='op'>!</span>(<span class='ident'>idx</span> <span class='op'>!=</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>len</span>()),
                     <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;Found positional argument \&quot;{}\&quot; who&#39;s index is {} but there are \
                     only {} positional arguments defined&quot;</span>,
-                            <span class='ident'>p</span>.<span class='ident'>name</span>,
+                            <span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span>,
                             <span class='ident'>idx</span>,
                             <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>len</span>()));
         }
 
         <span class='comment'>// Next we verify that only the highest index has a .multiple(true) (if any)</span>
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>positionals</span>()
+        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>positionals</span>
+            .<span class='ident'>values</span>()
             .<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>a</span><span class='op'>|</span> {
-                <span class='ident'>a</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>) <span class='op'>&amp;&amp;</span>
+                <span class='ident'>a</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>) <span class='op'>&amp;&amp;</span>
                 (<span class='ident'>a</span>.<span class='ident'>index</span> <span class='kw'>as</span> <span class='ident'>usize</span> <span class='op'>!=</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>len</span>())
             }) {
-            <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>()
-                .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>)
-                    <span class='op'>&amp;&amp;</span> <span class='ident'>p</span>.<span class='ident'>num_vals</span>.<span class='ident'>is_none</span>()).<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>1</span>).<span class='ident'>sum</span>::<span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span>() <span class='op'>&lt;=</span> <span class='number'>1</span>,
+            <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>()
+                .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>)
+                    <span class='op'>&amp;&amp;</span> <span class='ident'>p</span>.<span class='ident'>v</span>.<span class='ident'>num_vals</span>.<span class='ident'>is_none</span>()).<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>1</span>).<span class='ident'>sum</span>::<span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span>() <span class='op'>&lt;=</span> <span class='number'>1</span>,
                 <span class='string'>&quot;Only one positional argument with .multiple(true) set is allowed per command&quot;</span>);
 
-            <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>()
+            <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>()
                 .<span class='ident'>rev</span>()
                 .<span class='ident'>next</span>()
                 .<span class='ident'>unwrap</span>()
@@ -2693,9 +2650,9 @@
             <span class='self'>self</span>.<span class='ident'>set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>LowIndexMultiplePositional</span>);
         }
 
-        <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>()
-            .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>)
-                <span class='op'>&amp;&amp;</span> <span class='ident'>p</span>.<span class='ident'>num_vals</span>.<span class='ident'>is_none</span>())
+        <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>()
+            .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>)
+                <span class='op'>&amp;&amp;</span> <span class='ident'>p</span>.<span class='ident'>v</span>.<span class='ident'>num_vals</span>.<span class='ident'>is_none</span>())
             .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>1</span>)
             .<span class='ident'>sum</span>::<span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span>() <span class='op'>&lt;=</span> <span class='number'>1</span>,
             <span class='string'>&quot;Only one positional argument with .multiple(true) set is allowed per command&quot;</span>);
@@ -2705,12 +2662,12 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>found</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
         <span class='kw'>for</span> <span class='ident'>p</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>rev</span>() {
             <span class='kw'>if</span> <span class='ident'>found</span> {
-                <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='ident'>p</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>),
+                <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>),
                               <span class='string'>&quot;Found positional argument which is not required with a lower index \
                               than a required positional argument: {:?} index {}&quot;</span>,
-                              <span class='ident'>p</span>.<span class='ident'>name</span>,
+                              <span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span>,
                               <span class='ident'>p</span>.<span class='ident'>index</span>);
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>p</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>) {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>) {
                 <span class='ident'>found</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
                 <span class='kw'>continue</span>;
             }
@@ -2746,22 +2703,6 @@
                     .<span class='ident'>unwrap</span>()
                     .<span class='ident'>iter</span>()
                     .<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>a</span>, _)<span class='op'>|</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>arg_os</span>))
-            })
-    }
-
-    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>get_opt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>arg</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>OptBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=get_opt&quot;</span>);
-        <span class='self'>self</span>.<span class='ident'>opts</span>
-            .<span class='ident'>iter</span>()
-            .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> {
-                <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>arg</span> <span class='op'>||</span>
-                (<span class='ident'>o</span>.<span class='ident'>aliases</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span>
-                 <span class='ident'>o</span>.<span class='ident'>aliases</span>
-                    .<span class='ident'>as_ref</span>()
-                    .<span class='ident'>unwrap</span>()
-                    .<span class='ident'>iter</span>()
-                    .<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>a</span>, _)<span class='op'>|</span> <span class='ident'>a</span> <span class='op'>==</span> <span class='ident'>arg</span>))
             })
     }
 
@@ -2823,7 +2764,7 @@
         };
         <span class='kw'>if</span> <span class='ident'>help_help</span> {
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>pb</span> <span class='op'>=</span> <span class='ident'>PosBuilder</span>::<span class='ident'>new</span>(<span class='string'>&quot;subcommand&quot;</span>, <span class='number'>1</span>);
-            <span class='ident'>pb</span>.<span class='ident'>help</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='string'>&quot;The subcommand whose help message to display&quot;</span>);
+            <span class='ident'>pb</span>.<span class='ident'>b</span>.<span class='ident'>help</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='string'>&quot;The subcommand whose help message to display&quot;</span>);
             <span class='ident'>pb</span>.<span class='ident'>set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>);
             <span class='ident'>sc</span>.<span class='ident'>positionals</span>.<span class='ident'>insert</span>(<span class='number'>1</span>, <span class='ident'>pb</span>);
             <span class='kw'>for</span> <span class='ident'>s</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>g_settings</span>.<span class='ident'>clone</span>() {
@@ -2836,6 +2777,58 @@
             <span class='ident'>sc</span>.<span class='ident'>meta</span>.<span class='ident'>bin_name</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{} {}&quot;</span>, <span class='ident'>bin_name</span>, <span class='ident'>sc</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>));
         }
         <span class='ident'>sc</span>.<span class='ident'>_help</span>()
+    }
+
+    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>check_is_new_arg</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>arg_os</span>: <span class='kw-2'>&amp;</span><span class='ident'>OsStr</span>, <span class='ident'>needs_val_of</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=check_is_new_arg;nvo={:?}&quot;</span>, <span class='ident'>needs_val_of</span>);
+        <span class='kw'>let</span> <span class='ident'>app_wide_settings</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) {
+            <span class='bool-val'>true</span>
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowNegativeNumbers</span>) {
+            <span class='kw'>let</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='ident'>arg_os</span>.<span class='ident'>to_string_lossy</span>();
+            <span class='kw'>if</span> <span class='ident'>a</span>.<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>() <span class='op'>||</span> <span class='ident'>a</span>.<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>f64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>() {
+                <span class='self'>self</span>.<span class='ident'>valid_neg_num</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
+                <span class='bool-val'>true</span>
+            } <span class='kw'>else</span> {
+                <span class='bool-val'>false</span>
+            }
+        } <span class='kw'>else</span> {
+            <span class='bool-val'>false</span>
+        };
+        <span class='kw'>let</span> <span class='ident'>arg_allows_tac</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>name</span>) <span class='op'>=</span> <span class='ident'>needs_val_of</span> {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
+                <span class='op'>!</span>(<span class='ident'>o</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) <span class='op'>||</span> <span class='ident'>app_wide_settings</span>)
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
+                <span class='op'>!</span>(<span class='ident'>p</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) <span class='op'>||</span> <span class='ident'>app_wide_settings</span>)
+            } <span class='kw'>else</span> {
+                <span class='bool-val'>true</span>
+            }
+        } <span class='kw'>else</span> {
+            <span class='bool-val'>true</span>
+        };
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Does arg allow leading hyphen...{:?}&quot;</span>, <span class='op'>!</span><span class='ident'>arg_allows_tac</span>);
+
+        <span class='comment'>// Is this a new argument, or values from a previous option?</span>
+        <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;Starts new arg...&quot;</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>arg_os</span>.<span class='ident'>starts_with</span>(<span class='string'>b&quot;--&quot;</span>) {
+            <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;--&quot;</span>);
+            <span class='kw'>if</span> <span class='ident'>arg_os</span>.<span class='ident'>len_</span>() <span class='op'>==</span> <span class='number'>2</span> {
+                <span class='kw'>return</span> <span class='bool-val'>true</span>; <span class='comment'>// We have to return true so override everything else</span>
+            }
+            <span class='bool-val'>true</span>
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>arg_os</span>.<span class='ident'>starts_with</span>(<span class='string'>b&quot;-&quot;</span>) {
+            <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;-&quot;</span>);
+            <span class='comment'>// a singe &#39;-&#39; by itself is a value and typically means &quot;stdin&quot; on unix systems</span>
+            <span class='op'>!</span>(<span class='ident'>arg_os</span>.<span class='ident'>len_</span>() <span class='op'>==</span> <span class='number'>1</span>)
+        } <span class='kw'>else</span> {
+            <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Probable value&quot;</span>);
+            <span class='bool-val'>false</span>
+        };
+
+        <span class='ident'>ret</span> <span class='op'>=</span> <span class='ident'>ret</span> <span class='op'>&amp;&amp;</span> <span class='ident'>arg_allows_tac</span>;
+
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Starts new arg...{:?}&quot;</span>, <span class='ident'>ret</span>);
+        <span class='ident'>ret</span>
     }
 
     <span class='comment'>// The actual parsing function</span>
@@ -2856,14 +2849,15 @@
         <span class='self'>self</span>.<span class='ident'>create_help_and_version</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>subcmd_name</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>needs_val_of</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>needs_val_of</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>pos_counter</span> <span class='op'>=</span> <span class='number'>1</span>;
         <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>arg</span>) <span class='op'>=</span> <span class='ident'>it</span>.<span class='ident'>next</span>() {
             <span class='kw'>let</span> <span class='ident'>arg_os</span> <span class='op'>=</span> <span class='ident'>arg</span>.<span class='ident'>into</span>();
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Begin parsing &#39;{:?}&#39; ({:?})&quot;</span>, <span class='ident'>arg_os</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>arg_os</span>.<span class='ident'>as_bytes</span>());
 
+            <span class='self'>self</span>.<span class='ident'>valid_neg_num</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
             <span class='comment'>// Is this a new argument, or values from a previous option?</span>
-            <span class='kw'>let</span> <span class='ident'>starts_new_arg</span> <span class='op'>=</span> <span class='ident'>is_new_arg</span>(<span class='kw-2'>&amp;</span><span class='ident'>arg_os</span>);
+            <span class='kw'>let</span> <span class='ident'>starts_new_arg</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>check_is_new_arg</span>(<span class='kw-2'>&amp;</span><span class='ident'>arg_os</span>, <span class='ident'>needs_val_of</span>);
 
             <span class='comment'>// Has the user already passed &#39;--&#39;? Meaning only positional args follow</span>
             <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>trailing_vals</span> {
@@ -2872,15 +2866,12 @@
 
                 <span class='comment'>// If the arg doesn&#39;t start with a `-` (except numbers, or AllowLeadingHyphen) and</span>
                 <span class='comment'>// isn&#39;t a subcommand</span>
-                <span class='kw'>if</span> (<span class='op'>!</span><span class='ident'>starts_new_arg</span> <span class='op'>||</span>
-                    (<span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) <span class='op'>||</span>
-                     <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowNegativeNumbers</span>))) <span class='op'>&amp;&amp;</span>
-                   <span class='op'>!</span><span class='ident'>pos_sc</span> {
+                <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>starts_new_arg</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ident'>pos_sc</span> {
                     <span class='comment'>// Check to see if parsing a value from an option</span>
-                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>arg</span>) <span class='op'>=</span> <span class='ident'>needs_val_of</span> {
+                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>name</span>) <span class='op'>=</span> <span class='ident'>needs_val_of</span> {
                         <span class='comment'>// get the OptBuilder so we can check the settings</span>
-                        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>get_opt</span>(<span class='ident'>arg</span>) {
-                            <span class='ident'>needs_val_of</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>add_val_to_arg</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>opt</span>, <span class='kw-2'>&amp;</span><span class='ident'>arg_os</span>, <span class='ident'>matcher</span>));
+                        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>arg</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
+                            <span class='ident'>needs_val_of</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>add_val_to_arg</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>arg</span>, <span class='kw-2'>&amp;</span><span class='ident'>arg_os</span>, <span class='ident'>matcher</span>));
                             <span class='comment'>// get the next value from the iterator</span>
                             <span class='kw'>continue</span>;
                         }
@@ -2904,10 +2895,6 @@
                     <span class='comment'>// an error, and instead return Ok(None)</span>
                     <span class='ident'>needs_val_of</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>parse_short_arg</span>(<span class='ident'>matcher</span>, <span class='kw-2'>&amp;</span><span class='ident'>arg_os</span>));
                     <span class='comment'>// If it&#39;s None, we then check if one of those two AppSettings was set</span>
-                    <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;AllowLeadingHyphen set...{:?}&quot;</span>, <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowLeadingHyphen</span>));
-                    <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;AllowNegativeNumbers set...{:?}&quot;</span>, <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowNegativeNumbers</span>));
-                    <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Valid negative number...{:?}&quot;</span>, (<span class='ident'>arg_os</span>.<span class='ident'>to_string_lossy</span>().<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>() <span class='op'>||</span>
-                                  <span class='ident'>arg_os</span>.<span class='ident'>to_string_lossy</span>().<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>f64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>()));
                     <span class='kw'>if</span> <span class='ident'>needs_val_of</span>.<span class='ident'>is_none</span>() {
                         <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowNegativeNumbers</span>) {
                             <span class='kw'>if</span> <span class='op'>!</span>(<span class='ident'>arg_os</span>.<span class='ident'>to_string_lossy</span>().<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>() <span class='op'>||</span>
@@ -2949,14 +2936,17 @@
 
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Positional counter...{}&quot;</span>, <span class='ident'>pos_counter</span>);
             <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;Checking for low index multiples...&quot;</span>);
-            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>LowIndexMultiplePositional</span>) <span class='op'>&amp;&amp;</span> <span class='ident'>pos_counter</span> <span class='op'>==</span> (<span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='number'>1</span>) {
+            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>LowIndexMultiplePositional</span>) <span class='op'>&amp;&amp;</span>
+               <span class='ident'>pos_counter</span> <span class='op'>==</span> (<span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='number'>1</span>) {
                 <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Found&quot;</span>);
                 <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>na</span>) <span class='op'>=</span> <span class='ident'>it</span>.<span class='ident'>peek</span>() {
                     <span class='kw'>let</span> <span class='ident'>n</span> <span class='op'>=</span> (<span class='op'>*</span><span class='ident'>na</span>).<span class='ident'>clone</span>().<span class='ident'>into</span>();
-                    <span class='kw'>if</span> <span class='ident'>is_new_arg</span>(<span class='kw-2'>&amp;</span><span class='ident'>n</span>) <span class='op'>||</span> <span class='self'>self</span>.<span class='ident'>possible_subcommand</span>(<span class='kw-2'>&amp;</span><span class='ident'>n</span>) <span class='op'>||</span> <span class='ident'>suggestions</span>::<span class='ident'>did_you_mean</span>(<span class='kw-2'>&amp;</span><span class='ident'>n</span>.<span class='ident'>to_string_lossy</span>(),
-                                                        <span class='self'>self</span>.<span class='ident'>subcommands</span>
-                                                            .<span class='ident'>iter</span>()
-                                                            .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>s</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>)).<span class='ident'>is_some</span>() {
+                    <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>check_is_new_arg</span>(<span class='kw-2'>&amp;</span><span class='ident'>n</span>, <span class='ident'>needs_val_of</span>) <span class='op'>||</span> <span class='self'>self</span>.<span class='ident'>possible_subcommand</span>(<span class='kw-2'>&amp;</span><span class='ident'>n</span>) <span class='op'>||</span>
+                       <span class='ident'>suggestions</span>::<span class='ident'>did_you_mean</span>(<span class='kw-2'>&amp;</span><span class='ident'>n</span>.<span class='ident'>to_string_lossy</span>(),
+                                                 <span class='self'>self</span>.<span class='ident'>subcommands</span>
+                                                     .<span class='ident'>iter</span>()
+                                                     .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>s</span>.<span class='ident'>p</span>.<span class='ident'>meta</span>.<span class='ident'>name</span>))
+                        .<span class='ident'>is_some</span>() {
                         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Bumping the positional counter...&quot;</span>);
                         <span class='ident'>pos_counter</span> <span class='op'>+=</span> <span class='number'>1</span>;
                     }
@@ -2986,11 +2976,9 @@
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>sc_m</span> <span class='op'>=</span> <span class='ident'>ArgMatcher</span>::<span class='ident'>new</span>();
                 <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>v</span>) <span class='op'>=</span> <span class='ident'>it</span>.<span class='ident'>next</span>() {
                     <span class='kw'>let</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='ident'>v</span>.<span class='ident'>into</span>();
-                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>None</span> <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>to_str</span>() {
-                        <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>StrictUtf8</span>) {
-                            <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>invalid_utf8</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>create_current_usage</span>(<span class='ident'>matcher</span>),
-                                                           <span class='self'>self</span>.<span class='ident'>color</span>()));
-                        }
+                    <span class='kw'>if</span> <span class='ident'>a</span>.<span class='ident'>to_str</span>().<span class='ident'>is_none</span>() <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>StrictUtf8</span>) {
+                        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>invalid_utf8</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>create_current_usage</span>(<span class='ident'>matcher</span>),
+                                                       <span class='self'>self</span>.<span class='ident'>color</span>()));
                     }
                     <span class='ident'>sc_m</span>.<span class='ident'>add_val_to</span>(<span class='string'>&quot;&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>a</span>);
                 }
@@ -3008,41 +2996,31 @@
             }
         }
 
+        <span class='self'>self</span>.<span class='ident'>validate</span>(<span class='ident'>needs_val_of</span>, <span class='ident'>subcmd_name</span>, <span class='ident'>matcher</span>, <span class='ident'>it</span>)
+    }
+
+    <span class='kw'>fn</span> <span class='ident'>validate</span><span class='op'>&lt;</span><span class='ident'>I</span>, <span class='ident'>T</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>,
+                      <span class='ident'>needs_val_of</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span><span class='op'>&gt;</span>,
+                      <span class='ident'>subcmd_name</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>,
+                      <span class='ident'>matcher</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ArgMatcher</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>,
+                      <span class='ident'>it</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Peekable</span><span class='op'>&lt;</span><span class='ident'>I</span><span class='op'>&gt;</span>)
+                      <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>I</span>: <span class='ident'>Iterator</span><span class='op'>&lt;</span><span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>T</span><span class='op'>&gt;</span>,
+              <span class='ident'>T</span>: <span class='ident'>Into</span><span class='op'>&lt;</span><span class='ident'>OsString</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='ident'>Clone</span>
+    {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>reqs_validated</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='ident'>needs_val_of</span> {
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;needs_val_of={}&quot;</span>, <span class='ident'>a</span>);
-            <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;Is this an opt...&quot;</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>
-                .<span class='ident'>iter</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> {
-                    <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>a</span> <span class='op'>||</span>
-                    (<span class='ident'>o</span>.<span class='ident'>aliases</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span>
-                     <span class='ident'>o</span>.<span class='ident'>aliases</span>
-                        .<span class='ident'>as_ref</span>()
-                        .<span class='ident'>unwrap</span>()
-                        .<span class='ident'>iter</span>()
-                        .<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>n</span>, _)<span class='op'>|</span> <span class='ident'>n</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>a</span>))
-                }) {
-                <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Yes&quot;</span>);
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>validate_required</span>(<span class='ident'>matcher</span>));
-                <span class='ident'>reqs_validated</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
-                <span class='kw'>let</span> <span class='ident'>should_err</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>v</span>) <span class='op'>=</span> <span class='ident'>matcher</span>.<span class='number'>0</span>.<span class='ident'>args</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>o</span>.<span class='ident'>name</span>) {
-                    <span class='ident'>v</span>.<span class='ident'>vals</span>.<span class='ident'>is_empty</span>() <span class='op'>&amp;&amp;</span> <span class='op'>!</span>(<span class='ident'>o</span>.<span class='ident'>min_vals</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>o</span>.<span class='ident'>min_vals</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='number'>0</span>)
-                } <span class='kw'>else</span> {
-                    <span class='bool-val'>true</span>
-                };
-                <span class='kw'>if</span> <span class='ident'>should_err</span> {
-                    <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>empty_value</span>(<span class='ident'>o</span>,
-                                                  <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>create_current_usage</span>(<span class='ident'>matcher</span>),
-                                                  <span class='self'>self</span>.<span class='ident'>color</span>()));
-                }
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;needs_val_of={:?}&quot;</span>, <span class='ident'>a</span>);
+            <span class='kw'>let</span> <span class='ident'>o</span> <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>a</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>).<span class='ident'>expect</span>(<span class='ident'>INTERNAL_ERROR_MSG</span>);
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>validate_required</span>(<span class='ident'>matcher</span>));
+            <span class='ident'>reqs_validated</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
+            <span class='kw'>let</span> <span class='ident'>should_err</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>v</span>) <span class='op'>=</span> <span class='ident'>matcher</span>.<span class='number'>0</span>.<span class='ident'>args</span>.<span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>name</span>) {
+                <span class='ident'>v</span>.<span class='ident'>vals</span>.<span class='ident'>is_empty</span>() <span class='op'>&amp;&amp;</span> <span class='op'>!</span>(<span class='ident'>o</span>.<span class='ident'>v</span>.<span class='ident'>min_vals</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>o</span>.<span class='ident'>v</span>.<span class='ident'>min_vals</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='number'>0</span>)
             } <span class='kw'>else</span> {
-                <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;No&quot;</span>);
-                <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Returning Error::empty_value&quot;</span>);
-                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>empty_value</span>(<span class='self'>self</span>.<span class='ident'>positionals</span>
-                                                  .<span class='ident'>values</span>()
-                                                  .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>a</span>)
-                                                  .<span class='ident'>expect</span>(<span class='ident'>INTERNAL_ERROR_MSG</span>),
+                <span class='bool-val'>true</span>
+            };
+            <span class='kw'>if</span> <span class='ident'>should_err</span> {
+                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>empty_value</span>(<span class='ident'>o</span>,
                                               <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>create_current_usage</span>(<span class='ident'>matcher</span>),
                                               <span class='self'>self</span>.<span class='ident'>color</span>()));
             }
@@ -3228,17 +3206,17 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g_vec</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>args</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
 
-        <span class='kw'>for</span> <span class='ident'>n</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>get</span>(<span class='ident'>group</span>).<span class='ident'>unwrap</span>().<span class='ident'>args</span> {
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
+        <span class='kw'>for</span> <span class='ident'>n</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>groups</span>[<span class='ident'>group</span>].<span class='ident'>args</span> {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
                 <span class='ident'>args</span>.<span class='ident'>push</span>(<span class='ident'>f</span>.<span class='ident'>to_string</span>());
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
                 <span class='ident'>args</span>.<span class='ident'>push</span>(<span class='ident'>f</span>.<span class='ident'>to_string</span>());
             } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>contains_key</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>n</span>) {
                 <span class='ident'>g_vec</span>.<span class='ident'>push</span>(<span class='op'>*</span><span class='ident'>n</span>);
             } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>positionals</span>
                 .<span class='ident'>values</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
-                <span class='ident'>args</span>.<span class='ident'>push</span>(<span class='ident'>p</span>.<span class='ident'>name</span>.<span class='ident'>to_owned</span>());
+                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
+                <span class='ident'>args</span>.<span class='ident'>push</span>(<span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>name</span>.<span class='ident'>to_owned</span>());
             }
         }
 
@@ -3253,7 +3231,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>g_vec</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>args</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
 
-        <span class='kw'>for</span> <span class='ident'>n</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>get</span>(<span class='ident'>group</span>).<span class='ident'>unwrap</span>().<span class='ident'>args</span> {
+        <span class='kw'>for</span> <span class='ident'>n</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>groups</span>[<span class='ident'>group</span>].<span class='ident'>args</span> {
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>contains_key</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>n</span>) {
                 <span class='ident'>g_vec</span>.<span class='ident'>push</span>(<span class='op'>*</span><span class='ident'>n</span>);
             } <span class='kw'>else</span> {
@@ -3276,18 +3254,25 @@
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>help_short</span>.<span class='ident'>is_none</span>() <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>short_list</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='string'>&#39;h&#39;</span>) {
                 <span class='self'>self</span>.<span class='ident'>help_short</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='string'>&#39;h&#39;</span>);
             }
+            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>();
             <span class='kw'>let</span> <span class='ident'>arg</span> <span class='op'>=</span> <span class='ident'>FlagBuilder</span> {
-                <span class='ident'>name</span>: <span class='string'>&quot;hclap_help&quot;</span>,
-                <span class='ident'>short</span>: <span class='self'>self</span>.<span class='ident'>help_short</span>,
-                <span class='ident'>long</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;help&quot;</span>),
-                <span class='ident'>help</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;Prints help information&quot;</span>),
-                ..<span class='ident'>Default</span>::<span class='ident'>default</span>()
+                <span class='ident'>b</span>: <span class='ident'>Base</span> {
+                    <span class='ident'>name</span>: <span class='string'>&quot;hclap_help&quot;</span>,
+                    <span class='ident'>help</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;Prints help information&quot;</span>),
+                    <span class='ident'>id</span>: <span class='ident'>id</span>,
+                    ..<span class='ident'>Default</span>::<span class='ident'>default</span>()
+                },
+                <span class='ident'>s</span>: <span class='ident'>Switched</span> {
+                    <span class='ident'>short</span>: <span class='self'>self</span>.<span class='ident'>help_short</span>,
+                    <span class='ident'>long</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;help&quot;</span>),
+                    ..<span class='ident'>Default</span>::<span class='ident'>default</span>()
+                },
             };
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>h</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>help_short</span> {
                 <span class='self'>self</span>.<span class='ident'>short_list</span>.<span class='ident'>push</span>(<span class='ident'>h</span>);
             }
             <span class='self'>self</span>.<span class='ident'>long_list</span>.<span class='ident'>push</span>(<span class='string'>&quot;help&quot;</span>);
-            <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>push</span>(<span class='ident'>arg</span>);
+            <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>insert</span>(<span class='ident'>id</span>, <span class='ident'>arg</span>);
         }
         <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>DisableVersion</span>) <span class='op'>&amp;&amp;</span>
            <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>NeedsLongVersion</span>) {
@@ -3295,19 +3280,26 @@
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>version_short</span>.<span class='ident'>is_none</span>() <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>short_list</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='string'>&#39;V&#39;</span>) {
                 <span class='self'>self</span>.<span class='ident'>version_short</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='string'>&#39;V&#39;</span>);
             }
+            <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>len</span>();
             <span class='comment'>// name is &quot;vclap_version&quot; because flags are sorted by name</span>
             <span class='kw'>let</span> <span class='ident'>arg</span> <span class='op'>=</span> <span class='ident'>FlagBuilder</span> {
-                <span class='ident'>name</span>: <span class='string'>&quot;vclap_version&quot;</span>,
-                <span class='ident'>short</span>: <span class='self'>self</span>.<span class='ident'>version_short</span>,
-                <span class='ident'>long</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;version&quot;</span>),
-                <span class='ident'>help</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;Prints version information&quot;</span>),
-                ..<span class='ident'>Default</span>::<span class='ident'>default</span>()
+                <span class='ident'>b</span>: <span class='ident'>Base</span> {
+                    <span class='ident'>name</span>: <span class='string'>&quot;vclap_version&quot;</span>,
+                    <span class='ident'>help</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;Prints version information&quot;</span>),
+                    <span class='ident'>id</span>: <span class='ident'>id</span>,
+                    ..<span class='ident'>Default</span>::<span class='ident'>default</span>()
+                },
+                <span class='ident'>s</span>: <span class='ident'>Switched</span> {
+                    <span class='ident'>short</span>: <span class='self'>self</span>.<span class='ident'>version_short</span>,
+                    <span class='ident'>long</span>: <span class='prelude-val'>Some</span>(<span class='string'>&quot;version&quot;</span>),
+                    ..<span class='ident'>Default</span>::<span class='ident'>default</span>()
+                },
             };
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>v</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>version_short</span> {
                 <span class='self'>self</span>.<span class='ident'>short_list</span>.<span class='ident'>push</span>(<span class='ident'>v</span>);
             }
             <span class='self'>self</span>.<span class='ident'>long_list</span>.<span class='ident'>push</span>(<span class='string'>&quot;version&quot;</span>);
-            <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>push</span>(<span class='ident'>arg</span>);
+            <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>insert</span>(<span class='ident'>id</span>, <span class='ident'>arg</span>);
         }
         <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>subcommands</span>.<span class='ident'>is_empty</span>() <span class='op'>&amp;&amp;</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>NeedsSubcommandHelp</span>) {
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Building help&quot;</span>);
@@ -3323,14 +3315,10 @@
         <span class='self'>self</span>.<span class='ident'>create_usage</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>matcher</span>.<span class='ident'>arg_names</span>()
             .<span class='ident'>iter</span>()
             .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>n</span><span class='op'>|</span> {
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>
-                    .<span class='ident'>iter</span>()
-                    .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>o</span><span class='op'>|</span> <span class='op'>&amp;&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
-                    <span class='op'>!</span><span class='ident'>o</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)
-                } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>positionals</span>
-                    .<span class='ident'>values</span>()
-                    .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>p</span><span class='op'>|</span> <span class='op'>&amp;&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>n</span>) {
-                    <span class='op'>!</span><span class='ident'>p</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)
+                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='op'>*</span><span class='ident'>n</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
+                    <span class='op'>!</span><span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)
+                } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='op'>*</span><span class='ident'>n</span>, <span class='ident'>positionals</span>, <span class='ident'>values</span>) {
+                    <span class='op'>!</span><span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)
                 } <span class='kw'>else</span> {
                     <span class='bool-val'>true</span> <span class='comment'>// flags can&#39;t be required, so they&#39;re always true</span>
                 }
@@ -3376,9 +3364,6 @@
     <span class='kw'>fn</span> <span class='ident'>_help</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>Help</span>::<span class='ident'>write_parser_help</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>, <span class='self'>self</span>));
-        <span class='comment'>// let out = io::stdout();</span>
-        <span class='comment'>// let mut out_buf = BufWriter::new(out.lock());</span>
-        <span class='comment'>// try!(out_buf.write(&amp;*buf));</span>
         <span class='prelude-val'>Err</span>(<span class='ident'>Error</span> {
             <span class='ident'>message</span>: <span class='kw'>unsafe</span> { <span class='ident'>String</span>::<span class='ident'>from_utf8_unchecked</span>(<span class='ident'>buf</span>) },
             <span class='ident'>kind</span>: <span class='ident'>ErrorKind</span>::<span class='ident'>HelpDisplayed</span>,
@@ -3400,7 +3385,7 @@
     <span class='kw'>fn</span> <span class='ident'>parse_long_arg</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>,
                       <span class='ident'>matcher</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ArgMatcher</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>,
                       <span class='ident'>full_arg</span>: <span class='kw-2'>&amp;</span><span class='ident'>OsStr</span>)
-                      <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;b</span> <span class='ident'>str</span><span class='op'>&gt;&gt;</span> {
+                      <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span><span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span><span class='op'>&gt;&gt;</span> {
         <span class='comment'>// maybe here lifetime should be &#39;a</span>
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=parse_long_arg;&quot;</span>);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>val</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
@@ -3415,37 +3400,17 @@
             <span class='ident'>full_arg</span>.<span class='ident'>trim_left_matches</span>(<span class='string'>b&#39;-&#39;</span>)
         };
 
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>
-            .<span class='ident'>iter</span>()
-            .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> {
-                (<span class='ident'>v</span>.<span class='ident'>long</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>v</span>.<span class='ident'>long</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>arg</span>) <span class='op'>||</span>
-                (<span class='ident'>v</span>.<span class='ident'>aliases</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span>
-                 <span class='ident'>v</span>.<span class='ident'>aliases</span>
-                    .<span class='ident'>as_ref</span>()
-                    .<span class='ident'>unwrap</span>()
-                    .<span class='ident'>iter</span>()
-                    .<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>n</span>, _)<span class='op'>|</span> <span class='ident'>n</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>arg</span>))
-            }) {
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='macro'>find_by_long</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>arg</span>, <span class='ident'>opts</span>) {
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Found valid opt &#39;{}&#39;&quot;</span>, <span class='ident'>opt</span>.<span class='ident'>to_string</span>());
             <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>parse_opt</span>(<span class='ident'>val</span>, <span class='ident'>opt</span>, <span class='ident'>matcher</span>));
             <span class='macro'>arg_post_processing</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>opt</span>, <span class='ident'>matcher</span>);
 
             <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='ident'>ret</span>);
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>flag</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>
-            .<span class='ident'>iter</span>()
-            .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> {
-                (<span class='ident'>v</span>.<span class='ident'>long</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>v</span>.<span class='ident'>long</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>arg</span>) <span class='op'>||</span>
-                (<span class='ident'>v</span>.<span class='ident'>aliases</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span>
-                 <span class='ident'>v</span>.<span class='ident'>aliases</span>
-                    .<span class='ident'>as_ref</span>()
-                    .<span class='ident'>unwrap</span>()
-                    .<span class='ident'>iter</span>()
-                    .<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>n</span>, _)<span class='op'>|</span> <span class='ident'>n</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>arg</span>))
-            }) {
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>flag</span>) <span class='op'>=</span> <span class='macro'>find_by_long</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>arg</span>, <span class='ident'>flags</span>) {
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Found valid flag &#39;{}&#39;&quot;</span>, <span class='ident'>flag</span>.<span class='ident'>to_string</span>());
             <span class='comment'>// Only flags could be help or version, and we need to check the raw long</span>
             <span class='comment'>// so this is the first point to check</span>
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>check_for_help_and_version_str</span>(<span class='kw-2'>&amp;</span><span class='ident'>arg</span>));
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>check_for_help_and_version_str</span>(<span class='ident'>arg</span>));
 
             <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>parse_flag</span>(<span class='ident'>flag</span>, <span class='ident'>matcher</span>));
 
@@ -3455,9 +3420,7 @@
             <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>);
         } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) {
             <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>);
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowNegativeNumbers</span>) <span class='op'>&amp;&amp;</span>
-                  (<span class='ident'>arg</span>.<span class='ident'>to_string_lossy</span>().<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>i64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>() <span class='op'>||</span>
-                   <span class='ident'>arg</span>.<span class='ident'>to_string_lossy</span>().<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>f64</span><span class='op'>&gt;</span>().<span class='ident'>is_ok</span>()) {
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>valid_neg_num</span> {
             <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>);
         }
 
@@ -3474,14 +3437,32 @@
         <span class='kw'>let</span> <span class='ident'>arg_os</span> <span class='op'>=</span> <span class='ident'>full_arg</span>.<span class='ident'>trim_left_matches</span>(<span class='string'>b&#39;-&#39;</span>);
         <span class='kw'>let</span> <span class='ident'>arg</span> <span class='op'>=</span> <span class='ident'>arg_os</span>.<span class='ident'>to_string_lossy</span>();
 
+        <span class='comment'>// If AllowLeadingHyphen is set, we want to ensure `-val` gets parsed as `-val` and not `-v` `-a` `-l` assuming</span>
+        <span class='comment'>// `v` `a` and `l` are all, or mostly, valid shorts.</span>
+        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>good</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
+            <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='ident'>arg</span>.<span class='ident'>chars</span>() {
+                <span class='ident'>good</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>short_list</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>c</span>);
+            }
+            <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>good</span> {
+                <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>);
+            }
+        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>valid_neg_num</span> {
+            <span class='comment'>// TODO: Add docs about having AllowNegativeNumbers and `-2` as a valid short</span>
+            <span class='comment'>// May be better to move this to *after* not finding a valid flag/opt?</span>
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Valid negative num...&quot;</span>);
+            <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>);
+        }
+
         <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> <span class='ident'>arg</span>.<span class='ident'>chars</span>() {
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;short={}&quot;</span>, <span class='ident'>c</span>);
             <span class='comment'>// Check for matching short options, and return the name if there is no trailing</span>
             <span class='comment'>// concatenated value: -oval</span>
             <span class='comment'>// Option: -o</span>
             <span class='comment'>// Value: val</span>
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>
                 .<span class='ident'>iter</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>v</span><span class='op'>|</span> <span class='ident'>v</span>.<span class='ident'>short</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>v</span>.<span class='ident'>short</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>c</span>) {
+                .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>s</span>.<span class='ident'>short</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>o</span>.<span class='ident'>s</span>.<span class='ident'>short</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>c</span>) {
                 <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Found valid short opt -{} in &#39;{}&#39;&quot;</span>, <span class='ident'>c</span>, <span class='ident'>arg</span>);
                 <span class='comment'>// Check for trailing concatenated value</span>
                 <span class='kw'>let</span> <span class='ident'>p</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>arg</span>.<span class='ident'>splitn</span>(<span class='number'>2</span>, <span class='ident'>c</span>).<span class='ident'>collect</span>();
@@ -3508,7 +3489,7 @@
                 <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='ident'>ret</span>);
             } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>flag</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>
                 .<span class='ident'>iter</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>v</span><span class='op'>|</span> <span class='ident'>v</span>.<span class='ident'>short</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>v</span>.<span class='ident'>short</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>c</span>) {
+                .<span class='ident'>find</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>f</span><span class='op'>|</span> <span class='ident'>f</span>.<span class='ident'>s</span>.<span class='ident'>short</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>f</span>.<span class='ident'>s</span>.<span class='ident'>short</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>c</span>) {
                 <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Found valid short flag -{}&quot;</span>, <span class='ident'>c</span>);
                 <span class='comment'>// Only flags can be help or version</span>
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>check_for_help_and_version_char</span>(<span class='ident'>c</span>));
@@ -3516,8 +3497,7 @@
                 <span class='comment'>// Handle conflicts, requirements, overrides, etc.</span>
                 <span class='comment'>// Must be called here due to mutablilty</span>
                 <span class='macro'>arg_post_processing</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>flag</span>, <span class='ident'>matcher</span>);
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>!</span>(<span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowLeadingHyphen</span>) <span class='op'>||</span>
-                        <span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>AllowNegativeNumbers</span>)) {
+            } <span class='kw'>else</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>arg</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
                 <span class='ident'>arg</span>.<span class='ident'>push</span>(<span class='string'>&#39;-&#39;</span>);
                 <span class='ident'>arg</span>.<span class='ident'>push</span>(<span class='ident'>c</span>);
@@ -3556,16 +3536,18 @@
             <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;None&quot;</span>);
         }
 
-        <span class='ident'>matcher</span>.<span class='ident'>inc_occurrence_of</span>(<span class='ident'>opt</span>.<span class='ident'>name</span>);
+        <span class='ident'>matcher</span>.<span class='ident'>inc_occurrence_of</span>(<span class='ident'>opt</span>.<span class='ident'>b</span>.<span class='ident'>name</span>);
         <span class='comment'>// Increment or create the group &quot;args&quot;</span>
-        <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>opt</span>.<span class='ident'>name</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>vec</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>matcher</span>.<span class='ident'>inc_occurrences_of</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>vec</span>)));
+        <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>opt</span>.<span class='ident'>b</span>.<span class='ident'>name</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>vec</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>matcher</span>.<span class='ident'>inc_occurrences_of</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>vec</span>)));
 
         <span class='kw'>if</span> <span class='ident'>val</span>.<span class='ident'>is_none</span>() <span class='op'>||</span>
            <span class='op'>!</span><span class='ident'>has_eq</span> <span class='op'>&amp;&amp;</span>
            (<span class='ident'>opt</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>) <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ident'>opt</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>RequireDelimiter</span>) <span class='op'>&amp;&amp;</span>
             <span class='ident'>matcher</span>.<span class='ident'>needs_more_vals</span>(<span class='ident'>opt</span>)) {
-            <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>opt</span>.<span class='ident'>name</span>));
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;More arg vals required...&quot;</span>);
+            <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='prelude-val'>Some</span>(<span class='ident'>opt</span>.<span class='ident'>b</span>.<span class='ident'>name</span>));
         }
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;More arg vals not required...&quot;</span>);
         <span class='prelude-val'>Ok</span>(<span class='prelude-val'>None</span>)
     }
 
@@ -3650,7 +3632,7 @@
         }
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>vtor</span>) <span class='op'>=</span> <span class='ident'>arg</span>.<span class='ident'>validator</span>() {
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=</span> <span class='ident'>vtor</span>(<span class='ident'>val</span>.<span class='ident'>to_string_lossy</span>().<span class='ident'>into_owned</span>()) {
-                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>value_validation</span>(<span class='ident'>e</span>, <span class='self'>self</span>.<span class='ident'>color</span>()));
+                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>value_validation</span>(<span class='prelude-val'>Some</span>(<span class='ident'>arg</span>), <span class='ident'>e</span>, <span class='self'>self</span>.<span class='ident'>color</span>()));
             }
         }
         <span class='kw'>if</span> <span class='ident'>matcher</span>.<span class='ident'>needs_more_vals</span>(<span class='ident'>arg</span>) {
@@ -3666,9 +3648,9 @@
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=parse_flag;&quot;</span>);
         <span class='macro'>validate_multiples</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>flag</span>, <span class='ident'>matcher</span>);
 
-        <span class='ident'>matcher</span>.<span class='ident'>inc_occurrence_of</span>(<span class='ident'>flag</span>.<span class='ident'>name</span>);
+        <span class='ident'>matcher</span>.<span class='ident'>inc_occurrence_of</span>(<span class='ident'>flag</span>.<span class='ident'>b</span>.<span class='ident'>name</span>);
         <span class='comment'>// Increment or create the group &quot;args&quot;</span>
-        <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>flag</span>.<span class='ident'>name</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>vec</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>matcher</span>.<span class='ident'>inc_occurrences_of</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>vec</span>)));
+        <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='ident'>flag</span>.<span class='ident'>b</span>.<span class='ident'>name</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>vec</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>matcher</span>.<span class='ident'>inc_occurrences_of</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>vec</span>)));
 
         <span class='prelude-val'>Ok</span>(())
     }
@@ -3679,38 +3661,23 @@
             (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>expr</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>matcher</span>:<span class='ident'>ident</span>) <span class='op'>=&gt;</span> ({
                 <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;macro=build_err;name={}&quot;</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>);
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>c_with</span> <span class='op'>=</span> <span class='macro'>find_from</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>, <span class='ident'>blacklist</span>, <span class='kw-2'>&amp;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>matcher</span>);
-                <span class='ident'>c_with</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>c_with</span>.<span class='ident'>is_none</span>() {
-                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>aa</span>) <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_any_arg</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>) {
-                        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>bl</span>) <span class='op'>=</span> <span class='ident'>aa</span>.<span class='ident'>blacklist</span>() {
-                            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>arg_name</span>) <span class='op'>=</span> <span class='ident'>bl</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>arg</span><span class='op'>|</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>matcher</span>.<span class='ident'>contains</span>(<span class='ident'>arg</span>)) {
-                                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>aa</span>) <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_any_arg</span>(<span class='ident'>arg_name</span>) {
-                                    <span class='prelude-val'>Some</span>(<span class='ident'>aa</span>.<span class='ident'>to_string</span>())
-                                } <span class='kw'>else</span> {
-                                    <span class='ident'>c_with</span>
-                                }
-                            } <span class='kw'>else</span> {
-                                <span class='ident'>c_with</span>
-                            }
-                        } <span class='kw'>else</span> {
-                            <span class='ident'>c_with</span>
-                        }
-                    } <span class='kw'>else</span> {
-                        <span class='ident'>c_with</span>
-                    }
-                } <span class='kw'>else</span> {
-                    <span class='ident'>c_with</span>
-                };
+                <span class='ident'>c_with</span> <span class='op'>=</span> <span class='ident'>c_with</span>.<span class='ident'>or</span>(
+                    <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_any_arg</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>).<span class='ident'>map_or</span>(<span class='prelude-val'>None</span>, <span class='op'>|</span><span class='ident'>aa</span><span class='op'>|</span> <span class='ident'>aa</span>.<span class='ident'>blacklist</span>())
+                                           .<span class='ident'>map_or</span>(<span class='prelude-val'>None</span>, <span class='op'>|</span><span class='ident'>bl</span><span class='op'>|</span> <span class='ident'>bl</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>arg</span><span class='op'>|</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>matcher</span>.<span class='ident'>contains</span>(<span class='ident'>arg</span>)))
+                                           .<span class='ident'>map_or</span>(<span class='prelude-val'>None</span>, <span class='op'>|</span><span class='ident'>an</span><span class='op'>|</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_any_arg</span>(<span class='ident'>an</span>))
+                                           .<span class='ident'>map_or</span>(<span class='prelude-val'>None</span>, <span class='op'>|</span><span class='ident'>aa</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='ident'>aa</span>)))
+                );
                 <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;{:?}&#39; conflicts with &#39;{}&#39;&quot;</span>, <span class='ident'>c_with</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>);
                 <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>matcher</span>.<span class='ident'>remove</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>);
                 <span class='kw'>let</span> <span class='ident'>usg</span> <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>create_current_usage</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>matcher</span>);
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_flag</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>) {
+                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>, <span class='ident'>flags</span>, <span class='ident'>iter</span>) {
                     <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;It was a flag...&quot;</span>);
                     <span class='ident'>Error</span>::<span class='ident'>argument_conflict</span>(<span class='ident'>f</span>, <span class='ident'>c_with</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>usg</span>, <span class='self'>self</span>.<span class='ident'>color</span>())
-                } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_option</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>) {
+                } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
                    <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;It was an option...&quot;</span>);
                     <span class='ident'>Error</span>::<span class='ident'>argument_conflict</span>(<span class='ident'>o</span>, <span class='ident'>c_with</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>usg</span>, <span class='self'>self</span>.<span class='ident'>color</span>())
                 } <span class='kw'>else</span> {
-                    <span class='kw'>match</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>.<span class='ident'>find_positional</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>) {
+                    <span class='kw'>match</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>me</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>, <span class='ident'>positionals</span>, <span class='ident'>values</span>) {
                         <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=&gt;</span> {
                             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;It was a positional...&quot;</span>);
                             <span class='ident'>Error</span>::<span class='ident'>argument_conflict</span>(<span class='ident'>p</span>, <span class='ident'>c_with</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>usg</span>, <span class='self'>self</span>.<span class='ident'>color</span>())
@@ -3720,6 +3687,7 @@
                 }
             });
         }
+
         <span class='kw'>for</span> <span class='ident'>name</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>blacklist</span> {
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Checking blacklisted name: {}&quot;</span>, <span class='ident'>name</span>);
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>contains_key</span>(<span class='ident'>name</span>) {
@@ -3742,15 +3710,10 @@
     <span class='kw'>fn</span> <span class='ident'>validate_num_args</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>matcher</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ArgMatcher</span>) <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=validate_num_args;&quot;</span>);
         <span class='kw'>for</span> (<span class='ident'>name</span>, <span class='ident'>ma</span>) <span class='kw'>in</span> <span class='ident'>matcher</span>.<span class='ident'>iter</span>() {
-            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>contains_key</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span><span class='ident'>name</span>) {
-                <span class='kw'>continue</span>;
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>
-                .<span class='ident'>iter</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;name={}&quot;</span>, <span class='ident'>name</span>);
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>_validate_num_vals</span>(<span class='ident'>opt</span>, <span class='ident'>ma</span>, <span class='ident'>matcher</span>));
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>pos</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>positionals</span>
-                .<span class='ident'>values</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>pos</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>name</span>, <span class='ident'>positionals</span>, <span class='ident'>values</span>) {
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>_validate_num_vals</span>(<span class='ident'>pos</span>, <span class='ident'>ma</span>, <span class='ident'>matcher</span>));
             }
         }
@@ -3821,7 +3784,9 @@
     }
 
     <span class='kw'>fn</span> <span class='ident'>validate_required</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>matcher</span>: <span class='kw-2'>&amp;</span><span class='ident'>ArgMatcher</span>) <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=validate_required;required={:?};&quot;</span>, <span class='self'>self</span>.<span class='ident'>required</span>);
         <span class='lifetime'>&#39;outer</span>: <span class='kw'>for</span> <span class='ident'>name</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>required</span> {
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;name={}&quot;</span>, <span class='ident'>name</span>);
             <span class='kw'>if</span> <span class='ident'>matcher</span>.<span class='ident'>contains</span>(<span class='ident'>name</span>) {
                 <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
             }
@@ -3835,15 +3800,15 @@
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>groups</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>g</span><span class='op'>|</span> <span class='ident'>g</span>.<span class='ident'>args</span>.<span class='ident'>contains</span>(<span class='ident'>name</span>)) {
                 <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
             }
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>f</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>name</span>, <span class='ident'>flags</span>, <span class='ident'>iter</span>) {
                 <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_missing_required_ok</span>(<span class='ident'>a</span>, <span class='ident'>matcher</span>) {
                     <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
                 }
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
                 <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_missing_required_ok</span>(<span class='ident'>a</span>, <span class='ident'>matcher</span>) {
                     <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
                 }
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span>) {
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>a</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>name</span>, <span class='ident'>positionals</span>, <span class='ident'>values</span>) {
                 <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_missing_required_ok</span>(<span class='ident'>a</span>, <span class='ident'>matcher</span>) {
                     <span class='kw'>continue</span> <span class='lifetime'>&#39;outer</span>;
                 }
@@ -3871,8 +3836,11 @@
     <span class='kw'>fn</span> <span class='ident'>is_missing_required_ok</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>a</span>: <span class='kw-2'>&amp;</span><span class='ident'>A</span>, <span class='ident'>matcher</span>: <span class='kw-2'>&amp;</span><span class='ident'>ArgMatcher</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span>
         <span class='kw'>where</span> <span class='ident'>A</span>: <span class='ident'>AnyArg</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;</span>
     {
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;fn=is_missing_required_ok;a={}&quot;</span>, <span class='ident'>a</span>.<span class='ident'>name</span>());
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>bl</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>blacklist</span>() {
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Conflicts found...{:?}&quot;</span>, <span class='ident'>bl</span>);
             <span class='kw'>for</span> <span class='ident'>n</span> <span class='kw'>in</span> <span class='ident'>bl</span>.<span class='ident'>iter</span>() {
+                <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;conflict={}&quot;</span>, <span class='ident'>n</span>);
                 <span class='kw'>if</span> <span class='ident'>matcher</span>.<span class='ident'>contains</span>(<span class='ident'>n</span>) <span class='op'>||</span>
                    <span class='self'>self</span>.<span class='ident'>groups</span>
                     .<span class='ident'>get</span>(<span class='ident'>n</span>)
@@ -3880,18 +3848,24 @@
                     <span class='kw'>return</span> <span class='bool-val'>true</span>;
                 }
             }
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>ru</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>required_unless</span>() {
+        } 
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>ru</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>required_unless</span>() {
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Required unless found...{:?}&quot;</span>, <span class='ident'>ru</span>);
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>found_any</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
             <span class='kw'>for</span> <span class='ident'>n</span> <span class='kw'>in</span> <span class='ident'>ru</span>.<span class='ident'>iter</span>() {
+                <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;iter;ru={}&quot;</span>, <span class='ident'>n</span>);
                 <span class='kw'>if</span> <span class='ident'>matcher</span>.<span class='ident'>contains</span>(<span class='ident'>n</span>) <span class='op'>||</span>
                    <span class='self'>self</span>.<span class='ident'>groups</span>
                     .<span class='ident'>get</span>(<span class='ident'>n</span>)
                     .<span class='ident'>map_or</span>(<span class='bool-val'>false</span>, <span class='op'>|</span><span class='ident'>g</span><span class='op'>|</span> <span class='ident'>g</span>.<span class='ident'>args</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>an</span><span class='op'>|</span> <span class='ident'>matcher</span>.<span class='ident'>contains</span>(<span class='ident'>an</span>))) {
                     <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>a</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>RequiredUnlessAll</span>) {
+                        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Doesn&#39;t require all...returning true&quot;</span>);
                         <span class='kw'>return</span> <span class='bool-val'>true</span>;
                     }
+                    <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Requires all...next&quot;</span>);
                     <span class='ident'>found_any</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
                 } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>a</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>RequiredUnlessAll</span>) {
+                    <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Not in matcher, or group and requires all...returning false&quot;</span>);
                     <span class='kw'>return</span> <span class='bool-val'>false</span>;
                 }
             }
@@ -3909,18 +3883,14 @@
 
         <span class='comment'>// Add the arg to the matches to build a proper usage string</span>
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>name</span>) <span class='op'>=</span> <span class='ident'>suffix</span>.<span class='number'>1</span> {
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>opts</span>
-                .<span class='ident'>iter</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>long</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>o</span>.<span class='ident'>long</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>name</span>) {
-                <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>opt</span>.<span class='ident'>name</span>)
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>opt</span>) <span class='op'>=</span> <span class='macro'>find_by_long</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>opts</span>) {
+                <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>opt</span>.<span class='ident'>b</span>.<span class='ident'>name</span>)
                     .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>grps</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>matcher</span>.<span class='ident'>inc_occurrences_of</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>grps</span>)));
-                <span class='ident'>matcher</span>.<span class='ident'>insert</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>opt</span>.<span class='ident'>name</span>);
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>flg</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>flags</span>
-                .<span class='ident'>iter</span>()
-                .<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>f</span><span class='op'>|</span> <span class='ident'>f</span>.<span class='ident'>long</span>.<span class='ident'>is_some</span>() <span class='op'>&amp;&amp;</span> <span class='ident'>f</span>.<span class='ident'>long</span>.<span class='ident'>unwrap</span>() <span class='op'>==</span> <span class='ident'>name</span>) {
-                <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>flg</span>.<span class='ident'>name</span>)
+                <span class='ident'>matcher</span>.<span class='ident'>insert</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>opt</span>.<span class='ident'>b</span>.<span class='ident'>name</span>);
+            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>flg</span>) <span class='op'>=</span> <span class='macro'>find_by_long</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>flags</span>) {
+                <span class='self'>self</span>.<span class='ident'>groups_for_arg</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>flg</span>.<span class='ident'>b</span>.<span class='ident'>name</span>)
                     .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>grps</span><span class='op'>|</span> <span class='prelude-val'>Some</span>(<span class='ident'>matcher</span>.<span class='ident'>inc_occurrences_of</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>grps</span>)));
-                <span class='ident'>matcher</span>.<span class='ident'>insert</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>flg</span>.<span class='ident'>name</span>);
+                <span class='ident'>matcher</span>.<span class='ident'>insert</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>flg</span>.<span class='ident'>b</span>.<span class='ident'>name</span>);
             }
         }
 
@@ -3972,7 +3942,7 @@
                 <span class='ident'>usage</span>.<span class='ident'>push_str</span>(<span class='string'>&quot; [OPTIONS]&quot;</span>);
             }
             <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>is_set</span>(<span class='ident'>AppSettings</span>::<span class='ident'>UnifiedHelpMessage</span>) <span class='op'>&amp;&amp;</span> <span class='self'>self</span>.<span class='ident'>has_opts</span>() <span class='op'>&amp;&amp;</span>
-               <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>a</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>a</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) {
+               <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) {
                 <span class='ident'>usage</span>.<span class='ident'>push_str</span>(<span class='string'>&quot; [OPTIONS]&quot;</span>);
             }
 
@@ -3981,13 +3951,13 @@
             <span class='comment'>// places a &#39;--&#39; in the usage string if there are args and options</span>
             <span class='comment'>// supporting multiple values</span>
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>has_positionals</span>() <span class='op'>&amp;&amp;</span>
-               <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>a</span><span class='op'>|</span> <span class='ident'>a</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>)) <span class='op'>&amp;&amp;</span>
-               <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>a</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>a</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) <span class='op'>&amp;&amp;</span>
+               <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Multiple</span>)) <span class='op'>&amp;&amp;</span>
+               <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) <span class='op'>&amp;&amp;</span>
                <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>has_subcommands</span>() {
                 <span class='ident'>usage</span>.<span class='ident'>push_str</span>(<span class='string'>&quot; [--]&quot;</span>)
             }
             <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>has_positionals</span>() <span class='op'>&amp;&amp;</span>
-               <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>a</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>a</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) {
+               <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>p</span>.<span class='ident'>b</span>.<span class='ident'>settings</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Required</span>)) {
                 <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>args_tag</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>get_args_tag</span>() {
                     <span class='ident'>usage</span>.<span class='ident'>push_str</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>args_tag</span>);
                 } <span class='kw'>else</span> {
@@ -4079,38 +4049,31 @@
     <span class='kw'>fn</span> <span class='ident'>add_defaults</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>matcher</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>ArgMatcher</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
         <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>add_val</span> {
             (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>:<span class='ident'>ident</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>:<span class='ident'>ident</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>.<span class='ident'>get</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>.<span class='ident'>name</span>).<span class='ident'>is_none</span>() {
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='ident'>add_val_to_arg</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>, <span class='ident'>OsStr</span>::<span class='ident'>new</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>.<span class='ident'>default_val</span>
+                <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>.<span class='ident'>get</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>.<span class='ident'>b</span>.<span class='ident'>name</span>).<span class='ident'>is_none</span>() {
+                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>.<span class='ident'>add_val_to_arg</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>, <span class='ident'>OsStr</span>::<span class='ident'>new</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>.<span class='ident'>v</span>.<span class='ident'>default_val</span>
                                                                 .<span class='ident'>as_ref</span>()
-                                                                .<span class='ident'>unwrap</span>()), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>));
+                                                                .<span class='ident'>unwrap</span>()), 
+                                                                <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>));
                     <span class='macro'>arg_post_processing</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>_self</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>a</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>m</span>);
                 }
             };
         }
-        <span class='kw'>for</span> <span class='ident'>o</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>default_val</span>.<span class='ident'>is_some</span>()) {
+        <span class='kw'>for</span> <span class='ident'>o</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>o</span><span class='op'>|</span> <span class='ident'>o</span>.<span class='ident'>v</span>.<span class='ident'>default_val</span>.<span class='ident'>is_some</span>()) {
             <span class='macro'>add_val</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>o</span>, <span class='ident'>matcher</span>);
         }
-        <span class='kw'>for</span> <span class='ident'>p</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>default_val</span>.<span class='ident'>is_some</span>()) {
+        <span class='kw'>for</span> <span class='ident'>p</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>p</span>.<span class='ident'>v</span>.<span class='ident'>default_val</span>.<span class='ident'>is_some</span>()) {
             <span class='macro'>add_val</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='ident'>p</span>, <span class='ident'>matcher</span>);
         }
         <span class='prelude-val'>Ok</span>(())
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>flags</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>FlagBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>flags</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>FlagBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> { <span class='self'>self</span>.<span class='ident'>flags</span>.<span class='ident'>iter</span>() }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>opts</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>OptBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>opts</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>OptBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> { <span class='self'>self</span>.<span class='ident'>opts</span>.<span class='ident'>iter</span>() }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>positionals</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>vec_map</span>::<span class='ident'>Values</span><span class='op'>&lt;</span><span class='ident'>PosBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>positionals</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>vec_map</span>::<span class='ident'>Values</span><span class='op'>&lt;</span><span class='ident'>PosBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> { <span class='self'>self</span>.<span class='ident'>positionals</span>.<span class='ident'>values</span>() }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>subcommands</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>App</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>subcommands</span>.<span class='ident'>iter</span>()
-    }
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>subcommands</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>App</span><span class='op'>&gt;</span> { <span class='self'>self</span>.<span class='ident'>subcommands</span>.<span class='ident'>iter</span>() }
 
     <span class='comment'>// Should we color the output? None=determined by output location, true=yes, false=no</span>
     <span class='attribute'>#[<span class='ident'>doc</span>(<span class='ident'>hidden</span>)]</span>
@@ -4129,44 +4092,15 @@
         }
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_any_arg</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>arg</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>AnyArg</span><span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>find_flag</span>(<span class='ident'>arg</span>) {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_any_arg</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>AnyArg</span><span class='op'>&gt;</span> {
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>flags</span>, <span class='ident'>iter</span>) {
             <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>);
         }
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>find_option</span>(<span class='ident'>arg</span>) {
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>opts</span>, <span class='ident'>iter</span>) {
             <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>);
         }
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>find_positional</span>(<span class='ident'>arg</span>) {
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>) <span class='op'>=</span> <span class='macro'>find_by_name</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='ident'>name</span>, <span class='ident'>positionals</span>, <span class='ident'>values</span>) {
             <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>);
-        }
-        <span class='prelude-val'>None</span>
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>find_flag</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>FlagBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>for</span> <span class='ident'>f</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>flags</span>() {
-            <span class='kw'>if</span> <span class='ident'>f</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span> <span class='op'>||</span>
-               <span class='ident'>f</span>.<span class='ident'>aliases</span>.<span class='ident'>as_ref</span>().<span class='ident'>unwrap_or</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[(<span class='string'>&quot;&quot;</span>,<span class='bool-val'>false</span>)]).<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>n</span>, _)<span class='op'>|</span> <span class='ident'>n</span> <span class='op'>==</span> <span class='ident'>name</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>f</span>);
-            }
-        }
-        <span class='prelude-val'>None</span>
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>find_option</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>OptBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>for</span> <span class='ident'>o</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>opts</span>() {
-            <span class='kw'>if</span> <span class='ident'>o</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span> <span class='op'>||</span>
-               <span class='ident'>o</span>.<span class='ident'>aliases</span>.<span class='ident'>as_ref</span>().<span class='ident'>unwrap_or</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[(<span class='string'>&quot;&quot;</span>,<span class='bool-val'>false</span>)]).<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(<span class='ident'>n</span>, _)<span class='op'>|</span> <span class='ident'>n</span> <span class='op'>==</span> <span class='ident'>name</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>o</span>);
-            }
-        }
-        <span class='prelude-val'>None</span>
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>find_positional</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>PosBuilder</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;b</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>for</span> <span class='ident'>p</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>positionals</span>() {
-            <span class='kw'>if</span> <span class='ident'>p</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='ident'>name</span> {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>p</span>);
-            }
         }
         <span class='prelude-val'>None</span>
     }
@@ -4218,21 +4152,9 @@
             <span class='ident'>g_settings</span>: <span class='self'>self</span>.<span class='ident'>g_settings</span>.<span class='ident'>clone</span>(),
             <span class='ident'>meta</span>: <span class='self'>self</span>.<span class='ident'>meta</span>.<span class='ident'>clone</span>(),
             <span class='ident'>trailing_vals</span>: <span class='self'>self</span>.<span class='ident'>trailing_vals</span>,
+            <span class='ident'>id</span>: <span class='self'>self</span>.<span class='ident'>id</span>,
+            <span class='ident'>valid_neg_num</span>: <span class='self'>self</span>.<span class='ident'>valid_neg_num</span>,
         }
-    }
-}
-
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>fn</span> <span class='ident'>is_new_arg</span>(<span class='ident'>arg_os</span>: <span class='kw-2'>&amp;</span><span class='ident'>OsStr</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-    <span class='comment'>// Is this a new argument, or values from a previous option?</span>
-    <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;Starts new arg...&quot;</span>);
-    <span class='kw'>if</span> <span class='ident'>arg_os</span>.<span class='ident'>starts_with</span>(<span class='string'>b&quot;-&quot;</span>) {
-        <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Maybe&quot;</span>);
-        <span class='comment'>// a singe &#39;-&#39; by itself is a value and typically means &quot;stdin&quot; on unix systems</span>
-        <span class='op'>!</span>(<span class='ident'>arg_os</span>.<span class='ident'>len_</span>() <span class='op'>==</span> <span class='number'>1</span>)
-    } <span class='kw'>else</span> {
-        <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;No&quot;</span>);
-        <span class='bool-val'>false</span>
     }
 }
 </pre>
