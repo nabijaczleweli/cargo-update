@@ -10,11 +10,11 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
 
     if cfg!(target_env = "msvc") {
-        // `.res`es are linkable under MSVC as well as normal libraries, for w/e reason.
+        // `.res`es are linkable under MSVC as well as normal libraries.
         Command::new("rc")
             .args(&["/fo", &format!("{}/cargo-install-update-manifest.lib", out_dir), "cargo-install-update-manifest.rc"])
             .status()
-            .unwrap();
+            .expect("Are you sure you have RC.EXE in your $PATH?");
     } else {
         Command::new("windres")
             .args(&["--input", "cargo-install-update-manifest.rc", "--output-format=coff", "--output"])
