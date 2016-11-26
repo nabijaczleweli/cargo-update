@@ -110,6 +110,8 @@
 //!      Compiling treesize v0.2.1
 //!       Finished release [optimized] target(s) in 76.77 secs
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+//!
+//!   Updated 2 packages.
 //! ```
 //!
 //! `cargo install-update` *racer treesize cargo-cln*
@@ -132,6 +134,8 @@
 //!      Compiling treesize v0.2.1
 //!       Finished release [optimized] target(s) in 76.77 secs
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+//!
+//!   Updated 1 package.
 //! ```
 //!
 //! `cargo install-update -al`
@@ -172,6 +176,14 @@
 //!       Finished release [optimized] target(s) in 51.43 secs
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\racer.exe
 //!
+//!   Updating clippy
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading clippy v0.0.99
+//!      [...]
+//!      Compiling clippy v0.0.99
+//!      [...]
+//!   error: failed to compile `clippy v0.0.99`
+//!
 //!   Updating treesize
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
 //!      Downloading treesize v0.2.1
@@ -179,6 +191,13 @@
 //!      Compiling treesize v0.2.1
 //!       Finished release [optimized] target(s) in 76.77 secs
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+//!
+//!   Updating clippy_lints
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!   error: specified package has no binaries
+//!
+//!   Updated 2 packages.
+//!   Failed to update clippy, clippy_lints.
 //! ```
 
 

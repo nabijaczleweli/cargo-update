@@ -83,6 +83,8 @@ Exit values and possible errors:
           Finished release [optimized] target(s) in 76.77 secs
          Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
 
+      Updated 2 packages.
+
   `cargo install-update` *racer treesize cargo-cln*
 
     Only consider racer, treesize and cargo-cln for updates.
@@ -102,6 +104,8 @@ Exit values and possible errors:
          Compiling treesize v0.2.1
           Finished release [optimized] target(s) in 76.77 secs
          Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+
+      Updated 1 package.
 
   `cargo install-update -al`
 
@@ -127,9 +131,11 @@ Exit values and possible errors:
     Example output:
           Updating registry `https://github.com/rust-lang/crates.io-index`
 
-      Package   Installed  Latest   Needs update
-      racer     v1.2.10    v1.2.10  No
-      treesize  v0.2.0     v0.2.1   Yes
+      Package       Installed  Latest   Needs update
+      racer         v1.2.10    v1.2.10  No
+      treesize      v0.2.0     v0.2.1   Yes
+      clippy        v0.0.1     v0.0.99  Yes
+      clippy_lints  v0.0.1     v0.0.99  Yes
 
       Updating racer
           Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -139,6 +145,14 @@ Exit values and possible errors:
           Finished release [optimized] target(s) in 51.43 secs
          Replacing D:\Users\nabijaczleweli\.cargo\bin\racer.exe
 
+      Updating clippy
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+         Downloading clippy v0.0.99
+         [...]
+         Compiling clippy v0.0.99
+         [...]
+      error: failed to compile `clippy v0.0.99`, intermediate artifacts can be found at `T:\-_-TEM~1\cargo-install.WOcMlrKQ5Sok`
+
       Updating treesize
           Updating registry `https://github.com/rust-lang/crates.io-index`
          Downloading treesize v0.2.1
@@ -146,6 +160,13 @@ Exit values and possible errors:
          Compiling treesize v0.2.1
           Finished release [optimized] target(s) in 76.77 secs
          Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+
+      Updating clippy_lints
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+      error: specified package has no binaries
+
+      Updated 2 packages.
+      Failed to update clippy, clippy_lints.
 
 ## AUTHOR
 
