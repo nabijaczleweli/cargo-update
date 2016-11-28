@@ -105,8 +105,6 @@ fn actual_main() -> Result<(), i32> {
 
                     Ok(())
                 })
-                .collect::<Vec<_>>()
-                .into_iter()
                 .fold((0, vec![], None), |(s, mut e, r), p| match p {
                     Ok(()) => (s + 1, e, r),
                     Err((pr, pn)) => {
