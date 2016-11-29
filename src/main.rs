@@ -97,13 +97,13 @@ fn actual_main() -> Result<(), i32> {
                     }
 
                     let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
-                    if !install_res.success() {
-                        try!(Err((install_res.code().unwrap_or(-1), package.name)));
-                    }
 
                     println!("");
-
-                    Ok(())
+                    if !install_res.success() {
+                        Err((install_res.code().unwrap_or(-1), package.name))
+                    } else {
+                        Ok(())
+                    }
                 })
                 .fold((0, vec![], None), |(s, mut e, r), p| match p {
                     Ok(()) => (s + 1, e, r),
