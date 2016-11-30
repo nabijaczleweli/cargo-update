@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.1/src/object.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.3/src/object.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>object.rs.html -- source</title>
@@ -619,11 +619,6 @@
 <span id="575">575</span>
 <span id="576">576</span>
 <span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>std</span>::{ <span class='ident'>ptr</span>, <span class='ident'>mem</span>, <span class='ident'>str</span>, <span class='ident'>slice</span>, <span class='ident'>fmt</span> };
 
@@ -675,15 +670,10 @@
     }
 }
 
-<span class='comment'>// Because `Node` contains a raw pointer, `Sync` marker is missing. This</span>
-<span class='comment'>// in turn disables `Sync` for `Object`, and eventually `JsonValue`. Without</span>
-<span class='comment'>// the `Sync` marker it&#39;s impossible to create a static `JsonValue`, which</span>
-<span class='comment'>// would break all the API that returns `&amp;&#39;static JsonValue::Null`.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Since `Node` is not exposed anywhere in the API on it&#39;s own, and we manage</span>
-<span class='comment'>// heap of long keys manually, we just need to tell the compiler we know what</span>
-<span class='comment'>// we are doing here.</span>
-<span class='kw'>unsafe</span> <span class='kw'>impl</span> <span class='ident'>Sync</span> <span class='kw'>for</span> <span class='ident'>Node</span> { }
+<span class='comment'>// Implement `Sync` and `Send` for `Node` despite the use of raw pointers. The struct</span>
+<span class='comment'>// itself should be memory safe.</span>
+<span class='kw'>unsafe</span> <span class='kw'>impl</span> <span class='ident'>Sync</span> <span class='kw'>for</span> <span class='ident'>Node</span> {}
+<span class='kw'>unsafe</span> <span class='kw'>impl</span> <span class='ident'>Send</span> <span class='kw'>for</span> <span class='ident'>Node</span> {}
 
 <span class='comment'>// FNV-1a implementation</span>
 <span class='comment'>//</span>
