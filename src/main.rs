@@ -82,25 +82,44 @@ fn actual_main() -> Result<(), i32> {
         }
 
         if !packages.is_empty() {
-            for package in &packages {
-                println!("Updating {}", package.name);
+            let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
+                .map(|package| -> Result<(), (i32, String)> {
+                    println!("Updating {}", package.name);
 
-                if cfg!(target_os = "windows") && package.name == "cargo-update" {
-                    let cur_exe = env::current_exe().unwrap();
-                    let mut new_exe = cur_exe.clone();
+                    if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                        let cur_exe = env::current_exe().unwrap();
+                        let mut new_exe = cur_exe.clone();
 
-                    new_exe.set_extension(format!("exe-v{}", package.version));
-                    fs::rename(&cur_exe, new_exe).unwrap();
-                    // This way the past-current exec will be "replaced" we'll get no dupes in .cargo.toml
-                    File::create(cur_exe).unwrap();
-                }
+                        new_exe.set_extension(format!("exe-v{}", package.version));
+                        fs::rename(&cur_exe, new_exe).unwrap();
+                        // This way the past-current exec will be "replaced" we'll get no dupes in .cargo.toml
+                        File::create(cur_exe).unwrap();
+                    }
 
-                let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
-                if !install_res.success() {
-                    try!(Err(install_res.code().unwrap_or(-1)));
-                }
+                    let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
+                    if !install_res.success() {
+                        try!(Err((install_res.code().unwrap_or(-1), package.name)));
+                    }
 
-                println!("");
+                    println!("");
+
+                    Ok(())
+                })
+                .collect::<Vec<_>>()
+                .into_iter()
+                .fold((0, vec![], None), |(s, mut e, r), p| match p {
+                    Ok(()) => (s + 1, e, r),
+                    Err((pr, pn)) => {
+                        e.push(pn);
+                        (s, e, r.or(Some(pr)))
+                    }
+                });
+
+            println!("");
+            println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
+            if !errored.is_empty() && result.is_some() {
+                println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
+                try!(Err(result.unwrap()));
             }
         } else {
             println!("No packages need updating.");
