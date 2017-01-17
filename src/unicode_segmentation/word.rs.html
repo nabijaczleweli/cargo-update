@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-0.1.2/src/word.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-segmentation-1.0.1/src/word.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>word.rs.html -- source</title>
@@ -548,6 +548,115 @@
 <span id="504">504</span>
 <span id="505">505</span>
 <span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2012-2014 The Rust Project Developers. See the COPYRIGHT</span>
 <span class='comment'>// file at the top-level directory of this distribution and at</span>
@@ -559,15 +668,8 @@
 <span class='comment'>// option. This file may not be copied, modified, or distributed</span>
 <span class='comment'>// except according to those terms.</span>
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;no_std&quot;</span>)]</span>
 <span class='kw'>use</span> <span class='ident'>core</span>::<span class='ident'>cmp</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;no_std&quot;</span>)]</span>
 <span class='kw'>use</span> <span class='ident'>core</span>::<span class='ident'>iter</span>::<span class='ident'>Filter</span>;
-
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;no_std&quot;</span>))]</span>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;no_std&quot;</span>))]</span>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Filter</span>;
 
 <span class='kw'>use</span> <span class='ident'>tables</span>::<span class='ident'>word</span>::<span class='ident'>WordCat</span>;
 
@@ -630,7 +732,7 @@
 }
 
 <span class='comment'>// state machine for word boundary rules</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>,<span class='ident'>Copy</span>,<span class='ident'>PartialEq</span>,<span class='ident'>Eq</span>)]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>,<span class='ident'>Copy</span>,<span class='ident'>PartialEq</span>,<span class='ident'>Eq</span>,<span class='ident'>Debug</span>)]</span>
 <span class='kw'>enum</span> <span class='ident'>UWordBoundsState</span> {
     <span class='ident'>Start</span>,
     <span class='ident'>Letter</span>,
@@ -638,12 +740,14 @@
     <span class='ident'>Numeric</span>,
     <span class='ident'>Katakana</span>,
     <span class='ident'>ExtendNumLet</span>,
-    <span class='ident'>Regional</span>,
+    <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>),
     <span class='ident'>FormatExtend</span>(<span class='ident'>FormatExtendType</span>),
+    <span class='ident'>Zwj</span>,
+    <span class='ident'>Emoji</span>,
 }
 
 <span class='comment'>// subtypes for FormatExtend state in UWordBoundsState</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>,<span class='ident'>Copy</span>,<span class='ident'>PartialEq</span>,<span class='ident'>Eq</span>)]</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>,<span class='ident'>Copy</span>,<span class='ident'>PartialEq</span>,<span class='ident'>Eq</span>,<span class='ident'>Debug</span>)]</span>
 <span class='kw'>enum</span> <span class='ident'>FormatExtendType</span> {
     <span class='ident'>AcceptAny</span>,
     <span class='ident'>AcceptNone</span>,
@@ -651,6 +755,13 @@
     <span class='ident'>RequireHLetter</span>,
     <span class='ident'>AcceptQLetter</span>,
     <span class='ident'>RequireNumeric</span>,
+}
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>,<span class='ident'>Copy</span>,<span class='ident'>PartialEq</span>,<span class='ident'>Eq</span>,<span class='ident'>Debug</span>)]</span>
+<span class='kw'>enum</span> <span class='ident'>RegionalState</span> {
+    <span class='ident'>Half</span>,
+    <span class='ident'>Full</span>,
+    <span class='ident'>Unknown</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>UWordBounds</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
@@ -678,9 +789,13 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state</span> <span class='op'>=</span> <span class='ident'>Start</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cat</span> <span class='op'>=</span> <span class='ident'>wd</span>::<span class='ident'>WC_Any</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>savecat</span> <span class='op'>=</span> <span class='ident'>wd</span>::<span class='ident'>WC_Any</span>;
+
+        <span class='comment'>// Whether or not the previous category was ZWJ</span>
+        <span class='comment'>// ZWJs get collapsed, so this handles precedence of WB3c over WB4</span>
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>prev_zwj</span>;
         <span class='kw'>for</span> (<span class='ident'>curr</span>, <span class='ident'>ch</span>) <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>string</span>.<span class='ident'>char_indices</span>() {
             <span class='ident'>idx</span> <span class='op'>=</span> <span class='ident'>curr</span>;
-
+            <span class='ident'>prev_zwj</span> <span class='op'>=</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span>;
             <span class='comment'>// if there&#39;s a category cached, grab it</span>
             <span class='ident'>cat</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>cat</span> {
                 <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>wd</span>::<span class='ident'>word_category</span>(<span class='ident'>ch</span>),
@@ -689,17 +804,49 @@
             <span class='ident'>take_cat</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
 
             <span class='comment'>// handle rule WB4</span>
-            <span class='comment'>// just skip all format and extend chars</span>
+            <span class='comment'>// just skip all format, extend, and zwj chars</span>
             <span class='comment'>// note that Start is a special case: if there&#39;s a bunch of Format | Extend</span>
             <span class='comment'>// characters at the beginning of a block of text, dump them out as one unit.</span>
             <span class='comment'>//</span>
             <span class='comment'>// (This is not obvious from the wording of UAX#29, but if you look at the</span>
             <span class='comment'>// test cases http://www.unicode.org/Public/UNIDATA/auxiliary/WordBreakTest.txt</span>
             <span class='comment'>// then the &quot;correct&quot; interpretation of WB4 becomes apparent.)</span>
-            <span class='kw'>if</span> <span class='ident'>state</span> <span class='op'>!=</span> <span class='ident'>Start</span> <span class='op'>&amp;&amp;</span> (<span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>||</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span>) {
-                <span class='kw'>continue</span>;
+            <span class='kw'>if</span> <span class='ident'>state</span> <span class='op'>!=</span> <span class='ident'>Start</span> {
+                <span class='kw'>match</span> <span class='ident'>cat</span> {
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> <span class='op'>=&gt;</span> {
+                        <span class='kw'>continue</span>
+                    }
+                    _ <span class='op'>=&gt;</span> {}
+                }
             }
 
+            <span class='comment'>// rule WB3c</span>
+            <span class='comment'>// WB4 makes all ZWJs collapse into the previous state</span>
+            <span class='comment'>// but you can still be in a Zwj state if you started with Zwj</span>
+            <span class='comment'>//</span>
+            <span class='comment'>// This means that Zwj + Extend will collapse into Zwj, which is wrong,</span>
+            <span class='comment'>// since Extend has a boundary with following EBG/GAZ chars but ZWJ doesn&#39;t,</span>
+            <span class='comment'>// and that rule (WB3c) has higher priority</span>
+            <span class='comment'>//</span>
+            <span class='comment'>// Additionally, Emoji_Base+ZWJ+(EBG/GAZ) will collapse into Emoji_Base+EBG/GAZ</span>
+            <span class='comment'>// which won&#39;t have a boundary even though EB+ZWJ+GAZ should have a boundary.</span>
+            <span class='comment'>//</span>
+            <span class='comment'>// Thus, we separately keep track of whether or not the last character</span>
+            <span class='comment'>// was a ZWJ. This is an additional bit of state tracked outside of the</span>
+            <span class='comment'>// state enum; the state enum represents the last non-zwj state encountered.</span>
+            <span class='comment'>// When prev_zwj is true, for the purposes of WB3c, we are in the Zwj state,</span>
+            <span class='comment'>// however we are in the previous state for the purposes of all other rules.</span>
+            <span class='kw'>if</span> <span class='ident'>prev_zwj</span> {
+                <span class='kw'>match</span> <span class='ident'>cat</span> { 
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Glue_After_Zwj</span> <span class='op'>=&gt;</span> <span class='kw'>continue</span>,
+                    <span class='ident'>wd</span>::<span class='ident'>WC_E_Base_GAZ</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>state</span> <span class='op'>=</span> <span class='ident'>Emoji</span>;
+                        <span class='kw'>continue</span>;
+                    },
+                    _ <span class='op'>=&gt;</span> ()
+                }
+            }
+            <span class='comment'>// Don&#39;t use `continue` in this match without updating `cat`</span>
             <span class='ident'>state</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>state</span> {
                 <span class='ident'>Start</span> <span class='kw'>if</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_CR</span> <span class='op'>=&gt;</span> {
                     <span class='ident'>idx</span> <span class='op'>+=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>get_next_cat</span>(<span class='ident'>idx</span>) {
@@ -714,19 +861,28 @@
                     <span class='ident'>wd</span>::<span class='ident'>WC_Numeric</span> <span class='op'>=&gt;</span> <span class='ident'>Numeric</span>,          <span class='comment'>// rule WB8, WB10, WB12, WB13a</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_Katakana</span> <span class='op'>=&gt;</span> <span class='ident'>Katakana</span>,        <span class='comment'>// rule WB13, WB13a</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_ExtendNumLet</span> <span class='op'>=&gt;</span> <span class='ident'>ExtendNumLet</span>,    <span class='comment'>// rule WB13a, WB13b</span>
-                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>,  <span class='comment'>// rule WB13c</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>::<span class='ident'>Half</span>),  <span class='comment'>// rule WB13c</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_LF</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_Newline</span> <span class='op'>=&gt;</span> <span class='kw'>break</span>,    <span class='comment'>// rule WB3a</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> <span class='op'>=&gt;</span> <span class='ident'>Zwj</span>,                      <span class='comment'>// rule WB3c</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_E_Base</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_E_Base_GAZ</span> <span class='op'>=&gt;</span> <span class='ident'>Emoji</span>, <span class='comment'>// rule WB14</span>
                     _ <span class='op'>=&gt;</span> {
                         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>ncat</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>get_next_cat</span>(<span class='ident'>idx</span>) {                <span class='comment'>// rule WB4</span>
-                            <span class='kw'>if</span> <span class='ident'>ncat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span> <span class='op'>||</span> <span class='ident'>ncat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> {
+                            <span class='kw'>if</span> <span class='ident'>ncat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span> <span class='op'>||</span> <span class='ident'>ncat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>||</span> <span class='ident'>ncat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> {
                                 <span class='ident'>state</span> <span class='op'>=</span> <span class='ident'>FormatExtend</span>(<span class='ident'>AcceptNone</span>);
                                 <span class='self'>self</span>.<span class='ident'>cat</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>ncat</span>);
                                 <span class='kw'>continue</span>;
                             }
                         }
-                        <span class='kw'>break</span>;                                                      <span class='comment'>// rule WB14</span>
+                        <span class='kw'>break</span>;                                                      <span class='comment'>// rule WB999</span>
                     }
                 },
+                <span class='ident'>Zwj</span> <span class='op'>=&gt;</span> {
+                    <span class='comment'>// We already handle WB3c above. At this point,</span>
+                    <span class='comment'>// the current category is not GAZ or EBG,</span>
+                    <span class='comment'>// or the previous character was not actually a ZWJ</span>
+                    <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+                    <span class='kw'>break</span>;
+                }
                 <span class='ident'>Letter</span> <span class='op'>|</span> <span class='ident'>HLetter</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
                     <span class='ident'>wd</span>::<span class='ident'>WC_ALetter</span> <span class='op'>=&gt;</span> <span class='ident'>Letter</span>,                   <span class='comment'>// rule WB5</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_Hebrew_Letter</span> <span class='op'>=&gt;</span> <span class='ident'>HLetter</span>,            <span class='comment'>// rule WB5</span>
@@ -784,8 +940,23 @@
                         <span class='kw'>break</span>;
                     }
                 },
-                <span class='ident'>Regional</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
-                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>,      <span class='comment'>// rule WB13c</span>
+                <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>::<span class='ident'>Full</span>) <span class='op'>=&gt;</span> {
+                    <span class='comment'>// if it reaches here we&#39;ve gone too far,</span>
+                    <span class='comment'>// a full flag can only compose with ZWJ/Extend/Format</span>
+                    <span class='comment'>// proceeding it.</span>
+                    <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+                    <span class='kw'>break</span>;
+                }
+                <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>::<span class='ident'>Half</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>::<span class='ident'>Full</span>),      <span class='comment'>// rule WB13c</span>
+                    _ <span class='op'>=&gt;</span> {
+                        <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+                        <span class='kw'>break</span>;
+                    }
+                },
+                <span class='ident'>Regional</span>(_) <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(<span class='string'>&quot;RegionalState::Unknown should not occur on forward iteration&quot;</span>),
+                <span class='ident'>Emoji</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {                            <span class='comment'>// rule WB14</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_E_Modifier</span> <span class='op'>=&gt;</span> <span class='ident'>state</span>,
                     _ <span class='op'>=&gt;</span> {
                         <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
                         <span class='kw'>break</span>;
@@ -849,6 +1020,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>state</span> <span class='op'>=</span> <span class='ident'>Start</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>savestate</span> <span class='op'>=</span> <span class='ident'>Start</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cat</span> <span class='op'>=</span> <span class='ident'>wd</span>::<span class='ident'>WC_Any</span>;
+
         <span class='kw'>for</span> (<span class='ident'>curr</span>, <span class='ident'>ch</span>) <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>string</span>.<span class='ident'>char_indices</span>().<span class='ident'>rev</span>() {
             <span class='ident'>previdx</span> <span class='op'>=</span> <span class='ident'>idx</span>;
             <span class='ident'>idx</span> <span class='op'>=</span> <span class='ident'>curr</span>;
@@ -866,7 +1038,10 @@
             <span class='comment'>//     Hebrew Letter immediately before it.</span>
             <span class='comment'>// (2) Format and Extend char handling takes some gymnastics.</span>
 
-            <span class='kw'>if</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>||</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span> {
+            <span class='kw'>if</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span>
+                <span class='op'>||</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span>
+                <span class='op'>||</span> (<span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> <span class='op'>&amp;&amp;</span> <span class='ident'>state</span> <span class='op'>!=</span> <span class='ident'>Zwj</span>) { <span class='comment'>// WB3c has more priority so we should not</span>
+                                                         <span class='comment'>// fold in that case</span>
                 <span class='kw'>if</span> <span class='kw'>match</span> <span class='ident'>state</span> {
                     <span class='ident'>FormatExtend</span>(_) <span class='op'>|</span> <span class='ident'>Start</span> <span class='op'>=&gt;</span> <span class='bool-val'>false</span>,
                     _ <span class='op'>=&gt;</span> <span class='bool-val'>true</span>
@@ -886,6 +1061,7 @@
                 <span class='ident'>take_cat</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
             }
 
+            <span class='comment'>// Don&#39;t use `continue` in this match without updating `catb`</span>
             <span class='ident'>state</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>state</span> {
                 <span class='ident'>Start</span> <span class='op'>|</span> <span class='ident'>FormatExtend</span>(<span class='ident'>AcceptAny</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
                     <span class='ident'>wd</span>::<span class='ident'>WC_ALetter</span> <span class='op'>=&gt;</span> <span class='ident'>Letter</span>,           <span class='comment'>// rule WB5, WB7, WB10, WB13b</span>
@@ -893,12 +1069,15 @@
                     <span class='ident'>wd</span>::<span class='ident'>WC_Numeric</span> <span class='op'>=&gt;</span> <span class='ident'>Numeric</span>,          <span class='comment'>// rule WB8, WB9, WB11, WB13b</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_Katakana</span> <span class='op'>=&gt;</span> <span class='ident'>Katakana</span>,                    <span class='comment'>// rule WB13, WB13b</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_ExtendNumLet</span> <span class='op'>=&gt;</span> <span class='ident'>ExtendNumLet</span>,                    <span class='comment'>// rule WB13a</span>
-                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>,                  <span class='comment'>// rule WB13c</span>
-                    <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span> <span class='op'>=&gt;</span> <span class='ident'>FormatExtend</span>(<span class='ident'>AcceptAny</span>),   <span class='comment'>// rule WB4</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>::<span class='ident'>Unknown</span>), <span class='comment'>// rule WB13c</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Glue_After_Zwj</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_E_Base_GAZ</span> <span class='op'>=&gt;</span> <span class='ident'>Zwj</span>,       <span class='comment'>// rule WB3c</span>
+                    <span class='comment'>// rule WB4:</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> <span class='op'>=&gt;</span> <span class='ident'>FormatExtend</span>(<span class='ident'>AcceptAny</span>),
                     <span class='ident'>wd</span>::<span class='ident'>WC_Single_Quote</span> <span class='op'>=&gt;</span> {
                         <span class='ident'>saveidx</span> <span class='op'>=</span> <span class='ident'>idx</span>;
                         <span class='ident'>FormatExtend</span>(<span class='ident'>AcceptQLetter</span>)                         <span class='comment'>// rule WB7a</span>
                     },
+                    <span class='ident'>wd</span>::<span class='ident'>WC_E_Modifier</span> <span class='op'>=&gt;</span> <span class='ident'>Emoji</span>,                             <span class='comment'>// rule WB14</span>
                     <span class='ident'>wd</span>::<span class='ident'>WC_CR</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_LF</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_Newline</span> <span class='op'>=&gt;</span> {
                         <span class='kw'>if</span> <span class='ident'>state</span> <span class='op'>==</span> <span class='ident'>Start</span> {
                             <span class='kw'>if</span> <span class='ident'>cat</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_LF</span> {
@@ -912,7 +1091,16 @@
                         }
                         <span class='kw'>break</span>;                                              <span class='comment'>// rule WB3a</span>
                     },
-                    _ <span class='op'>=&gt;</span> <span class='kw'>break</span>                              <span class='comment'>// rule WB14</span>
+                    _ <span class='op'>=&gt;</span> <span class='kw'>break</span>                              <span class='comment'>// rule WB999</span>
+                },
+                <span class='ident'>Zwj</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {                          <span class='comment'>// rule WB3c</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>FormatExtend</span>(<span class='ident'>AcceptAny</span>)
+                    }
+                    _ <span class='op'>=&gt;</span> {
+                        <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+                        <span class='kw'>break</span>;
+                    }
                 },
                 <span class='ident'>Letter</span> <span class='op'>|</span> <span class='ident'>HLetter</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
                     <span class='ident'>wd</span>::<span class='ident'>WC_ALetter</span> <span class='op'>=&gt;</span> <span class='ident'>Letter</span>,               <span class='comment'>// rule WB5</span>
@@ -965,8 +1153,38 @@
                         <span class='kw'>break</span>;
                     }
                 },
-                <span class='ident'>Regional</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
-                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> <span class='ident'>Regional</span>,  <span class='comment'>// rule WB13c</span>
+                <span class='ident'>Regional</span>(<span class='kw-2'>mut</span> <span class='ident'>regional_state</span>) <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {
+                    <span class='comment'>// rule WB13c</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span> <span class='op'>=&gt;</span> {
+                        <span class='kw'>if</span> <span class='ident'>regional_state</span> <span class='op'>==</span> <span class='ident'>RegionalState</span>::<span class='ident'>Unknown</span> {
+                            <span class='kw'>let</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>string</span>[..<span class='ident'>previdx</span>]
+                                            .<span class='ident'>chars</span>().<span class='ident'>rev</span>()
+                                            .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>word_category</span>(<span class='ident'>c</span>))
+                                            .<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>c</span><span class='op'>|</span> <span class='op'>!</span> (<span class='ident'>c</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_ZWJ</span> <span class='op'>||</span> <span class='ident'>c</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Extend</span> <span class='op'>||</span> <span class='ident'>c</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Format</span>))
+                                            .<span class='ident'>take_while</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>c</span> <span class='op'>==</span> <span class='ident'>wd</span>::<span class='ident'>WC_Regional_Indicator</span>)
+                                            .<span class='ident'>count</span>();
+                            <span class='ident'>regional_state</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>count</span> <span class='op'>%</span> <span class='number'>2</span> <span class='op'>==</span> <span class='number'>0</span> {
+                                <span class='ident'>RegionalState</span>::<span class='ident'>Full</span>
+                            } <span class='kw'>else</span> {
+                                <span class='ident'>RegionalState</span>::<span class='ident'>Half</span>
+                            };
+                        }
+                        <span class='kw'>if</span> <span class='ident'>regional_state</span> <span class='op'>==</span> <span class='ident'>RegionalState</span>::<span class='ident'>Full</span> {
+                            <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+                            <span class='kw'>break</span>;
+                        } <span class='kw'>else</span> {
+                            <span class='ident'>Regional</span>(<span class='ident'>RegionalState</span>::<span class='ident'>Full</span>)
+                        }
+                    }
+                    _ <span class='op'>=&gt;</span> {
+                        <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+                        <span class='kw'>break</span>;
+                    }
+                },
+                <span class='ident'>Emoji</span> <span class='op'>=&gt;</span> <span class='kw'>match</span> <span class='ident'>cat</span> {                            <span class='comment'>// rule WB14</span>
+                    <span class='ident'>wd</span>::<span class='ident'>WC_E_Base</span> <span class='op'>|</span> <span class='ident'>wd</span>::<span class='ident'>WC_E_Base_GAZ</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>Zwj</span>
+                    },
                     _ <span class='op'>=&gt;</span> {
                         <span class='ident'>take_curr</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
                         <span class='kw'>break</span>;
@@ -1112,11 +1330,9 @@
     <script>
         window.rootPath = "../../";
         window.currentCrate = "unicode_segmentation";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>
