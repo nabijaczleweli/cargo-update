@@ -7,12 +7,14 @@ extern "C" {}
 
 extern crate cargo_update;
 extern crate tabwriter;
+extern crate lazysort;
 extern crate regex;
 
 use std::process::{Command, exit};
 use std::io::{Write, stdout};
 use std::fs::{self, File};
 use tabwriter::TabWriter;
+use lazysort::SortedBy;
 use regex::Regex;
 use std::env;
 
@@ -59,7 +61,8 @@ fn actual_main() -> Result<(), i32> {
     {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-        for package in &packages {
+        for package in packages.iter()
+            .sorted_by(|lhs, rhs| (lhs.version >= *lhs.newest_version.as_ref().unwrap()).cmp(&(rhs.version >= *rhs.newest_version.as_ref().unwrap()))) {
             writeln!(out,
                      "{}\tv{}\tv{}\t{}",
                      package.name,
