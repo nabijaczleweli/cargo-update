@@ -59,19 +59,31 @@ fn actual_main() -> Result<(), i32> {
     {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
+        let mut todo = Vec::new();
+        let mut to_ignore = Vec::new();
+
+        // sort the packages into two vecs by update status
         for package in &packages {
+            if package.version < *package.newest_version.as_ref().unwrap() {
+                todo.push((package, "Yes"));
+            } else {
+                to_ignore.push((package, "No"));
+            };
+        }
+
+        // combine the two vecs back together
+        todo.append(&mut to_ignore);
+
+        for &(package, needs_update) in &todo {
             writeln!(out,
                      "{}\tv{}\tv{}\t{}",
                      package.name,
                      package.version,
                      package.newest_version.as_ref().unwrap(),
-                     if package.version < *package.newest_version.as_ref().unwrap() {
-                         "Yes"
-                     } else {
-                         "No"
-                     })
+                     needs_update)
                 .unwrap();
         }
+
         writeln!(out, "").unwrap();
         out.flush().unwrap();
     }
