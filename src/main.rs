@@ -102,7 +102,7 @@ fn actual_main() -> Result<(), i32> {
                     if !install_res.success() {
                         if cfg!(target_os = "windows") && package.name == "cargo-update" {
                             let cur_exe = env::current_exe().unwrap();
-                            fs::remove_file(&cur_exe);
+                            fs::remove_file(&cur_exe).unwrap();
                             fs::rename(cur_exe.with_extension(format!("exe-v{}", package.version)), cur_exe).unwrap();
                         }
 
