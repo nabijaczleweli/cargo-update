@@ -91,10 +91,7 @@ fn actual_main() -> Result<(), i32> {
 
                     if cfg!(target_os = "windows") && package.name == "cargo-update" {
                         let cur_exe = env::current_exe().unwrap();
-                        let mut new_exe = cur_exe.clone();
-
-                        new_exe.set_extension(format!("exe-v{}", package.version));
-                        fs::rename(&cur_exe, new_exe).unwrap();
+                        fs::rename(&cur_exe, cur_exe.with_extension(format!("exe-v{}", package.version))).unwrap();
                         // This way the past-current exec will be "replaced" we'll get no dupes in .cargo.toml
                         File::create(cur_exe).unwrap();
                     }
@@ -103,6 +100,12 @@ fn actual_main() -> Result<(), i32> {
 
                     println!("");
                     if !install_res.success() {
+                        if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                            let cur_exe = env::current_exe().unwrap();
+                            fs::remove_file(&cur_exe);
+                            fs::rename(cur_exe.with_extension(format!("exe-v{}", package.version)), cur_exe).unwrap();
+                        }
+
                         Err((install_res.code().unwrap_or(-1), package.name))
                     } else {
                         Ok(())
