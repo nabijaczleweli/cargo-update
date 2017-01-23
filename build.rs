@@ -2,10 +2,12 @@
 extern crate winreg;
 
 #[cfg(all(windows, target_env = "msvc"))]
+use std::path::PathBuf;
+#[cfg(all(windows, target_env = "msvc"))]
 use winreg::enums::*;
 
-use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::path::Path;
 use std::env;
 
 #[cfg(not(windows))]
