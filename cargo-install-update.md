@@ -174,7 +174,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Yann Simon &lt;<yann.simon.fr@gmail.com>&gt;,
            ven &lt;<vendethiel@hotmail.fr>&gt;,
            Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;,
-       and Liigo &lt;<liigo@qq.com>&gt;
+           Liigo &lt;<liigo@qq.com>&gt;,
+       and azyobuzin &lt;<azyobuzin@users.sourceforge.jp>&gt;
 
 ## REPORTING BUGS
 
