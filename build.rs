@@ -1,11 +1,12 @@
 #[cfg(all(windows, target_env = "msvc"))]
 extern crate winreg;
 
-use std::process::Command;
-use std::path::{Path, PathBuf};
-use std::env;
 #[cfg(all(windows, target_env = "msvc"))]
 use winreg::enums::*;
+
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::env;
 
 #[cfg(not(windows))]
 fn main() {}
@@ -19,12 +20,12 @@ fn main() {
 
 #[cfg(all(windows, target_env = "msvc"))]
 fn compile_resource(out_dir: &str) {
-    // `.res`es are linkable under MSVC as well as normal libraries.
     let rc_path = find_windows_sdk_bin_dir().and_then(|mut x| {
         x.push("rc.exe");
         if x.exists() { Some(x) } else { None }
     });
 
+    // `.res`es are linkable under MSVC as well as normal libraries.
     Command::new(rc_path.as_ref().map_or(Path::new("rc.exe"), Path::new))
         .args(&["/fo", &format!("{}/cargo-install-update-manifest.lib", out_dir), "cargo-install-update-manifest.rc"])
         .status()
@@ -45,14 +46,7 @@ fn find_windows_sdk_bin_dir() -> Option<PathBuf> {
             .open_subkey_with_flags(r"SOFTWARE\Microsoft\Windows Kits\Installed Roots", KEY_QUERY_VALUE)
             .and_then(|reg_key| reg_key.get_value::<String, _>(key))
             .ok()
-            .and_then(|root_dir| {
-                let mut p = PathBuf::from(root_dir);
-                match arch {
-                    Arch::X86 => p.push(r"bin\x86"),
-                    Arch::X64 => p.push(r"bin\x64"),
-                }
-                if p.is_dir() { Some(p) } else { None }
-            })
+            .and_then(|root_dir| try_bin_dir(root_dir, "bin/x86", "bin/x64", arch))
     }
 
     // Windows Vista - 7
@@ -61,14 +55,16 @@ fn find_windows_sdk_bin_dir() -> Option<PathBuf> {
             .open_subkey_with_flags(r"SOFTWARE\Microsoft\Microsoft SDKs\Windows", KEY_QUERY_VALUE)
             .and_then(|reg_key| reg_key.get_value::<String, _>("CurrentInstallFolder"))
             .ok()
-            .and_then(|root_dir| {
-                let mut p = PathBuf::from(root_dir);
-                match arch {
-                    Arch::X86 => p.push("Bin"),
-                    Arch::X64 => p.push(r"Bin\x64"),
-                }
-                if p.is_dir() { Some(p) } else { None }
-            })
+            .and_then(|root_dir| try_bin_dir(root_dir, "Bin", "Bin/x64", arch))
+    }
+
+    fn try_bin_dir(root_dir: String, x86_bin: &str, x64_bin: &str, arch: Arch) -> Option<PathBuf> {
+        let mut p = PathBuf::from(root_dir);
+        match arch {
+            Arch::X86 => p.push(x86_bin),
+            Arch::X64 => p.push(x64_bin),
+        }
+        if p.is_dir() { Some(p) } else { None }
     }
 
     let arch = if env::var("TARGET").unwrap().starts_with("x86_64") {
