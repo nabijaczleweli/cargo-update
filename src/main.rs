@@ -1,10 +1,3 @@
-// This is so cargo actually considers linking to the fucking manifest,
-// since the build scripts' documentation can do the digital equivalent of fucking off
-#[cfg(target_os="windows")]
-#[link(name="cargo-install-update-manifest", kind="static")]
-extern "C" {}
-
-
 extern crate cargo_update;
 extern crate tabwriter;
 extern crate lazysort;
