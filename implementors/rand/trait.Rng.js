@@ -1,5 +1,10 @@
 (function() {var implementors = {};
-implementors["lazy_static"] = [];implementors["regex_syntax"] = [];implementors["libc"] = [];implementors["rand"] = [];implementors["semver_parser"] = [];implementors["cargo_update"] = [];
+implementors["cargo_update"] = [];
+implementors["lazy_static"] = [];
+implementors["libc"] = [];
+implementors["rand"] = [];
+implementors["regex_syntax"] = [];
+implementors["semver_parser"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);

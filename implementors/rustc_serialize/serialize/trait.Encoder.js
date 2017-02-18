@@ -1,5 +1,6 @@
 (function() {var implementors = {};
-implementors["toml"] = ["impl <a class='trait' href='rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a> for <a class='struct' href='toml/struct.Encoder.html' title='toml::Encoder'>Encoder</a>",];implementors["cargo_update"] = ["impl <a class='trait' href='rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a> for <a class='struct' href='toml/encoder/struct.Encoder.html' title='toml::encoder::Encoder'>Encoder</a>",];
+implementors["cargo_update"] = ["impl <a class='trait' href='rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a> for <a class='struct' href='toml/encoder/struct.Encoder.html' title='toml::encoder::Encoder'>Encoder</a>",];
+implementors["toml"] = ["impl <a class='trait' href='rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a> for <a class='struct' href='toml/struct.Encoder.html' title='toml::Encoder'>Encoder</a>",];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);

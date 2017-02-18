@@ -1,5 +1,6 @@
 (function() {var implementors = {};
-implementors["unicode_width"] = [];implementors["cargo_update"] = [];
+implementors["cargo_update"] = [];
+implementors["unicode_width"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);
