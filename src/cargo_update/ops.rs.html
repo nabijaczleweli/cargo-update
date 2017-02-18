@@ -364,6 +364,30 @@
 <span id="320">320</span>
 <span id="321">321</span>
 <span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Main functions doing actual work.</span>
 <span class='doccomment'>//!</span>
@@ -533,10 +557,39 @@
 }
 
 
+<span class='doccomment'>/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `.crates.toml` file in the</span>
+<span class='doccomment'>/// specified directory up to the final one.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// # Examples</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// ```</span>
+<span class='doccomment'>/// # use cargo_update::ops::resolve_cargo_directory;</span>
+<span class='doccomment'>/// # use std::env::temp_dir;</span>
+<span class='doccomment'>/// # let cargo_dir = temp_dir();</span>
+<span class='doccomment'>/// let cargo_dir = resolve_cargo_directory(cargo_dir);</span>
+<span class='doccomment'>/// # let _ = cargo_dir;</span>
+<span class='doccomment'>/// ```</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>resolve_cargo_directory</span>(<span class='ident'>cargo_dir</span>: <span class='ident'>PathBuf</span>) <span class='op'>-&gt;</span> <span class='ident'>PathBuf</span> {
+    <span class='kw'>let</span> <span class='ident'>crates_path</span> <span class='op'>=</span> <span class='ident'>cargo_dir</span>.<span class='ident'>join</span>(<span class='string'>&quot;.crates.toml&quot;</span>);
+    <span class='kw'>if</span> <span class='ident'>crates_path</span>.<span class='ident'>exists</span>() {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>crates</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
+        <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>crates_path</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>crates</span>).<span class='ident'>unwrap</span>();
+
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>idir</span>) <span class='op'>=</span> <span class='ident'>toml</span>::<span class='ident'>Parser</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>crates</span>)
+            .<span class='ident'>parse</span>()
+            .<span class='ident'>unwrap</span>()
+            .<span class='ident'>get</span>(<span class='string'>&quot;install&quot;</span>)
+            .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>as_table</span>())
+            .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>get</span>(<span class='string'>&quot;root&quot;</span>))
+            .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>as_str</span>()) {
+            <span class='kw'>return</span> <span class='ident'>resolve_cargo_directory</span>(<span class='ident'>PathBuf</span>::<span class='ident'>from</span>(<span class='ident'>idir</span>));
+        }
+    }
+    <span class='ident'>cargo_dir</span>
+}
+
 <span class='doccomment'>/// List the installed packages at the specified location that originate</span>
 <span class='doccomment'>/// from the main [`crates.io`](https://crates.io) registry.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Will [follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23).</span>
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// If the `.crates.toml` file doesn&#39;t exist an empty vector is returned.</span>
 <span class='doccomment'>///</span>
@@ -557,12 +610,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>crates</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
         <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>crates_path</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>crates</span>).<span class='ident'>unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>toml</span>::<span class='ident'>Parser</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>crates</span>).<span class='ident'>parse</span>().<span class='ident'>unwrap</span>();
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>idir</span>) <span class='op'>=</span> <span class='ident'>c</span>.<span class='ident'>get</span>(<span class='string'>&quot;install&quot;</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>as_table</span>()).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>get</span>(<span class='string'>&quot;root&quot;</span>)).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>as_str</span>()) {
-            <span class='ident'>installed_main_repo_packages</span>(<span class='ident'>Path</span>::<span class='ident'>new</span>(<span class='ident'>idir</span>))
-        } <span class='kw'>else</span> {
-            <span class='ident'>c</span>[<span class='string'>&quot;v1&quot;</span>].<span class='ident'>as_table</span>().<span class='ident'>unwrap</span>().<span class='ident'>keys</span>().<span class='ident'>flat_map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='ident'>MainRepoPackage</span>::<span class='ident'>parse</span>(<span class='ident'>s</span>)).<span class='ident'>collect</span>()
-        }
+        <span class='ident'>toml</span>::<span class='ident'>Parser</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>crates</span>).<span class='ident'>parse</span>().<span class='ident'>unwrap</span>()[<span class='string'>&quot;v1&quot;</span>].<span class='ident'>as_table</span>().<span class='ident'>unwrap</span>().<span class='ident'>keys</span>().<span class='ident'>flat_map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='ident'>MainRepoPackage</span>::<span class='ident'>parse</span>(<span class='ident'>s</span>)).<span class='ident'>collect</span>()
     } <span class='kw'>else</span> {
         <span class='ident'>Vec</span>::<span class='ident'>new</span>()
     }
