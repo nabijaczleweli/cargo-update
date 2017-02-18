@@ -30,7 +30,8 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
-    let mut packages = cargo_update::ops::installed_main_repo_packages(&opts.cargo_dir.1);
+    let cargo_dir = cargo_update::ops::resolve_cargo_directory(opts.cargo_dir.1);
+    let mut packages = cargo_update::ops::installed_main_repo_packages(&cargo_dir);
 
     if !opts.to_update.is_empty() {
         packages = cargo_update::ops::intersect_packages(packages, &opts.to_update);
@@ -45,7 +46,7 @@ fn actual_main() -> Result<(), i32> {
         println!("");
     }
 
-    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
+    let registry = cargo_update::ops::get_index_path(&cargo_dir);
 
     for package in &mut packages {
         package.pull_version(&registry);

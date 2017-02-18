@@ -30,7 +30,7 @@ pub struct Options {
     pub update: bool,
     /// Update all packages. Default: `false`
     pub force: bool,
-    /// The `cargo` home directory. Default: `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub cargo_dir: (String, PathBuf),
 }
 
@@ -65,24 +65,29 @@ impl Options {
             cargo_dir: match matches.value_of("cargo-dir") {
                 Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
                 None => {
-                    match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                        Ok(ch) => ("$CARGO_HOME".to_string(), ch),
-                        Err(_) => {
-                            match home_dir().and_then(|hd| hd.canonicalize().ok()) {
-                                Some(mut hd) => {
-                                    hd.push(".cargo");
+                    match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
+                        Ok(ch) => ("$CARGO_INSTALL_ROOT".to_string(), ch),
+                        Err(()) => {
+                            match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
+                                Ok(ch) => ("$CARGO_HOME".to_string(), ch),
+                                Err(()) => {
+                                    match home_dir().and_then(|hd| hd.canonicalize().ok()) {
+                                        Some(mut hd) => {
+                                            hd.push(".cargo");
 
-                                    fs::create_dir_all(&hd).unwrap();
-                                    ("$HOME/.cargo".to_string(), hd)
-                                }
-                                None => {
-                                    clap::Error {
-                                            message: "$CARGO_HOME and home directory invalid, please specify the cargo home directory with the -c option"
-                                                .to_string(),
-                                            kind: clap::ErrorKind::MissingRequiredArgument,
-                                            info: None,
+                                            fs::create_dir_all(&hd).unwrap();
+                                            ("$HOME/.cargo".to_string(), hd)
                                         }
-                                        .exit()
+                                        None => {
+                                            clap::Error {
+                                                    message: "$CARGO_INSTALL_ROOT, $CARGO_HOME and home directory invalid, \
+                                                              please specify the cargo home directory with the -c option".to_string(),
+                                                    kind: clap::ErrorKind::MissingRequiredArgument,
+                                                    info: None,
+                                                }
+                                                .exit()
+                                        }
+                                    }
                                 }
                             }
                         }

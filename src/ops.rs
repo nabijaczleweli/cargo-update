@@ -166,6 +166,37 @@ impl MainRepoPackage {
 }
 
 
+/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `.crates.toml` file in the
+/// specified directory up to the final one.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::resolve_cargo_directory;
+/// # use std::env::temp_dir;
+/// # let cargo_dir = temp_dir();
+/// let cargo_dir = resolve_cargo_directory(cargo_dir);
+/// # let _ = cargo_dir;
+/// ```
+pub fn resolve_cargo_directory(cargo_dir: PathBuf) -> PathBuf {
+    let crates_path = cargo_dir.join(".crates.toml");
+    if crates_path.exists() {
+        let mut crates = String::new();
+        File::open(crates_path).unwrap().read_to_string(&mut crates).unwrap();
+
+        if let Some(idir) = toml::Parser::new(&crates)
+            .parse()
+            .unwrap()
+            .get("install")
+            .and_then(|t| t.as_table())
+            .and_then(|t| t.get("root"))
+            .and_then(|t| t.as_str()) {
+            return resolve_cargo_directory(PathBuf::from(idir));
+        }
+    }
+    cargo_dir
+}
+
 /// List the installed packages at the specified location that originate
 /// from the main [`crates.io`](https://crates.io) registry.
 ///
@@ -296,7 +327,7 @@ pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
 /// # assert_eq!(cargo, Some(index_dir.join("ca").join("rg").join("cargo")));
 /// ```
 pub fn find_package_data(cratename: &str, index_dir: &Path) -> Option<PathBuf> {
-    let maybepath = |pb: PathBuf| { if pb.exists() { Some(pb) } else { None } };
+    let maybepath = |pb: PathBuf| if pb.exists() { Some(pb) } else { None };
 
     match cratename.len() {
         0 => panic!("0-length cratename"),
