@@ -175,14 +175,15 @@ impl MainRepoPackage {
 /// # use cargo_update::ops::resolve_cargo_directory;
 /// # use std::env::temp_dir;
 /// # let cargo_dir = temp_dir();
-/// let cargo_dir = resolve_cargo_directory(cargo_dir);
+/// # let crates_file = cargo_dir.join(".crates.toml");
+/// let (cargo_dir, crates_file) = resolve_cargo_directory(cargo_dir, crates_file);
 /// # let _ = cargo_dir;
+/// # let _ = crates_file;
 /// ```
-pub fn resolve_cargo_directory(cargo_dir: PathBuf) -> PathBuf {
-    let crates_path = cargo_dir.join(".crates.toml");
-    if crates_path.exists() {
+pub fn resolve_cargo_directory(cargo_dir: PathBuf, crates_file: PathBuf) -> (PathBuf, PathBuf) {
+    if crates_file.exists() {
         let mut crates = String::new();
-        File::open(crates_path).unwrap().read_to_string(&mut crates).unwrap();
+        File::open(&crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
         if let Some(idir) = toml::Parser::new(&crates)
             .parse()
@@ -191,10 +192,10 @@ pub fn resolve_cargo_directory(cargo_dir: PathBuf) -> PathBuf {
             .and_then(|t| t.as_table())
             .and_then(|t| t.get("root"))
             .and_then(|t| t.as_str()) {
-            return resolve_cargo_directory(PathBuf::from(idir));
+            return resolve_cargo_directory(PathBuf::from(idir), Path::new(idir).join(".crates.toml"));
         }
     }
-    cargo_dir
+    (cargo_dir, crates_file)
 }
 
 /// List the installed packages at the specified location that originate
@@ -207,17 +208,16 @@ pub fn resolve_cargo_directory(cargo_dir: PathBuf) -> PathBuf {
 /// ```
 /// # use cargo_update::ops::installed_main_repo_packages;
 /// # use std::env::temp_dir;
-/// # let cargo_dir = temp_dir();
+/// # let cargo_dir = temp_dir().join(".crates.toml");
 /// let packages = installed_main_repo_packages(&cargo_dir);
 /// for package in &packages {
 ///     println!("{} v{}", package.name, package.version);
 /// }
 /// ```
-pub fn installed_main_repo_packages(cargo_dir: &Path) -> Vec<MainRepoPackage> {
-    let crates_path = cargo_dir.join(".crates.toml");
-    if crates_path.exists() {
+pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> {
+    if crates_file.exists() {
         let mut crates = String::new();
-        File::open(crates_path).unwrap().read_to_string(&mut crates).unwrap();
+        File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
         toml::Parser::new(&crates).parse().unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| MainRepoPackage::parse(s)).collect()
     } else {

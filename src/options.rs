@@ -30,7 +30,9 @@ pub struct Options {
     pub update: bool,
     /// Update all packages. Default: `false`
     pub force: bool,
-    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    /// The `cargo` home directory. Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    pub crates_file: (String, PathBuf),
+    /// The `cargo` home directory. Default: `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub cargo_dir: (String, PathBuf),
 }
 
@@ -53,6 +55,26 @@ impl Options {
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
 
+        let cdir = match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
+            Ok(ch) => ("$CARGO_HOME".to_string(), ch),
+            Err(()) =>
+                match home_dir().and_then(|hd| hd.canonicalize().ok()) {
+                    Some(mut hd) => {
+                        hd.push(".cargo");
+
+                        fs::create_dir_all(&hd).unwrap();
+                        ("$HOME/.cargo".to_string(), hd)
+                    }
+                    None => {
+                        clap::Error {
+                                message: "$CARGO_HOME and home directory invalid, please specify the cargo home directory with the -c option".to_string(),
+                                kind: clap::ErrorKind::MissingRequiredArgument,
+                                info: None,
+                            }
+                            .exit()
+                    }
+                },
+        };
         Options {
             to_update: if matches.is_present("all") {
                 vec![]
@@ -62,38 +84,15 @@ impl Options {
             },
             update: !matches.is_present("list"),
             force: matches.is_present("force"),
-            cargo_dir: match matches.value_of("cargo-dir") {
+            crates_file: match matches.value_of("cargo-dir") {
                 Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
-                None => {
+                None =>
                     match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                        Ok(ch) => ("$CARGO_INSTALL_ROOT".to_string(), ch),
-                        Err(()) => {
-                            match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                                Ok(ch) => ("$CARGO_HOME".to_string(), ch),
-                                Err(()) => {
-                                    match home_dir().and_then(|hd| hd.canonicalize().ok()) {
-                                        Some(mut hd) => {
-                                            hd.push(".cargo");
-
-                                            fs::create_dir_all(&hd).unwrap();
-                                            ("$HOME/.cargo".to_string(), hd)
-                                        }
-                                        None => {
-                                            clap::Error {
-                                                    message: "$CARGO_INSTALL_ROOT, $CARGO_HOME and home directory invalid, \
-                                                              please specify the cargo home directory with the -c option".to_string(),
-                                                    kind: clap::ErrorKind::MissingRequiredArgument,
-                                                    info: None,
-                                                }
-                                                .exit()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                        Ok(ch) => ("$CARGO_INSTALL_ROOT/.crates.toml".to_string(), ch.join(".crates.toml")),
+                        Err(()) => (format!("{}/.crates.toml", cdir.0), cdir.1.join(".crates.toml")),
+                    },
             },
+            cargo_dir: cdir,
         }
     }
 

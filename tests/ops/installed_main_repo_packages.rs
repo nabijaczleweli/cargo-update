@@ -16,8 +16,9 @@ fn existant() {
     let _ = fs::create_dir(&td);
     td.push("installed_main_repo_packages-existant");
     let _ = fs::create_dir(&td);
+    td.push(".crates.toml");
 
-    File::create(td.join(".crates.toml")).unwrap().write_all(CRATES).unwrap();
+    File::create(&td).unwrap().write_all(CRATES).unwrap();
 
     assert_eq!(installed_main_repo_packages(&td),
                vec![MainRepoPackage {
@@ -45,6 +46,7 @@ fn non_existant() {
     let _ = fs::create_dir(&td);
     td.push("installed_main_repo_packages-nonexistant");
     let _ = fs::create_dir(&td);
+    td.push(".crates.toml");
 
     assert_eq!(installed_main_repo_packages(&td), vec![]);
 }
