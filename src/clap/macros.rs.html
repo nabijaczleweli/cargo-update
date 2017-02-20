@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.20.4/src/macros.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.20.5/src/macros.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>macros.rs.html -- source</title>
@@ -831,6 +831,65 @@
 <span id="787">787</span>
 <span id="788">788</span>
 <span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
 </pre><pre class='rust '>
 <span class='doccomment'>/// A convenience macro for loading the YAML file at compile time (relative to the current file,</span>
 <span class='doccomment'>/// like modules work). That YAML object can then be passed to this function.</span>
@@ -1366,7 +1425,66 @@
 }
 
 <span class='doccomment'>/// Build `App`, `Arg`s, `SubCommand`s and `Group`s with Usage-string like input</span>
-<span class='doccomment'>/// but without the parsing.</span>
+<span class='doccomment'>/// but without the associated parsing runtime cost.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// `clap_app!` also supports several shorthand syntaxes.</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// # Examples</span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// ```no_run</span>
+<span class='doccomment'>/// # #[macro_use]</span>
+<span class='doccomment'>/// # extern crate clap;</span>
+<span class='doccomment'>/// # fn main() {</span>
+<span class='doccomment'>/// let matches = clap_app!(myapp =&gt;                                       </span>
+<span class='doccomment'>///     (version: &quot;1.0&quot;)                                                   </span>
+<span class='doccomment'>///     (author: &quot;Kevin K. &lt;kbknapp@gmail.com&gt;&quot;)                           </span>
+<span class='doccomment'>///     (about: &quot;Does awesome things&quot;)                                     </span>
+<span class='doccomment'>///     (@arg CONFIG: -c --config +takes_value &quot;Sets a custom config file&quot;)</span>
+<span class='doccomment'>///     (@arg INPUT: +required &quot;Sets the input file to use&quot;)               </span>
+<span class='doccomment'>///     (@arg debug: -d ... &quot;Sets the level of debugging information&quot;)     </span>
+<span class='doccomment'>///     (@subcommand test =&gt;                                               </span>
+<span class='doccomment'>///         (about: &quot;controls testing features&quot;)                           </span>
+<span class='doccomment'>///         (version: &quot;1.3&quot;)                                               </span>
+<span class='doccomment'>///         (author: &quot;Someone E. &lt;someone_else@other.com&gt;&quot;)                </span>
+<span class='doccomment'>///         (@arg verbose: -v --verbose &quot;Print test information verbosely&quot;)</span>
+<span class='doccomment'>///     )                                                                  </span>
+<span class='doccomment'>/// );</span>
+<span class='doccomment'>/// # }                                                                          </span>
+<span class='doccomment'>/// ```</span>
+<span class='doccomment'>/// # Shorthand Syntax for Args</span>
+<span class='doccomment'>/// </span>
+<span class='doccomment'>/// * A single hyphen followed by a character (such as `-c`) sets the [`Arg::short`]</span>
+<span class='doccomment'>/// * A double hyphen followed by a character or word (such as `--config`) sets [`Arg::long`]</span>
+<span class='doccomment'>/// * Three dots (`...`) sets [`Arg::multiple(true)`]</span>
+<span class='doccomment'>/// * Angled brackets after either a short or long will set [`Arg::value_name`] and </span>
+<span class='doccomment'>/// `Arg::required(true)` such as `--config &lt;FILE&gt;` = `Arg::value_name(&quot;FILE&quot;)` and </span>
+<span class='doccomment'>/// `Arg::required(true)</span>
+<span class='doccomment'>/// * Square brackets after either a short or long will set [`Arg::value_name`] and </span>
+<span class='doccomment'>/// `Arg::required(false)` such as `--config [FILE]` = `Arg::value_name(&quot;FILE&quot;)` and </span>
+<span class='doccomment'>/// `Arg::required(false)</span>
+<span class='doccomment'>/// * There are short hand syntaxes for Arg methods that accept booleans </span>
+<span class='doccomment'>///   * A plus sign will set that method to `true` such as `+required` = `Arg::required(true)`</span>
+<span class='doccomment'>///   * An exclamation will set that method to `false` such as `!required` = `Arg::required(false)`</span>
+<span class='doccomment'>/// * A `#{min, max}` will set [`Arg::min_values(min)`] and [`Arg::max_values(max)`]</span>
+<span class='doccomment'>/// * An asterisk (`*`) will set `Arg::required(true)`</span>
+<span class='doccomment'>/// * Curly brackets around a `fn` will set [`Arg::validator`] as in `{fn}` = `Arg::validator(fn)`</span>
+<span class='doccomment'>/// * An Arg method that accepts a string followed by square brackets will set that method such as </span>
+<span class='doccomment'>/// `conflicts_with[FOO]` will set `Arg::conflicts_with(&quot;FOO&quot;)` (note the lack of quotes around </span>
+<span class='doccomment'>/// `FOO` in the macro) </span>
+<span class='doccomment'>/// * An Arg method that takes a string and can be set multiple times (such as </span>
+<span class='doccomment'>/// [`Arg::conflicts_with`]) followed by square brackets and a list of values separated by spaces </span>
+<span class='doccomment'>/// will set that method such as `conflicts_with[FOO BAR BAZ]` will set </span>
+<span class='doccomment'>/// `Arg::conflicts_with(&quot;FOO&quot;)`, `Arg::conflicts_with(&quot;BAR&quot;)`, and `Arg::conflicts_with(&quot;BAZ&quot;)`</span>
+<span class='doccomment'>/// (note the lack of quotes around the values in the macro) </span>
+<span class='doccomment'>///</span>
+<span class='doccomment'>/// [`Arg::short`]: ./struct.Arg.html#method.short</span>
+<span class='doccomment'>/// [`Arg::long`]: ./struct.Arg.html#method.long</span>
+<span class='doccomment'>/// [`Arg::multiple(true)`]: ./struct.Arg.html#method.multiple</span>
+<span class='doccomment'>/// [`Arg::value_name`]: ./struct.Arg.html#method.value_name</span>
+<span class='doccomment'>/// [`Arg::min_values(min)`]: ./struct.Arg.html#method.min_values</span>
+<span class='doccomment'>/// [`Arg::max_values(max)`]: ./struct.Arg.html#method.max_values</span>
+<span class='doccomment'>/// [`Arg::validator`]: ./struct.Arg.html#method.validator</span>
+<span class='doccomment'>/// [`Arg::conflicts_with`]: ./struct.Arg.html#method.conflicts_with</span>
 <span class='attribute'>#[<span class='ident'>macro_export</span>]</span>
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>clap_app</span> {
     (@<span class='ident'>app</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span>:<span class='ident'>expr</span>)) <span class='op'>=&gt;</span> { <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span> };
@@ -1459,10 +1577,10 @@
         <span class='macro'>clap_app</span><span class='macro'>!</span>{ @<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>) <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>modes</span> <span class='op'>+</span><span class='ident'>required</span> $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>)<span class='op'>*</span> }
     };
 <span class='comment'>// !foo -&gt; .foo(false)</span>
-    (@<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>:<span class='ident'>expr</span>) <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>modes</span>:<span class='ident'>tt</span> <span class='op'>!</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ident</span> $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>:<span class='ident'>tt</span>)<span class='op'>*</span>) <span class='op'>=&gt;</span> {
+    (@<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>:<span class='ident'>expr</span>) <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>modes</span>:<span class='ident'>tt</span> <span class='op'>!</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ident</span>:<span class='ident'>ident</span> $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>:<span class='ident'>tt</span>)<span class='op'>*</span>) <span class='op'>=&gt;</span> {
         <span class='macro'>clap_app</span><span class='macro'>!</span>{ @<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ident</span>(<span class='bool-val'>false</span>)) <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>modes</span> $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>)<span class='op'>*</span> }
     };
-<span class='comment'>// foo -&gt; .foo(true)</span>
+<span class='comment'>// +foo -&gt; .foo(true)</span>
     (@<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>:<span class='ident'>expr</span>) <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>modes</span>:<span class='ident'>tt</span> <span class='op'>+</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ident</span>:<span class='ident'>ident</span> $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>:<span class='ident'>tt</span>)<span class='op'>*</span>) <span class='op'>=&gt;</span> {
         <span class='macro'>clap_app</span><span class='macro'>!</span>{ @<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ident</span>(<span class='bool-val'>true</span>)) <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>modes</span> $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>)<span class='op'>*</span> }
     };
