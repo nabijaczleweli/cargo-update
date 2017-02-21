@@ -30,7 +30,7 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
-    let (cargo_dir, crates_file) = cargo_update::ops::resolve_cargo_directory(opts.cargo_dir.1, opts.crates_file.1);
+    let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1);
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
 
     if !opts.to_update.is_empty() {
@@ -46,7 +46,7 @@ fn actual_main() -> Result<(), i32> {
         println!("");
     }
 
-    let registry = cargo_update::ops::get_index_path(&cargo_dir);
+    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
 
     for package in &mut packages {
         package.pull_version(&registry);

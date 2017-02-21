@@ -86,11 +86,12 @@ impl Options {
             force: matches.is_present("force"),
             crates_file: match matches.value_of("cargo-dir") {
                 Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
-                None =>
+                None => {
                     match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
                         Ok(ch) => ("$CARGO_INSTALL_ROOT/.crates.toml".to_string(), ch.join(".crates.toml")),
                         Err(()) => (format!("{}/.crates.toml", cdir.0), cdir.1.join(".crates.toml")),
-                    },
+                    }
+                }
             },
             cargo_dir: cdir,
         }

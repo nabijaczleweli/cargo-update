@@ -166,24 +166,23 @@ impl MainRepoPackage {
 }
 
 
-/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `.crates.toml` file in the
-/// specified directory up to the final one.
+/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file
+/// parallel to the specified crates file up to the final one.
 ///
 /// # Examples
 ///
 /// ```
-/// # use cargo_update::ops::resolve_cargo_directory;
+/// # use cargo_update::ops::resolve_crates_file;
 /// # use std::env::temp_dir;
-/// # let cargo_dir = temp_dir();
-/// # let crates_file = cargo_dir.join(".crates.toml");
-/// let (cargo_dir, crates_file) = resolve_cargo_directory(cargo_dir, crates_file);
-/// # let _ = cargo_dir;
+/// # let crates_file = temp_dir().join(".crates.toml");
+/// let crates_file = resolve_crates_file(crates_file);
 /// # let _ = crates_file;
 /// ```
-pub fn resolve_cargo_directory(cargo_dir: PathBuf, crates_file: PathBuf) -> (PathBuf, PathBuf) {
-    if crates_file.exists() {
+pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
+    let config_file = crates_file.with_file_name("config");
+    if config_file.exists() {
         let mut crates = String::new();
-        File::open(&crates_file).unwrap().read_to_string(&mut crates).unwrap();
+        File::open(&config_file).unwrap().read_to_string(&mut crates).unwrap();
 
         if let Some(idir) = toml::Parser::new(&crates)
             .parse()
@@ -192,10 +191,10 @@ pub fn resolve_cargo_directory(cargo_dir: PathBuf, crates_file: PathBuf) -> (Pat
             .and_then(|t| t.as_table())
             .and_then(|t| t.get("root"))
             .and_then(|t| t.as_str()) {
-            return resolve_cargo_directory(PathBuf::from(idir), Path::new(idir).join(".crates.toml"));
+            return resolve_crates_file(Path::new(idir).join(".crates.toml"));
         }
     }
-    (cargo_dir, crates_file)
+    crates_file
 }
 
 /// List the installed packages at the specified location that originate
