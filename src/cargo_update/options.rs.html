@@ -144,6 +144,7 @@
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
+<span id="103">103</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Option parsing and management.</span>
 <span class='doccomment'>//!</span>
@@ -233,11 +234,12 @@
             <span class='ident'>force</span>: <span class='ident'>matches</span>.<span class='ident'>is_present</span>(<span class='string'>&quot;force&quot;</span>),
             <span class='ident'>crates_file</span>: <span class='kw'>match</span> <span class='ident'>matches</span>.<span class='ident'>value_of</span>(<span class='string'>&quot;cargo-dir&quot;</span>) {
                 <span class='prelude-val'>Some</span>(<span class='ident'>dirs</span>) <span class='op'>=&gt;</span> (<span class='ident'>dirs</span>.<span class='ident'>to_string</span>(), <span class='ident'>fs</span>::<span class='ident'>canonicalize</span>(<span class='ident'>dirs</span>).<span class='ident'>unwrap</span>()),
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span>
+                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> {
                     <span class='kw'>match</span> <span class='ident'>env</span>::<span class='ident'>var</span>(<span class='string'>&quot;CARGO_INSTALL_ROOT&quot;</span>).<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> ()).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>ch</span><span class='op'>|</span> <span class='ident'>fs</span>::<span class='ident'>canonicalize</span>(<span class='ident'>ch</span>).<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> ())) {
                         <span class='prelude-val'>Ok</span>(<span class='ident'>ch</span>) <span class='op'>=&gt;</span> (<span class='string'>&quot;$CARGO_INSTALL_ROOT/.crates.toml&quot;</span>.<span class='ident'>to_string</span>(), <span class='ident'>ch</span>.<span class='ident'>join</span>(<span class='string'>&quot;.crates.toml&quot;</span>)),
                         <span class='prelude-val'>Err</span>(()) <span class='op'>=&gt;</span> (<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}/.crates.toml&quot;</span>, <span class='ident'>cdir</span>.<span class='number'>0</span>), <span class='ident'>cdir</span>.<span class='number'>1</span>.<span class='ident'>join</span>(<span class='string'>&quot;.crates.toml&quot;</span>)),
-                    },
+                    }
+                }
             },
             <span class='ident'>cargo_dir</span>: <span class='ident'>cdir</span>,
         }

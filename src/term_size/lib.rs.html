@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/term_size-0.2.2/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/term_size-0.2.3/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -150,6 +150,33 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
 </pre><pre class='rust '>
 <span class='comment'>// The following was originally taken and adapated from exa source</span>
 <span class='comment'>// repo: https://github.com/ogham/exa</span>
@@ -172,67 +199,75 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>winapi</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
-<span class='kw'>use</span> <span class='ident'>kernel32</span>::{<span class='ident'>GetConsoleScreenBufferInfo</span>, <span class='ident'>GetStdHandle</span>};
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
-<span class='kw'>use</span> <span class='ident'>winapi</span>::{<span class='ident'>CONSOLE_SCREEN_BUFFER_INFO</span>, <span class='ident'>COORD</span>, <span class='ident'>SMALL_RECT</span>, <span class='ident'>STD_OUTPUT_HANDLE</span>};
+<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>platform</span>::<span class='ident'>dimensions</span>;
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>))]</span>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>::<span class='ident'>zeroed</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>))]</span>
-<span class='kw'>use</span> <span class='ident'>libc</span>::{<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>c_int</span>, <span class='ident'>c_ulong</span>, <span class='ident'>winsize</span>};
-
-<span class='comment'>// Unfortunately the actual command is not standardised...</span>
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>, <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>))]</span>
-<span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x5413</span>;
-
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
+          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>,
+          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
           <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>,
           <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;bitrig&quot;</span>,
           <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;dragonfly&quot;</span>,
           <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>,
           <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;netbsd&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>))]</span>
-<span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x40087468</span>;
+          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>,
+          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>))]</span>
+<span class='kw'>mod</span> <span class='ident'>platform</span> {
+    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>::<span class='ident'>zeroed</span>;
+    <span class='kw'>use</span> <span class='ident'>libc</span>::{<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>c_int</span>, <span class='ident'>c_ulong</span>, <span class='ident'>winsize</span>};
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>)]</span>
-<span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x5468</span>;
+    <span class='comment'>// Unfortunately the actual command is not standardised...</span>
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>, <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>))]</span>
+    <span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x5413</span>;
 
-<span class='kw'>extern</span> <span class='string'>&quot;C&quot;</span> {
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>))]</span>
-    <span class='kw'>fn</span> <span class='ident'>ioctl</span>(<span class='ident'>fd</span>: <span class='ident'>c_int</span>, <span class='ident'>request</span>: <span class='ident'>c_ulong</span>, ...) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
-}
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;bitrig&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;dragonfly&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;netbsd&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>))]</span>
+    <span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x40087468</span>;
 
-<span class='doccomment'>/// Runs the ioctl command. Returns (0, 0) if output is not to a terminal, or</span>
-<span class='doccomment'>/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
-<span class='doccomment'>/// it can be used as a nil value.</span>
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>))]</span>
-<span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>get_dimensions</span>() <span class='op'>-&gt;</span> <span class='ident'>winsize</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>window</span>: <span class='ident'>winsize</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-    <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>)]</span>
+    <span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x5468</span>;
 
-    <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-        <span class='ident'>zeroed</span>()
-    } <span class='kw'>else</span> {
-        <span class='ident'>window</span>
+    <span class='kw'>extern</span> <span class='string'>&quot;C&quot;</span> {
+        <span class='kw'>fn</span> <span class='ident'>ioctl</span>(<span class='ident'>fd</span>: <span class='ident'>c_int</span>, <span class='ident'>request</span>: <span class='ident'>c_ulong</span>, ...) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
     }
-}
 
-<span class='doccomment'>/// Query the current processes&#39;s output, returning its width and height as a</span>
-<span class='doccomment'>/// number of characters. Returns `None` if the output isn&#39;t to a terminal.</span>
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>))]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>get_dimensions</span>() };
+    <span class='doccomment'>/// Runs the ioctl command. Returns (0, 0) if output is not to a terminal, or</span>
+    <span class='doccomment'>/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
+    <span class='doccomment'>/// it can be used as a nil value.</span>
+    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>get_dimensions</span>() <span class='op'>-&gt;</span> <span class='ident'>winsize</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>window</span>: <span class='ident'>winsize</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
+        <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
 
-    <span class='kw'>if</span> <span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='op'>==</span> <span class='number'>0</span> {
-        <span class='prelude-val'>None</span>
-    } <span class='kw'>else</span> {
-        <span class='prelude-val'>Some</span>((<span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='kw'>as</span> <span class='ident'>usize</span>))
+        <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
+            <span class='ident'>zeroed</span>()
+        } <span class='kw'>else</span> {
+            <span class='ident'>window</span>
+        }
+    }
+
+    <span class='doccomment'>/// Query the current processes&#39;s output, returning its width and height as a</span>
+    <span class='doccomment'>/// number of characters. Returns `None` if the output isn&#39;t to a terminal.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+        <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>get_dimensions</span>() };
+
+        <span class='kw'>if</span> <span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='op'>==</span> <span class='number'>0</span> {
+            <span class='prelude-val'>None</span>
+        } <span class='kw'>else</span> {
+            <span class='prelude-val'>Some</span>((<span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='kw'>as</span> <span class='ident'>usize</span>))
+        }
     }
 }
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+<span class='kw'>mod</span> <span class='ident'>platform</span> {
+    <span class='kw'>use</span> <span class='ident'>kernel32</span>::{<span class='ident'>GetConsoleScreenBufferInfo</span>, <span class='ident'>GetStdHandle</span>};
+    <span class='kw'>use</span> <span class='ident'>winapi</span>::{<span class='ident'>CONSOLE_SCREEN_BUFFER_INFO</span>, <span class='ident'>COORD</span>, <span class='ident'>SMALL_RECT</span>, <span class='ident'>STD_OUTPUT_HANDLE</span>};
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>null_coord</span> <span class='op'>=</span> <span class='ident'>COORD</span>{
             <span class='ident'>X</span>: <span class='number'>0</span>,
             <span class='ident'>Y</span>: <span class='number'>0</span>,
@@ -258,6 +293,25 @@
         } <span class='kw'>else</span> {
             <span class='prelude-val'>None</span>
         }
+    }
+}
+
+<span class='comment'>// makes project compilable on unsupported platforms</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;bitrig&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;dragonfly&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;netbsd&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>,
+              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)))]</span>
+<span class='kw'>mod</span> <span class='ident'>platform</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+        <span class='prelude-val'>None</span>
+    }
 }
 </pre>
 </section>
