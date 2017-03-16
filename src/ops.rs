@@ -122,10 +122,10 @@ impl MainRepoPackage {
     /// assert!(MainRepoPackage::parse(package_s).is_none());
     /// ```
     pub fn parse(what: &str) -> Option<MainRepoPackage> {
-        PACKAGE_RGX.captures(what).and_then(|c| if c.at(3).unwrap() == "registry" {
+        PACKAGE_RGX.captures(what).and_then(|c| if c.get(3).unwrap().as_str() == "registry" {
             Some(MainRepoPackage {
-                name: c.at(1).unwrap().to_string(),
-                version: Semver::parse(c.at(2).unwrap()).unwrap(),
+                name: c.get(1).unwrap().as_str().to_string(),
+                version: Semver::parse(c.get(2).unwrap().as_str()).unwrap(),
                 newest_version: None,
             })
         } else {
@@ -184,8 +184,7 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
         let mut crates = String::new();
         File::open(&config_file).unwrap().read_to_string(&mut crates).unwrap();
 
-        if let Some(idir) = toml::Parser::new(&crates)
-            .parse()
+        if let Some(idir) = toml::from_str::<toml::Value>(&crates)
             .unwrap()
             .get("install")
             .and_then(|t| t.as_table())
@@ -218,7 +217,7 @@ pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> 
         let mut crates = String::new();
         File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
-        toml::Parser::new(&crates).parse().unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| MainRepoPackage::parse(s)).collect()
+        toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| MainRepoPackage::parse(s)).collect()
     } else {
         Vec::new()
     }
