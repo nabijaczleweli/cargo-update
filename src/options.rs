@@ -13,6 +13,7 @@
 
 
 use clap::{self, AppSettings, SubCommand, App, Arg};
+use self::super::ops::ConfigOperation;
 use std::env::{self, home_dir};
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
@@ -42,17 +43,10 @@ pub struct ConfigOptions {
     /// The `config` file in the `cargo` home directory.
     /// Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub crates_file: (String, PathBuf),
+    /// Crate to modify config for
     pub package: String,
+    /// What to do to the config, or display with empty
     pub ops: Vec<ConfigOperation>,
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum ConfigOperation {
-    SetToolchain(String),
-    RemoveToolchain,
-    DefaultFeatures(bool),
-    AddFeature(String),
-    RemoveFeature(String),
 }
 
 

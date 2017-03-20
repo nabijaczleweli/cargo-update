@@ -14,6 +14,10 @@ use regex::Regex;
 use toml;
 use json;
 
+mod config;
+
+pub use self::config::*;
+
 
 lazy_static! {
     static ref PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(([^+\s]+)+\+([^\s]+)\)").unwrap();
