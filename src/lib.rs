@@ -215,4 +215,4 @@ mod options;
 
 pub mod ops;
 
-pub use options::Options;
+pub use options::{ConfigOperation, ConfigOptions, Options};
