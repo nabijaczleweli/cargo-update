@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write as FWrite;
 use std::io::{Read, Write};
 use std::path::Path;
 use std::fs::File;
@@ -79,6 +80,43 @@ impl PackageConfig {
         };
         def.execute_operations(ops);
         def
+    }
+
+    /// Generate cargo arguments from this configuration.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use cargo_update::ops::PackageConfig;
+    /// # use std::collections::BTreeMap;
+    /// # use std::process::Command;
+    /// # let name = "cargo-update".to_string();
+    /// # let mut configuration = BTreeMap::new();
+    /// # configuration.insert(name.clone(), PackageConfig::from(&[]));
+    /// let cmd = Command::new("cargo").args(configuration.get(&name).unwrap().cargo_args()).arg(&name)
+    /// // Process the command further -- run it, for example.
+    /// # .status().unwrap();
+    /// # let _ = cmd;
+    /// ```
+    pub fn cargo_args(&self) -> Vec<String> {
+        let mut res = vec![];
+        if let Some(ref t) = self.toolchain.as_ref() {
+            res.push(format!("+{}", t));
+        }
+        res.push("install".to_string());
+        res.push("-f".to_string());
+        if !self.default_features {
+            res.push("--no-default-features".to_string());
+        }
+        if !self.features.is_empty() {
+            res.push("--features".to_string());
+            let mut a = String::new();
+            for f in &self.features {
+                write!(a, "{} ", f).unwrap();
+            }
+            res.push(a);
+        }
+        res
     }
 
     /// Modify `self` according to the specified set of operations.

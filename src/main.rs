@@ -32,6 +32,7 @@ fn actual_main() -> Result<(), i32> {
 
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1);
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
+    let configuration = try!(cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")));
 
     if !opts.to_update.is_empty() {
         packages = cargo_update::ops::intersect_packages(packages, &opts.to_update);
@@ -90,7 +91,11 @@ fn actual_main() -> Result<(), i32> {
                         File::create(cur_exe).unwrap();
                     }
 
-                    let install_res = Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap();
+                    let install_res = if let Some(ref cfg) = configuration.get(&package.name) {
+                        Command::new("cargo").args(cfg.cargo_args()).arg(&package.name).status().unwrap()
+                    } else {
+                        Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap()
+                    };
 
                     println!("");
                     if !install_res.success() {
