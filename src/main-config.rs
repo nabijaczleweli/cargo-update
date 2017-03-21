@@ -1,7 +1,9 @@
 extern crate cargo_update;
+extern crate tabwriter;
 
+use std::io::{Write, stdout};
+use tabwriter::TabWriter;
 use std::process::exit;
-use std::collections::BTreeMap;
 
 
 fn main() {
@@ -11,24 +13,38 @@ fn main() {
 
 fn actual_main() -> Result<(), i32> {
     let opts = cargo_update::ConfigOptions::parse();
-    println!("{:#?}", opts);
     let config_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1).with_file_name(".install_config.toml");
-    println!("{}", config_file.display());
 
-    let mut mep = BTreeMap::new();
-    mep.insert("cargo-update".to_string(),
-               cargo_update::ops::PackageConfig {
-                   toolchain: None,
-                   default_features: true,
-                   features: vec!["capitalism".to_string()],
-               });
-    mep.insert("bear-lib-terminal".to_string(),
-               cargo_update::ops::PackageConfig {
-                   toolchain: Some("nightly".to_string()),
-                   default_features: false,
-                   features: vec!["capitalism".to_string(), "exhuberance".to_string()],
-               });
-    try!(cargo_update::ops::PackageConfig::write(&mep, &config_file));
+    let mut configuration = try!(cargo_update::ops::PackageConfig::read(&config_file));
+    if !opts.ops.is_empty() {
+        let mut changed = false;
+        if let Some(ref mut cfg) = configuration.get_mut(&opts.package) {
+            cfg.execute_operations(&opts.ops);
+            changed = true;
+        }
+        if !changed {
+            configuration.insert(opts.package.clone(), cargo_update::ops::PackageConfig::from(&opts.ops));
+        }
+
+        try!(cargo_update::ops::PackageConfig::write(&configuration, &config_file));
+    }
+
+    if let Some(ref cfg) = configuration.get(&opts.package) {
+        let mut out = TabWriter::new(stdout());
+        if let Some(ref t) = cfg.toolchain.as_ref() {
+            writeln!(out, "Toolchain\t{}", t).unwrap();
+        }
+        writeln!(out, "Default features\t{}", cfg.default_features).unwrap();
+        if !cfg.features.is_empty() {
+            write!(out, "Features").unwrap();
+            for f in &cfg.features {
+                writeln!(out, "\t{}", f).unwrap();
+            }
+        }
+        out.flush().unwrap();
+    } else {
+        println!("No configuration for package {}.", opts.package);
+    }
 
     Ok(())
 }
