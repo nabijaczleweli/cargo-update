@@ -3,6 +3,7 @@ implementors["cargo_update"] = [];
 implementors["libc"] = [];
 implementors["regex_syntax"] = [];
 implementors["serde"] = [];
+implementors["syn"] = [];
 implementors["void"] = [];
 
             if (window.register_implementors) {

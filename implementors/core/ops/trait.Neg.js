@@ -4,6 +4,7 @@ implementors["json"] = ["impl <a class='trait' href='https://doc.rust-lang.org/n
 implementors["libc"] = [];
 implementors["regex_syntax"] = [];
 implementors["serde"] = [];
+implementors["syn"] = [];
 implementors["void"] = [];
 
             if (window.register_implementors) {
