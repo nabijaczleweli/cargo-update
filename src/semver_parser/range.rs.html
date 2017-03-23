@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/semver-parser-0.6.2/src/range.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/semver-parser-0.7.0/src/range.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>range.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -738,83 +739,11 @@
 <span id="694">694</span>
 <span id="695">695</span>
 <span id="696">696</span>
-<span id="697">697</span>
-<span id="698">698</span>
-<span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
-<span id="706">706</span>
-<span id="707">707</span>
-<span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
-<span id="711">711</span>
 </pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>regex</span>::<span class='ident'>Regex</span>;
-<span class='kw'>use</span> <span class='ident'>common</span>;
+<span class='kw'>use</span> <span class='ident'>common</span>::{<span class='self'>self</span>, <span class='ident'>numeric_identifier</span>, <span class='ident'>letters_numbers_dash_dot</span>};
 <span class='kw'>use</span> <span class='ident'>version</span>::<span class='ident'>Identifier</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>FromStr</span>;
-
-<span class='macro'>lazy_static</span><span class='macro'>!</span> {
-    <span class='kw'>static</span> <span class='kw-2'>ref</span> <span class='ident'>REGEX</span>: <span class='ident'>Regex</span> <span class='op'>=</span> {
-        <span class='comment'>// an operation can be:</span>
-        <span class='comment'>//</span>
-        <span class='comment'>// * =</span>
-        <span class='comment'>// * &gt;</span>
-        <span class='comment'>// * &gt;=</span>
-        <span class='comment'>// * &lt;</span>
-        <span class='comment'>// * &lt;=</span>
-        <span class='comment'>// * ~</span>
-        <span class='comment'>// * ^</span>
-        <span class='kw'>let</span> <span class='ident'>operation</span> <span class='op'>=</span> <span class='string'>r&quot;=|&gt;|&gt;=|&lt;|&lt;=|~|\^&quot;</span>;
-
-        <span class='comment'>// a numeric identifier is either zero or multiple numbers without a leading zero</span>
-        <span class='kw'>let</span> <span class='ident'>numeric_identifier</span> <span class='op'>=</span> <span class='string'>r&quot;0|[1-9][0-9]*&quot;</span>;
-
-        <span class='kw'>let</span> <span class='ident'>major</span> <span class='op'>=</span> <span class='ident'>numeric_identifier</span>;
-
-        <span class='comment'>// minor can be either a number or a wildcard. *, x, and X are wildcards.</span>
-        <span class='kw'>let</span> <span class='ident'>minor</span> <span class='op'>=</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>r&quot;{}|\*|[xX]&quot;</span>, <span class='ident'>numeric_identifier</span>);
-
-        <span class='comment'>// patch can be either a number or a wildcard. *, x, and X are wildcards.</span>
-        <span class='kw'>let</span> <span class='ident'>patch</span> <span class='op'>=</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>r&quot;{}|\*|[xX]&quot;</span>, <span class='ident'>numeric_identifier</span>);
-
-        <span class='kw'>let</span> <span class='ident'>letters_numbers_dash_dot</span> <span class='op'>=</span> <span class='string'>r&quot;[-.A-Za-z0-9]+&quot;</span>;
-
-        <span class='comment'>// This regex does not fully parse prereleases, just extracts the whole prerelease string.</span>
-        <span class='comment'>// parse_version() will parse this further.</span>
-        <span class='kw'>let</span> <span class='ident'>pre</span> <span class='op'>=</span> <span class='ident'>letters_numbers_dash_dot</span>;
-
-        <span class='comment'>// This regex does not fully parse builds, just extracts the whole build string.</span>
-        <span class='comment'>// parse_version() will parse this further.</span>
-        <span class='kw'>let</span> <span class='ident'>build</span> <span class='op'>=</span> <span class='ident'>letters_numbers_dash_dot</span>;
-
-        <span class='kw'>let</span> <span class='ident'>regex</span> <span class='op'>=</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>r&quot;(?x) # heck yes x mode
-            ^\s*                    # leading whitespace
-            (?P&lt;operation&gt;{})?\s*   # optional operation
-            (?P&lt;major&gt;{})           # major version
-            (?:\.(?P&lt;minor&gt;{}))?    # optional dot and then minor
-            (?:\.(?P&lt;patch&gt;{}))?    # optional dot and then patch
-            (?:-(?P&lt;pre&gt;{}))?       # optional prerelease version
-            (?:\+(?P&lt;build&gt;{}))?    # optional build metadata
-            \s*$                    # trailing whitespace
-            &quot;</span>,
-            <span class='ident'>operation</span>,
-            <span class='ident'>major</span>,
-            <span class='ident'>minor</span>,
-            <span class='ident'>patch</span>,
-            <span class='ident'>pre</span>,
-            <span class='ident'>build</span>);
-        <span class='kw'>let</span> <span class='ident'>regex</span> <span class='op'>=</span> <span class='ident'>Regex</span>::<span class='ident'>new</span>(<span class='kw-2'>&amp;</span><span class='ident'>regex</span>);
-
-        <span class='comment'>// this unwrap is okay because everything above here is const, so this will never fail.</span>
-        <span class='ident'>regex</span>.<span class='ident'>unwrap</span>()
-    };
-}
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::{<span class='ident'>FromStr</span>, <span class='ident'>from_utf8</span>};
+<span class='kw'>use</span> <span class='ident'>recognize</span>::<span class='kw-2'>*</span>;
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>VersionReq</span> {
@@ -866,6 +795,101 @@
     <span class='kw'>pub</span> <span class='ident'>pre</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Identifier</span><span class='op'>&gt;</span>,
 }
 
+<span class='kw'>fn</span> <span class='ident'>numeric_or_wild</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>val</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>numeric_identifier</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='prelude-val'>Some</span>(<span class='ident'>val</span>), <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='ident'>OneOf</span>(<span class='string'>b&quot;*xX&quot;</span>).<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='prelude-val'>None</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> {
+        <span class='prelude-val'>None</span>
+    }
+}
+
+<span class='kw'>fn</span> <span class='ident'>dot_numeric_or_wild</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+    <span class='string'>b&#39;.&#39;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>len</span><span class='op'>|</span>
+        <span class='ident'>numeric_or_wild</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>len</span>..]).<span class='ident'>map</span>(<span class='op'>|</span>(<span class='ident'>val</span>, <span class='ident'>len2</span>)<span class='op'>|</span> (<span class='ident'>val</span>, <span class='ident'>len</span> <span class='op'>+</span> <span class='ident'>len2</span>))
+    )
+}
+
+<span class='kw'>fn</span> <span class='ident'>operation</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>Op</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;=&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>Ex</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;&gt;=&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>GtEq</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;&gt;&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>Gt</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;&lt;=&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>LtEq</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;&lt;&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>Lt</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;~&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>Tilde</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>&quot;^&quot;</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='prelude-val'>Some</span>((<span class='ident'>Op</span>::<span class='ident'>Compatible</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> {
+        <span class='prelude-val'>None</span>
+    }
+}
+
+<span class='kw'>fn</span> <span class='ident'>whitespace</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span> {
+    <span class='ident'>ZeroOrMore</span>(<span class='ident'>OneOf</span>(<span class='string'>b&quot;\t\r\n &quot;</span>)).<span class='ident'>p</span>(<span class='ident'>s</span>)
+}
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_predicate</span>(<span class='ident'>range</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Predicate</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
+    <span class='kw'>let</span> <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>range</span>.<span class='ident'>trim</span>().<span class='ident'>as_bytes</span>();
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='number'>0</span>;
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>operation</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>op</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>operation</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
+        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
+        <span class='ident'>op</span>
+    } <span class='kw'>else</span> {
+        <span class='comment'>// operations default to Compatible</span>
+        <span class='ident'>Op</span>::<span class='ident'>Compatible</span>
+    };
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='ident'>whitespace</span>.<span class='ident'>p</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
+        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
+    }
+    <span class='kw'>let</span> <span class='ident'>major</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>major</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>numeric_identifier</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
+        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
+        <span class='ident'>major</span>
+    } <span class='kw'>else</span> {
+        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Error parsing major version number: &quot;</span>.<span class='ident'>to_string</span>());
+    };
+    <span class='kw'>let</span> <span class='ident'>minor</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>minor</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>dot_numeric_or_wild</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
+        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
+        <span class='kw'>if</span> <span class='ident'>minor</span>.<span class='ident'>is_none</span>() {
+            <span class='ident'>operation</span> <span class='op'>=</span> <span class='ident'>Op</span>::<span class='ident'>Wildcard</span>(<span class='ident'>WildcardVersion</span>::<span class='ident'>Minor</span>);
+        }
+        <span class='ident'>minor</span>
+    } <span class='kw'>else</span> {
+        <span class='prelude-val'>None</span>
+    };
+    <span class='kw'>let</span> <span class='ident'>patch</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>patch</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>dot_numeric_or_wild</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
+        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
+        <span class='kw'>if</span> <span class='ident'>patch</span>.<span class='ident'>is_none</span>() {
+            <span class='ident'>operation</span> <span class='op'>=</span> <span class='ident'>Op</span>::<span class='ident'>Wildcard</span>(<span class='ident'>WildcardVersion</span>::<span class='ident'>Patch</span>);
+        }
+        <span class='ident'>patch</span>
+    } <span class='kw'>else</span> {
+        <span class='prelude-val'>None</span>
+    };
+    <span class='kw'>let</span> (<span class='ident'>pre</span>, <span class='ident'>pre_len</span>) <span class='op'>=</span> <span class='ident'>common</span>::<span class='ident'>parse_optional_meta</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..], <span class='string'>b&#39;-&#39;</span>)<span class='question-mark'>?</span>;
+    <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>pre_len</span>;
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> (<span class='string'>b&#39;+&#39;</span>, <span class='ident'>letters_numbers_dash_dot</span>).<span class='ident'>p</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
+        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
+    }
+    <span class='kw'>if</span> <span class='ident'>i</span> <span class='op'>!=</span> <span class='ident'>s</span>.<span class='ident'>len</span>() {
+        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Extra junk after valid predicate: &quot;</span>.<span class='ident'>to_string</span>() <span class='op'>+</span>
+            <span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]).<span class='ident'>unwrap</span>());
+    }
+    <span class='prelude-val'>Ok</span>(<span class='ident'>Predicate</span> {
+        <span class='ident'>op</span>: <span class='ident'>operation</span>,
+        <span class='ident'>major</span>: <span class='ident'>major</span>,
+        <span class='ident'>minor</span>: <span class='ident'>minor</span>,
+        <span class='ident'>patch</span>: <span class='ident'>patch</span>,
+        <span class='ident'>pre</span>: <span class='ident'>pre</span>,
+    })
+}
+
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse</span>(<span class='ident'>ranges</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>VersionReq</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
     <span class='comment'>// null is an error</span>
     <span class='kw'>if</span> <span class='ident'>ranges</span> <span class='op'>==</span> <span class='string'>&quot;\0&quot;</span> {
@@ -910,76 +934,9 @@
     })
 }
 
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_predicate</span>(<span class='ident'>range</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Predicate</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>captures</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>REGEX</span>.<span class='ident'>captures</span>(<span class='ident'>range</span>.<span class='ident'>trim</span>()) {
-        <span class='prelude-val'>Some</span>(<span class='ident'>captures</span>) <span class='op'>=&gt;</span> <span class='ident'>captures</span>,
-        <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='string'>&quot;VersionReq did not parse properly.&quot;</span>)),
-    };
-
-    <span class='comment'>// operations default to Compatible</span>
-    <span class='comment'>// unwrap is okay because we validate that we only have correct strings in the regex</span>
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>operation</span> <span class='op'>=</span> <span class='ident'>captures</span>.<span class='ident'>name</span>(<span class='string'>&quot;operation&quot;</span>)
-                                .<span class='ident'>map</span>(<span class='ident'>str</span>::<span class='ident'>parse</span>)
-                                .<span class='ident'>map</span>(<span class='prelude-ty'>Result</span>::<span class='ident'>unwrap</span>)
-                                .<span class='ident'>unwrap_or</span>(<span class='ident'>Op</span>::<span class='ident'>Compatible</span>);
-
-    <span class='comment'>// first unwrap is okay because we always have major</span>
-    <span class='comment'>// second unwrap is okay becasue we know it&#39;s a number</span>
-    <span class='kw'>let</span> <span class='ident'>major</span> <span class='op'>=</span> <span class='ident'>captures</span>.<span class='ident'>name</span>(<span class='string'>&quot;major&quot;</span>)
-                        .<span class='ident'>unwrap</span>()
-                        .<span class='ident'>parse</span>()
-                        .<span class='ident'>unwrap</span>();
-
-    <span class='kw'>let</span> <span class='ident'>minor</span> <span class='op'>=</span> <span class='ident'>captures</span>.<span class='ident'>name</span>(<span class='string'>&quot;minor&quot;</span>);
-
-    <span class='comment'>// oh my what have I done? This code is gross.</span>
-    <span class='kw'>let</span> <span class='ident'>minor</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>minor</span>.<span class='ident'>is_some</span>() {
-        <span class='kw'>let</span> <span class='ident'>minor</span> <span class='op'>=</span> <span class='ident'>minor</span>.<span class='ident'>unwrap</span>();
-        <span class='kw'>match</span> <span class='ident'>minor</span>.<span class='ident'>parse</span>() {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>number</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>(<span class='ident'>number</span>),
-            <span class='prelude-val'>Err</span>(_) <span class='op'>=&gt;</span> {
-                <span class='comment'>// if we get an error, it&#39;s because it&#39;s a wildcard</span>
-                <span class='ident'>operation</span> <span class='op'>=</span> <span class='ident'>Op</span>::<span class='ident'>Wildcard</span>(<span class='ident'>WildcardVersion</span>::<span class='ident'>Minor</span>);
-
-                <span class='prelude-val'>None</span>
-            },
-        }
-    } <span class='kw'>else</span> {
-        <span class='prelude-val'>None</span>
-    };
-
-    <span class='kw'>let</span> <span class='ident'>patch</span> <span class='op'>=</span> <span class='ident'>captures</span>.<span class='ident'>name</span>(<span class='string'>&quot;patch&quot;</span>);
-
-    <span class='comment'>// oh my what have I done? This code is gross.</span>
-    <span class='kw'>let</span> <span class='ident'>patch</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>patch</span>.<span class='ident'>is_some</span>() {
-        <span class='kw'>let</span> <span class='ident'>patch</span> <span class='op'>=</span> <span class='ident'>patch</span>.<span class='ident'>unwrap</span>();
-        <span class='kw'>match</span> <span class='ident'>patch</span>.<span class='ident'>parse</span>() {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>number</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>(<span class='ident'>number</span>),
-            <span class='prelude-val'>Err</span>(_) <span class='op'>=&gt;</span> {
-                <span class='comment'>// if we get an error, it&#39;s because it&#39;s a wildcard</span>
-                <span class='ident'>operation</span> <span class='op'>=</span> <span class='ident'>Op</span>::<span class='ident'>Wildcard</span>(<span class='ident'>WildcardVersion</span>::<span class='ident'>Patch</span>);
-
-                <span class='prelude-val'>None</span>
-            },
-        }
-    } <span class='kw'>else</span> {
-        <span class='prelude-val'>None</span>
-    };
-
-    <span class='kw'>let</span> <span class='ident'>pre</span> <span class='op'>=</span> <span class='ident'>captures</span>.<span class='ident'>name</span>(<span class='string'>&quot;pre&quot;</span>).<span class='ident'>map</span>(<span class='ident'>common</span>::<span class='ident'>parse_meta</span>).<span class='ident'>unwrap_or_else</span>(<span class='ident'>Vec</span>::<span class='ident'>new</span>);
-
-    <span class='prelude-val'>Ok</span>(<span class='ident'>Predicate</span> {
-        <span class='ident'>op</span>: <span class='ident'>operation</span>,
-        <span class='ident'>major</span>: <span class='ident'>major</span>,
-        <span class='ident'>minor</span>: <span class='ident'>minor</span>,
-        <span class='ident'>patch</span>: <span class='ident'>patch</span>,
-        <span class='ident'>pre</span>: <span class='ident'>pre</span>,
-    })
-}
-
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
-    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='kw-2'>*</span>;
     <span class='kw'>use</span> <span class='ident'>range</span>;
     <span class='kw'>use</span> <span class='ident'>version</span>::<span class='ident'>Identifier</span>;
 
@@ -1464,6 +1421,20 @@
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>range</span>::<span class='ident'>parse</span>(<span class='string'>&quot;&gt; 0.3.0, ,&quot;</span>).<span class='ident'>is_err</span>());
     }
 
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>test_large_major_version</span>() {
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>range</span>::<span class='ident'>parse</span>(<span class='string'>&quot;18446744073709551617.0.0&quot;</span>).<span class='ident'>is_err</span>());
+    }
+
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>test_large_minor_version</span>() {
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>range</span>::<span class='ident'>parse</span>(<span class='string'>&quot;0.18446744073709551617.0&quot;</span>).<span class='ident'>is_err</span>());
+    }
+
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>test_large_patch_version</span>() {
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>range</span>::<span class='ident'>parse</span>(<span class='string'>&quot;0.0.18446744073709551617&quot;</span>).<span class='ident'>is_err</span>());
+    }
 }
 </pre>
 </section>

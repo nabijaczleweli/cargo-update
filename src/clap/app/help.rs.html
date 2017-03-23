@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.20.5/src/app/help.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.22.0/src/app/help.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>help.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
     
@@ -1022,6 +1023,17 @@
 <span id="978">978</span>
 <span id="979">979</span>
 <span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
 </pre><pre class='rust '>
 <span class='comment'>// Std</span>
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>;
@@ -1036,6 +1048,7 @@
 <span class='kw'>use</span> <span class='ident'>args</span>::{<span class='ident'>AnyArg</span>, <span class='ident'>ArgSettings</span>, <span class='ident'>DispOrder</span>};
 <span class='kw'>use</span> <span class='ident'>errors</span>::{<span class='ident'>Error</span>, <span class='prelude-ty'>Result</span> <span class='kw'>as</span> <span class='ident'>ClapResult</span>};
 <span class='kw'>use</span> <span class='ident'>fmt</span>::{<span class='ident'>Format</span>, <span class='ident'>Colorizer</span>};
+<span class='kw'>use</span> <span class='ident'>app</span>::<span class='ident'>usage</span>;
 
 <span class='comment'>// Third Party</span>
 <span class='kw'>use</span> <span class='ident'>unicode_width</span>::<span class='ident'>UnicodeWidthStr</span>;
@@ -1220,9 +1233,7 @@
             <span class='kw'>if</span> <span class='ident'>arg</span>.<span class='ident'>longest_filter</span>() {
                 <span class='self'>self</span>.<span class='ident'>longest</span> <span class='op'>=</span> <span class='ident'>cmp</span>::<span class='ident'>max</span>(<span class='self'>self</span>.<span class='ident'>longest</span>, <span class='ident'>arg</span>.<span class='ident'>to_string</span>().<span class='ident'>len</span>());
             }
-            <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>arg</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Hidden</span>) {
-                <span class='ident'>arg_v</span>.<span class='ident'>push</span>(<span class='ident'>arg</span>)
-            }
+            <span class='ident'>arg_v</span>.<span class='ident'>push</span>(<span class='ident'>arg</span>)
         }
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>first</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
         <span class='kw'>for</span> <span class='ident'>arg</span> <span class='kw'>in</span> <span class='ident'>arg_v</span> {
@@ -1279,7 +1290,7 @@
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>short</span>(<span class='ident'>arg</span>));
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>long</span>(<span class='ident'>arg</span>));
         <span class='kw'>let</span> <span class='ident'>spec_vals</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>val</span>(<span class='ident'>arg</span>));
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>help</span>(<span class='ident'>arg</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>spec_vals</span>));
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>help</span>(<span class='ident'>arg</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>spec_vals</span>));
         <span class='prelude-val'>Ok</span>(())
     }
 
@@ -1309,7 +1320,13 @@
                 }
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>color</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='string'>&quot;--{}&quot;</span>, <span class='ident'>l</span>, <span class='ident'>good</span>))
             }
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot; &quot;</span>));
+
+            <span class='kw'>let</span> <span class='ident'>sep</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>arg</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>RequireEquals</span>) {
+                <span class='string'>&quot;=&quot;</span>
+            } <span class='kw'>else</span> {
+                <span class='string'>&quot; &quot;</span>
+            };
+            <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot;{}&quot;</span>, <span class='ident'>sep</span>));
         } <span class='kw'>else</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>l</span>) <span class='op'>=</span> <span class='ident'>arg</span>.<span class='ident'>long</span>() {
             <span class='kw'>if</span> <span class='ident'>arg</span>.<span class='ident'>short</span>().<span class='ident'>is_some</span>() {
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot;, &quot;</span>));
@@ -1358,7 +1375,7 @@
 
         <span class='kw'>let</span> <span class='ident'>spec_vals</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>spec_vals</span>(<span class='ident'>arg</span>);
         <span class='kw'>let</span> <span class='ident'>h</span> <span class='op'>=</span> <span class='ident'>arg</span>.<span class='ident'>help</span>().<span class='ident'>unwrap_or</span>(<span class='string'>&quot;&quot;</span>);
-        <span class='kw'>let</span> <span class='ident'>h_w</span> <span class='op'>=</span> <span class='ident'>str_width</span>(<span class='ident'>h</span>) <span class='op'>+</span> <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>spec_vals</span>);
+        <span class='kw'>let</span> <span class='ident'>h_w</span> <span class='op'>=</span> <span class='ident'>str_width</span>(<span class='ident'>h</span>) <span class='op'>+</span> <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>spec_vals</span>);
         <span class='kw'>let</span> <span class='ident'>nlh</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>next_line_help</span> <span class='op'>||</span> <span class='ident'>arg</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>NextLineHelp</span>);
         <span class='kw'>let</span> <span class='ident'>taken</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>longest</span> <span class='op'>+</span> <span class='number'>12</span>;
         <span class='self'>self</span>.<span class='ident'>force_next_line</span> <span class='op'>=</span> <span class='op'>!</span><span class='ident'>nlh</span> <span class='op'>&amp;&amp;</span> <span class='self'>self</span>.<span class='ident'>term_w</span> <span class='op'>&gt;=</span> <span class='ident'>taken</span> <span class='op'>&amp;&amp;</span>
@@ -1409,7 +1426,8 @@
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help;&quot;</span>);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>help</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
         <span class='comment'>// determine if our help fits or needs to wrap</span>
-        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: Term width...{}&quot;</span>, <span class='self'>self</span>.<span class='ident'>term_w</span>);
+        <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: Term width...{}&quot;</span>,
+                 <span class='self'>self</span>.<span class='ident'>term_w</span>);
         <span class='kw'>let</span> <span class='ident'>too_long</span> <span class='op'>=</span> <span class='ident'>str_width</span>(<span class='ident'>h</span>) <span class='op'>&gt;=</span> <span class='self'>self</span>.<span class='ident'>term_w</span>;
 
         <span class='macro'>debug</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: Too long...&quot;</span>);
@@ -1417,20 +1435,22 @@
             <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Yes&quot;</span>);
             <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='ident'>h</span>);
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: help: {}&quot;</span>, <span class='ident'>help</span>);
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: help width: {}&quot;</span>, <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>));
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: help width: {}&quot;</span>,
+                     <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>));
             <span class='comment'>// Determine how many newlines we need to insert</span>
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: Usable space: {}&quot;</span>, <span class='self'>self</span>.<span class='ident'>term_w</span>);
-            <span class='kw'>let</span> <span class='ident'>longest_w</span> <span class='op'>=</span> <span class='macro'>find_longest</span><span class='macro'>!</span>(<span class='ident'>help</span>);            
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_before_after_help: Usable space: {}&quot;</span>,
+                     <span class='self'>self</span>.<span class='ident'>term_w</span>);
+            <span class='kw'>let</span> <span class='ident'>longest_w</span> <span class='op'>=</span> <span class='macro'>find_longest</span><span class='macro'>!</span>(<span class='ident'>help</span>);
             <span class='ident'>help</span> <span class='op'>=</span> <span class='ident'>help</span>.<span class='ident'>replace</span>(<span class='string'>&quot;{n}&quot;</span>, <span class='string'>&quot;\n&quot;</span>);
             <span class='ident'>wrap_help</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>help</span>, <span class='ident'>longest_w</span>, <span class='self'>self</span>.<span class='ident'>term_w</span>);
         } <span class='kw'>else</span> {
             <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;No&quot;</span>);
         }
         <span class='kw'>let</span> <span class='ident'>help</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>help</span>.<span class='ident'>is_empty</span>() {
-            <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>
+            <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>
         } <span class='kw'>else</span> {
             <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='ident'>h</span>);
-            <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>
+            <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>
         };
         <span class='kw'>if</span> <span class='ident'>help</span>.<span class='ident'>contains</span>(<span class='string'>&#39;\n&#39;</span>) {
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>part</span>) <span class='op'>=</span> <span class='ident'>help</span>.<span class='ident'>lines</span>().<span class='ident'>next</span>() {
@@ -1459,7 +1479,7 @@
             <span class='self'>self</span>.<span class='ident'>longest</span> <span class='op'>+</span> <span class='number'>12</span>
         };
 
-        <span class='kw'>let</span> <span class='ident'>too_long</span> <span class='op'>=</span> <span class='ident'>spcs</span> <span class='op'>+</span> <span class='ident'>str_width</span>(<span class='ident'>h</span>) <span class='op'>+</span> <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>spec_vals</span>) <span class='op'>&gt;=</span> <span class='self'>self</span>.<span class='ident'>term_w</span>;
+        <span class='kw'>let</span> <span class='ident'>too_long</span> <span class='op'>=</span> <span class='ident'>spcs</span> <span class='op'>+</span> <span class='ident'>str_width</span>(<span class='ident'>h</span>) <span class='op'>+</span> <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>spec_vals</span>) <span class='op'>&gt;=</span> <span class='self'>self</span>.<span class='ident'>term_w</span>;
 
         <span class='comment'>// Is help on next line, if so then indent</span>
         <span class='kw'>if</span> <span class='ident'>nlh</span> <span class='op'>||</span> <span class='self'>self</span>.<span class='ident'>force_next_line</span> {
@@ -1470,26 +1490,26 @@
         <span class='kw'>if</span> <span class='ident'>too_long</span> <span class='op'>&amp;&amp;</span> <span class='ident'>spcs</span> <span class='op'>&lt;=</span> <span class='self'>self</span>.<span class='ident'>term_w</span> <span class='op'>||</span> <span class='ident'>h</span>.<span class='ident'>contains</span>(<span class='string'>&quot;{n}&quot;</span>) {
             <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Yes&quot;</span>);
             <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='ident'>h</span>);
-            <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>spec_vals</span>);
+            <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>spec_vals</span>);
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::help: help...{}&quot;</span>, <span class='ident'>help</span>);
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::help: help width...{}&quot;</span>, <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>));
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::help: help width...{}&quot;</span>, <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>));
             <span class='comment'>// Determine how many newlines we need to insert</span>
             <span class='kw'>let</span> <span class='ident'>avail_chars</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>term_w</span> <span class='op'>-</span> <span class='ident'>spcs</span>;
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::help: Usable space...{}&quot;</span>, <span class='ident'>avail_chars</span>);
-            <span class='kw'>let</span> <span class='ident'>longest_w</span> <span class='op'>=</span> <span class='macro'>find_longest</span><span class='macro'>!</span>(<span class='ident'>help</span>);            
+            <span class='kw'>let</span> <span class='ident'>longest_w</span> <span class='op'>=</span> <span class='macro'>find_longest</span><span class='macro'>!</span>(<span class='ident'>help</span>);
             <span class='ident'>help</span> <span class='op'>=</span> <span class='ident'>help</span>.<span class='ident'>replace</span>(<span class='string'>&quot;{n}&quot;</span>, <span class='string'>&quot;\n&quot;</span>);
             <span class='ident'>wrap_help</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>help</span>, <span class='ident'>longest_w</span>, <span class='ident'>avail_chars</span>);
         } <span class='kw'>else</span> {
             <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;No&quot;</span>);
         }
         <span class='kw'>let</span> <span class='ident'>help</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>help</span>.<span class='ident'>is_empty</span>() {
-            <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>
+            <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>
         } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>spec_vals</span>.<span class='ident'>is_empty</span>() {
             <span class='ident'>h</span>
         } <span class='kw'>else</span> {
             <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='ident'>h</span>);
-            <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>spec_vals</span>);
-            <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>
+            <span class='ident'>help</span>.<span class='ident'>push_str</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>spec_vals</span>);
+            <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>
         };
         <span class='kw'>if</span> <span class='ident'>help</span>.<span class='ident'>contains</span>(<span class='string'>&#39;\n&#39;</span>) {
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>part</span>) <span class='op'>=</span> <span class='ident'>help</span>.<span class='ident'>lines</span>().<span class='ident'>next</span>() {
@@ -1515,14 +1535,16 @@
     <span class='kw'>fn</span> <span class='ident'>spec_vals</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>a</span>: <span class='kw-2'>&amp;</span><span class='ident'>ArgWithDisplay</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::spec_vals: a={}&quot;</span>, <span class='ident'>a</span>);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>spec_vals</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>pv</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>default_val</span>() {
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::spec_vals: Found default value...[{}]&quot;</span>, <span class='ident'>pv</span>);
-            <span class='ident'>spec_vals</span>.<span class='ident'>push</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot; [default: {}]&quot;</span>,
-                                   <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>color</span> {
-                                       <span class='self'>self</span>.<span class='ident'>cizer</span>.<span class='ident'>good</span>(<span class='ident'>pv</span>)
-                                   } <span class='kw'>else</span> {
-                                       <span class='ident'>Format</span>::<span class='prelude-val'>None</span>(<span class='ident'>pv</span>)
-                                   }));
+        <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>a</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>HideDefaultValue</span>) {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>pv</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>default_val</span>() {
+                <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::spec_vals: Found default value...[{:?}]&quot;</span>, <span class='ident'>pv</span>);
+                <span class='ident'>spec_vals</span>.<span class='ident'>push</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot; [default: {}]&quot;</span>,
+                                       <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>color</span> {
+                                           <span class='self'>self</span>.<span class='ident'>cizer</span>.<span class='ident'>good</span>(<span class='ident'>pv</span>.<span class='ident'>to_string_lossy</span>())
+                                       } <span class='kw'>else</span> {
+                                           <span class='ident'>Format</span>::<span class='prelude-val'>None</span>(<span class='ident'>pv</span>.<span class='ident'>to_string_lossy</span>())
+                                       }));
+            }
         }
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>aliases</span>) <span class='op'>=</span> <span class='ident'>a</span>.<span class='ident'>aliases</span>() {
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::spec_vals: Found aliases...{:?}&quot;</span>, <span class='ident'>aliases</span>);
@@ -1563,7 +1585,7 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>write_all_args</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>parser</span>: <span class='kw-2'>&amp;</span><span class='ident'>Parser</span>) <span class='op'>-&gt;</span> <span class='ident'>ClapResult</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
         <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::write_all_args;&quot;</span>);
         <span class='kw'>let</span> <span class='ident'>flags</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>has_flags</span>();
-        <span class='kw'>let</span> <span class='ident'>pos</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>has_positionals</span>();
+        <span class='kw'>let</span> <span class='ident'>pos</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>positionals</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>arg</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>arg</span>.<span class='ident'>is_set</span>(<span class='ident'>ArgSettings</span>::<span class='ident'>Hidden</span>)).<span class='ident'>count</span>() <span class='op'>&gt;</span> <span class='number'>0</span>;
         <span class='kw'>let</span> <span class='ident'>opts</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>has_opts</span>();
         <span class='kw'>let</span> <span class='ident'>subcmds</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>has_subcommands</span>();
 
@@ -1657,7 +1679,7 @@
                 <span class='kw'>let</span> <span class='ident'>longest_w</span> <span class='op'>=</span> <span class='macro'>find_longest</span><span class='macro'>!</span>(<span class='ident'>name</span>);            
                 <span class='ident'>name</span> <span class='op'>=</span> <span class='ident'>name</span>.<span class='ident'>replace</span>(<span class='string'>&quot;{n}&quot;</span>, <span class='string'>&quot;\n&quot;</span>);
                 <span class='ident'>wrap_help</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>name</span>, <span class='ident'>longest_w</span>, <span class='self'>self</span>.<span class='ident'>term_w</span>);
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>color</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>name</span>, <span class='ident'>good</span>));
+                <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>color</span><span class='macro'>!</span>(<span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>name</span>, <span class='ident'>good</span>));
             }};
         }
         <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>bn</span>) <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>meta</span>.<span class='ident'>bin_name</span>.<span class='ident'>as_ref</span>() {
@@ -1687,7 +1709,7 @@
                 <span class='kw'>let</span> <span class='ident'>longest_w</span> <span class='op'>=</span> <span class='macro'>find_longest</span><span class='macro'>!</span>(<span class='ident'>owned_thing</span>);            
                 <span class='ident'>owned_thing</span> <span class='op'>=</span> <span class='ident'>owned_thing</span>.<span class='ident'>replace</span>(<span class='string'>&quot;{n}&quot;</span>, <span class='string'>&quot;\n&quot;</span>);
                 <span class='ident'>wrap_help</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>owned_thing</span>, <span class='ident'>longest_w</span>, <span class='self'>self</span>.<span class='ident'>term_w</span>);
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot;{}\n&quot;</span>, <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>owned_thing</span>))
+                <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot;{}\n&quot;</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>owned_thing</span>))
             }};
         }
         <span class='comment'>// Print the version</span>
@@ -1706,7 +1728,7 @@
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>,
                     <span class='string'>&quot;\n{}{}\n\n&quot;</span>,
                     <span class='ident'>TAB</span>,
-                    <span class='ident'>parser</span>.<span class='ident'>create_usage_no_title</span>(<span class='kw-2'>&amp;</span>[])));
+                    <span class='ident'>usage</span>::<span class='ident'>create_help_usage</span>(<span class='ident'>parser</span>, <span class='bool-val'>true</span>)));
 
         <span class='kw'>let</span> <span class='ident'>flags</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>has_flags</span>();
         <span class='kw'>let</span> <span class='ident'>pos</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>has_positionals</span>();
@@ -1776,7 +1798,7 @@
                                        <span class='ident'>w</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>W</span>,
                                        <span class='ident'>tag_buffer</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Cursor</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;&gt;</span>)
                                        <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;&gt;</span> {
-    <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>CopyUntilResult</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>CopyUntilResult</span>::<span class='kw-2'>*</span>;
     <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;copy_and_capture;&quot;</span>);
 
     <span class='comment'>// Find the opening byte.</span>
@@ -1903,7 +1925,7 @@
                                 <span class='ident'>parser</span>.<span class='ident'>meta</span>.<span class='ident'>about</span>.<span class='ident'>unwrap_or</span>(<span class='string'>&quot;unknown about&quot;</span>)));
                 }
                 <span class='string'>b&quot;usage&quot;</span> <span class='op'>=&gt;</span> {
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot;{}&quot;</span>, <span class='ident'>parser</span>.<span class='ident'>create_usage_no_title</span>(<span class='kw-2'>&amp;</span>[])));
+                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>writer</span>, <span class='string'>&quot;{}&quot;</span>, <span class='ident'>usage</span>::<span class='ident'>create_help_usage</span>(<span class='ident'>parser</span>, <span class='bool-val'>true</span>)));
                 }
                 <span class='string'>b&quot;all-args&quot;</span> <span class='op'>=&gt;</span> {
                     <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_all_args</span>(<span class='kw-2'>&amp;</span><span class='ident'>parser</span>));
@@ -1959,11 +1981,12 @@
         <span class='macro'>sdebugln</span><span class='macro'>!</span>(<span class='string'>&quot;Yes&quot;</span>);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>prev_space</span> <span class='op'>=</span> <span class='number'>0</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>j</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>for</span> (<span class='ident'>idx</span>, <span class='ident'>g</span>) <span class='kw'>in</span> (<span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>help</span>.<span class='ident'>clone</span>()).<span class='ident'>grapheme_indices</span>(<span class='bool-val'>true</span>) {
+        <span class='kw'>for</span> (<span class='ident'>idx</span>, <span class='ident'>g</span>) <span class='kw'>in</span> (<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>help</span>.<span class='ident'>clone</span>()).<span class='ident'>grapheme_indices</span>(<span class='bool-val'>true</span>) {
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: idx={}, g={}&quot;</span>, <span class='ident'>idx</span>, <span class='ident'>g</span>);
             <span class='kw'>if</span> <span class='ident'>g</span> <span class='op'>==</span> <span class='string'>&quot;\n&quot;</span> {
                 <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: Newline found...&quot;</span>);
-                <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: Still space...{:?}&quot;</span>, <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='ident'>help</span>[<span class='ident'>j</span>..<span class='ident'>idx</span>]) <span class='op'>&lt;</span> <span class='ident'>avail_chars</span>);
+                <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: Still space...{:?}&quot;</span>,
+                         <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='ident'>help</span>[<span class='ident'>j</span>..<span class='ident'>idx</span>]) <span class='op'>&lt;</span> <span class='ident'>avail_chars</span>);
                 <span class='kw'>if</span> <span class='ident'>str_width</span>(<span class='kw-2'>&amp;</span><span class='ident'>help</span>[<span class='ident'>j</span>..<span class='ident'>idx</span>]) <span class='op'>&lt;</span> <span class='ident'>avail_chars</span> {
                     <span class='ident'>j</span> <span class='op'>=</span> <span class='ident'>idx</span>;
                     <span class='kw'>continue</span>;
@@ -1982,7 +2005,7 @@
             <span class='ident'>j</span> <span class='op'>=</span> <span class='ident'>prev_space</span>;
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: prev_space={}, j={}&quot;</span>, <span class='ident'>prev_space</span>, <span class='ident'>j</span>);
             <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: Removing...{}&quot;</span>, <span class='ident'>j</span>);
-            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: Char at {}: {:?}&quot;</span>, <span class='ident'>j</span>, <span class='kw-2'>&amp;</span><span class='ident'>help</span>[<span class='ident'>j</span>..<span class='ident'>j</span><span class='op'>+</span><span class='number'>1</span>]);
+            <span class='macro'>debugln</span><span class='macro'>!</span>(<span class='string'>&quot;Help::wrap_help:iter: Char at {}: {:?}&quot;</span>, <span class='ident'>j</span>, <span class='kw-2'>&amp;</span><span class='ident'>help</span>[<span class='ident'>j</span>..<span class='ident'>j</span> <span class='op'>+</span> <span class='number'>1</span>]);
             <span class='ident'>help</span>.<span class='ident'>remove</span>(<span class='ident'>j</span>);
             <span class='ident'>help</span>.<span class='ident'>insert</span>(<span class='ident'>j</span>, <span class='string'>&#39;\n&#39;</span>);
             <span class='ident'>prev_space</span> <span class='op'>=</span> <span class='ident'>idx</span>;

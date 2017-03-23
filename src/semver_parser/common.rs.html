@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/semver-parser-0.6.2/src/common.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/semver-parser-0.7.0/src/common.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>common.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -73,17 +74,53 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
 </pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>regex</span>::<span class='ident'>Regex</span>;
 <span class='kw'>use</span> <span class='ident'>version</span>::<span class='ident'>Identifier</span>;
+<span class='kw'>use</span> <span class='ident'>recognize</span>::{<span class='ident'>Recognize</span>, <span class='ident'>Alt</span>, <span class='ident'>OneOrMore</span>, <span class='ident'>Inclusive</span>, <span class='ident'>OneByte</span>};
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>from_utf8</span>;
 
 <span class='comment'>// by the time we get here, we know that it&#39;s all valid characters, so this doesn&#39;t need to return</span>
 <span class='comment'>// a result or anything</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_meta</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Identifier</span><span class='op'>&gt;</span> {
+<span class='kw'>fn</span> <span class='ident'>parse_meta</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Identifier</span><span class='op'>&gt;</span> {
     <span class='comment'>// Originally, I wanted to implement this method via calling parse, but parse is tolerant of</span>
     <span class='comment'>// leading zeroes, and we want anything with leading zeroes to be considered alphanumeric, not</span>
-    <span class='comment'>// numeric. So the strategy is to check with a regex first, and then call parse once we&#39;ve</span>
-    <span class='comment'>// determined that it&#39;s a number without a leading zero.</span>
+    <span class='comment'>// numeric. So the strategy is to check with a recognizer first, and then call parse once</span>
+    <span class='comment'>// we&#39;ve determined that it&#39;s a number without a leading zero.</span>
     <span class='ident'>s</span>.<span class='ident'>split</span>(<span class='string'>&quot;.&quot;</span>)
         .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>part</span><span class='op'>|</span> {
             <span class='comment'>// another wrinkle: we made sure that any number starts with a</span>
@@ -99,11 +136,45 @@
         }).<span class='ident'>collect</span>()
 }
 
+<span class='comment'>// parse optional metadata (preceded by the prefix character)</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse_optional_meta</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>prefix_char</span>: <span class='ident'>u8</span>)<span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Identifier</span><span class='op'>&gt;</span>, <span class='ident'>usize</span>), <span class='ident'>String</span><span class='op'>&gt;</span> {
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='ident'>prefix_char</span>.<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='kw'>let</span> <span class='ident'>start</span> <span class='op'>=</span> <span class='ident'>len</span>;
+        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='ident'>letters_numbers_dash_dot</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>start</span>..]) {
+            <span class='kw'>let</span> <span class='ident'>end</span> <span class='op'>=</span> <span class='ident'>start</span> <span class='op'>+</span> <span class='ident'>len</span>;
+            <span class='prelude-val'>Ok</span>((<span class='ident'>parse_meta</span>(<span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>start</span>..<span class='ident'>end</span>]).<span class='ident'>unwrap</span>()), <span class='ident'>end</span>))
+        } <span class='kw'>else</span> {
+            <span class='prelude-val'>Err</span>(<span class='string'>&quot;Error parsing prerelease&quot;</span>.<span class='ident'>to_string</span>())
+        }
+    } <span class='kw'>else</span> {
+        <span class='prelude-val'>Ok</span>((<span class='ident'>Vec</span>::<span class='ident'>new</span>(), <span class='number'>0</span>))
+    }
+}
+
 <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_alpha_numeric</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-    <span class='macro'>lazy_static</span><span class='macro'>!</span> {
-        <span class='kw'>static</span> <span class='kw-2'>ref</span> <span class='ident'>REGEX</span>: <span class='ident'>Regex</span> <span class='op'>=</span> <span class='ident'>Regex</span>::<span class='ident'>new</span>(<span class='string'>r&quot;^(0|[1-9][0-9]*)$&quot;</span>).<span class='ident'>unwrap</span>();
-    };
-    <span class='op'>!</span><span class='ident'>REGEX</span>.<span class='ident'>is_match</span>(<span class='ident'>s</span>)
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>_val</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>numeric_identifier</span>(<span class='ident'>s</span>.<span class='ident'>as_bytes</span>()) {
+        <span class='comment'>// Return true for number with leading zero</span>
+        <span class='comment'>// Note: doing it this way also handily makes overflow fail over.</span>
+        <span class='ident'>len</span> <span class='op'>!=</span> <span class='ident'>s</span>.<span class='ident'>len</span>()
+    } <span class='kw'>else</span> {
+        <span class='bool-val'>true</span>
+    }
+}
+
+<span class='comment'>// Note: could plumb overflow error up to return value as Result</span>
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>numeric_identifier</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>u64</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='ident'>Alt</span>(<span class='string'>b&#39;0&#39;</span>, <span class='ident'>OneOrMore</span>(<span class='ident'>Inclusive</span>(<span class='string'>b&#39;0&#39;</span>..<span class='string'>b&#39;9&#39;</span>))).<span class='ident'>p</span>(<span class='ident'>s</span>) {
+        <span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='number'>0</span>..<span class='ident'>len</span>]).<span class='ident'>unwrap</span>().<span class='ident'>parse</span>().<span class='ident'>ok</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>val</span><span class='op'>|</span> (<span class='ident'>val</span>, <span class='ident'>len</span>))
+    } <span class='kw'>else</span> {
+        <span class='prelude-val'>None</span>
+    }
+}
+
+<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>letters_numbers_dash_dot</span>(<span class='ident'>s</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span> {
+    <span class='ident'>OneOrMore</span>(<span class='ident'>OneByte</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>c</span> <span class='op'>==</span> <span class='string'>b&#39;-&#39;</span> <span class='op'>||</span> <span class='ident'>c</span> <span class='op'>==</span> <span class='string'>b&#39;.&#39;</span> <span class='op'>||</span>
+        (<span class='string'>b&#39;0&#39;</span> <span class='op'>&lt;=</span> <span class='ident'>c</span> <span class='op'>&amp;&amp;</span> <span class='ident'>c</span> <span class='op'>&lt;=</span> <span class='string'>b&#39;9&#39;</span>) <span class='op'>||</span>
+        (<span class='string'>b&#39;a&#39;</span> <span class='op'>&lt;=</span> <span class='ident'>c</span> <span class='op'>&amp;&amp;</span> <span class='ident'>c</span> <span class='op'>&lt;=</span> <span class='string'>b&#39;z&#39;</span>) <span class='op'>||</span>
+        (<span class='string'>b&#39;A&#39;</span> <span class='op'>&lt;=</span> <span class='ident'>c</span> <span class='op'>&amp;&amp;</span> <span class='ident'>c</span> <span class='op'>&lt;=</span> <span class='string'>b&#39;Z&#39;</span>))).<span class='ident'>p</span>(<span class='ident'>s</span>)
 }
 </pre>
 </section>

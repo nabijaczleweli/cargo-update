@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.5/src/parser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.6/src/parser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parser.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -817,6 +818,12 @@
 <span id="773">773</span>
 <span id="774">774</span>
 <span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
 </pre><pre class='rust '>
 <span class='comment'>// HERE BE DRAGONS!</span>
 <span class='comment'>// ================</span>
@@ -863,7 +870,7 @@
     <span class='ident'>source</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span>,
 
     <span class='comment'>// Byte pointer to the slice above</span>
-    <span class='ident'>byte_ptr</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>,
+    <span class='ident'>byte_ptr</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>u8</span>,
 
     <span class='comment'>// Current index</span>
     <span class='ident'>index</span>: <span class='ident'>usize</span>,
@@ -897,7 +904,7 @@
 <span class='comment'>//</span>
 <span class='comment'>// Anything else is an error.</span>
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>expect_sequence</span> {
-    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>:<span class='ident'>ident</span>, $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ch</span>:<span class='ident'>pat</span> ),<span class='op'>*</span>) <span class='op'>=&gt;</span> {
+    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>:<span class='ident'>ident</span>, $( <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ch</span>:<span class='ident'>pat</span> ),<span class='kw-2'>*</span>) <span class='op'>=&gt;</span> {
         $(
             <span class='kw'>match</span> <span class='macro'>expect_byte</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>) {
                 <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ch</span> <span class='op'>=&gt;</span> {},
@@ -961,7 +968,7 @@
         }
     });
 
-    {<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>:<span class='ident'>ident</span> $(, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>byte</span>:<span class='ident'>pat</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>then</span>:<span class='ident'>expr</span> )<span class='op'>*</span>} <span class='op'>=&gt;</span> ({
+    {<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>:<span class='ident'>ident</span> $(, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>byte</span>:<span class='ident'>pat</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>then</span>:<span class='ident'>expr</span> )<span class='kw-2'>*</span>} <span class='op'>=&gt;</span> ({
         <span class='kw'>let</span> <span class='ident'>ch</span> <span class='op'>=</span> <span class='macro'>expect_byte_ignore_whitespace</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>);
 
         <span class='kw'>match</span> <span class='ident'>ch</span> {
@@ -1101,10 +1108,14 @@
     <span class='comment'>// quite handy as the only number that can begin with zero, has to have</span>
     <span class='comment'>// a zero mantissa. Leading zeroes are illegal in JSON!</span>
     (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>:<span class='ident'>ident</span>) <span class='op'>=&gt;</span> ({
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>num</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>e</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='ident'>ch</span> <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>.<span class='ident'>read_byte</span>();
-        <span class='macro'>allow_number_extensions</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>, <span class='ident'>num</span>, <span class='ident'>e</span>, <span class='ident'>ch</span>)
+        <span class='kw'>if</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>.<span class='ident'>is_eof</span>() {
+            <span class='number'>0</span>.<span class='ident'>into</span>()
+        } <span class='kw'>else</span> {
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>num</span> <span class='op'>=</span> <span class='number'>0</span>;
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>e</span> <span class='op'>=</span> <span class='number'>0</span>;
+            <span class='kw'>let</span> <span class='ident'>ch</span> <span class='op'>=</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>.<span class='ident'>read_byte</span>();
+            <span class='macro'>allow_number_extensions</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>parser</span>, <span class='ident'>num</span>, <span class='ident'>e</span>, <span class='ident'>ch</span>)
+        }
     })
 }
 
@@ -1203,7 +1214,9 @@
     <span class='comment'>// is virtually irrelevant.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
     <span class='kw'>fn</span> <span class='ident'>read_byte</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u8</span> {
-        <span class='kw'>unsafe</span> { <span class='op'>*</span><span class='self'>self</span>.<span class='ident'>byte_ptr</span>.<span class='ident'>offset</span>(<span class='self'>self</span>.<span class='ident'>index</span> <span class='kw'>as</span> <span class='ident'>isize</span>) }
+        <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>index</span> <span class='op'>&lt;</span> <span class='self'>self</span>.<span class='ident'>length</span>, <span class='string'>&quot;Reading out of bounds&quot;</span>);
+
+        <span class='kw'>unsafe</span> { <span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>byte_ptr</span>.<span class='ident'>offset</span>(<span class='self'>self</span>.<span class='ident'>index</span> <span class='kw'>as</span> <span class='ident'>isize</span>) }
     }
 
     <span class='comment'>// Manually increment the index. Calling `read_byte` and then `bump`</span>
@@ -1288,19 +1301,19 @@
         <span class='kw'>match</span> <span class='ident'>codepoint</span> {
             <span class='number'>0x0000</span> ... <span class='number'>0x007F</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>buffer</span>.<span class='ident'>push</span>(<span class='ident'>codepoint</span> <span class='kw'>as</span> <span class='ident'>u8</span>),
             <span class='number'>0x0080</span> ... <span class='number'>0x07FF</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>buffer</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span>[
-                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>6</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x1F</span>) <span class='op'>|</span> <span class='number'>0xC0</span>,
-                ((<span class='ident'>codepoint</span>        <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>
+                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>6</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x1F</span>) <span class='op'>|</span> <span class='number'>0xC0</span>,
+                ((<span class='ident'>codepoint</span>        <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>
             ]),
             <span class='number'>0x0800</span> ... <span class='number'>0xFFFF</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>buffer</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span>[
-                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>12</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x0F</span>) <span class='op'>|</span> <span class='number'>0xE0</span>,
-                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>6</span>)  <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>,
-                ((<span class='ident'>codepoint</span>         <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>
+                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>12</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x0F</span>) <span class='op'>|</span> <span class='number'>0xE0</span>,
+                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>6</span>)  <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>,
+                ((<span class='ident'>codepoint</span>         <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>
             ]),
             <span class='number'>0x10000</span> ... <span class='number'>0x10FFFF</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>buffer</span>.<span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span>[
-                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>18</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x07</span>) <span class='op'>|</span> <span class='number'>0xF0</span>,
-                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>12</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>,
-                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>6</span>)  <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>,
-                ((<span class='ident'>codepoint</span>         <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='kw-2'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>
+                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>18</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x07</span>) <span class='op'>|</span> <span class='number'>0xF0</span>,
+                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>12</span>) <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>,
+                (((<span class='ident'>codepoint</span> <span class='op'>&gt;&gt;</span> <span class='number'>6</span>)  <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>,
+                ((<span class='ident'>codepoint</span>         <span class='kw'>as</span> <span class='ident'>u8</span>) <span class='op'>&amp;</span> <span class='number'>0x3F</span>) <span class='op'>|</span> <span class='number'>0x80</span>
             ]),
             _ <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>FailedUtf8Parsing</span>)
         }

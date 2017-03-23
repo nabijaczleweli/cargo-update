@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/thread_local-0.2.7/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/thread_local-0.3.3/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -795,26 +796,6 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
-<span id="754">754</span>
-<span id="755">755</span>
-<span id="756">756</span>
-<span id="757">757</span>
-<span id="758">758</span>
-<span id="759">759</span>
-<span id="760">760</span>
-<span id="761">761</span>
-<span id="762">762</span>
-<span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
-<span id="766">766</span>
-<span id="767">767</span>
-<span id="768">768</span>
-<span id="769">769</span>
-<span id="770">770</span>
-<span id="771">771</span>
-<span id="772">772</span>
-<span id="773">773</span>
 </pre><pre class='rust '>
 <span class='comment'>// Copyright 2016 Amanieu d&#39;Antras</span>
 <span class='comment'>//</span>
@@ -888,58 +869,19 @@
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>warn</span>(<span class='ident'>missing_docs</span>)]</span>
 
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;emscripten&quot;</span>))]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>thread_id</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>unreachable</span>;
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicPtr</span>, <span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>Mutex</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>::<span class='ident'>PhantomData</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>UnsafeCell</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Chain</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>option</span>::<span class='ident'>IntoIter</span> <span class='kw'>as</span> <span class='ident'>OptionIter</span>;
-
-<span class='comment'>// Option::unchecked_unwrap</span>
-<span class='kw'>trait</span> <span class='ident'>UncheckedOptionExt</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>unchecked_unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span>;
-}
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>unreachable</span>() <span class='op'>-&gt;</span> <span class='op'>!</span> {
-    <span class='kw'>enum</span> <span class='ident'>Void</span> {}
-    <span class='kw'>match</span> <span class='op'>*</span>(<span class='number'>1</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>Void</span>) {}
-}
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>UncheckedOptionExt</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>unchecked_unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span> {
-        <span class='kw'>match</span> <span class='self'>self</span> {
-            <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='ident'>x</span>,
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>unreachable</span>(),
-        }
-    }
-}
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>E</span><span class='op'>&gt;</span> <span class='ident'>UncheckedOptionExt</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>E</span><span class='op'>&gt;</span> {
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>unchecked_unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span> {
-        <span class='kw'>match</span> <span class='self'>self</span> {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='ident'>x</span>,
-            <span class='prelude-val'>Err</span>(_) <span class='op'>=&gt;</span> <span class='ident'>unreachable</span>(),
-        }
-    }
-}
-
-<span class='comment'>// BoxExt::{from_raw,into_raw}</span>
-<span class='kw'>trait</span> <span class='ident'>BoxExt</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>into_raw</span>(<span class='ident'>b</span>: <span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span>;
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>from_raw</span>(<span class='ident'>raw</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span>;
-}
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> <span class='ident'>BoxExt</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>into_raw</span>(<span class='kw-2'>mut</span> <span class='ident'>b</span>: <span class='self'>Self</span>) <span class='op'>-&gt;</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span> {
-        <span class='kw'>let</span> <span class='ident'>ptr</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>*</span><span class='ident'>b</span>;
-        <span class='ident'>mem</span>::<span class='ident'>forget</span>(<span class='ident'>b</span>);
-        <span class='ident'>ptr</span>
-    }
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>from_raw</span>(<span class='ident'>raw</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='ident'>raw</span>)
-    }
-}
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>panic</span>::<span class='ident'>UnwindSafe</span>;
+<span class='kw'>use</span> <span class='ident'>unreachable</span>::{<span class='ident'>UncheckedOptionExt</span>, <span class='ident'>UncheckedResultExt</span>};
 
 <span class='doccomment'>/// Thread-local variable wrapper</span>
 <span class='doccomment'>///</span>
@@ -989,7 +931,7 @@
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>Send</span><span class='op'>&gt;</span> <span class='ident'>Drop</span> <span class='kw'>for</span> <span class='ident'>ThreadLocal</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='kw'>fn</span> <span class='ident'>drop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
         <span class='kw'>unsafe</span> {
-            <span class='kw'>let</span> _: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> <span class='op'>=</span> <span class='ident'>BoxExt</span>::<span class='ident'>from_raw</span>(<span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>));
+            <span class='ident'>Box</span>::<span class='ident'>from_raw</span>(<span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>));
         }
     }
 }
@@ -1002,6 +944,21 @@
             <span class='ident'>data</span>: <span class='ident'>UnsafeCell</span>::<span class='ident'>new</span>(<span class='prelude-val'>None</span>),
         }
     }
+}
+
+<span class='comment'>// Helper function to get a thread id</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;emscripten&quot;</span>))]</span>
+<span class='kw'>fn</span> <span class='ident'>get_thread_id</span>() <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+    <span class='ident'>thread_id</span>::<span class='ident'>get</span>()
+}
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;emscripten&quot;</span>)]</span>
+<span class='kw'>fn</span> <span class='ident'>get_thread_id</span>() <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+    <span class='comment'>// pthread_self returns 0 on enscripten, but we use that as a</span>
+    <span class='comment'>// reserved value to indicate an empty slot. We instead fall</span>
+    <span class='comment'>// back to using the address of a thread-local variable, which</span>
+    <span class='comment'>// is slightly slower but guaranteed to produce a non-zero value.</span>
+    <span class='macro'>thread_local</span><span class='macro'>!</span>(<span class='kw'>static</span> <span class='ident'>KEY</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>std</span>::<span class='ident'>mem</span>::<span class='ident'>uninitialized</span>() });
+    <span class='ident'>KEY</span>.<span class='ident'>with</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span> <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw'>const</span> _ <span class='kw'>as</span> <span class='ident'>usize</span>)
 }
 
 <span class='comment'>// Hash function for the thread id</span>
@@ -1029,7 +986,7 @@
             <span class='ident'>prev</span>: <span class='prelude-val'>None</span>,
         };
         <span class='ident'>ThreadLocal</span> {
-            <span class='ident'>table</span>: <span class='ident'>AtomicPtr</span>::<span class='ident'>new</span>(<span class='ident'>BoxExt</span>::<span class='ident'>into_raw</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>table</span>))),
+            <span class='ident'>table</span>: <span class='ident'>AtomicPtr</span>::<span class='ident'>new</span>(<span class='ident'>Box</span>::<span class='ident'>into_raw</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>table</span>))),
             <span class='ident'>lock</span>: <span class='ident'>Mutex</span>::<span class='ident'>new</span>(<span class='number'>0</span>),
             <span class='ident'>marker</span>: <span class='ident'>PhantomData</span>,
         }
@@ -1037,7 +994,7 @@
 
     <span class='doccomment'>/// Returns the element for the current thread, if it exists.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>thread_id</span>::<span class='ident'>get</span>();
+        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>get_thread_id</span>();
         <span class='self'>self</span>.<span class='ident'>get_fast</span>(<span class='ident'>id</span>)
     }
 
@@ -1046,7 +1003,7 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_or</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>create</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>T</span>
         <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>
     {
-        <span class='kw'>unsafe</span> { <span class='self'>self</span>.<span class='ident'>get_or_try</span>(<span class='op'>||</span> <span class='prelude-val'>Ok</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, ()<span class='op'>&gt;</span>(<span class='ident'>create</span>())).<span class='ident'>unchecked_unwrap</span>() }
+        <span class='kw'>unsafe</span> { <span class='self'>self</span>.<span class='ident'>get_or_try</span>(<span class='op'>||</span> <span class='prelude-val'>Ok</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, ()<span class='op'>&gt;</span>(<span class='ident'>create</span>())).<span class='ident'>unchecked_unwrap_ok</span>() }
     }
 
     <span class='doccomment'>/// Returns the element for the current thread, or creates it if it doesn&#39;t</span>
@@ -1055,7 +1012,7 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_or_try</span><span class='op'>&lt;</span><span class='ident'>F</span>, <span class='ident'>E</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>create</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span>, <span class='ident'>E</span><span class='op'>&gt;</span>
         <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, <span class='ident'>E</span><span class='op'>&gt;</span>
     {
-        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>thread_id</span>::<span class='ident'>get</span>();
+        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>get_thread_id</span>();
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>get_fast</span>(<span class='ident'>id</span>) {
             <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>x</span>),
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='self'>self</span>.<span class='ident'>insert</span>(<span class='ident'>id</span>, <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>create</span>()), <span class='bool-val'>true</span>)),
@@ -1082,9 +1039,9 @@
 
     <span class='comment'>// Fast path: try to find our thread in the top-level hash table</span>
     <span class='kw'>fn</span> <span class='ident'>get_fast</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>id</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>) };
+        <span class='kw'>let</span> <span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>) };
         <span class='kw'>match</span> <span class='self'>Self</span>::<span class='ident'>lookup</span>(<span class='ident'>id</span>, <span class='ident'>table</span>) {
-            <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='kw'>unsafe</span> { <span class='prelude-val'>Some</span>((<span class='op'>*</span><span class='ident'>x</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>()) },
+            <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=&gt;</span> <span class='kw'>unsafe</span> { <span class='prelude-val'>Some</span>((<span class='kw-2'>*</span><span class='ident'>x</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>()) },
             <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>get_slow</span>(<span class='ident'>id</span>, <span class='ident'>table</span>),
         }
     }
@@ -1094,9 +1051,9 @@
     <span class='attribute'>#[<span class='ident'>cold</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>get_slow</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>id</span>: <span class='ident'>usize</span>, <span class='ident'>table_top</span>: <span class='kw-2'>&amp;</span><span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>current</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>table_top</span>.<span class='ident'>prev</span>;
-        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>table</span>) <span class='op'>=</span> <span class='op'>*</span><span class='ident'>current</span> {
+        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>table</span>) <span class='op'>=</span> <span class='kw-2'>*</span><span class='ident'>current</span> {
             <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>x</span>) <span class='op'>=</span> <span class='self'>Self</span>::<span class='ident'>lookup</span>(<span class='ident'>id</span>, <span class='ident'>table</span>) {
-                <span class='kw'>let</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='ident'>x</span>.<span class='ident'>get</span>()).<span class='ident'>take</span>().<span class='ident'>unchecked_unwrap</span>() };
+                <span class='kw'>let</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='ident'>x</span>.<span class='ident'>get</span>()).<span class='ident'>take</span>().<span class='ident'>unchecked_unwrap</span>() };
                 <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>insert</span>(<span class='ident'>id</span>, <span class='ident'>data</span>, <span class='bool-val'>false</span>));
             }
             <span class='ident'>current</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>table</span>.<span class='ident'>prev</span>;
@@ -1110,26 +1067,26 @@
         <span class='comment'>// table at once.</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>lock</span>.<span class='ident'>lock</span>().<span class='ident'>unwrap</span>();
         <span class='kw'>if</span> <span class='ident'>new</span> {
-            <span class='op'>*</span><span class='ident'>count</span> <span class='op'>+=</span> <span class='number'>1</span>;
+            <span class='kw-2'>*</span><span class='ident'>count</span> <span class='op'>+=</span> <span class='number'>1</span>;
         }
         <span class='kw'>let</span> <span class='ident'>table_raw</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>);
-        <span class='kw'>let</span> <span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>table_raw</span> };
+        <span class='kw'>let</span> <span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>table_raw</span> };
 
         <span class='comment'>// If the current top-level hash table is more than 75% full, add a new</span>
         <span class='comment'>// level with 2x the capacity. Elements will be moved up to the new top</span>
         <span class='comment'>// level table as they are accessed.</span>
-        <span class='kw'>let</span> <span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='op'>*</span><span class='ident'>count</span> <span class='op'>&gt;</span> <span class='ident'>table</span>.<span class='ident'>entries</span>.<span class='ident'>len</span>() <span class='op'>*</span> <span class='number'>3</span> <span class='op'>/</span> <span class='number'>4</span> {
+        <span class='kw'>let</span> <span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw-2'>*</span><span class='ident'>count</span> <span class='op'>&gt;</span> <span class='ident'>table</span>.<span class='ident'>entries</span>.<span class='ident'>len</span>() <span class='op'>*</span> <span class='number'>3</span> <span class='op'>/</span> <span class='number'>4</span> {
             <span class='kw'>let</span> <span class='ident'>entry</span> <span class='op'>=</span> <span class='ident'>TableEntry</span> {
                 <span class='ident'>owner</span>: <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>0</span>),
                 <span class='ident'>data</span>: <span class='ident'>UnsafeCell</span>::<span class='ident'>new</span>(<span class='prelude-val'>None</span>),
             };
-            <span class='kw'>let</span> <span class='ident'>new_table</span> <span class='op'>=</span> <span class='ident'>BoxExt</span>::<span class='ident'>into_raw</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Table</span> {
+            <span class='kw'>let</span> <span class='ident'>new_table</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>into_raw</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>Table</span> {
                 <span class='ident'>entries</span>: <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>entry</span>; <span class='ident'>table</span>.<span class='ident'>entries</span>.<span class='ident'>len</span>() <span class='op'>*</span> <span class='number'>2</span>].<span class='ident'>into_boxed_slice</span>(),
                 <span class='ident'>hash_bits</span>: <span class='ident'>table</span>.<span class='ident'>hash_bits</span> <span class='op'>+</span> <span class='number'>1</span>,
-                <span class='ident'>prev</span>: <span class='kw'>unsafe</span> { <span class='prelude-val'>Some</span>(<span class='ident'>BoxExt</span>::<span class='ident'>from_raw</span>(<span class='ident'>table_raw</span>)) },
+                <span class='ident'>prev</span>: <span class='kw'>unsafe</span> { <span class='prelude-val'>Some</span>(<span class='ident'>Box</span>::<span class='ident'>from_raw</span>(<span class='ident'>table_raw</span>)) },
             }));
             <span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>store</span>(<span class='ident'>new_table</span>, <span class='ident'>Ordering</span>::<span class='ident'>Release</span>);
-            <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='ident'>new_table</span> }
+            <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='ident'>new_table</span> }
         } <span class='kw'>else</span> {
             <span class='ident'>table</span>
         };
@@ -1140,8 +1097,8 @@
             <span class='kw'>if</span> <span class='ident'>owner</span> <span class='op'>==</span> <span class='number'>0</span> {
                 <span class='kw'>unsafe</span> {
                     <span class='ident'>entry</span>.<span class='ident'>owner</span>.<span class='ident'>store</span>(<span class='ident'>id</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>);
-                    <span class='op'>*</span><span class='ident'>entry</span>.<span class='ident'>data</span>.<span class='ident'>get</span>() <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>data</span>);
-                    <span class='kw'>return</span> (<span class='op'>*</span><span class='ident'>entry</span>.<span class='ident'>data</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>();
+                    <span class='kw-2'>*</span><span class='ident'>entry</span>.<span class='ident'>data</span>.<span class='ident'>get</span>() <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>data</span>);
+                    <span class='kw'>return</span> (<span class='kw-2'>*</span><span class='ident'>entry</span>.<span class='ident'>data</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>();
                 }
             }
             <span class='kw'>if</span> <span class='ident'>owner</span> <span class='op'>==</span> <span class='ident'>id</span> {
@@ -1150,7 +1107,7 @@
                 <span class='comment'>// just return the existing value and drop the newly-allocated</span>
                 <span class='comment'>// Box.</span>
                 <span class='kw'>unsafe</span> {
-                    <span class='kw'>return</span> (<span class='op'>*</span><span class='ident'>entry</span>.<span class='ident'>data</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>();
+                    <span class='kw'>return</span> (<span class='kw-2'>*</span><span class='ident'>entry</span>.<span class='ident'>data</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>();
                 }
             }
         }
@@ -1164,7 +1121,7 @@
     <span class='doccomment'>/// threads are currently accessing their associated values.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>IterMut</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>raw</span> <span class='op'>=</span> <span class='ident'>RawIter</span> {
-            <span class='ident'>remaining</span>: <span class='op'>*</span><span class='self'>self</span>.<span class='ident'>lock</span>.<span class='ident'>lock</span>().<span class='ident'>unwrap</span>(),
+            <span class='ident'>remaining</span>: <span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>lock</span>.<span class='ident'>lock</span>().<span class='ident'>unwrap</span>(),
             <span class='ident'>index</span>: <span class='number'>0</span>,
             <span class='ident'>table</span>: <span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>),
         };
@@ -1181,7 +1138,7 @@
     <span class='doccomment'>/// be done safely---the mutable borrow statically guarantees no other</span>
     <span class='doccomment'>/// threads are currently accessing their associated values.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>clear</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='op'>*</span><span class='self'>self</span> <span class='op'>=</span> <span class='ident'>ThreadLocal</span>::<span class='ident'>new</span>();
+        <span class='kw-2'>*</span><span class='self'>self</span> <span class='op'>=</span> <span class='ident'>ThreadLocal</span>::<span class='ident'>new</span>();
     }
 }
 
@@ -1191,7 +1148,7 @@
 
     <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>IntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>raw</span> <span class='op'>=</span> <span class='ident'>RawIter</span> {
-            <span class='ident'>remaining</span>: <span class='op'>*</span><span class='self'>self</span>.<span class='ident'>lock</span>.<span class='ident'>lock</span>().<span class='ident'>unwrap</span>(),
+            <span class='ident'>remaining</span>: <span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>lock</span>.<span class='ident'>lock</span>().<span class='ident'>unwrap</span>(),
             <span class='ident'>index</span>: <span class='number'>0</span>,
             <span class='ident'>table</span>: <span class='self'>self</span>.<span class='ident'>table</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>),
         };
@@ -1225,30 +1182,32 @@
     }
 }
 
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='ident'>UnwindSafe</span><span class='op'>&gt;</span> <span class='ident'>UnwindSafe</span> <span class='kw'>for</span> <span class='ident'>ThreadLocal</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {}
+
 <span class='kw'>struct</span> <span class='ident'>RawIter</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>Send</span><span class='op'>&gt;</span> {
     <span class='ident'>remaining</span>: <span class='ident'>usize</span>,
     <span class='ident'>index</span>: <span class='ident'>usize</span>,
-    <span class='ident'>table</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
+    <span class='ident'>table</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>Table</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>Send</span><span class='op'>&gt;</span> <span class='ident'>RawIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='op'>*</span><span class='kw-2'>mut</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span> {
+    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span><span class='op'>&gt;</span> {
         <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>remaining</span> <span class='op'>==</span> <span class='number'>0</span> {
             <span class='kw'>return</span> <span class='prelude-val'>None</span>;
         }
 
         <span class='kw'>loop</span> {
-            <span class='kw'>let</span> <span class='ident'>entries</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span>(<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>table</span>).<span class='ident'>entries</span>[..] };
+            <span class='kw'>let</span> <span class='ident'>entries</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span>(<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>table</span>).<span class='ident'>entries</span>[..] };
             <span class='kw'>while</span> <span class='self'>self</span>.<span class='ident'>index</span> <span class='op'>&lt;</span> <span class='ident'>entries</span>.<span class='ident'>len</span>() {
                 <span class='kw'>let</span> <span class='ident'>val</span> <span class='op'>=</span> <span class='ident'>entries</span>[<span class='self'>self</span>.<span class='ident'>index</span>].<span class='ident'>data</span>.<span class='ident'>get</span>();
                 <span class='self'>self</span>.<span class='ident'>index</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                <span class='kw'>if</span> <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='ident'>val</span>).<span class='ident'>is_some</span>() } {
+                <span class='kw'>if</span> <span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='ident'>val</span>).<span class='ident'>is_some</span>() } {
                     <span class='self'>self</span>.<span class='ident'>remaining</span> <span class='op'>-=</span> <span class='number'>1</span>;
                     <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>val</span>);
                 }
             }
             <span class='self'>self</span>.<span class='ident'>index</span> <span class='op'>=</span> <span class='number'>0</span>;
-            <span class='self'>self</span>.<span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='op'>*</span><span class='op'>*</span>(<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>table</span>).<span class='ident'>prev</span>.<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>() };
+            <span class='self'>self</span>.<span class='ident'>table</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='kw-2'>*</span>(<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>table</span>).<span class='ident'>prev</span>.<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>() };
         }
     }
 }
@@ -1263,7 +1222,7 @@
     <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>;
 
     <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>raw</span>.<span class='ident'>next</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='ident'>x</span>).<span class='ident'>as_mut</span>().<span class='ident'>unchecked_unwrap</span>() })
+        <span class='self'>self</span>.<span class='ident'>raw</span>.<span class='ident'>next</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='ident'>x</span>).<span class='ident'>as_mut</span>().<span class='ident'>unchecked_unwrap</span>() })
     }
 
     <span class='kw'>fn</span> <span class='ident'>size_hint</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>usize</span>, <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>) {
@@ -1283,7 +1242,7 @@
     <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>;
 
     <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>raw</span>.<span class='ident'>next</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='ident'>x</span>).<span class='ident'>take</span>().<span class='ident'>unchecked_unwrap</span>() })
+        <span class='self'>self</span>.<span class='ident'>raw</span>.<span class='ident'>next</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='ident'>x</span>).<span class='ident'>take</span>().<span class='ident'>unchecked_unwrap</span>() })
     }
 
     <span class='kw'>fn</span> <span class='ident'>size_hint</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>usize</span>, <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>) {
@@ -1325,10 +1284,10 @@
 
     <span class='doccomment'>/// Returns the element for the current thread, if it exists.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>thread_id</span>::<span class='ident'>get</span>();
+        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>get_thread_id</span>();
         <span class='kw'>let</span> <span class='ident'>owner</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>owner</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>);
         <span class='kw'>if</span> <span class='ident'>owner</span> <span class='op'>==</span> <span class='ident'>id</span> {
-            <span class='kw'>return</span> <span class='kw'>unsafe</span> { <span class='prelude-val'>Some</span>((<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>()) };
+            <span class='kw'>return</span> <span class='kw'>unsafe</span> { <span class='prelude-val'>Some</span>((<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>()) };
         }
         <span class='kw'>if</span> <span class='ident'>owner</span> <span class='op'>==</span> <span class='number'>0</span> {
             <span class='kw'>return</span> <span class='prelude-val'>None</span>;
@@ -1342,7 +1301,7 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_or</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>create</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>T</span>
         <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>
     {
-        <span class='kw'>unsafe</span> { <span class='self'>self</span>.<span class='ident'>get_or_try</span>(<span class='op'>||</span> <span class='prelude-val'>Ok</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, ()<span class='op'>&gt;</span>(<span class='ident'>create</span>())).<span class='ident'>unchecked_unwrap</span>() }
+        <span class='kw'>unsafe</span> { <span class='self'>self</span>.<span class='ident'>get_or_try</span>(<span class='op'>||</span> <span class='prelude-val'>Ok</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, ()<span class='op'>&gt;</span>(<span class='ident'>create</span>())).<span class='ident'>unchecked_unwrap_ok</span>() }
     }
 
     <span class='doccomment'>/// Returns the element for the current thread, or creates it if it doesn&#39;t</span>
@@ -1351,10 +1310,10 @@
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_or_try</span><span class='op'>&lt;</span><span class='ident'>F</span>, <span class='ident'>E</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>create</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>T</span>, <span class='ident'>E</span><span class='op'>&gt;</span>
         <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>FnOnce</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>, <span class='ident'>E</span><span class='op'>&gt;</span>
     {
-        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>thread_id</span>::<span class='ident'>get</span>();
+        <span class='kw'>let</span> <span class='ident'>id</span> <span class='op'>=</span> <span class='ident'>get_thread_id</span>();
         <span class='kw'>let</span> <span class='ident'>owner</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>owner</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>);
         <span class='kw'>if</span> <span class='ident'>owner</span> <span class='op'>==</span> <span class='ident'>id</span> {
-            <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>() });
+            <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>() });
         }
         <span class='self'>self</span>.<span class='ident'>get_or_try_slow</span>(<span class='ident'>id</span>, <span class='ident'>owner</span>, <span class='ident'>create</span>)
     }
@@ -1366,8 +1325,8 @@
     {
         <span class='kw'>if</span> <span class='ident'>owner</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>&amp;&amp;</span> <span class='self'>self</span>.<span class='ident'>owner</span>.<span class='ident'>compare_and_swap</span>(<span class='number'>0</span>, <span class='ident'>id</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>) <span class='op'>==</span> <span class='number'>0</span> {
             <span class='kw'>unsafe</span> {
-                (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()) <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>create</span>()));
-                <span class='kw'>return</span> <span class='prelude-val'>Ok</span>((<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>());
+                (<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()) <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>create</span>()));
+                <span class='kw'>return</span> <span class='prelude-val'>Ok</span>((<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_ref</span>().<span class='ident'>unchecked_unwrap</span>());
             }
         }
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>global</span>.<span class='ident'>get_fast</span>(<span class='ident'>id</span>) {
@@ -1382,7 +1341,7 @@
     <span class='doccomment'>/// be done safely---the mutable borrow statically guarantees no other</span>
     <span class='doccomment'>/// threads are currently accessing their associated values.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>CachedIterMut</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_mut</span>().<span class='ident'>into_iter</span>().<span class='ident'>chain</span>(<span class='self'>self</span>.<span class='ident'>global</span>.<span class='ident'>iter_mut</span>()) }
+        <span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>as_mut</span>().<span class='ident'>into_iter</span>().<span class='ident'>chain</span>(<span class='self'>self</span>.<span class='ident'>global</span>.<span class='ident'>iter_mut</span>()) }
     }
 
     <span class='doccomment'>/// Removes all thread-specific values from the `ThreadLocal`, effectively</span>
@@ -1392,7 +1351,7 @@
     <span class='doccomment'>/// be done safely---the mutable borrow statically guarantees no other</span>
     <span class='doccomment'>/// threads are currently accessing their associated values.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>clear</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='op'>*</span><span class='self'>self</span> <span class='op'>=</span> <span class='ident'>CachedThreadLocal</span>::<span class='ident'>new</span>();
+        <span class='kw-2'>*</span><span class='self'>self</span> <span class='op'>=</span> <span class='ident'>CachedThreadLocal</span>::<span class='ident'>new</span>();
     }
 }
 
@@ -1401,7 +1360,7 @@
     <span class='kw'>type</span> <span class='ident'>IntoIter</span> <span class='op'>=</span> <span class='ident'>CachedIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>;
 
     <span class='kw'>fn</span> <span class='ident'>into_iter</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>CachedIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-        <span class='kw'>unsafe</span> { (<span class='op'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>take</span>().<span class='ident'>into_iter</span>().<span class='ident'>chain</span>(<span class='self'>self</span>.<span class='ident'>global</span>.<span class='ident'>into_iter</span>()) }
+        <span class='kw'>unsafe</span> { (<span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>local</span>.<span class='ident'>get</span>()).<span class='ident'>take</span>().<span class='ident'>into_iter</span>().<span class='ident'>chain</span>(<span class='self'>self</span>.<span class='ident'>global</span>.<span class='ident'>into_iter</span>()) }
     }
 }
 
@@ -1434,6 +1393,8 @@
 <span class='doccomment'>/// An iterator that moves out of a `CachedThreadLocal`.</span>
 <span class='kw'>pub</span> <span class='kw'>type</span> <span class='ident'>CachedIntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>Chain</span><span class='op'>&lt;</span><span class='ident'>OptionIter</span><span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span>, <span class='ident'>IntoIter</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span>;
 
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='ident'>UnwindSafe</span><span class='op'>&gt;</span> <span class='ident'>UnwindSafe</span> <span class='kw'>for</span> <span class='ident'>CachedThreadLocal</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {}
+
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>tests</span> {
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>RefCell</span>;
@@ -1454,11 +1415,11 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tls</span> <span class='op'>=</span> <span class='ident'>ThreadLocal</span>::<span class='ident'>new</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>tls</span>.<span class='ident'>get</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;ThreadLocal { local_data: None }&quot;</span>, <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>tls</span>));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;ThreadLocal { local_data: Some(0) }&quot;</span>, <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>tls</span>));
         <span class='ident'>tls</span>.<span class='ident'>clear</span>();
@@ -1471,11 +1432,11 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tls</span> <span class='op'>=</span> <span class='ident'>CachedThreadLocal</span>::<span class='ident'>new</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>tls</span>.<span class='ident'>get</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;ThreadLocal { local_data: None }&quot;</span>, <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>tls</span>));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='string'>&quot;ThreadLocal { local_data: Some(0) }&quot;</span>, <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='kw-2'>&amp;</span><span class='ident'>tls</span>));
         <span class='ident'>tls</span>.<span class='ident'>clear</span>();
@@ -1487,21 +1448,21 @@
         <span class='kw'>let</span> <span class='ident'>create</span> <span class='op'>=</span> <span class='ident'>make_create</span>();
         <span class='kw'>let</span> <span class='ident'>tls</span> <span class='op'>=</span> <span class='ident'>Arc</span>::<span class='ident'>new</span>(<span class='ident'>ThreadLocal</span>::<span class='ident'>new</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
 
         <span class='kw'>let</span> <span class='ident'>tls2</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>clone</span>();
         <span class='kw'>let</span> <span class='ident'>create2</span> <span class='op'>=</span> <span class='ident'>create</span>.<span class='ident'>clone</span>();
         <span class='ident'>thread</span>::<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> {
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>tls2</span>.<span class='ident'>get</span>());
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='op'>*</span><span class='ident'>tls2</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create2</span>()));
+                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='kw-2'>*</span><span class='ident'>tls2</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create2</span>()));
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>1</span>), <span class='ident'>tls2</span>.<span class='ident'>get</span>());
             })
             .<span class='ident'>join</span>()
             .<span class='ident'>unwrap</span>();
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -1509,21 +1470,21 @@
         <span class='kw'>let</span> <span class='ident'>create</span> <span class='op'>=</span> <span class='ident'>make_create</span>();
         <span class='kw'>let</span> <span class='ident'>tls</span> <span class='op'>=</span> <span class='ident'>Arc</span>::<span class='ident'>new</span>(<span class='ident'>CachedThreadLocal</span>::<span class='ident'>new</span>());
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
 
         <span class='kw'>let</span> <span class='ident'>tls2</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>clone</span>();
         <span class='kw'>let</span> <span class='ident'>create2</span> <span class='op'>=</span> <span class='ident'>create</span>.<span class='ident'>clone</span>();
         <span class='ident'>thread</span>::<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> {
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>None</span>, <span class='ident'>tls2</span>.<span class='ident'>get</span>());
-                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='op'>*</span><span class='ident'>tls2</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create2</span>()));
+                <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='kw-2'>*</span><span class='ident'>tls2</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create2</span>()));
                 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>1</span>), <span class='ident'>tls2</span>.<span class='ident'>get</span>());
             })
             .<span class='ident'>join</span>()
             .<span class='ident'>unwrap</span>();
 
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>0</span>), <span class='ident'>tls</span>.<span class='ident'>get</span>());
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='op'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='kw-2'>*</span><span class='ident'>tls</span>.<span class='ident'>get_or</span>(<span class='op'>||</span> <span class='ident'>create</span>()));
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -1545,10 +1506,10 @@
             .<span class='ident'>unwrap</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tls</span> <span class='op'>=</span> <span class='ident'>Arc</span>::<span class='ident'>try_unwrap</span>(<span class='ident'>tls</span>).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>iter_mut</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='op'>*</span><span class='op'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>iter_mut</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw-2'>*</span><span class='kw-2'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
         <span class='ident'>v</span>.<span class='ident'>sort</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>], <span class='ident'>v</span>);
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>into_iter</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>into_iter</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw-2'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
         <span class='ident'>v</span>.<span class='ident'>sort</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>], <span class='ident'>v</span>);
     }
@@ -1572,10 +1533,10 @@
             .<span class='ident'>unwrap</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tls</span> <span class='op'>=</span> <span class='ident'>Arc</span>::<span class='ident'>try_unwrap</span>(<span class='ident'>tls</span>).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>iter_mut</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='op'>*</span><span class='op'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>iter_mut</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw-2'>*</span><span class='kw-2'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
         <span class='ident'>v</span>.<span class='ident'>sort</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>], <span class='ident'>v</span>);
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>into_iter</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='op'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>tls</span>.<span class='ident'>into_iter</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='kw-2'>*</span><span class='ident'>x</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;&gt;</span>();
         <span class='ident'>v</span>.<span class='ident'>sort</span>();
         <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>], <span class='ident'>v</span>);
     }

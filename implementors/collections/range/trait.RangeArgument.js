@@ -1,9 +1,8 @@
 (function() {var implementors = {};
 implementors["cargo_update"] = [];
-implementors["lazy_static"] = [];
 implementors["libc"] = [];
 implementors["regex_syntax"] = [];
-implementors["semver_parser"] = [];
+implementors["serde"] = [];
 
             if (window.register_implementors) {
                 window.register_implementors(implementors);

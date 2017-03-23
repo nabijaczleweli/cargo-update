@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["__lazy_static_create",""],["lazy_static",""]],"mod":[["lazy",""]],"trait":[["__Deref","The `Deref` trait is used to specify the functionality of dereferencing operations, like `*v`."]]});
+initSidebarItems({"fn":[["initialize","Takes a shared reference to a lazy static and initializes it if it has not been already."]],"macro":[["lazy_static",""]],"trait":[["LazyStatic","Support trait for enabling a few common operation on lazy static values."]]});

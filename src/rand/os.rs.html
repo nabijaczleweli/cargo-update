@@ -9,6 +9,7 @@
 
     <title>os.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -692,7 +693,7 @@
     <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
 
     <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
-    <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>OsRngInner</span>::<span class='op'>*</span>;
+    <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>OsRngInner</span>::<span class='kw-2'>*</span>;
 
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
     <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::<span class='ident'>File</span>;
@@ -847,12 +848,12 @@
     <span class='kw'>enum</span> <span class='ident'>SecRandom</span> {}
 
     <span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>non_upper_case_globals</span>)]</span>
-    <span class='kw'>const</span> <span class='ident'>kSecRandomDefault</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span> <span class='op'>=</span> <span class='number'>0</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span>;
+    <span class='kw'>const</span> <span class='ident'>kSecRandomDefault</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span> <span class='op'>=</span> <span class='number'>0</span> <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span>;
 
     <span class='attribute'>#[<span class='ident'>link</span>(<span class='ident'>name</span> <span class='op'>=</span> <span class='string'>&quot;Security&quot;</span>, <span class='ident'>kind</span> <span class='op'>=</span> <span class='string'>&quot;framework&quot;</span>)]</span>
     <span class='kw'>extern</span> {
-        <span class='kw'>fn</span> <span class='ident'>SecRandomCopyBytes</span>(<span class='ident'>rnd</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span>,
-                              <span class='ident'>count</span>: <span class='ident'>size_t</span>, <span class='ident'>bytes</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
+        <span class='kw'>fn</span> <span class='ident'>SecRandomCopyBytes</span>(<span class='ident'>rnd</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span>,
+                              <span class='ident'>count</span>: <span class='ident'>size_t</span>, <span class='ident'>bytes</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
     }
 
     <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
@@ -910,7 +911,7 @@
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>s_len</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>len</span>();
                 <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
                     <span class='ident'>libc</span>::<span class='ident'>sysctl</span>(<span class='ident'>mib</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>mib</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>libc</span>::<span class='ident'>c_uint</span>,
-                                 <span class='ident'>s</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>s_len</span>,
+                                 <span class='ident'>s</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> _, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>s_len</span>,
                                  <span class='ident'>ptr</span>::<span class='ident'>null</span>(), <span class='number'>0</span>)
                 };
                 <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> <span class='op'>||</span> <span class='ident'>s_len</span> <span class='op'>!=</span> <span class='ident'>s</span>.<span class='ident'>len</span>() {
@@ -950,7 +951,7 @@
             <span class='comment'>// getentropy(2) permits a maximum buffer size of 256 bytes</span>
             <span class='kw'>for</span> <span class='ident'>s</span> <span class='kw'>in</span> <span class='ident'>v</span>.<span class='ident'>chunks_mut</span>(<span class='number'>256</span>) {
                 <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                    <span class='ident'>libc</span>::<span class='ident'>getentropy</span>(<span class='ident'>s</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>, <span class='ident'>s</span>.<span class='ident'>len</span>())
+                    <span class='ident'>libc</span>::<span class='ident'>getentropy</span>(<span class='ident'>s</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>, <span class='ident'>s</span>.<span class='ident'>len</span>())
                 };
                 <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
                     <span class='kw'>let</span> <span class='ident'>err</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>();
@@ -1003,7 +1004,7 @@
     <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
 
     <span class='kw'>type</span> <span class='ident'>BOOL</span> <span class='op'>=</span> <span class='ident'>i32</span>;
-    <span class='kw'>type</span> <span class='ident'>LPCSTR</span> <span class='op'>=</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>i8</span>;
+    <span class='kw'>type</span> <span class='ident'>LPCSTR</span> <span class='op'>=</span> <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>i8</span>;
     <span class='kw'>type</span> <span class='ident'>DWORD</span> <span class='op'>=</span> <span class='ident'>u32</span>;
     <span class='kw'>type</span> <span class='ident'>HCRYPTPROV</span> <span class='op'>=</span> <span class='ident'>usize</span>;
     <span class='kw'>type</span> <span class='ident'>BYTE</span> <span class='op'>=</span> <span class='ident'>u8</span>;
@@ -1014,14 +1015,14 @@
 
     <span class='attribute'>#[<span class='ident'>link</span>(<span class='ident'>name</span> <span class='op'>=</span> <span class='string'>&quot;advapi32&quot;</span>)]</span>
     <span class='kw'>extern</span> <span class='string'>&quot;system&quot;</span> {
-        <span class='kw'>fn</span> <span class='ident'>CryptAcquireContextA</span>(<span class='ident'>phProv</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>HCRYPTPROV</span>,
+        <span class='kw'>fn</span> <span class='ident'>CryptAcquireContextA</span>(<span class='ident'>phProv</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>HCRYPTPROV</span>,
                                 <span class='ident'>szContainer</span>: <span class='ident'>LPCSTR</span>,
                                 <span class='ident'>szProvider</span>: <span class='ident'>LPCSTR</span>,
                                 <span class='ident'>dwProvType</span>: <span class='ident'>DWORD</span>,
                                 <span class='ident'>dwFlags</span>: <span class='ident'>DWORD</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
         <span class='kw'>fn</span> <span class='ident'>CryptGenRandom</span>(<span class='ident'>hProv</span>: <span class='ident'>HCRYPTPROV</span>,
                           <span class='ident'>dwLen</span>: <span class='ident'>DWORD</span>,
-                          <span class='ident'>pbBuffer</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>BYTE</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
+                          <span class='ident'>pbBuffer</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>BYTE</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
         <span class='kw'>fn</span> <span class='ident'>CryptReleaseContext</span>(<span class='ident'>hProv</span>: <span class='ident'>HCRYPTPROV</span>, <span class='ident'>dwFlags</span>: <span class='ident'>DWORD</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
     }
 
@@ -1092,13 +1093,13 @@
 
     <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>(<span class='kw'>extern</span> <span class='kw'>fn</span>(<span class='ident'>dest</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
+    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>(<span class='kw'>extern</span> <span class='kw'>fn</span>(<span class='ident'>dest</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
                                <span class='ident'>bytes</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span>,
-                               <span class='ident'>read</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_int</span>);
+                               <span class='ident'>read</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_int</span>);
 
     <span class='kw'>extern</span> {
-        <span class='kw'>fn</span> <span class='ident'>nacl_interface_query</span>(<span class='ident'>name</span>: <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>libc</span>::<span class='ident'>c_char</span>,
-                                <span class='ident'>table</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
+        <span class='kw'>fn</span> <span class='ident'>nacl_interface_query</span>(<span class='ident'>name</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>libc</span>::<span class='ident'>c_char</span>,
+                                <span class='ident'>table</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
                                 <span class='ident'>table_size</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>;
     }
 
@@ -1106,9 +1107,9 @@
 
     <span class='attribute'>#[<span class='ident'>repr</span>(<span class='ident'>C</span>)]</span>
     <span class='kw'>struct</span> <span class='ident'>NaClIRTRandom</span> {
-        <span class='ident'>get_random_bytes</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw'>extern</span> <span class='kw'>fn</span>(<span class='ident'>dest</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
+        <span class='ident'>get_random_bytes</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw'>extern</span> <span class='kw'>fn</span>(<span class='ident'>dest</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
                                            <span class='ident'>bytes</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span>,
-                                           <span class='ident'>read</span>: <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_int</span><span class='op'>&gt;</span>,
+                                           <span class='ident'>read</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_int</span><span class='op'>&gt;</span>,
     }
 
     <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
@@ -1117,7 +1118,7 @@
                 <span class='ident'>get_random_bytes</span>: <span class='prelude-val'>None</span>,
             };
             <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                <span class='ident'>nacl_interface_query</span>(<span class='ident'>INTERFACE</span>.<span class='ident'>as_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> _,
+                <span class='ident'>nacl_interface_query</span>(<span class='ident'>INTERFACE</span>.<span class='ident'>as_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw'>const</span> _,
                                      <span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>iface</span>),
                                      <span class='ident'>mem</span>::<span class='ident'>size_of</span>::<span class='op'>&lt;</span><span class='ident'>NaClIRTRandom</span><span class='op'>&gt;</span>() <span class='kw'>as</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>)
             };
@@ -1145,9 +1146,9 @@
             <span class='kw'>loop</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>r</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span> <span class='op'>=</span> <span class='number'>0</span>;
                 <span class='kw'>let</span> <span class='ident'>len</span> <span class='op'>=</span> <span class='ident'>v</span>.<span class='ident'>len</span>();
-                <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> (<span class='self'>self</span>.<span class='number'>0</span>)(<span class='ident'>v</span>[<span class='ident'>read</span>..].<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _,
+                <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> (<span class='self'>self</span>.<span class='number'>0</span>)(<span class='ident'>v</span>[<span class='ident'>read</span>..].<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> _,
                                      (<span class='ident'>len</span> <span class='op'>-</span> <span class='ident'>read</span>) <span class='kw'>as</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>,
-                                     <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>r</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> _);
+                                     <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>r</span> <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> _);
                 <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>error</span> <span class='op'>==</span> <span class='number'>0</span>, <span class='string'>&quot;`get_random_bytes` failed!&quot;</span>);
                 <span class='ident'>read</span> <span class='op'>+=</span> <span class='ident'>r</span> <span class='kw'>as</span> <span class='ident'>usize</span>;
 
