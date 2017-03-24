@@ -31,11 +31,11 @@ fn actual_main() -> Result<(), i32> {
     }
 
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1);
-    let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
     let configuration = try!(cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")));
+    let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
 
     if !opts.to_update.is_empty() {
-        packages = cargo_update::ops::intersect_packages(packages, &opts.to_update);
+        packages = cargo_update::ops::intersect_packages(packages, &opts.to_update, opts.install);
     }
 
     {
@@ -56,18 +56,15 @@ fn actual_main() -> Result<(), i32> {
     {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-        for package in packages.iter()
-            .sorted_by(|lhs, rhs| (lhs.version >= *lhs.newest_version.as_ref().unwrap()).cmp(&(rhs.version >= *rhs.newest_version.as_ref().unwrap()))) {
+        for package in packages.iter().sorted_by(|lhs, rhs| (!lhs.needs_update()).cmp(&!rhs.needs_update())) {
+            write!(out, "{}\t", package.name).unwrap();
+            if let Some(ref v) = package.version.as_ref() {
+                write!(out, "v{}", v).unwrap();
+            }
             writeln!(out,
-                     "{}\tv{}\tv{}\t{}",
-                     package.name,
-                     package.version,
+                     "\tv{}\t{}",
                      package.newest_version.as_ref().unwrap(),
-                     if package.version < *package.newest_version.as_ref().unwrap() {
-                         "Yes"
-                     } else {
-                         "No"
-                     })
+                     if package.needs_update() { "Yes" } else { "No" })
                 .unwrap();
         }
         writeln!(out, "").unwrap();
@@ -76,7 +73,7 @@ fn actual_main() -> Result<(), i32> {
 
     if opts.update {
         if !opts.force {
-            packages = packages.into_iter().filter(|pkg| pkg.version < *pkg.newest_version.as_ref().unwrap()).collect();
+            packages = packages.into_iter().filter(cargo_update::ops::MainRepoPackage::needs_update).collect();
         }
 
         if !packages.is_empty() {
@@ -84,9 +81,9 @@ fn actual_main() -> Result<(), i32> {
                 .map(|package| -> Result<(), (i32, String)> {
                     println!("Updating {}", package.name);
 
-                    if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                    if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
                         let cur_exe = env::current_exe().unwrap();
-                        fs::rename(&cur_exe, cur_exe.with_extension(format!("exe-v{}", package.version))).unwrap();
+                        fs::rename(&cur_exe, cur_exe.with_extension(format!("exe-v{}", package.version.as_ref().unwrap()))).unwrap();
                         // This way the past-current exec will be "replaced" we'll get no dupes in .cargo.toml
                         File::create(cur_exe).unwrap();
                     }
@@ -99,10 +96,10 @@ fn actual_main() -> Result<(), i32> {
 
                     println!("");
                     if !install_res.success() {
-                        if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                        if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
                             let cur_exe = env::current_exe().unwrap();
                             fs::remove_file(&cur_exe).unwrap();
-                            fs::rename(cur_exe.with_extension(format!("exe-v{}", package.version)), cur_exe).unwrap();
+                            fs::rename(cur_exe.with_extension(format!("exe-v{}", package.version.as_ref().unwrap())), cur_exe).unwrap();
                         }
 
                         Err((install_res.code().unwrap_or(-1), package.name))

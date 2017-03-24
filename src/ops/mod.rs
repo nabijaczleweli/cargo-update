@@ -58,7 +58,7 @@ lazy_static! {
 /// assert_eq!(package,
 ///            MainRepoPackage {
 ///                name: "racer".to_string(),
-///                version: Semver::parse("1.2.10").unwrap(),
+///                version: Some(Semver::parse("1.2.10").unwrap()),
 ///                newest_version: None,
 ///            });
 ///
@@ -73,7 +73,7 @@ pub struct MainRepoPackage {
     /// Go to `https://crates.io/crates/{name}` to get the crate info.
     pub name: String,
     /// The package's locally installed version.
-    pub version: Semver,
+    pub version: Option<Semver>,
     /// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.
     ///
     /// `None` by default, acquire via `MainRepoPackage::pull_version()`.
@@ -104,7 +104,7 @@ impl MainRepoPackage {
     /// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),
     ///            MainRepoPackage {
     ///                name: "racer".to_string(),
-    ///                version: Semver::parse("1.2.10").unwrap(),
+    ///                version: Some(Semver::parse("1.2.10").unwrap()),
     ///                newest_version: None,
     ///            });
     ///
@@ -112,7 +112,7 @@ impl MainRepoPackage {
     /// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),
     ///            MainRepoPackage {
     ///                name: "cargo-outdated".to_string(),
-    ///                version: Semver::parse("0.2.0").unwrap(),
+    ///                version: Some(Semver::parse("0.2.0").unwrap()),
     ///                newest_version: None,
     ///            });
     /// # }
@@ -129,7 +129,7 @@ impl MainRepoPackage {
         PACKAGE_RGX.captures(what).and_then(|c| if c.get(3).unwrap().as_str() == "registry" {
             Some(MainRepoPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
-                version: Semver::parse(c.get(2).unwrap().as_str()).unwrap(),
+                version: Some(Semver::parse(c.get(2).unwrap().as_str()).unwrap()),
                 newest_version: None,
             })
         } else {
@@ -166,6 +166,37 @@ impl MainRepoPackage {
     pub fn pull_version(&mut self, registry: &Path) {
         let vers = crate_versions(&find_package_data(&self.name, registry).unwrap());
         self.newest_version = vers.into_iter().max();
+    }
+
+    /// Check whether this package needs to be installed
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate cargo_update;
+    /// # extern crate semver;
+    /// # use cargo_update::ops::MainRepoPackage;
+    /// # use semver::Version as Semver;
+    /// # fn main() {
+    /// assert!(MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: Some(Semver::parse("1.7.2").unwrap()),
+    ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///         }.needs_update());
+    /// assert!(MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: None,
+    ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///         }.needs_update());
+    /// assert!(!MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///         }.needs_update());
+    /// # }
+    /// ```
+    pub fn needs_update(&self) -> bool {
+        self.version.is_none() || *self.version.as_ref().unwrap() < *self.newest_version.as_ref().unwrap()
     }
 }
 
@@ -213,7 +244,7 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
 /// # let cargo_dir = temp_dir().join(".crates.toml");
 /// let packages = installed_main_repo_packages(&cargo_dir);
 /// for package in &packages {
-///     println!("{} v{}", package.name, package.version);
+///     println!("{} v{}", package.name, package.version.as_ref().unwrap());
 /// }
 /// ```
 pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> {
@@ -243,13 +274,23 @@ pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> 
 /// #     vec![MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()];
-/// installed_packages = intersect_packages(installed_packages, &packages_to_update);
+/// installed_packages = intersect_packages(installed_packages, &packages_to_update, false);
 /// # assert_eq!(&installed_packages,
 /// #   &[MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #     MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
 /// ```
-pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &[String]) -> Vec<MainRepoPackage> {
-    installed.into_iter().filter(|p| to_update.contains(&p.name)).collect()
+pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &[String], allow_installs: bool) -> Vec<MainRepoPackage> {
+    installed.iter()
+        .filter(|p| to_update.contains(&p.name))
+        .cloned()
+        .chain(to_update.iter().filter(|p| allow_installs && installed.iter().find(|i| i.name == **p).is_none()).map(|p| {
+            MainRepoPackage {
+                name: p.clone(),
+                version: None,
+                newest_version: None,
+            }
+        }))
+        .collect()
 }
 
 /// Parse the raw crate descriptor from the repository into a collection of `Semver`s.

@@ -23,17 +23,17 @@ fn existant() {
     assert_eq!(installed_main_repo_packages(&td),
                vec![MainRepoPackage {
                         name: "cargo-outdated".to_string(),
-                        version: Semver::parse("0.2.0").unwrap(),
+                        version: Some(Semver::parse("0.2.0").unwrap()),
                         newest_version: None,
                     },
                     MainRepoPackage {
                         name: "racer".to_string(),
-                        version: Semver::parse("1.2.10").unwrap(),
+                        version: Some(Semver::parse("1.2.10").unwrap()),
                         newest_version: None,
                     },
                     MainRepoPackage {
                         name: "rustfmt".to_string(),
-                        version: Semver::parse("0.6.2").unwrap(),
+                        version: Some(Semver::parse("0.6.2").unwrap()),
                         newest_version: None,
                     }]);
 }

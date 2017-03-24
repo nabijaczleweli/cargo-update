@@ -29,6 +29,8 @@ pub struct Options {
     pub to_update: Vec<String>,
     /// Whether to update packages or just list them. Default: `true`
     pub update: bool,
+    /// Whether to allow for just installing packages. Default: `false`
+    pub install: bool,
     /// Update all packages. Default: `false`
     pub force: bool,
     /// The `cargo` home directory. Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
@@ -65,6 +67,7 @@ impl Options {
                         Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
+                        Arg::from_usage("--allow-no-update 'Allow for fresh-installing packages'"),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
@@ -78,6 +81,7 @@ impl Options {
                 packages.unique()
             },
             update: !matches.is_present("list"),
+            install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
             crates_file: match matches.value_of("cargo-dir") {
                 Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
@@ -105,13 +109,13 @@ impl ConfigOptions {
                 .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .validator(cargo_dir_validator),
-                        Arg::from_usage("<PACKAGE> 'Packages to update'").empty_values(false),
                         Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
                         Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'"),
                         Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'"),
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
-                            .hide_possible_values(true)]))
+                            .hide_possible_values(true),
+                        Arg::from_usage("<PACKAGE> 'Packages to update'").empty_values(false)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
 

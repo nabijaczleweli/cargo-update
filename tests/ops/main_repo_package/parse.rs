@@ -7,7 +7,7 @@ fn main_repository() {
     assert_eq!(MainRepoPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)"),
                Some(MainRepoPackage {
                    name: "cargo-count".to_string(),
-                   version: Semver::parse("0.2.2").unwrap(),
+                   version: Some(Semver::parse("0.2.2").unwrap()),
                    newest_version: None,
                }));
 }
