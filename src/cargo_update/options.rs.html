@@ -213,6 +213,10 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Option parsing and management.</span>
 <span class='doccomment'>//!</span>
@@ -245,6 +249,8 @@
     <span class='kw'>pub</span> <span class='ident'>to_update</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>,
     <span class='doccomment'>/// Whether to update packages or just list them. Default: `true`</span>
     <span class='kw'>pub</span> <span class='ident'>update</span>: <span class='ident'>bool</span>,
+    <span class='doccomment'>/// Whether to allow for just installing packages. Default: `false`</span>
+    <span class='kw'>pub</span> <span class='ident'>install</span>: <span class='ident'>bool</span>,
     <span class='doccomment'>/// Update all packages. Default: `false`</span>
     <span class='kw'>pub</span> <span class='ident'>force</span>: <span class='ident'>bool</span>,
     <span class='doccomment'>/// The `cargo` home directory. Default: in `&quot;$CARGO_INSTALL_ROOT&quot;`, then `&quot;$CARGO_HOME&quot;`, then `&quot;$HOME/.cargo&quot;`</span>
@@ -281,6 +287,7 @@
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-a --all &#39;Update all packages&#39;&quot;</span>).<span class='ident'>conflicts_with</span>(<span class='string'>&quot;PACKAGE&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-l --list &#39;Don&#39;t update packages, only list and check if they need an update&#39;&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-f --force &#39;Update all packages regardless if they need updating&#39;&quot;</span>),
+                        <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;--allow-no-update &#39;Allow for fresh-installing packages&#39;&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;&lt;PACKAGE&gt;... &#39;Packages to update&#39;&quot;</span>).<span class='ident'>conflicts_with</span>(<span class='string'>&quot;all&quot;</span>).<span class='ident'>empty_values</span>(<span class='bool-val'>false</span>).<span class='ident'>min_values</span>(<span class='number'>1</span>)]))
             .<span class='ident'>get_matches</span>();
         <span class='kw'>let</span> <span class='ident'>matches</span> <span class='op'>=</span> <span class='ident'>matches</span>.<span class='ident'>subcommand_matches</span>(<span class='string'>&quot;install-update&quot;</span>).<span class='ident'>unwrap</span>();
@@ -294,6 +301,7 @@
                 <span class='ident'>packages</span>.<span class='ident'>unique</span>()
             },
             <span class='ident'>update</span>: <span class='op'>!</span><span class='ident'>matches</span>.<span class='ident'>is_present</span>(<span class='string'>&quot;list&quot;</span>),
+            <span class='ident'>install</span>: <span class='ident'>matches</span>.<span class='ident'>is_present</span>(<span class='string'>&quot;allow-no-update&quot;</span>),
             <span class='ident'>force</span>: <span class='ident'>matches</span>.<span class='ident'>is_present</span>(<span class='string'>&quot;force&quot;</span>),
             <span class='ident'>crates_file</span>: <span class='kw'>match</span> <span class='ident'>matches</span>.<span class='ident'>value_of</span>(<span class='string'>&quot;cargo-dir&quot;</span>) {
                 <span class='prelude-val'>Some</span>(<span class='ident'>dirs</span>) <span class='op'>=&gt;</span> (<span class='ident'>dirs</span>.<span class='ident'>to_string</span>(), <span class='ident'>fs</span>::<span class='ident'>canonicalize</span>(<span class='ident'>dirs</span>).<span class='ident'>unwrap</span>()),
@@ -321,13 +329,13 @@
                 .<span class='ident'>about</span>(<span class='string'>&quot;A cargo subcommand for checking and applying updates to installed executables -- configuration&quot;</span>)
                 .<span class='ident'>args</span>(<span class='kw-2'>&amp;</span>[<span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-c --cargo-dir=[CARGO_DIR] &#39;The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo&#39;&quot;</span>)
                             .<span class='ident'>validator</span>(<span class='ident'>cargo_dir_validator</span>),
-                        <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;&lt;PACKAGE&gt; &#39;Packages to update&#39;&quot;</span>).<span class='ident'>empty_values</span>(<span class='bool-val'>false</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-t --toolchain=[TOOLCHAIN] &#39;Toolchain to use or empty for default&#39;&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-f --feature=[FEATURE]... &#39;Feature to enable&#39;&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-n --no-feature=[DISABLED_FEATURE]... &#39;Feature to disable&#39;&quot;</span>),
                         <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;-d --default-features=[DEFAULT_FEATURES] &#39;Whether to allow default features&#39;&quot;</span>)
                             .<span class='ident'>possible_values</span>(<span class='kw-2'>&amp;</span>[<span class='string'>&quot;1&quot;</span>, <span class='string'>&quot;yes&quot;</span>, <span class='string'>&quot;true&quot;</span>, <span class='string'>&quot;0&quot;</span>, <span class='string'>&quot;no&quot;</span>, <span class='string'>&quot;false&quot;</span>])
-                            .<span class='ident'>hide_possible_values</span>(<span class='bool-val'>true</span>)]))
+                            .<span class='ident'>hide_possible_values</span>(<span class='bool-val'>true</span>),
+                        <span class='ident'>Arg</span>::<span class='ident'>from_usage</span>(<span class='string'>&quot;&lt;PACKAGE&gt; &#39;Packages to update&#39;&quot;</span>).<span class='ident'>empty_values</span>(<span class='bool-val'>false</span>)]))
             .<span class='ident'>get_matches</span>();
         <span class='kw'>let</span> <span class='ident'>matches</span> <span class='op'>=</span> <span class='ident'>matches</span>.<span class='ident'>subcommand_matches</span>(<span class='string'>&quot;install-update-config&quot;</span>).<span class='ident'>unwrap</span>();
 
