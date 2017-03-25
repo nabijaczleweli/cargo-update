@@ -4,7 +4,7 @@ cache: cargo
 
 matrix:
   include:
-    - env: LANGUAGE=Rust DEPLOY=true DEPLOY_FILE="$TRAVIS_BUILD_DIR/../cargo-install-update-$TRAVIS_TAG"
+    - env: LANGUAGE=Rust DEPLOY=true DEPLOY_FILE="$TRAVIS_BUILD_DIR/../cargo-install-update-$TRAVIS_TAG.tbz2"
       language: rust
       rust: stable
     - env: LANGUAGE=Rust
@@ -43,16 +43,16 @@ script:
   - if [ "$LANGUAGE" == "Rust" ] && [ "$DEPLOY" ] && [ "$TRAVIS_TAG" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then cargo build --verbose --release; fi
   -
   - if [ "$LANGUAGE" == "Ruby" ]; then
-      mkdir man; pushd man;
-      cp ../cargo-install-update.md .;
-      ronn --organization="cargo-update developers" cargo-install-update.md;
-      popd;
+      ronn --organization="cargo-update developers" man/*.md;
     fi
 
 after_success:
   - if [ "$LANGUAGE" == "Rust" ] && [ "$DEPLOY" ] && [ "$TRAVIS_TAG" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-      cp target/release/cargo-install-update "$TRAVIS_BUILD_DIR/../cargo-install-update-$TRAVIS_TAG";
-      strip --strip-all --remove-section=.comment --remove-section=.note "$TRAVIS_BUILD_DIR/../cargo-install-update-$TRAVIS_TAG";
+      cp target/release/cargo-install-update target/release/cargo-install-update-config "$TRAVIS_BUILD_DIR/..";
+      pushd "$TRAVIS_BUILD_DIR/..";
+      strip --strip-all --remove-section=.comment --remove-section=.note cargo-install-update cargo-install-update-config;
+      tar -caf "cargo-install-update-$TRAVIS_TAG.tbz2" cargo-install-update cargo-install-update-config;
+      popd;
     fi
   - if [ "$LANGUAGE" == "Rust-doc" ]; then
       curl -SL https://keybase.io/nabijaczleweli/key.asc | gpg --import;
@@ -73,9 +73,9 @@ after_success:
         git log $TRAVIS_COMMIT_RANGE --pretty=oneline;
       ) >> $TRAVIS_BUILD_DIR/../MAN_UPDATE_MSG;
       mkdir -p ~/.ssh && cp gh_rsa ~/.ssh/id_rsa && chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_rsa;
-      git clone -b man git@github.com:$TRAVIS_REPO_SLUG.git $TRAVIS_BUILD_DIR-man;
-      cp -f man/* $TRAVIS_BUILD_DIR-man;
-      pushd $TRAVIS_BUILD_DIR-man;
+      git clone -b man git@github.com:$TRAVIS_REPO_SLUG.git "$TRAVIS_BUILD_DIR-man";
+      cp -f man/* "$TRAVIS_BUILD_DIR-man";
+      pushd "$TRAVIS_BUILD_DIR-man";
       git config --global user.email "nabijaczleweli@gmail.com";
       git config --global user.name "Nabijaczleweli Autouploader Bot";
       git config --global push.default simple;

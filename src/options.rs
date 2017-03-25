@@ -98,7 +98,7 @@ impl Options {
 }
 
 impl ConfigOptions {
-    /// Parse `env`-wide command-line arguments into an `ConfigOptions` instance
+    /// Parse `env`-wide command-line arguments into a `ConfigOptions` instance
     pub fn parse() -> ConfigOptions {
         let matches = App::new("cargo-install-update-config")
             .bin_name("cargo")
@@ -115,7 +115,7 @@ impl ConfigOptions {
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
-                        Arg::from_usage("<PACKAGE> 'Packages to update'").empty_values(false)]))
+                        Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
 

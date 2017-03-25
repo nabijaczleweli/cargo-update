@@ -1,4 +1,5 @@
-//! A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo-subcommands) for checking and applying updates to installed executables
+//! A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo-subcommands) for checking and applying
+//! updates to installed executables
 //!
 //! # Library doc
 //!
@@ -28,6 +29,10 @@
 //! updates for my cargo-installed executables, which was long and boring.
 //!
 //! Only updates packages from the main repository.
+//!
+//! See
+//! [cargo-install-update-config(1)](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update-config.1.html)
+//! for further configuring updates.
 //!
 //! Exit values and possible errors:
 //!
@@ -65,6 +70,16 @@
 //!
 //! ```text
 //! Update all packages, regardless of whether they need to be version-wise.
+//! ```
+//!
+//! -i --allow-no-update
+//!
+//! ```text
+//! Allow to fresh install packages passed as PACKAGE argument.
+//!
+//! This is useful, for example, in pairing with cargo-install-update-config(1).
+//!
+//! Off by default.
 //! ```
 //!
 //! -c --cargo-dir &lt;CARGO_DIR&gt;
@@ -198,6 +213,38 @@
 //!
 //!   Updated 2 packages.
 //!   Failed to update clippy, clippy_lints.
+//! ```
+//!
+//! `cargo install-update -i checksums rustfmt treesize`
+//!
+//! ```text
+//! Install specified packages, their installation status notwithstanding
+//!
+//! Example output:
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!
+//!   Package    Installed  Latest   Needs update
+//!   checksums             v0.5.2   Yes
+//!   rustfmt    v0.6.2     v0.6.2   No
+//!   treesize   v0.2.0     v0.2.1   Yes
+//!
+//!   Installing checksums
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading checksums v0.5.2
+//!      [...]
+//!      Compiling checksums v0.5.2
+//!       Finished release [optimized] target(s) in 95.2 secs
+//!      Replacing D:\Users\nabijaczleweli\.cargo\bin\checksums.exe
+//!
+//!   Updating treesize
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading treesize v0.2.1
+//!      [...]
+//!      Compiling treesize v0.2.1
+//!       Finished release [optimized] target(s) in 76.77 secs
+//!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
+//!
+//!   Updated 2 packages.
 //! ```
 
 

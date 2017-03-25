@@ -79,7 +79,13 @@ fn actual_main() -> Result<(), i32> {
         if !packages.is_empty() {
             let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
                 .map(|package| -> Result<(), (i32, String)> {
-                    println!("Updating {}", package.name);
+                    println!("{} {}",
+                             if package.version.is_some() {
+                                 "Updating"
+                             } else {
+                                 "Installing"
+                             },
+                             package.name);
 
                     if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
                         let cur_exe = env::current_exe().unwrap();
