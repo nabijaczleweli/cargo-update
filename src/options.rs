@@ -67,7 +67,7 @@ impl Options {
                         Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
-                        Arg::from_usage("--allow-no-update 'Allow for fresh-installing packages'"),
+                        Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
