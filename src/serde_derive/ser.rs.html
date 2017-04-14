@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-0.9.11/src/ser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-0.9.13/src/ser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>ser.rs.html -- source</title>
@@ -825,6 +825,16 @@
 <span id="780">780</span>
 <span id="781">781</span>
 <span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='ident'>syn</span>::{<span class='self'>self</span>, <span class='ident'>Ident</span>};
 <span class='kw'>use</span> <span class='ident'>quote</span>::<span class='ident'>Tokens</span>;
@@ -851,7 +861,7 @@
             <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>serde</span> <span class='kw'>as</span> <span class='ident'>_serde</span>;
             <span class='attribute'>#[<span class='ident'>automatically_derived</span>]</span>
             <span class='kw'>impl</span> <span class='attribute'>#<span class='ident'>impl_generics</span> <span class='ident'>_serde</span>::<span class='ident'>Serialize</span> <span class='kw'>for</span> <span class='attribute'>#<span class='ident'>ident</span> <span class='attribute'>#<span class='ident'>ty_generics</span> <span class='attribute'>#<span class='ident'>where_clause</span> {
-                <span class='kw'>fn</span> <span class='ident'>serialize</span><span class='op'>&lt;</span><span class='ident'>__S</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>_serializer</span>: <span class='ident'>__S</span>) <span class='op'>-&gt;</span> <span class='ident'>_serde</span>::<span class='ident'>export</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>__S</span>::<span class='prelude-val'>Ok</span>, <span class='ident'>__S</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
+                <span class='kw'>fn</span> <span class='ident'>serialize</span><span class='op'>&lt;</span><span class='ident'>__S</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>__serializer</span>: <span class='ident'>__S</span>) <span class='op'>-&gt;</span> <span class='ident'>_serde</span>::<span class='ident'>export</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>__S</span>::<span class='prelude-val'>Ok</span>, <span class='ident'>__S</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
                     <span class='kw'>where</span> <span class='ident'>__S</span>: <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>
                 {
                     <span class='attribute'>#<span class='ident'>body</span>
@@ -889,28 +899,38 @@
 }
 
 <span class='kw'>fn</span> <span class='ident'>serialize_body</span>(<span class='ident'>item</span>: <span class='kw-2'>&amp;</span><span class='ident'>Item</span>, <span class='ident'>generics</span>: <span class='kw-2'>&amp;</span><span class='ident'>syn</span>::<span class='ident'>Generics</span>) <span class='op'>-&gt;</span> <span class='ident'>Fragment</span> {
-    <span class='kw'>match</span> <span class='ident'>item</span>.<span class='ident'>body</span> {
-        <span class='ident'>Body</span>::<span class='ident'>Enum</span>(<span class='kw-2'>ref</span> <span class='ident'>variants</span>) <span class='op'>=&gt;</span> {
-            <span class='ident'>serialize_item_enum</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='ident'>variants</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
-        }
-        <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Struct</span>, <span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>=&gt;</span> {
-            <span class='kw'>if</span> <span class='ident'>fields</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>field</span><span class='op'>|</span> <span class='ident'>field</span>.<span class='ident'>ident</span>.<span class='ident'>is_none</span>()) {
-                <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;struct has unnamed fields&quot;</span>);
+    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>into_type</span>) <span class='op'>=</span> <span class='ident'>item</span>.<span class='ident'>attrs</span>.<span class='ident'>into_type</span>() {
+        <span class='ident'>serialize_into</span>(<span class='ident'>into_type</span>)
+    } <span class='kw'>else</span> {
+        <span class='kw'>match</span> <span class='ident'>item</span>.<span class='ident'>body</span> {
+            <span class='ident'>Body</span>::<span class='ident'>Enum</span>(<span class='kw-2'>ref</span> <span class='ident'>variants</span>) <span class='op'>=&gt;</span> {
+                <span class='ident'>serialize_item_enum</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='ident'>variants</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
             }
-
-            <span class='ident'>serialize_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='ident'>fields</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
-        }
-        <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Tuple</span>, <span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>=&gt;</span> {
-            <span class='kw'>if</span> <span class='ident'>fields</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>field</span><span class='op'>|</span> <span class='ident'>field</span>.<span class='ident'>ident</span>.<span class='ident'>is_some</span>()) {
-                <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;tuple struct has named fields&quot;</span>);
+            <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Struct</span>, <span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>=&gt;</span> {
+                <span class='kw'>if</span> <span class='ident'>fields</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>field</span><span class='op'>|</span> <span class='ident'>field</span>.<span class='ident'>ident</span>.<span class='ident'>is_none</span>()) {
+                    <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;struct has unnamed fields&quot;</span>);
+                }
+                <span class='ident'>serialize_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='ident'>fields</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
             }
+            <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Tuple</span>, <span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>=&gt;</span> {
+                <span class='kw'>if</span> <span class='ident'>fields</span>.<span class='ident'>iter</span>().<span class='ident'>any</span>(<span class='op'>|</span><span class='ident'>field</span><span class='op'>|</span> <span class='ident'>field</span>.<span class='ident'>ident</span>.<span class='ident'>is_some</span>()) {
+                    <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;tuple struct has named fields&quot;</span>);
+                }
+                <span class='ident'>serialize_tuple_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='ident'>fields</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
+            }
+            <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Newtype</span>, <span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>=&gt;</span> {
+                <span class='ident'>serialize_newtype_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='kw-2'>&amp;</span><span class='ident'>fields</span>[<span class='number'>0</span>]</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
+            }
+            <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Unit</span>, _) <span class='op'>=&gt;</span> <span class='ident'>serialize_unit_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>),
+        }
+    }
+}
 
-            <span class='ident'>serialize_tuple_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='ident'>fields</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
-        }
-        <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Newtype</span>, <span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>=&gt;</span> {
-            <span class='ident'>serialize_newtype_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>ident</span>, <span class='ident'>generics</span>, <span class='kw-2'>&amp;</span><span class='ident'>fields</span>[<span class='number'>0</span>]</span>, <span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>)
-        }
-        <span class='ident'>Body</span>::<span class='ident'>Struct</span>(<span class='ident'>Style</span>::<span class='ident'>Unit</span>, _) <span class='op'>=&gt;</span> <span class='ident'>serialize_unit_struct</span>(<span class='kw-2'>&amp;</span><span class='ident'>item</span>.<span class='ident'>attrs</span>),
+<span class='kw'>fn</span> <span class='ident'>serialize_into</span>(<span class='ident'>into_type</span>: <span class='kw-2'>&amp;</span><span class='ident'>syn</span>::<span class='ident'>Ty</span>) <span class='op'>-&gt;</span> <span class='ident'>Fragment</span> {
+    <span class='macro'>quote_block</span><span class='macro'>!</span> {
+        <span class='ident'>_serde</span>::<span class='ident'>Serialize</span>::<span class='ident'>serialize</span>(
+            <span class='kw-2'>&amp;</span><span class='op'>&lt;</span><span class='self'>Self</span> <span class='kw'>as</span> <span class='ident'>_serde</span>::<span class='ident'>export</span>::<span class='ident'>Into</span><span class='op'>&lt;</span><span class='attribute'>#<span class='ident'>into_type</span><span class='op'>&gt;&gt;</span>::<span class='ident'>into</span>(<span class='ident'>_serde</span>::<span class='ident'>export</span>::<span class='ident'>Clone</span>::<span class='ident'>clone</span>(<span class='self'>self</span>)),
+            <span class='ident'>__serializer</span>)
     }
 }
 
@@ -918,7 +938,7 @@
     <span class='kw'>let</span> <span class='ident'>type_name</span> <span class='op'>=</span> <span class='ident'>item_attrs</span>.<span class='ident'>name</span>().<span class='ident'>serialize_name</span>();
 
     <span class='macro'>quote_expr</span><span class='macro'>!</span> {
-        <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_unit_struct</span>(<span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>)
+        <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_unit_struct</span>(<span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>)
     }
 }
 
@@ -935,7 +955,7 @@
     }
 
     <span class='macro'>quote_expr</span><span class='macro'>!</span> {
-        <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_newtype_struct</span>(<span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='attribute'>#<span class='ident'>field_expr</span>)
+        <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_newtype_struct</span>(<span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='attribute'>#<span class='ident'>field_expr</span>)
     }
 }
 
@@ -956,7 +976,7 @@
     <span class='kw'>let</span> <span class='ident'>let_mut</span> <span class='op'>=</span> <span class='ident'>mut_if</span>(<span class='ident'>len</span> <span class='op'>&gt;</span> <span class='number'>0</span>);
 
     <span class='macro'>quote_block</span><span class='macro'>!</span> {
-        <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_tuple_struct</span>(<span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='attribute'>#<span class='ident'>len</span>));
+        <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_tuple_struct</span>(<span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='attribute'>#<span class='ident'>len</span>));
         <span class='attribute'>#(<span class='attribute'>#<span class='ident'>serialize_stmts</span>)<span class='op'>*</span>
         <span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeTupleStruct</span>::<span class='ident'>end</span>(<span class='ident'>__serde_state</span>)
     }
@@ -994,7 +1014,7 @@
         .<span class='ident'>fold</span>(<span class='macro'>quote</span><span class='macro'>!</span>(<span class='number'>0</span>), <span class='op'>|</span><span class='ident'>sum</span>, <span class='ident'>expr</span><span class='op'>|</span> <span class='macro'>quote</span><span class='macro'>!</span>(<span class='attribute'>#<span class='ident'>sum</span> <span class='op'>+</span> <span class='attribute'>#<span class='ident'>expr</span>));
 
     <span class='macro'>quote_block</span><span class='macro'>!</span> {
-        <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(<span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='attribute'>#<span class='ident'>len</span>));
+        <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(<span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='attribute'>#<span class='ident'>len</span>));
         <span class='attribute'>#(<span class='attribute'>#<span class='ident'>serialize_fields</span>)<span class='op'>*</span>
         <span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>end</span>(<span class='ident'>__serde_state</span>)
     }
@@ -1120,7 +1140,7 @@
         <span class='ident'>Style</span>::<span class='ident'>Unit</span> <span class='op'>=&gt;</span> {
             <span class='macro'>quote_expr</span><span class='macro'>!</span> {
                 <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_unit_variant</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>type_name</span>,
                     <span class='attribute'>#<span class='ident'>variant_index</span>,
                     <span class='attribute'>#<span class='ident'>variant_name</span>,
@@ -1136,7 +1156,7 @@
 
             <span class='macro'>quote_expr</span><span class='macro'>!</span> {
                 <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_newtype_variant</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>type_name</span>,
                     <span class='attribute'>#<span class='ident'>variant_index</span>,
                     <span class='attribute'>#<span class='ident'>variant_name</span>,
@@ -1183,7 +1203,7 @@
         <span class='ident'>Style</span>::<span class='ident'>Unit</span> <span class='op'>=&gt;</span> {
             <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>__struct</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(
-                    <span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='number'>1</span>));
+                    <span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='number'>1</span>));
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>serialize_field</span>(
                     <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>__struct</span>, <span class='attribute'>#<span class='ident'>tag</span>, <span class='attribute'>#<span class='ident'>variant_name</span>));
                 <span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>end</span>(<span class='ident'>__struct</span>)
@@ -1198,7 +1218,7 @@
 
             <span class='macro'>quote_expr</span><span class='macro'>!</span> {
                 <span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>private</span>::<span class='ident'>serialize_tagged_newtype</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>enum_ident_str</span>,
                     <span class='attribute'>#<span class='ident'>variant_ident_str</span>,
                     <span class='attribute'>#<span class='ident'>tag</span>,
@@ -1235,7 +1255,7 @@
         <span class='ident'>Style</span>::<span class='ident'>Unit</span> <span class='op'>=&gt;</span> {
             <span class='kw'>return</span> <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>__struct</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(
-                    <span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='number'>1</span>));
+                    <span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='number'>1</span>));
                 <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>serialize_field</span>(
                     <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>__struct</span>, <span class='attribute'>#<span class='ident'>tag</span>, <span class='attribute'>#<span class='ident'>variant_name</span>));
                 <span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>end</span>(<span class='ident'>__struct</span>)
@@ -1249,7 +1269,7 @@
             }
 
             <span class='macro'>quote_expr</span><span class='macro'>!</span> {
-                <span class='ident'>_serde</span>::<span class='ident'>Serialize</span>::<span class='ident'>serialize</span>(<span class='attribute'>#<span class='ident'>field_expr</span>, <span class='ident'>_serializer</span>)
+                <span class='ident'>_serde</span>::<span class='ident'>Serialize</span>::<span class='ident'>serialize</span>(<span class='attribute'>#<span class='ident'>field_expr</span>, <span class='ident'>__serializer</span>)
             }
         }
         <span class='ident'>Style</span>::<span class='ident'>Tuple</span> <span class='op'>=&gt;</span> {
@@ -1296,7 +1316,7 @@
         }
 
         <span class='kw'>impl</span> <span class='attribute'>#<span class='ident'>wrapper_impl_generics</span> <span class='ident'>_serde</span>::<span class='ident'>Serialize</span> <span class='kw'>for</span> <span class='ident'>__AdjacentlyTagged</span> <span class='attribute'>#<span class='ident'>wrapper_ty_generics</span> <span class='attribute'>#<span class='ident'>where_clause</span> {
-            <span class='kw'>fn</span> <span class='ident'>serialize</span><span class='op'>&lt;</span><span class='ident'>__S</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>_serializer</span>: <span class='ident'>__S</span>) <span class='op'>-&gt;</span> <span class='ident'>_serde</span>::<span class='ident'>export</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>__S</span>::<span class='prelude-val'>Ok</span>, <span class='ident'>__S</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
+            <span class='kw'>fn</span> <span class='ident'>serialize</span><span class='op'>&lt;</span><span class='ident'>__S</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>__serializer</span>: <span class='ident'>__S</span>) <span class='op'>-&gt;</span> <span class='ident'>_serde</span>::<span class='ident'>export</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>__S</span>::<span class='prelude-val'>Ok</span>, <span class='ident'>__S</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
                 <span class='kw'>where</span> <span class='ident'>__S</span>: <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>
             {
                 <span class='kw'>let</span> (<span class='attribute'>#(<span class='attribute'>#<span class='ident'>fields_ident</span>,)<span class='kw-2'>*</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>data</span>;
@@ -1305,7 +1325,7 @@
         }
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>__struct</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(
-            <span class='ident'>_serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='number'>2</span>));
+            <span class='ident'>__serializer</span>, <span class='attribute'>#<span class='ident'>type_name</span>, <span class='number'>2</span>));
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>serialize_field</span>(
             <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>__struct</span>, <span class='attribute'>#<span class='ident'>tag</span>, <span class='attribute'>#<span class='ident'>variant_name</span>));
         <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeStruct</span>::<span class='ident'>serialize_field</span>(
@@ -1325,7 +1345,7 @@
     <span class='kw'>match</span> <span class='ident'>variant</span>.<span class='ident'>style</span> {
         <span class='ident'>Style</span>::<span class='ident'>Unit</span> <span class='op'>=&gt;</span> {
             <span class='macro'>quote_expr</span><span class='macro'>!</span> {
-                <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_unit</span>(<span class='ident'>_serializer</span>)
+                <span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_unit</span>(<span class='ident'>__serializer</span>)
             }
         }
         <span class='ident'>Style</span>::<span class='ident'>Newtype</span> <span class='op'>=&gt;</span> {
@@ -1336,7 +1356,7 @@
             }
 
             <span class='macro'>quote_expr</span><span class='macro'>!</span> {
-                <span class='ident'>_serde</span>::<span class='ident'>Serialize</span>::<span class='ident'>serialize</span>(<span class='attribute'>#<span class='ident'>field_expr</span>, <span class='ident'>_serializer</span>)
+                <span class='ident'>_serde</span>::<span class='ident'>Serialize</span>::<span class='ident'>serialize</span>(<span class='attribute'>#<span class='ident'>field_expr</span>, <span class='ident'>__serializer</span>)
             }
         }
         <span class='ident'>Style</span>::<span class='ident'>Tuple</span> <span class='op'>=&gt;</span> {
@@ -1384,7 +1404,7 @@
         <span class='ident'>TupleVariant</span>::<span class='ident'>ExternallyTagged</span> { <span class='ident'>type_name</span>, <span class='ident'>variant_index</span>, <span class='ident'>variant_name</span> } <span class='op'>=&gt;</span> {
             <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_tuple_variant</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>type_name</span>,
                     <span class='attribute'>#<span class='ident'>variant_index</span>,
                     <span class='attribute'>#<span class='ident'>variant_name</span>,
@@ -1396,7 +1416,7 @@
         <span class='ident'>TupleVariant</span>::<span class='ident'>Untagged</span> <span class='op'>=&gt;</span> {
             <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_tuple</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>len</span>));
                 <span class='attribute'>#(<span class='attribute'>#<span class='ident'>serialize_stmts</span>)<span class='op'>*</span>
                 <span class='ident'>_serde</span>::<span class='ident'>ser</span>::<span class='ident'>SerializeTuple</span>::<span class='ident'>end</span>(<span class='ident'>__serde_state</span>)
@@ -1450,7 +1470,7 @@
         <span class='ident'>StructVariant</span>::<span class='ident'>ExternallyTagged</span> { <span class='ident'>variant_index</span>, <span class='ident'>variant_name</span> } <span class='op'>=&gt;</span> {
             <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct_variant</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>name</span>,
                     <span class='attribute'>#<span class='ident'>variant_index</span>,
                     <span class='attribute'>#<span class='ident'>variant_name</span>,
@@ -1463,7 +1483,7 @@
         <span class='ident'>StructVariant</span>::<span class='ident'>InternallyTagged</span> { <span class='ident'>tag</span>, <span class='ident'>variant_name</span> } <span class='op'>=&gt;</span> {
             <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>name</span>,
                     <span class='attribute'>#<span class='ident'>len</span> <span class='op'>+</span> <span class='number'>1</span>,
                 ));
@@ -1479,7 +1499,7 @@
         <span class='ident'>StructVariant</span>::<span class='ident'>Untagged</span> <span class='op'>=&gt;</span> {
             <span class='macro'>quote_block</span><span class='macro'>!</span> {
                 <span class='kw'>let</span> <span class='attribute'>#<span class='ident'>let_mut</span> <span class='ident'>__serde_state</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>_serde</span>::<span class='ident'>Serializer</span>::<span class='ident'>serialize_struct</span>(
-                    <span class='ident'>_serializer</span>,
+                    <span class='ident'>__serializer</span>,
                     <span class='attribute'>#<span class='ident'>name</span>,
                     <span class='attribute'>#<span class='ident'>len</span>,
                 ));

@@ -48,7 +48,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/lazy_static/lib.rs.html#1-207' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/lazy_static/lib.rs.html#8-218' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>A macro for declaring lazily evaluated statics.</p>
 
 <p>Using this macro, it is possible to have <code>static</code>s that require code to be
@@ -73,7 +73,7 @@ as well as anything that requires function calls to be computed.</p>
     <span class='kw'>static</span> <span class='kw-2'>ref</span> <span class='ident'>EXAMPLE</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='number'>42</span>;
 }</pre>
 
-<h1 id='semantic' class='section-header'><a href='#semantic'>Semantic</a></h1>
+<h1 id='semantics' class='section-header'><a href='#semantics'>Semantics</a></h1>
 <p>For a given <code>static ref NAME: TYPE = EXPR;</code>, the macro generates a unique type that
 implements <code>Deref&lt;TYPE&gt;</code> and stores it in a static with name <code>NAME</code>. (Attributes end up
 attaching to this type.)</p>
@@ -82,8 +82,13 @@ attaching to this type.)</p>
 can return a reference to the same object. Note that this can lead to deadlocks
 if you have multiple lazy statics that depend on each other in their initialization.</p>
 
-<p>Like regular <code>static mut</code>s, this macro only works for types that fulfill the <code>Sync</code>
-trait.</p>
+<p>Apart from the lazy initialization, the resulting &quot;static ref&quot; variables
+have generally the same properties as regular &quot;static&quot; variables:</p>
+
+<ul>
+<li>Any type in them needs to fulfill the <code>Sync</code> trait.</li>
+<li>If the type has a destructor, then it will not run when the process exits.</li>
+</ul>
 
 <h1 id='example' class='section-header'><a href='#example'>Example</a></h1>
 <p>Using the macro:</p>

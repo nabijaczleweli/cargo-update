@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-0.9.11/src/de/value.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-0.9.13/src/de/value.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>value.rs.html -- source</title>
@@ -1091,6 +1091,65 @@
 <span id="1046">1046</span>
 <span id="1047">1047</span>
 <span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! This module supports deserializing from primitives with the `ValueDeserializer` trait.</span>
 
@@ -1277,12 +1336,71 @@
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>isize</span>, <span class='ident'>IsizeDeserializer</span>, <span class='ident'>visit_i64</span> <span class='kw'>as</span> <span class='ident'>i64</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>u8</span>, <span class='ident'>U8Deserializer</span>, <span class='ident'>visit_u8</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>u16</span>, <span class='ident'>U16Deserializer</span>, <span class='ident'>visit_u16</span>);
-<span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>u32</span>, <span class='ident'>U32Deserializer</span>, <span class='ident'>visit_u32</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>u64</span>, <span class='ident'>U64Deserializer</span>, <span class='ident'>visit_u64</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>usize</span>, <span class='ident'>UsizeDeserializer</span>, <span class='ident'>visit_u64</span> <span class='kw'>as</span> <span class='ident'>u64</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>f32</span>, <span class='ident'>F32Deserializer</span>, <span class='ident'>visit_f32</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>f64</span>, <span class='ident'>F64Deserializer</span>, <span class='ident'>visit_f64</span>);
 <span class='macro'>primitive_deserializer</span><span class='macro'>!</span>(<span class='ident'>char</span>, <span class='ident'>CharDeserializer</span>, <span class='ident'>visit_char</span>);
+
+<span class='doccomment'>/// A helper deserializer that deserializes a number.</span>
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>U32Deserializer</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> {
+    <span class='ident'>value</span>: <span class='ident'>u32</span>,
+    <span class='ident'>marker</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span>,
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> <span class='ident'>ValueDeserializer</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>u32</span>
+    <span class='kw'>where</span> <span class='ident'>E</span>: <span class='ident'>de</span>::<span class='ident'>Error</span>
+{
+    <span class='kw'>type</span> <span class='ident'>Deserializer</span> <span class='op'>=</span> <span class='ident'>U32Deserializer</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span>;
+
+    <span class='kw'>fn</span> <span class='ident'>into_deserializer</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>U32Deserializer</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> {
+        <span class='ident'>U32Deserializer</span> {
+            <span class='ident'>value</span>: <span class='self'>self</span>,
+            <span class='ident'>marker</span>: <span class='ident'>PhantomData</span>,
+        }
+    }
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> <span class='ident'>de</span>::<span class='ident'>Deserializer</span> <span class='kw'>for</span> <span class='ident'>U32Deserializer</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span>
+    <span class='kw'>where</span> <span class='ident'>E</span>: <span class='ident'>de</span>::<span class='ident'>Error</span>
+{
+    <span class='kw'>type</span> <span class='ident'>Error</span> <span class='op'>=</span> <span class='ident'>E</span>;
+
+    <span class='macro'>forward_to_deserialize</span><span class='macro'>!</span> {
+        <span class='ident'>bool</span> <span class='ident'>u8</span> <span class='ident'>u16</span> <span class='ident'>u32</span> <span class='ident'>u64</span> <span class='ident'>i8</span> <span class='ident'>i16</span> <span class='ident'>i32</span> <span class='ident'>i64</span> <span class='ident'>f32</span> <span class='ident'>f64</span> <span class='ident'>char</span> <span class='ident'>str</span> <span class='ident'>string</span> <span class='ident'>unit</span> <span class='ident'>option</span>
+        <span class='ident'>seq</span> <span class='ident'>seq_fixed_size</span> <span class='ident'>bytes</span> <span class='ident'>map</span> <span class='ident'>unit_struct</span> <span class='ident'>newtype_struct</span> <span class='ident'>tuple_struct</span>
+        <span class='kw'>struct</span> <span class='ident'>struct_field</span> <span class='ident'>tuple</span> <span class='ident'>ignored_any</span> <span class='ident'>byte_buf</span>
+    }
+
+    <span class='kw'>fn</span> <span class='ident'>deserialize</span><span class='op'>&lt;</span><span class='ident'>V</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>visitor</span>: <span class='ident'>V</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>V</span>::<span class='ident'>Value</span>, <span class='self'>Self</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>V</span>: <span class='ident'>de</span>::<span class='ident'>Visitor</span>
+    {
+        <span class='ident'>visitor</span>.<span class='ident'>visit_u32</span>(<span class='self'>self</span>.<span class='ident'>value</span>)
+    }
+
+    <span class='kw'>fn</span> <span class='ident'>deserialize_enum</span><span class='op'>&lt;</span><span class='ident'>V</span><span class='op'>&gt;</span>(<span class='self'>self</span>,
+                           <span class='ident'>_name</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>,
+                           <span class='ident'>_variants</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> [<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span>],
+                           <span class='ident'>visitor</span>: <span class='ident'>V</span>)
+                           <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>V</span>::<span class='ident'>Value</span>, <span class='self'>Self</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>V</span>: <span class='ident'>de</span>::<span class='ident'>Visitor</span>
+    {
+        <span class='ident'>visitor</span>.<span class='ident'>visit_enum</span>(<span class='self'>self</span>)
+    }
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> <span class='ident'>de</span>::<span class='ident'>EnumVisitor</span> <span class='kw'>for</span> <span class='ident'>U32Deserializer</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span>
+    <span class='kw'>where</span> <span class='ident'>E</span>: <span class='ident'>de</span>::<span class='ident'>Error</span>
+{
+    <span class='kw'>type</span> <span class='ident'>Error</span> <span class='op'>=</span> <span class='ident'>E</span>;
+    <span class='kw'>type</span> <span class='ident'>Variant</span> <span class='op'>=</span> <span class='ident'>private</span>::<span class='ident'>UnitOnly</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span>;
+
+    <span class='kw'>fn</span> <span class='ident'>visit_variant_seed</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>seed</span>: <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(<span class='ident'>T</span>::<span class='ident'>Value</span>, <span class='self'>Self</span>::<span class='ident'>Variant</span>), <span class='self'>Self</span>::<span class='ident'>Error</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>de</span>::<span class='ident'>DeserializeSeed</span>
+    {
+        <span class='ident'>seed</span>.<span class='ident'>deserialize</span>(<span class='self'>self</span>).<span class='ident'>map</span>(<span class='ident'>private</span>::<span class='ident'>unit_only</span>)
+    }
+}
 
 <span class='comment'>///////////////////////////////////////////////////////////////////////////////</span>
 

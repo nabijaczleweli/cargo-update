@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.22.1/src/macros.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.23.2/src/macros.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>macros.rs.html -- source</title>
@@ -1105,6 +1105,15 @@
 <span id="1060">1060</span>
 <span id="1061">1061</span>
 <span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
 </pre><pre class='rust '>
 <span class='doccomment'>/// A convenience macro for loading the YAML file at compile time (relative to the current file,</span>
 <span class='doccomment'>/// like modules work). That YAML object can then be passed to this function.</span>
@@ -1670,6 +1679,8 @@
 <span class='doccomment'>///</span>
 <span class='doccomment'>/// * A single hyphen followed by a character (such as `-c`) sets the [`Arg::short`]</span>
 <span class='doccomment'>/// * A double hyphen followed by a character or word (such as `--config`) sets [`Arg::long`]</span>
+<span class='doccomment'>///   * If one wishes to use a [`Arg::long`] with a hyphen inside (i.e. `--config-file`), you</span>
+<span class='doccomment'>///     must use `--(&quot;config-file&quot;)` due to limitations of the Rust macro system.</span>
 <span class='doccomment'>/// * Three dots (`...`) sets [`Arg::multiple(true)`]</span>
 <span class='doccomment'>/// * Angled brackets after either a short or long will set [`Arg::value_name`] and</span>
 <span class='doccomment'>/// `Arg::required(true)` such as `--config &lt;FILE&gt;` = `Arg::value_name(&quot;FILE&quot;)` and</span>
@@ -1703,6 +1714,13 @@
 <span class='attribute'>#[<span class='ident'>macro_export</span>]</span>
 <span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>clap_app</span> {
     (@<span class='ident'>app</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span>:<span class='ident'>expr</span>)) <span class='op'>=&gt;</span> { <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span> };
+    (@<span class='ident'>app</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span>:<span class='ident'>expr</span>) (@<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>expr</span>): $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>:<span class='ident'>tt</span>)<span class='kw-2'>*</span>) $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tt</span>:<span class='ident'>tt</span>)<span class='kw-2'>*</span>) <span class='op'>=&gt;</span> {
+        <span class='macro'>clap_app</span><span class='macro'>!</span>{ @<span class='ident'>app</span>
+            (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span>.<span class='ident'>arg</span>(
+                <span class='macro'>clap_app</span><span class='macro'>!</span>{ @<span class='ident'>arg</span> (<span class='macro-nonterminal'>$</span><span class='kw'>crate</span>::<span class='macro-nonterminal'>Arg</span>::<span class='ident'>with_name</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>)) (<span class='op'>-</span>) $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>)<span class='op'>*</span> }))
+            $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tt</span>)<span class='op'>*</span>
+        }
+    };
     (@<span class='ident'>app</span> (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span>:<span class='ident'>expr</span>) (@<span class='ident'>arg</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>:<span class='ident'>ident</span>: $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tail</span>:<span class='ident'>tt</span>)<span class='kw-2'>*</span>) $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>tt</span>:<span class='ident'>tt</span>)<span class='kw-2'>*</span>) <span class='op'>=&gt;</span> {
         <span class='macro'>clap_app</span><span class='macro'>!</span>{ @<span class='ident'>app</span>
             (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>builder</span>.<span class='ident'>arg</span>(

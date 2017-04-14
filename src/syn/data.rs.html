@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.11.9/src/data.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.11.10/src/data.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>data.rs.html -- source</title>
@@ -306,26 +306,74 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
 </pre><pre class='rust '>
 <span class='kw'>use</span> <span class='kw'>super</span>::<span class='kw-2'>*</span>;
 
+<span class='doccomment'>/// An enum variant.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Variant</span> {
+    <span class='doccomment'>/// Name of the variant.</span>
     <span class='kw'>pub</span> <span class='ident'>ident</span>: <span class='ident'>Ident</span>,
+
+    <span class='doccomment'>/// Attributes tagged on the variant.</span>
     <span class='kw'>pub</span> <span class='ident'>attrs</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Attribute</span><span class='op'>&gt;</span>,
+
+    <span class='doccomment'>/// Type of variant.</span>
     <span class='kw'>pub</span> <span class='ident'>data</span>: <span class='ident'>VariantData</span>,
+
     <span class='doccomment'>/// Explicit discriminant, e.g. `Foo = 1`</span>
     <span class='kw'>pub</span> <span class='ident'>discriminant</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>ConstExpr</span><span class='op'>&gt;</span>,
 }
 
+<span class='doccomment'>/// Data stored within an enum variant or struct.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>VariantData</span> {
+    <span class='doccomment'>/// Struct variant, e.g. `Point { x: f64, y: f64 }`.</span>
     <span class='ident'>Struct</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Field</span><span class='op'>&gt;</span>),
+
+    <span class='doccomment'>/// Tuple variant, e.g. `Some(T)`.</span>
     <span class='ident'>Tuple</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Field</span><span class='op'>&gt;</span>),
+
+    <span class='doccomment'>/// Unit variant, e.g. `None`.</span>
     <span class='ident'>Unit</span>,
 }
 
 <span class='kw'>impl</span> <span class='ident'>VariantData</span> {
+    <span class='doccomment'>/// Slice containing the fields stored in the variant.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>fields</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span>[<span class='ident'>Field</span>] {
         <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
             <span class='ident'>VariantData</span>::<span class='ident'>Struct</span>(<span class='kw-2'>ref</span> <span class='ident'>fields</span>) <span class='op'>|</span>
@@ -334,6 +382,7 @@
         }
     }
 
+    <span class='doccomment'>/// Mutable slice containing the fields stored in the variant.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>fields_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>Field</span>] {
         <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
             <span class='ident'>VariantData</span>::<span class='ident'>Struct</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>fields</span>) <span class='op'>|</span>
@@ -343,19 +392,38 @@
     }
 }
 
+<span class='doccomment'>/// A field of a struct or enum variant.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Field</span> {
+    <span class='doccomment'>/// Name of the field, if any.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// Fields of tuple structs have no names.</span>
     <span class='kw'>pub</span> <span class='ident'>ident</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Ident</span><span class='op'>&gt;</span>,
+
+    <span class='doccomment'>/// Visibility of the field.</span>
     <span class='kw'>pub</span> <span class='ident'>vis</span>: <span class='ident'>Visibility</span>,
+
+    <span class='doccomment'>/// Attributes tagged on the field.</span>
     <span class='kw'>pub</span> <span class='ident'>attrs</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Attribute</span><span class='op'>&gt;</span>,
+
+    <span class='doccomment'>/// Type of the field.</span>
     <span class='kw'>pub</span> <span class='ident'>ty</span>: <span class='ident'>Ty</span>,
 }
 
+
+<span class='doccomment'>/// Visibility level of an item.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Visibility</span> {
+    <span class='doccomment'>/// Public, i.e. `pub`.</span>
     <span class='ident'>Public</span>,
+
+    <span class='doccomment'>/// Crate-visible, i.e. `pub(crate)`.</span>
     <span class='ident'>Crate</span>,
+
+    <span class='doccomment'>/// Restricted, e.g. `pub(some::module)`.</span>
     <span class='ident'>Restricted</span>(<span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Path</span><span class='op'>&gt;</span>),
+
+    <span class='doccomment'>/// Inherited, i.e. private.</span>
     <span class='ident'>Inherited</span>,
 }
 
