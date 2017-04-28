@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -295,257 +295,257 @@
 <span id="250">250</span>
 <span id="251">251</span>
 <span id="252">252</span>
-</pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::{<span class='ident'>BTreeMap</span>, <span class='ident'>BTreeSet</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>::<span class='ident'>Write</span> <span class='kw'>as</span> <span class='ident'>FWrite</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::{<span class='ident'>Read</span>, <span class='ident'>Write</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::<span class='ident'>Path</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::<span class='ident'>File</span>;
-<span class='kw'>use</span> <span class='ident'>toml</span>;
+</pre><pre class="rust ">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Write</span> <span class="kw">as</span> <span class="ident">FWrite</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Read</span>, <span class="ident">Write</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
+<span class="kw">use</span> <span class="ident">toml</span>;
 
 
-<span class='doccomment'>/// A single operation to be executed upon configuration of a package.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Hash</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialOrd</span>, <span class='ident'>Ord</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>ConfigOperation</span> {
-    <span class='doccomment'>/// Set the toolchain to use to compile the package.</span>
-    <span class='ident'>SetToolchain</span>(<span class='ident'>String</span>),
-    <span class='doccomment'>/// Use the default toolchain to use to compile the package.</span>
-    <span class='ident'>RemoveToolchain</span>,
-    <span class='doccomment'>/// Whether to compile the package with the default features.</span>
-    <span class='ident'>DefaultFeatures</span>(<span class='ident'>bool</span>),
-    <span class='doccomment'>/// Compile the package with the specified feature.</span>
-    <span class='ident'>AddFeature</span>(<span class='ident'>String</span>),
-    <span class='doccomment'>/// Remove the feature from the list of features to compile with.</span>
-    <span class='ident'>RemoveFeature</span>(<span class='ident'>String</span>),
+<span class="doccomment">/// A single operation to be executed upon configuration of a package.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ConfigOperation</span> {
+    <span class="doccomment">/// Set the toolchain to use to compile the package.</span>
+    <span class="ident">SetToolchain</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// Use the default toolchain to use to compile the package.</span>
+    <span class="ident">RemoveToolchain</span>,
+    <span class="doccomment">/// Whether to compile the package with the default features.</span>
+    <span class="ident">DefaultFeatures</span>(<span class="ident">bool</span>),
+    <span class="doccomment">/// Compile the package with the specified feature.</span>
+    <span class="ident">AddFeature</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// Remove the feature from the list of features to compile with.</span>
+    <span class="ident">RemoveFeature</span>(<span class="ident">String</span>),
 }
 
 
-<span class='doccomment'>/// Compilation configuration for one crate.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Reading a configset, adding an entry to it, then writing it back.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::PackageConfig;</span>
-<span class='doccomment'>/// # use std::fs::{File, create_dir_all};</span>
-<span class='doccomment'>/// # use std::env::temp_dir;</span>
-<span class='doccomment'>/// # let td = temp_dir().join(&quot;cargo_update-doctest&quot;).join(&quot;PackageConfig-0&quot;);</span>
-<span class='doccomment'>/// # create_dir_all(&amp;td).unwrap();</span>
-<span class='doccomment'>/// # let config_file = td.join(&quot;.install_config.toml&quot;);</span>
-<span class='doccomment'>/// # let operations = [];</span>
-<span class='doccomment'>/// let mut configuration = PackageConfig::read(&amp;config_file).unwrap();</span>
-<span class='doccomment'>/// configuration.insert(&quot;cargo_update&quot;.to_string(), PackageConfig::from(&amp;operations));</span>
-<span class='doccomment'>/// PackageConfig::write(&amp;configuration, &amp;config_file).unwrap();</span>
-<span class='doccomment'>/// ```</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Hash</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialOrd</span>, <span class='ident'>Ord</span>, <span class='ident'>Serialize</span>, <span class='ident'>Deserialize</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PackageConfig</span> {
-    <span class='doccomment'>/// Toolchain to use to compile the package, or `None` for default.</span>
-    <span class='kw'>pub</span> <span class='ident'>toolchain</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>,
-    <span class='doccomment'>/// Whether to compile the package with the default features.</span>
-    <span class='kw'>pub</span> <span class='ident'>default_features</span>: <span class='ident'>bool</span>,
-    <span class='doccomment'>/// Features to compile the package with.</span>
-    <span class='kw'>pub</span> <span class='ident'>features</span>: <span class='ident'>BTreeSet</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// Compilation configuration for one crate.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Reading a configset, adding an entry to it, then writing it back.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::PackageConfig;</span>
+<span class="doccomment">/// # use std::fs::{File, create_dir_all};</span>
+<span class="doccomment">/// # use std::env::temp_dir;</span>
+<span class="doccomment">/// # let td = temp_dir().join(&quot;cargo_update-doctest&quot;).join(&quot;PackageConfig-0&quot;);</span>
+<span class="doccomment">/// # create_dir_all(&amp;td).unwrap();</span>
+<span class="doccomment">/// # let config_file = td.join(&quot;.install_config.toml&quot;);</span>
+<span class="doccomment">/// # let operations = [];</span>
+<span class="doccomment">/// let mut configuration = PackageConfig::read(&amp;config_file).unwrap();</span>
+<span class="doccomment">/// configuration.insert(&quot;cargo_update&quot;.to_string(), PackageConfig::from(&amp;operations));</span>
+<span class="doccomment">/// PackageConfig::write(&amp;configuration, &amp;config_file).unwrap();</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PackageConfig</span> {
+    <span class="doccomment">/// Toolchain to use to compile the package, or `None` for default.</span>
+    <span class="kw">pub</span> <span class="ident">toolchain</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Whether to compile the package with the default features.</span>
+    <span class="kw">pub</span> <span class="ident">default_features</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Features to compile the package with.</span>
+    <span class="kw">pub</span> <span class="ident">features</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
 
-<span class='kw'>impl</span> <span class='ident'>PackageConfig</span> {
-    <span class='doccomment'>/// Create a package config based on the default settings and modified according to the specified operations.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # use cargo_update::ops::{ConfigOperation, PackageConfig};</span>
-    <span class='doccomment'>/// # use std::collections::BTreeSet;</span>
-    <span class='doccomment'>/// assert_eq!(PackageConfig::from(&amp;[ConfigOperation::SetToolchain(&quot;nightly&quot;.to_string()),</span>
-    <span class='doccomment'>///                                  ConfigOperation::DefaultFeatures(false),</span>
-    <span class='doccomment'>///                                  ConfigOperation::AddFeature(&quot;rustc-serialize&quot;.to_string())]),</span>
-    <span class='doccomment'>///            PackageConfig {</span>
-    <span class='doccomment'>///                toolchain: Some(&quot;nightly&quot;.to_string()),</span>
-    <span class='doccomment'>///                default_features: false,</span>
-    <span class='doccomment'>///                features: {</span>
-    <span class='doccomment'>///                    let mut feats = BTreeSet::new();</span>
-    <span class='doccomment'>///                    feats.insert(&quot;rustc-serialize&quot;.to_string());</span>
-    <span class='doccomment'>///                    feats</span>
-    <span class='doccomment'>///                },</span>
-    <span class='doccomment'>///            });</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from</span><span class='op'>&lt;</span><span class='lifetime'>&#39;o</span>, <span class='ident'>O</span>: <span class='ident'>IntoIterator</span><span class='op'>&lt;</span><span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;o</span> <span class='ident'>ConfigOperation</span><span class='op'>&gt;&gt;</span>(<span class='ident'>ops</span>: <span class='ident'>O</span>) <span class='op'>-&gt;</span> <span class='ident'>PackageConfig</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>def</span> <span class='op'>=</span> <span class='ident'>PackageConfig</span> {
-            <span class='ident'>toolchain</span>: <span class='prelude-val'>None</span>,
-            <span class='ident'>default_features</span>: <span class='bool-val'>true</span>,
-            <span class='ident'>features</span>: <span class='ident'>BTreeSet</span>::<span class='ident'>new</span>(),
+<span class="kw">impl</span> <span class="ident">PackageConfig</span> {
+    <span class="doccomment">/// Create a package config based on the default settings and modified according to the specified operations.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use cargo_update::ops::{ConfigOperation, PackageConfig};</span>
+    <span class="doccomment">/// # use std::collections::BTreeSet;</span>
+    <span class="doccomment">/// assert_eq!(PackageConfig::from(&amp;[ConfigOperation::SetToolchain(&quot;nightly&quot;.to_string()),</span>
+    <span class="doccomment">///                                  ConfigOperation::DefaultFeatures(false),</span>
+    <span class="doccomment">///                                  ConfigOperation::AddFeature(&quot;rustc-serialize&quot;.to_string())]),</span>
+    <span class="doccomment">///            PackageConfig {</span>
+    <span class="doccomment">///                toolchain: Some(&quot;nightly&quot;.to_string()),</span>
+    <span class="doccomment">///                default_features: false,</span>
+    <span class="doccomment">///                features: {</span>
+    <span class="doccomment">///                    let mut feats = BTreeSet::new();</span>
+    <span class="doccomment">///                    feats.insert(&quot;rustc-serialize&quot;.to_string());</span>
+    <span class="doccomment">///                    feats</span>
+    <span class="doccomment">///                },</span>
+    <span class="doccomment">///            });</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span><span class="op">&lt;</span><span class="lifetime">&#39;o</span>, <span class="ident">O</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;o</span> <span class="ident">ConfigOperation</span><span class="op">&gt;&gt;</span>(<span class="ident">ops</span>: <span class="ident">O</span>) <span class="op">-&gt;</span> <span class="ident">PackageConfig</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">PackageConfig</span> {
+            <span class="ident">toolchain</span>: <span class="prelude-val">None</span>,
+            <span class="ident">default_features</span>: <span class="bool-val">true</span>,
+            <span class="ident">features</span>: <span class="ident">BTreeSet</span>::<span class="ident">new</span>(),
         };
-        <span class='ident'>def</span>.<span class='ident'>execute_operations</span>(<span class='ident'>ops</span>);
-        <span class='ident'>def</span>
+        <span class="ident">def</span>.<span class="ident">execute_operations</span>(<span class="ident">ops</span>);
+        <span class="ident">def</span>
     }
 
-    <span class='doccomment'>/// Generate cargo arguments from this configuration.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```no_run</span>
-    <span class='doccomment'>/// # use cargo_update::ops::PackageConfig;</span>
-    <span class='doccomment'>/// # use std::collections::BTreeMap;</span>
-    <span class='doccomment'>/// # use std::process::Command;</span>
-    <span class='doccomment'>/// # let name = &quot;cargo-update&quot;.to_string();</span>
-    <span class='doccomment'>/// # let mut configuration = BTreeMap::new();</span>
-    <span class='doccomment'>/// # configuration.insert(name.clone(), PackageConfig::from(&amp;[]));</span>
-    <span class='doccomment'>/// let cmd = Command::new(&quot;cargo&quot;).args(configuration.get(&amp;name).unwrap().cargo_args()).arg(&amp;name)</span>
-    <span class='doccomment'>/// // Process the command further -- run it, for example.</span>
-    <span class='doccomment'>/// # .status().unwrap();</span>
-    <span class='doccomment'>/// # let _ = cmd;</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>cargo_args</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[];
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>t</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>toolchain</span>.<span class='ident'>as_ref</span>() {
-            <span class='ident'>res</span>.<span class='ident'>push</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;+{}&quot;</span>, <span class='ident'>t</span>));
+    <span class="doccomment">/// Generate cargo arguments from this configuration.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```no_run</span>
+    <span class="doccomment">/// # use cargo_update::ops::PackageConfig;</span>
+    <span class="doccomment">/// # use std::collections::BTreeMap;</span>
+    <span class="doccomment">/// # use std::process::Command;</span>
+    <span class="doccomment">/// # let name = &quot;cargo-update&quot;.to_string();</span>
+    <span class="doccomment">/// # let mut configuration = BTreeMap::new();</span>
+    <span class="doccomment">/// # configuration.insert(name.clone(), PackageConfig::from(&amp;[]));</span>
+    <span class="doccomment">/// let cmd = Command::new(&quot;cargo&quot;).args(configuration.get(&amp;name).unwrap().cargo_args()).arg(&amp;name)</span>
+    <span class="doccomment">/// // Process the command further -- run it, for example.</span>
+    <span class="doccomment">/// # .status().unwrap();</span>
+    <span class="doccomment">/// # let _ = cmd;</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cargo_args</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">t</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">toolchain</span>.<span class="ident">as_ref</span>() {
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;+{}&quot;</span>, <span class="ident">t</span>));
         }
-        <span class='ident'>res</span>.<span class='ident'>push</span>(<span class='string'>&quot;install&quot;</span>.<span class='ident'>to_string</span>());
-        <span class='ident'>res</span>.<span class='ident'>push</span>(<span class='string'>&quot;-f&quot;</span>.<span class='ident'>to_string</span>());
-        <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>default_features</span> {
-            <span class='ident'>res</span>.<span class='ident'>push</span>(<span class='string'>&quot;--no-default-features&quot;</span>.<span class='ident'>to_string</span>());
+        <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;install&quot;</span>.<span class="ident">to_string</span>());
+        <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;-f&quot;</span>.<span class="ident">to_string</span>());
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">default_features</span> {
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--no-default-features&quot;</span>.<span class="ident">to_string</span>());
         }
-        <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>features</span>.<span class='ident'>is_empty</span>() {
-            <span class='ident'>res</span>.<span class='ident'>push</span>(<span class='string'>&quot;--features&quot;</span>.<span class='ident'>to_string</span>());
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-            <span class='kw'>for</span> <span class='ident'>f</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>features</span> {
-                <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>a</span>, <span class='string'>&quot;{} &quot;</span>, <span class='ident'>f</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">features</span>.<span class="ident">is_empty</span>() {
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--features&quot;</span>.<span class="ident">to_string</span>());
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+            <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">features</span> {
+                <span class="macro">write</span><span class="macro">!</span>(<span class="ident">a</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">f</span>).<span class="ident">unwrap</span>();
             }
-            <span class='ident'>res</span>.<span class='ident'>push</span>(<span class='ident'>a</span>);
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">a</span>);
         }
-        <span class='ident'>res</span>
+        <span class="ident">res</span>
     }
 
-    <span class='doccomment'>/// Modify `self` according to the specified set of operations.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # use cargo_update::ops::{ConfigOperation, PackageConfig};</span>
-    <span class='doccomment'>/// # use std::collections::BTreeSet;</span>
-    <span class='doccomment'>/// let mut cfg = PackageConfig {</span>
-    <span class='doccomment'>///     toolchain: Some(&quot;nightly&quot;.to_string()),</span>
-    <span class='doccomment'>///     default_features: false,</span>
-    <span class='doccomment'>///     features: {</span>
-    <span class='doccomment'>///         let mut feats = BTreeSet::new();</span>
-    <span class='doccomment'>///         feats.insert(&quot;rustc-serialize&quot;.to_string());</span>
-    <span class='doccomment'>///         feats</span>
-    <span class='doccomment'>///     },</span>
-    <span class='doccomment'>/// };</span>
-    <span class='doccomment'>/// cfg.execute_operations(&amp;[ConfigOperation::RemoveToolchain,</span>
-    <span class='doccomment'>///                          ConfigOperation::AddFeature(&quot;serde&quot;.to_string()),</span>
-    <span class='doccomment'>///                          ConfigOperation::RemoveFeature(&quot;rustc-serialize&quot;.to_string())]);</span>
-    <span class='doccomment'>/// assert_eq!(cfg,</span>
-    <span class='doccomment'>///            PackageConfig {</span>
-    <span class='doccomment'>///                toolchain: None,</span>
-    <span class='doccomment'>///                default_features: false,</span>
-    <span class='doccomment'>///                features: {</span>
-    <span class='doccomment'>///                    let mut feats = BTreeSet::new();</span>
-    <span class='doccomment'>///                    feats.insert(&quot;serde&quot;.to_string());</span>
-    <span class='doccomment'>///                    feats</span>
-    <span class='doccomment'>///                },</span>
-    <span class='doccomment'>///            });</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>execute_operations</span><span class='op'>&lt;</span><span class='lifetime'>&#39;o</span>, <span class='ident'>O</span>: <span class='ident'>IntoIterator</span><span class='op'>&lt;</span><span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;o</span> <span class='ident'>ConfigOperation</span><span class='op'>&gt;&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>ops</span>: <span class='ident'>O</span>) {
-        <span class='kw'>for</span> <span class='ident'>op</span> <span class='kw'>in</span> <span class='ident'>ops</span>.<span class='ident'>into_iter</span>() {
-            <span class='kw'>match</span> <span class='ident'>op</span> {
-                <span class='kw-2'>&amp;</span><span class='ident'>ConfigOperation</span>::<span class='ident'>SetToolchain</span>(<span class='kw-2'>ref</span> <span class='ident'>tchn</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>toolchain</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='ident'>tchn</span>.<span class='ident'>clone</span>()),
-                <span class='kw-2'>&amp;</span><span class='ident'>ConfigOperation</span>::<span class='ident'>RemoveToolchain</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>toolchain</span> <span class='op'>=</span> <span class='prelude-val'>None</span>,
-                <span class='kw-2'>&amp;</span><span class='ident'>ConfigOperation</span>::<span class='ident'>DefaultFeatures</span>(<span class='ident'>f</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>default_features</span> <span class='op'>=</span> <span class='ident'>f</span>,
-                <span class='kw-2'>&amp;</span><span class='ident'>ConfigOperation</span>::<span class='ident'>AddFeature</span>(<span class='kw-2'>ref</span> <span class='ident'>feat</span>) <span class='op'>=&gt;</span> {
-                    <span class='self'>self</span>.<span class='ident'>features</span>.<span class='ident'>insert</span>(<span class='ident'>feat</span>.<span class='ident'>clone</span>());
+    <span class="doccomment">/// Modify `self` according to the specified set of operations.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use cargo_update::ops::{ConfigOperation, PackageConfig};</span>
+    <span class="doccomment">/// # use std::collections::BTreeSet;</span>
+    <span class="doccomment">/// let mut cfg = PackageConfig {</span>
+    <span class="doccomment">///     toolchain: Some(&quot;nightly&quot;.to_string()),</span>
+    <span class="doccomment">///     default_features: false,</span>
+    <span class="doccomment">///     features: {</span>
+    <span class="doccomment">///         let mut feats = BTreeSet::new();</span>
+    <span class="doccomment">///         feats.insert(&quot;rustc-serialize&quot;.to_string());</span>
+    <span class="doccomment">///         feats</span>
+    <span class="doccomment">///     },</span>
+    <span class="doccomment">/// };</span>
+    <span class="doccomment">/// cfg.execute_operations(&amp;[ConfigOperation::RemoveToolchain,</span>
+    <span class="doccomment">///                          ConfigOperation::AddFeature(&quot;serde&quot;.to_string()),</span>
+    <span class="doccomment">///                          ConfigOperation::RemoveFeature(&quot;rustc-serialize&quot;.to_string())]);</span>
+    <span class="doccomment">/// assert_eq!(cfg,</span>
+    <span class="doccomment">///            PackageConfig {</span>
+    <span class="doccomment">///                toolchain: None,</span>
+    <span class="doccomment">///                default_features: false,</span>
+    <span class="doccomment">///                features: {</span>
+    <span class="doccomment">///                    let mut feats = BTreeSet::new();</span>
+    <span class="doccomment">///                    feats.insert(&quot;serde&quot;.to_string());</span>
+    <span class="doccomment">///                    feats</span>
+    <span class="doccomment">///                },</span>
+    <span class="doccomment">///            });</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute_operations</span><span class="op">&lt;</span><span class="lifetime">&#39;o</span>, <span class="ident">O</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;o</span> <span class="ident">ConfigOperation</span><span class="op">&gt;&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ops</span>: <span class="ident">O</span>) {
+        <span class="kw">for</span> <span class="ident">op</span> <span class="kw">in</span> <span class="ident">ops</span>.<span class="ident">into_iter</span>() {
+            <span class="kw">match</span> <span class="ident">op</span> {
+                <span class="kw-2">&amp;</span><span class="ident">ConfigOperation</span>::<span class="ident">SetToolchain</span>(<span class="kw-2">ref</span> <span class="ident">tchn</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">toolchain</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">tchn</span>.<span class="ident">clone</span>()),
+                <span class="kw-2">&amp;</span><span class="ident">ConfigOperation</span>::<span class="ident">RemoveToolchain</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">toolchain</span> <span class="op">=</span> <span class="prelude-val">None</span>,
+                <span class="kw-2">&amp;</span><span class="ident">ConfigOperation</span>::<span class="ident">DefaultFeatures</span>(<span class="ident">f</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">default_features</span> <span class="op">=</span> <span class="ident">f</span>,
+                <span class="kw-2">&amp;</span><span class="ident">ConfigOperation</span>::<span class="ident">AddFeature</span>(<span class="kw-2">ref</span> <span class="ident">feat</span>) <span class="op">=&gt;</span> {
+                    <span class="self">self</span>.<span class="ident">features</span>.<span class="ident">insert</span>(<span class="ident">feat</span>.<span class="ident">clone</span>());
                 }
-                <span class='kw-2'>&amp;</span><span class='ident'>ConfigOperation</span>::<span class='ident'>RemoveFeature</span>(<span class='kw-2'>ref</span> <span class='ident'>feat</span>) <span class='op'>=&gt;</span> {
-                    <span class='self'>self</span>.<span class='ident'>features</span>.<span class='ident'>remove</span>(<span class='ident'>feat</span>);
+                <span class="kw-2">&amp;</span><span class="ident">ConfigOperation</span>::<span class="ident">RemoveFeature</span>(<span class="kw-2">ref</span> <span class="ident">feat</span>) <span class="op">=&gt;</span> {
+                    <span class="self">self</span>.<span class="ident">features</span>.<span class="ident">remove</span>(<span class="ident">feat</span>);
                 }
             }
         }
     }
 
-    <span class='doccomment'>/// Read a configset from the specified file.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If the specified file doesn&#39;t exist an empty configset is returned.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # use std::collections::{BTreeSet, BTreeMap};</span>
-    <span class='doccomment'>/// # use cargo_update::ops::PackageConfig;</span>
-    <span class='doccomment'>/// # use std::fs::{File, create_dir_all};</span>
-    <span class='doccomment'>/// # use std::env::temp_dir;</span>
-    <span class='doccomment'>/// # use std::io::Write;</span>
-    <span class='doccomment'>/// # let td = temp_dir().join(&quot;cargo_update-doctest&quot;).join(&quot;PackageConfig-read-0&quot;);</span>
-    <span class='doccomment'>/// # create_dir_all(&amp;td).unwrap();</span>
-    <span class='doccomment'>/// # let config_file = td.join(&quot;.install_config.toml&quot;);</span>
-    <span class='doccomment'>/// File::create(&amp;config_file).unwrap().write_all(&amp;b&quot;\</span>
-    <span class='doccomment'>///    [cargo-update]\n\</span>
-    <span class='doccomment'>///    default_features = true\n\</span>
-    <span class='doccomment'>///    features = [\&quot;serde\&quot;]\n&quot;[..]);</span>
-    <span class='doccomment'>/// assert_eq!(PackageConfig::read(&amp;config_file), Ok({</span>
-    <span class='doccomment'>///     let mut pkgs = BTreeMap::new();</span>
-    <span class='doccomment'>///     pkgs.insert(&quot;cargo-update&quot;.to_string(), PackageConfig {</span>
-    <span class='doccomment'>///         toolchain: None,</span>
-    <span class='doccomment'>///         default_features: true,</span>
-    <span class='doccomment'>///         features: {</span>
-    <span class='doccomment'>///             let mut feats = BTreeSet::new();</span>
-    <span class='doccomment'>///             feats.insert(&quot;serde&quot;.to_string());</span>
-    <span class='doccomment'>///             feats</span>
-    <span class='doccomment'>///         },</span>
-    <span class='doccomment'>///     });</span>
-    <span class='doccomment'>///     pkgs</span>
-    <span class='doccomment'>/// }));</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>read</span>(<span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>BTreeMap</span><span class='op'>&lt;</span><span class='ident'>String</span>, <span class='ident'>PackageConfig</span><span class='op'>&gt;</span>, <span class='ident'>i32</span><span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='ident'>p</span>.<span class='ident'>exists</span>() {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>p</span>).<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>1</span>))
-                .<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>)
-                .<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>1</span>));
+    <span class="doccomment">/// Read a configset from the specified file.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the specified file doesn&#39;t exist an empty configset is returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use std::collections::{BTreeSet, BTreeMap};</span>
+    <span class="doccomment">/// # use cargo_update::ops::PackageConfig;</span>
+    <span class="doccomment">/// # use std::fs::{File, create_dir_all};</span>
+    <span class="doccomment">/// # use std::env::temp_dir;</span>
+    <span class="doccomment">/// # use std::io::Write;</span>
+    <span class="doccomment">/// # let td = temp_dir().join(&quot;cargo_update-doctest&quot;).join(&quot;PackageConfig-read-0&quot;);</span>
+    <span class="doccomment">/// # create_dir_all(&amp;td).unwrap();</span>
+    <span class="doccomment">/// # let config_file = td.join(&quot;.install_config.toml&quot;);</span>
+    <span class="doccomment">/// File::create(&amp;config_file).unwrap().write_all(&amp;b&quot;\</span>
+    <span class="doccomment">///    [cargo-update]\n\</span>
+    <span class="doccomment">///    default_features = true\n\</span>
+    <span class="doccomment">///    features = [\&quot;serde\&quot;]\n&quot;[..]);</span>
+    <span class="doccomment">/// assert_eq!(PackageConfig::read(&amp;config_file), Ok({</span>
+    <span class="doccomment">///     let mut pkgs = BTreeMap::new();</span>
+    <span class="doccomment">///     pkgs.insert(&quot;cargo-update&quot;.to_string(), PackageConfig {</span>
+    <span class="doccomment">///         toolchain: None,</span>
+    <span class="doccomment">///         default_features: true,</span>
+    <span class="doccomment">///         features: {</span>
+    <span class="doccomment">///             let mut feats = BTreeSet::new();</span>
+    <span class="doccomment">///             feats.insert(&quot;serde&quot;.to_string());</span>
+    <span class="doccomment">///             feats</span>
+    <span class="doccomment">///         },</span>
+    <span class="doccomment">///     });</span>
+    <span class="doccomment">///     pkgs</span>
+    <span class="doccomment">/// }));</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">PackageConfig</span><span class="op">&gt;</span>, <span class="ident">i32</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">p</span>.<span class="ident">exists</span>() {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+            <span class="macro">try</span><span class="macro">!</span>(<span class="macro">try</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">p</span>).<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="number">1</span>))
+                .<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)
+                .<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="number">1</span>));
 
-            <span class='ident'>toml</span>::<span class='ident'>from_str</span>(<span class='kw-2'>&amp;</span><span class='ident'>buf</span>).<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>2</span>)
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>BTreeMap</span>::<span class='ident'>new</span>())
+            <span class="ident">toml</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">buf</span>).<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="number">2</span>)
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">BTreeMap</span>::<span class="ident">new</span>())
         }
     }
 
-    <span class='doccomment'>/// Save a configset to the specified file.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # use std::collections::{BTreeSet, BTreeMap};</span>
-    <span class='doccomment'>/// # use cargo_update::ops::PackageConfig;</span>
-    <span class='doccomment'>/// # use std::fs::{File, create_dir_all};</span>
-    <span class='doccomment'>/// # use std::env::temp_dir;</span>
-    <span class='doccomment'>/// # use std::io::Read;</span>
-    <span class='doccomment'>/// # let td = temp_dir().join(&quot;cargo_update-doctest&quot;).join(&quot;PackageConfig-write-0&quot;);</span>
-    <span class='doccomment'>/// # create_dir_all(&amp;td).unwrap();</span>
-    <span class='doccomment'>/// # let config_file = td.join(&quot;.install_config.toml&quot;);</span>
-    <span class='doccomment'>/// PackageConfig::write(&amp;{</span>
-    <span class='doccomment'>///     let mut pkgs = BTreeMap::new();</span>
-    <span class='doccomment'>///     pkgs.insert(&quot;cargo-update&quot;.to_string(), PackageConfig {</span>
-    <span class='doccomment'>///         toolchain: None,</span>
-    <span class='doccomment'>///         default_features: true,</span>
-    <span class='doccomment'>///         features: {</span>
-    <span class='doccomment'>///             let mut feats = BTreeSet::new();</span>
-    <span class='doccomment'>///             feats.insert(&quot;serde&quot;.to_string());</span>
-    <span class='doccomment'>///             feats</span>
-    <span class='doccomment'>///         },</span>
-    <span class='doccomment'>///     });</span>
-    <span class='doccomment'>///     pkgs</span>
-    <span class='doccomment'>/// }, &amp;config_file).unwrap();</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// let mut buf = String::new();</span>
-    <span class='doccomment'>/// File::open(&amp;config_file).unwrap().read_to_string(&amp;mut buf).unwrap();</span>
-    <span class='doccomment'>/// assert_eq!(&amp;buf, &quot;[cargo-update]\n\</span>
-    <span class='doccomment'>///                   default_features = true\n\</span>
-    <span class='doccomment'>///                   features = [\&quot;serde\&quot;]\n&quot;);</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>write</span>(<span class='ident'>configuration</span>: <span class='kw-2'>&amp;</span><span class='ident'>BTreeMap</span><span class='op'>&lt;</span><span class='ident'>String</span>, <span class='ident'>PackageConfig</span><span class='op'>&gt;</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>i32</span><span class='op'>&gt;</span> {
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>File</span>::<span class='ident'>create</span>(<span class='ident'>p</span>).<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>3</span>))
-            .<span class='ident'>write_all</span>(<span class='kw-2'>&amp;</span><span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>toml</span>::<span class='ident'>to_vec</span>(<span class='ident'>configuration</span>).<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>2</span>)))
-            .<span class='ident'>map_err</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='number'>3</span>)
+    <span class="doccomment">/// Save a configset to the specified file.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use std::collections::{BTreeSet, BTreeMap};</span>
+    <span class="doccomment">/// # use cargo_update::ops::PackageConfig;</span>
+    <span class="doccomment">/// # use std::fs::{File, create_dir_all};</span>
+    <span class="doccomment">/// # use std::env::temp_dir;</span>
+    <span class="doccomment">/// # use std::io::Read;</span>
+    <span class="doccomment">/// # let td = temp_dir().join(&quot;cargo_update-doctest&quot;).join(&quot;PackageConfig-write-0&quot;);</span>
+    <span class="doccomment">/// # create_dir_all(&amp;td).unwrap();</span>
+    <span class="doccomment">/// # let config_file = td.join(&quot;.install_config.toml&quot;);</span>
+    <span class="doccomment">/// PackageConfig::write(&amp;{</span>
+    <span class="doccomment">///     let mut pkgs = BTreeMap::new();</span>
+    <span class="doccomment">///     pkgs.insert(&quot;cargo-update&quot;.to_string(), PackageConfig {</span>
+    <span class="doccomment">///         toolchain: None,</span>
+    <span class="doccomment">///         default_features: true,</span>
+    <span class="doccomment">///         features: {</span>
+    <span class="doccomment">///             let mut feats = BTreeSet::new();</span>
+    <span class="doccomment">///             feats.insert(&quot;serde&quot;.to_string());</span>
+    <span class="doccomment">///             feats</span>
+    <span class="doccomment">///         },</span>
+    <span class="doccomment">///     });</span>
+    <span class="doccomment">///     pkgs</span>
+    <span class="doccomment">/// }, &amp;config_file).unwrap();</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut buf = String::new();</span>
+    <span class="doccomment">/// File::open(&amp;config_file).unwrap().read_to_string(&amp;mut buf).unwrap();</span>
+    <span class="doccomment">/// assert_eq!(&amp;buf, &quot;[cargo-update]\n\</span>
+    <span class="doccomment">///                   default_features = true\n\</span>
+    <span class="doccomment">///                   features = [\&quot;serde\&quot;]\n&quot;);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="ident">configuration</span>: <span class="kw-2">&amp;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">PackageConfig</span><span class="op">&gt;</span>, <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">i32</span><span class="op">&gt;</span> {
+        <span class="macro">try</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">create</span>(<span class="ident">p</span>).<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="number">3</span>))
+            .<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="macro">try</span><span class="macro">!</span>(<span class="ident">toml</span>::<span class="ident">to_vec</span>(<span class="ident">configuration</span>).<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="number">2</span>)))
+            .<span class="ident">map_err</span>(<span class="op">|</span>_<span class="op">|</span> <span class="number">3</span>)
     }
 }
 </pre>

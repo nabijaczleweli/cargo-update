@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -280,243 +280,243 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
-</pre><pre class='rust '>
-<span class='comment'>// The following was originally taken and adapated from exa source</span>
-<span class='comment'>// repo: https://github.com/ogham/exa</span>
-<span class='comment'>// commit: b9eb364823d0d4f9085eb220233c704a13d0f611</span>
-<span class='comment'>// license: MIT - Copyright (c) 2014 Benjamin Sago</span>
+</pre><pre class="rust ">
+<span class="comment">// The following was originally taken and adapated from exa source</span>
+<span class="comment">// repo: https://github.com/ogham/exa</span>
+<span class="comment">// commit: b9eb364823d0d4f9085eb220233c704a13d0f611</span>
+<span class="comment">// license: MIT - Copyright (c) 2014 Benjamin Sago</span>
 
-<span class='doccomment'>//! System calls for getting the terminal size.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Getting the terminal size is performed using an ioctl command that takes</span>
-<span class='doccomment'>//! the file handle to the terminal -- which in this case, is stdout -- and</span>
-<span class='doccomment'>//! populates a structure containing the values.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! The size is needed when the user wants the output formatted into columns:</span>
-<span class='doccomment'>//! the default grid view, or the hybrid grid-details view.</span>
+<span class="doccomment">//! System calls for getting the terminal size.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Getting the terminal size is performed using an ioctl command that takes</span>
+<span class="doccomment">//! the file handle to the terminal -- which in this case, is stdout -- and</span>
+<span class="doccomment">//! populates a structure containing the values.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The size is needed when the user wants the output formatted into columns:</span>
+<span class="doccomment">//! the default grid view, or the hybrid grid-details view.</span>
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>))]</span>
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>kernel32</span>;
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>winapi</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>))]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">kernel32</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">winapi</span>;
 
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>platform</span>::{<span class='ident'>dimensions</span>, <span class='ident'>dimensions_stdout</span>, <span class='ident'>dimensions_stdin</span>, <span class='ident'>dimensions_stderr</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">platform</span>::{<span class="ident">dimensions</span>, <span class="ident">dimensions_stdout</span>, <span class="ident">dimensions_stdin</span>, <span class="ident">dimensions_stderr</span>};
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;bitrig&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;dragonfly&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;netbsd&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>,
-          <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>))]</span>
-<span class='kw'>mod</span> <span class='ident'>platform</span> {
-    <span class='kw'>use</span> <span class='ident'>libc</span>::{<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>STDIN_FILENO</span>, <span class='ident'>STDERR_FILENO</span>, <span class='ident'>c_int</span>, <span class='ident'>c_ulong</span>, <span class='ident'>winsize</span>};
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>::<span class='ident'>zeroed</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;bitrig&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;dragonfly&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;netbsd&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;openbsd&quot;</span>,
+          <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;solaris&quot;</span>))]</span>
+<span class="kw">mod</span> <span class="ident">platform</span> {
+    <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">STDOUT_FILENO</span>, <span class="ident">STDIN_FILENO</span>, <span class="ident">STDERR_FILENO</span>, <span class="ident">c_int</span>, <span class="ident">c_ulong</span>, <span class="ident">winsize</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">zeroed</span>;
 
-    <span class='comment'>// Unfortunately the actual command is not standardised...</span>
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>, <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>))]</span>
-    <span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x5413</span>;
+    <span class="comment">// Unfortunately the actual command is not standardised...</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>))]</span>
+    <span class="kw">static</span> <span class="ident">TIOCGWINSZ</span>: <span class="ident">c_ulong</span> <span class="op">=</span> <span class="number">0x5413</span>;
 
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;bitrig&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;dragonfly&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;netbsd&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>))]</span>
-    <span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x40087468</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;bitrig&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;dragonfly&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;netbsd&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;openbsd&quot;</span>))]</span>
+    <span class="kw">static</span> <span class="ident">TIOCGWINSZ</span>: <span class="ident">c_ulong</span> <span class="op">=</span> <span class="number">0x40087468</span>;
 
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>)]</span>
-    <span class='kw'>static</span> <span class='ident'>TIOCGWINSZ</span>: <span class='ident'>c_ulong</span> <span class='op'>=</span> <span class='number'>0x5468</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;solaris&quot;</span>)]</span>
+    <span class="kw">static</span> <span class="ident">TIOCGWINSZ</span>: <span class="ident">c_ulong</span> <span class="op">=</span> <span class="number">0x5468</span>;
 
-    <span class='kw'>extern</span> <span class='string'>&quot;C&quot;</span> {
-        <span class='kw'>fn</span> <span class='ident'>ioctl</span>(<span class='ident'>fd</span>: <span class='ident'>c_int</span>, <span class='ident'>request</span>: <span class='ident'>c_ulong</span>, ...) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
+    <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+        <span class="kw">fn</span> <span class="ident">ioctl</span>(<span class="ident">fd</span>: <span class="ident">c_int</span>, <span class="ident">request</span>: <span class="ident">c_ulong</span>, ...) <span class="op">-&gt;</span> <span class="ident">c_int</span>;
     }
 
-    <span class='doccomment'>/// Runs the ioctl command. Returns (0, 0) if all of the streams are not to a terminal, or</span>
-    <span class='doccomment'>/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
-    <span class='doccomment'>/// it can be used as a nil value.</span>
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>get_dimensions_any</span>() <span class='op'>-&gt;</span> <span class='ident'>winsize</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>window</span>: <span class='ident'>winsize</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
+    <span class="doccomment">/// Runs the ioctl command. Returns (0, 0) if all of the streams are not to a terminal, or</span>
+    <span class="doccomment">/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
+    <span class="doccomment">/// it can be used as a nil value.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_dimensions_any</span>() <span class="op">-&gt;</span> <span class="ident">winsize</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">window</span>: <span class="ident">winsize</span> <span class="op">=</span> <span class="ident">zeroed</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ioctl</span>(<span class="ident">STDOUT_FILENO</span>, <span class="ident">TIOCGWINSZ</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">window</span>);
 
-        <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-            <span class='ident'>window</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-            <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDIN_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
-            <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-                <span class='ident'>window</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-                <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDERR_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
-                <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-                    <span class='kw'>return</span> <span class='ident'>zeroed</span>();
+        <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+            <span class="ident">window</span> <span class="op">=</span> <span class="ident">zeroed</span>();
+            <span class="ident">result</span> <span class="op">=</span> <span class="ident">ioctl</span>(<span class="ident">STDIN_FILENO</span>, <span class="ident">TIOCGWINSZ</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">window</span>);
+            <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+                <span class="ident">window</span> <span class="op">=</span> <span class="ident">zeroed</span>();
+                <span class="ident">result</span> <span class="op">=</span> <span class="ident">ioctl</span>(<span class="ident">STDERR_FILENO</span>, <span class="ident">TIOCGWINSZ</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">window</span>);
+                <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+                    <span class="kw">return</span> <span class="ident">zeroed</span>();
                 }
             }
         }
-        <span class='ident'>window</span>
+        <span class="ident">window</span>
     }
 
-    <span class='doccomment'>/// Runs the ioctl command. Returns (0, 0) if the output is not to a terminal, or</span>
-    <span class='doccomment'>/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
-    <span class='doccomment'>/// it can be used as a nil value.</span>
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>get_dimensions_out</span>() <span class='op'>-&gt;</span> <span class='ident'>winsize</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>window</span>: <span class='ident'>winsize</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-        <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDOUT_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
+    <span class="doccomment">/// Runs the ioctl command. Returns (0, 0) if the output is not to a terminal, or</span>
+    <span class="doccomment">/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
+    <span class="doccomment">/// it can be used as a nil value.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_dimensions_out</span>() <span class="op">-&gt;</span> <span class="ident">winsize</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">window</span>: <span class="ident">winsize</span> <span class="op">=</span> <span class="ident">zeroed</span>();
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ioctl</span>(<span class="ident">STDOUT_FILENO</span>, <span class="ident">TIOCGWINSZ</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">window</span>);
 
-        <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>!=</span> <span class='op'>-</span><span class='number'>1</span> {
-            <span class='kw'>return</span> <span class='ident'>window</span>;
+        <span class="kw">if</span> <span class="ident">result</span> <span class="op">!=</span> <span class="op">-</span><span class="number">1</span> {
+            <span class="kw">return</span> <span class="ident">window</span>;
         }
-        <span class='ident'>zeroed</span>()
+        <span class="ident">zeroed</span>()
     }
 
-    <span class='doccomment'>/// Runs the ioctl command. Returns (0, 0) if the input is not to a terminal, or</span>
-    <span class='doccomment'>/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
-    <span class='doccomment'>/// it can be used as a nil value.</span>
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>get_dimensions_in</span>() <span class='op'>-&gt;</span> <span class='ident'>winsize</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>window</span>: <span class='ident'>winsize</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-        <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDIN_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
+    <span class="doccomment">/// Runs the ioctl command. Returns (0, 0) if the input is not to a terminal, or</span>
+    <span class="doccomment">/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
+    <span class="doccomment">/// it can be used as a nil value.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_dimensions_in</span>() <span class="op">-&gt;</span> <span class="ident">winsize</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">window</span>: <span class="ident">winsize</span> <span class="op">=</span> <span class="ident">zeroed</span>();
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ioctl</span>(<span class="ident">STDIN_FILENO</span>, <span class="ident">TIOCGWINSZ</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">window</span>);
 
-        <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>!=</span> <span class='op'>-</span><span class='number'>1</span> {
-            <span class='kw'>return</span> <span class='ident'>window</span>;
+        <span class="kw">if</span> <span class="ident">result</span> <span class="op">!=</span> <span class="op">-</span><span class="number">1</span> {
+            <span class="kw">return</span> <span class="ident">window</span>;
         }
-        <span class='ident'>zeroed</span>()
+        <span class="ident">zeroed</span>()
     }
 
-    <span class='doccomment'>/// Runs the ioctl command. Returns (0, 0) if the error is not to a terminal, or</span>
-    <span class='doccomment'>/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
-    <span class='doccomment'>/// it can be used as a nil value.</span>
-    <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>get_dimensions_err</span>() <span class='op'>-&gt;</span> <span class='ident'>winsize</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>window</span>: <span class='ident'>winsize</span> <span class='op'>=</span> <span class='ident'>zeroed</span>();
-        <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>ioctl</span>(<span class='ident'>STDERR_FILENO</span>, <span class='ident'>TIOCGWINSZ</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>window</span>);
+    <span class="doccomment">/// Runs the ioctl command. Returns (0, 0) if the error is not to a terminal, or</span>
+    <span class="doccomment">/// there is an error. (0, 0) is an invalid size to have anyway, which is why</span>
+    <span class="doccomment">/// it can be used as a nil value.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_dimensions_err</span>() <span class="op">-&gt;</span> <span class="ident">winsize</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">window</span>: <span class="ident">winsize</span> <span class="op">=</span> <span class="ident">zeroed</span>();
+        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ioctl</span>(<span class="ident">STDERR_FILENO</span>, <span class="ident">TIOCGWINSZ</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">window</span>);
 
-        <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>!=</span> <span class='op'>-</span><span class='number'>1</span> {
-            <span class='kw'>return</span> <span class='ident'>window</span>;
+        <span class="kw">if</span> <span class="ident">result</span> <span class="op">!=</span> <span class="op">-</span><span class="number">1</span> {
+            <span class="kw">return</span> <span class="ident">window</span>;
         }
-        <span class='ident'>zeroed</span>()
+        <span class="ident">zeroed</span>()
     }
 
-    <span class='doccomment'>/// Query the current processes&#39;s output (`stdout`), input (`stdin`), and error (`stderr`) in</span>
-    <span class='doccomment'>/// that order, in the attempt to dtermine terminal width. If one of those streams is actually</span>
-    <span class='doccomment'>/// a tty, this function returns its width and height as a number of characters.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>get_dimensions_any</span>() };
+    <span class="doccomment">/// Query the current processes&#39;s output (`stdout`), input (`stdin`), and error (`stderr`) in</span>
+    <span class="doccomment">/// that order, in the attempt to dtermine terminal width. If one of those streams is actually</span>
+    <span class="doccomment">/// a tty, this function returns its width and height as a number of characters.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">get_dimensions_any</span>() };
 
-        <span class='kw'>if</span> <span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='op'>==</span> <span class='number'>0</span> {
-            <span class='prelude-val'>None</span>
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>Some</span>((<span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='kw'>as</span> <span class='ident'>usize</span>))
-        }
-    }
-
-    <span class='doccomment'>/// Query the current processes&#39;s output (`stdout`) *only*, in the attempt to dtermine</span>
-    <span class='doccomment'>/// terminal width. If that streams is actually a tty, this function returns its width</span>
-    <span class='doccomment'>/// and height as a number of characters.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stdout</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>get_dimensions_out</span>() };
-
-        <span class='kw'>if</span> <span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='op'>==</span> <span class='number'>0</span> {
-            <span class='prelude-val'>None</span>
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>Some</span>((<span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='kw'>as</span> <span class='ident'>usize</span>))
+        <span class="kw">if</span> <span class="ident">w</span>.<span class="ident">ws_col</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="prelude-val">None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">w</span>.<span class="ident">ws_col</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="kw">as</span> <span class="ident">usize</span>))
         }
     }
 
-    <span class='doccomment'>/// Query the current processes&#39;s input (`stdin`) *only*, in the attempt to dtermine</span>
-    <span class='doccomment'>/// terminal width. If that streams is actually a tty, this function returns its width</span>
-    <span class='doccomment'>/// and height as a number of characters.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stdin</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>get_dimensions_in</span>() };
+    <span class="doccomment">/// Query the current processes&#39;s output (`stdout`) *only*, in the attempt to dtermine</span>
+    <span class="doccomment">/// terminal width. If that streams is actually a tty, this function returns its width</span>
+    <span class="doccomment">/// and height as a number of characters.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stdout</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">get_dimensions_out</span>() };
 
-        <span class='kw'>if</span> <span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='op'>==</span> <span class='number'>0</span> {
-            <span class='prelude-val'>None</span>
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>Some</span>((<span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='kw'>as</span> <span class='ident'>usize</span>))
+        <span class="kw">if</span> <span class="ident">w</span>.<span class="ident">ws_col</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="prelude-val">None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">w</span>.<span class="ident">ws_col</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="kw">as</span> <span class="ident">usize</span>))
         }
     }
 
-    <span class='doccomment'>/// Query the current processes&#39;s error output (`stderr`) *only*, in the attempt to dtermine</span>
-    <span class='doccomment'>/// terminal width. If that streams is actually a tty, this function returns its width</span>
-    <span class='doccomment'>/// and height as a number of characters.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stderr</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>get_dimensions_err</span>() };
+    <span class="doccomment">/// Query the current processes&#39;s input (`stdin`) *only*, in the attempt to dtermine</span>
+    <span class="doccomment">/// terminal width. If that streams is actually a tty, this function returns its width</span>
+    <span class="doccomment">/// and height as a number of characters.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stdin</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">get_dimensions_in</span>() };
 
-        <span class='kw'>if</span> <span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='op'>==</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='op'>==</span> <span class='number'>0</span> {
-            <span class='prelude-val'>None</span>
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>Some</span>((<span class='ident'>w</span>.<span class='ident'>ws_col</span> <span class='kw'>as</span> <span class='ident'>usize</span>, <span class='ident'>w</span>.<span class='ident'>ws_row</span> <span class='kw'>as</span> <span class='ident'>usize</span>))
+        <span class="kw">if</span> <span class="ident">w</span>.<span class="ident">ws_col</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="prelude-val">None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">w</span>.<span class="ident">ws_col</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="kw">as</span> <span class="ident">usize</span>))
+        }
+    }
+
+    <span class="doccomment">/// Query the current processes&#39;s error output (`stderr`) *only*, in the attempt to dtermine</span>
+    <span class="doccomment">/// terminal width. If that streams is actually a tty, this function returns its width</span>
+    <span class="doccomment">/// and height as a number of characters.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If *all* of the streams are not ttys or return any errors this function will return `None`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stderr</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">get_dimensions_err</span>() };
+
+        <span class="kw">if</span> <span class="ident">w</span>.<span class="ident">ws_col</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="prelude-val">None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Some</span>((<span class="ident">w</span>.<span class="ident">ws_col</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">w</span>.<span class="ident">ws_row</span> <span class="kw">as</span> <span class="ident">usize</span>))
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>platform</span> {
-    <span class='kw'>use</span> <span class='ident'>kernel32</span>::{<span class='ident'>GetConsoleScreenBufferInfo</span>, <span class='ident'>GetStdHandle</span>};
-    <span class='kw'>use</span> <span class='ident'>winapi</span>::{<span class='ident'>CONSOLE_SCREEN_BUFFER_INFO</span>, <span class='ident'>COORD</span>, <span class='ident'>SMALL_RECT</span>, <span class='ident'>STD_OUTPUT_HANDLE</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">platform</span> {
+    <span class="kw">use</span> <span class="ident">kernel32</span>::{<span class="ident">GetConsoleScreenBufferInfo</span>, <span class="ident">GetStdHandle</span>};
+    <span class="kw">use</span> <span class="ident">winapi</span>::{<span class="ident">CONSOLE_SCREEN_BUFFER_INFO</span>, <span class="ident">COORD</span>, <span class="ident">SMALL_RECT</span>, <span class="ident">STD_OUTPUT_HANDLE</span>};
 
-    <span class='doccomment'>/// Query the current processes&#39;s output, returning its width and height as a</span>
-    <span class='doccomment'>/// number of characters. Returns `None` if the output isn&#39;t to a terminal.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>null_coord</span> <span class='op'>=</span> <span class='ident'>COORD</span> { <span class='ident'>X</span>: <span class='number'>0</span>, <span class='ident'>Y</span>: <span class='number'>0</span> };
-        <span class='kw'>let</span> <span class='ident'>null_smallrect</span> <span class='op'>=</span> <span class='ident'>SMALL_RECT</span> {
-            <span class='ident'>Left</span>: <span class='number'>0</span>,
-            <span class='ident'>Top</span>: <span class='number'>0</span>,
-            <span class='ident'>Right</span>: <span class='number'>0</span>,
-            <span class='ident'>Bottom</span>: <span class='number'>0</span>,
+    <span class="doccomment">/// Query the current processes&#39;s output, returning its width and height as a</span>
+    <span class="doccomment">/// number of characters. Returns `None` if the output isn&#39;t to a terminal.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">null_coord</span> <span class="op">=</span> <span class="ident">COORD</span> { <span class="ident">X</span>: <span class="number">0</span>, <span class="ident">Y</span>: <span class="number">0</span> };
+        <span class="kw">let</span> <span class="ident">null_smallrect</span> <span class="op">=</span> <span class="ident">SMALL_RECT</span> {
+            <span class="ident">Left</span>: <span class="number">0</span>,
+            <span class="ident">Top</span>: <span class="number">0</span>,
+            <span class="ident">Right</span>: <span class="number">0</span>,
+            <span class="ident">Bottom</span>: <span class="number">0</span>,
         };
 
-        <span class='kw'>let</span> <span class='ident'>stdout_h</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>GetStdHandle</span>(<span class='ident'>STD_OUTPUT_HANDLE</span>) };
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>console_data</span> <span class='op'>=</span> <span class='ident'>CONSOLE_SCREEN_BUFFER_INFO</span> {
-            <span class='ident'>dwSize</span>: <span class='ident'>null_coord</span>,
-            <span class='ident'>dwCursorPosition</span>: <span class='ident'>null_coord</span>,
-            <span class='ident'>wAttributes</span>: <span class='number'>0</span>,
-            <span class='ident'>srWindow</span>: <span class='ident'>null_smallrect</span>,
-            <span class='ident'>dwMaximumWindowSize</span>: <span class='ident'>null_coord</span>,
+        <span class="kw">let</span> <span class="ident">stdout_h</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">GetStdHandle</span>(<span class="ident">STD_OUTPUT_HANDLE</span>) };
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">console_data</span> <span class="op">=</span> <span class="ident">CONSOLE_SCREEN_BUFFER_INFO</span> {
+            <span class="ident">dwSize</span>: <span class="ident">null_coord</span>,
+            <span class="ident">dwCursorPosition</span>: <span class="ident">null_coord</span>,
+            <span class="ident">wAttributes</span>: <span class="number">0</span>,
+            <span class="ident">srWindow</span>: <span class="ident">null_smallrect</span>,
+            <span class="ident">dwMaximumWindowSize</span>: <span class="ident">null_coord</span>,
         };
 
-        <span class='kw'>if</span> <span class='kw'>unsafe</span> { <span class='ident'>GetConsoleScreenBufferInfo</span>(<span class='ident'>stdout_h</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>console_data</span>) } <span class='op'>!=</span> <span class='number'>0</span> {
-            <span class='prelude-val'>Some</span>(((<span class='ident'>console_data</span>.<span class='ident'>srWindow</span>.<span class='ident'>Right</span> <span class='op'>-</span> <span class='ident'>console_data</span>.<span class='ident'>srWindow</span>.<span class='ident'>Left</span>) <span class='kw'>as</span> <span class='ident'>usize</span>,
-                  (<span class='ident'>console_data</span>.<span class='ident'>srWindow</span>.<span class='ident'>Bottom</span> <span class='op'>-</span> <span class='ident'>console_data</span>.<span class='ident'>srWindow</span>.<span class='ident'>Top</span>) <span class='kw'>as</span> <span class='ident'>usize</span>))
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>None</span>
+        <span class="kw">if</span> <span class="kw">unsafe</span> { <span class="ident">GetConsoleScreenBufferInfo</span>(<span class="ident">stdout_h</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">console_data</span>) } <span class="op">!=</span> <span class="number">0</span> {
+            <span class="prelude-val">Some</span>(((<span class="ident">console_data</span>.<span class="ident">srWindow</span>.<span class="ident">Right</span> <span class="op">-</span> <span class="ident">console_data</span>.<span class="ident">srWindow</span>.<span class="ident">Left</span>) <span class="kw">as</span> <span class="ident">usize</span>,
+                  (<span class="ident">console_data</span>.<span class="ident">srWindow</span>.<span class="ident">Bottom</span> <span class="op">-</span> <span class="ident">console_data</span>.<span class="ident">srWindow</span>.<span class="ident">Top</span>) <span class="kw">as</span> <span class="ident">usize</span>))
+        } <span class="kw">else</span> {
+            <span class="prelude-val">None</span>
         }
     }
-    <span class='doccomment'>/// Query the current processes&#39;s output, returning its width and height as a</span>
-    <span class='doccomment'>/// number of characters. Returns `None` if the output isn&#39;t to a terminal.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stdout</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='ident'>dimensions</span>() }
-    <span class='doccomment'>/// This isn&#39;t implemented for Windows</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stdin</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='macro'>unimplemented</span><span class='macro'>!</span>() }
-    <span class='doccomment'>/// This isn&#39;t implemented for Windows</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stderr</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='macro'>unimplemented</span><span class='macro'>!</span>() }
+    <span class="doccomment">/// Query the current processes&#39;s output, returning its width and height as a</span>
+    <span class="doccomment">/// number of characters. Returns `None` if the output isn&#39;t to a terminal.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stdout</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="ident">dimensions</span>() }
+    <span class="doccomment">/// This isn&#39;t implemented for Windows</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stdin</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="macro">unimplemented</span><span class="macro">!</span>() }
+    <span class="doccomment">/// This isn&#39;t implemented for Windows</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stderr</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="macro">unimplemented</span><span class="macro">!</span>() }
 }
 
-<span class='comment'>// makes project compilable on unsupported platforms</span>
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>any</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;android&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;macos&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;bitrig&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;dragonfly&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;netbsd&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;solaris&quot;</span>,
-              <span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;windows&quot;</span>)))]</span>
-<span class='kw'>mod</span> <span class='ident'>platform</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='prelude-val'>None</span> }
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stdout</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='prelude-val'>None</span> }
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stdin</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='prelude-val'>None</span> }
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>dimensions_stderr</span>() <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> { <span class='prelude-val'>None</span> }
+<span class="comment">// makes project compilable on unsupported platforms</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;bitrig&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;dragonfly&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;netbsd&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;openbsd&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;solaris&quot;</span>,
+              <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)))]</span>
+<span class="kw">mod</span> <span class="ident">platform</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="prelude-val">None</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stdout</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="prelude-val">None</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stdin</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="prelude-val">None</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions_stderr</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> { <span class="prelude-val">None</span> }
 }
 </pre>
 </section>

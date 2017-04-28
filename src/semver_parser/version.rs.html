@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -408,370 +408,370 @@
 <span id="363">363</span>
 <span id="364">364</span>
 <span id="365">365</span>
-</pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>::<span class='ident'>from_utf8</span>;
+</pre><pre class="rust ">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">from_utf8</span>;
 
-<span class='kw'>use</span> <span class='ident'>recognize</span>::<span class='kw-2'>*</span>;
+<span class="kw">use</span> <span class="ident">recognize</span>::<span class="kw-2">*</span>;
 
-<span class='kw'>use</span> <span class='ident'>common</span>::{<span class='self'>self</span>, <span class='ident'>numeric_identifier</span>};
+<span class="kw">use</span> <span class="ident">common</span>::{<span class="self">self</span>, <span class="ident">numeric_identifier</span>};
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Version</span> {
-    <span class='kw'>pub</span> <span class='ident'>major</span>: <span class='ident'>u64</span>,
-    <span class='kw'>pub</span> <span class='ident'>minor</span>: <span class='ident'>u64</span>,
-    <span class='kw'>pub</span> <span class='ident'>patch</span>: <span class='ident'>u64</span>,
-    <span class='kw'>pub</span> <span class='ident'>pre</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Identifier</span><span class='op'>&gt;</span>,
-    <span class='kw'>pub</span> <span class='ident'>build</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Identifier</span><span class='op'>&gt;</span>,
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Version</span> {
+    <span class="kw">pub</span> <span class="ident">major</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">minor</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">patch</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">pre</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Identifier</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">build</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Identifier</span><span class="op">&gt;</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Identifier</span> {
-    <span class='doccomment'>/// An identifier that&#39;s solely numbers.</span>
-    <span class='ident'>Numeric</span>(<span class='ident'>u64</span>),
-    <span class='doccomment'>/// An identifier with letters and numbers.</span>
-    <span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>),
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Identifier</span> {
+    <span class="doccomment">/// An identifier that&#39;s solely numbers.</span>
+    <span class="ident">Numeric</span>(<span class="ident">u64</span>),
+    <span class="doccomment">/// An identifier with letters and numbers.</span>
+    <span class="ident">AlphaNumeric</span>(<span class="ident">String</span>),
 }
 
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse</span>(<span class='ident'>version</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Version</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>s</span> <span class='op'>=</span> <span class='ident'>version</span>.<span class='ident'>trim</span>().<span class='ident'>as_bytes</span>();
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='number'>0</span>;
-    <span class='kw'>let</span> <span class='ident'>major</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>major</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>numeric_identifier</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
-        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
-        <span class='ident'>major</span>
-    } <span class='kw'>else</span> {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Error parsing major identifier&quot;</span>.<span class='ident'>to_string</span>());
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">version</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Version</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">version</span>.<span class="ident">trim</span>().<span class="ident">as_bytes</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="ident">major</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">major</span>, <span class="ident">len</span>)) <span class="op">=</span> <span class="ident">numeric_identifier</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..]) {
+        <span class="ident">i</span> <span class="op">+=</span> <span class="ident">len</span>;
+        <span class="ident">major</span>
+    } <span class="kw">else</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Error parsing major identifier&quot;</span>.<span class="ident">to_string</span>());
     };
-    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>b&#39;.&#39;</span>.<span class='ident'>p</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
-        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
-    } <span class='kw'>else</span> {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Expected dot&quot;</span>.<span class='ident'>to_string</span>());
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">len</span>) <span class="op">=</span> <span class="string">b&#39;.&#39;</span>.<span class="ident">p</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..]) {
+        <span class="ident">i</span> <span class="op">+=</span> <span class="ident">len</span>;
+    } <span class="kw">else</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Expected dot&quot;</span>.<span class="ident">to_string</span>());
     }
-    <span class='kw'>let</span> <span class='ident'>minor</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>minor</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>numeric_identifier</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
-        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
-        <span class='ident'>minor</span>
-    } <span class='kw'>else</span> {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Error parsing minor identifier&quot;</span>.<span class='ident'>to_string</span>());
+    <span class="kw">let</span> <span class="ident">minor</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">minor</span>, <span class="ident">len</span>)) <span class="op">=</span> <span class="ident">numeric_identifier</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..]) {
+        <span class="ident">i</span> <span class="op">+=</span> <span class="ident">len</span>;
+        <span class="ident">minor</span>
+    } <span class="kw">else</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Error parsing minor identifier&quot;</span>.<span class="ident">to_string</span>());
     };
-    <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>len</span>) <span class='op'>=</span> <span class='string'>b&#39;.&#39;</span>.<span class='ident'>p</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
-        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
-    } <span class='kw'>else</span> {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Expected dot&quot;</span>.<span class='ident'>to_string</span>());
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">len</span>) <span class="op">=</span> <span class="string">b&#39;.&#39;</span>.<span class="ident">p</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..]) {
+        <span class="ident">i</span> <span class="op">+=</span> <span class="ident">len</span>;
+    } <span class="kw">else</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Expected dot&quot;</span>.<span class="ident">to_string</span>());
     }
-    <span class='kw'>let</span> <span class='ident'>patch</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>patch</span>, <span class='ident'>len</span>)) <span class='op'>=</span> <span class='ident'>numeric_identifier</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]) {
-        <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>len</span>;
-        <span class='ident'>patch</span>
-    } <span class='kw'>else</span> {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Error parsing patch identifier&quot;</span>.<span class='ident'>to_string</span>());
+    <span class="kw">let</span> <span class="ident">patch</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">patch</span>, <span class="ident">len</span>)) <span class="op">=</span> <span class="ident">numeric_identifier</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..]) {
+        <span class="ident">i</span> <span class="op">+=</span> <span class="ident">len</span>;
+        <span class="ident">patch</span>
+    } <span class="kw">else</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Error parsing patch identifier&quot;</span>.<span class="ident">to_string</span>());
     };
-    <span class='kw'>let</span> (<span class='ident'>pre</span>, <span class='ident'>pre_len</span>) <span class='op'>=</span> <span class='ident'>common</span>::<span class='ident'>parse_optional_meta</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..], <span class='string'>b&#39;-&#39;</span>)<span class='question-mark'>?</span>;
-    <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>pre_len</span>;
-    <span class='kw'>let</span> (<span class='ident'>build</span>, <span class='ident'>build_len</span>) <span class='op'>=</span> <span class='ident'>common</span>::<span class='ident'>parse_optional_meta</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..], <span class='string'>b&#39;+&#39;</span>)<span class='question-mark'>?</span>;
-    <span class='ident'>i</span> <span class='op'>+=</span> <span class='ident'>build_len</span>;
-    <span class='kw'>if</span> <span class='ident'>i</span> <span class='op'>!=</span> <span class='ident'>s</span>.<span class='ident'>len</span>() {
-        <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Extra junk after valid version: &quot;</span>.<span class='ident'>to_string</span>() <span class='op'>+</span>
-            <span class='ident'>from_utf8</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>[<span class='ident'>i</span>..]).<span class='ident'>unwrap</span>());
+    <span class="kw">let</span> (<span class="ident">pre</span>, <span class="ident">pre_len</span>) <span class="op">=</span> <span class="ident">common</span>::<span class="ident">parse_optional_meta</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..], <span class="string">b&#39;-&#39;</span>)<span class="question-mark">?</span>;
+    <span class="ident">i</span> <span class="op">+=</span> <span class="ident">pre_len</span>;
+    <span class="kw">let</span> (<span class="ident">build</span>, <span class="ident">build_len</span>) <span class="op">=</span> <span class="ident">common</span>::<span class="ident">parse_optional_meta</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..], <span class="string">b&#39;+&#39;</span>)<span class="question-mark">?</span>;
+    <span class="ident">i</span> <span class="op">+=</span> <span class="ident">build_len</span>;
+    <span class="kw">if</span> <span class="ident">i</span> <span class="op">!=</span> <span class="ident">s</span>.<span class="ident">len</span>() {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Extra junk after valid version: &quot;</span>.<span class="ident">to_string</span>() <span class="op">+</span>
+            <span class="ident">from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">i</span>..]).<span class="ident">unwrap</span>());
     }
-    <span class='prelude-val'>Ok</span>(<span class='ident'>Version</span> {
-        <span class='ident'>major</span>: <span class='ident'>major</span>,
-        <span class='ident'>minor</span>: <span class='ident'>minor</span>,
-        <span class='ident'>patch</span>: <span class='ident'>patch</span>,
-        <span class='ident'>pre</span>: <span class='ident'>pre</span>,
-        <span class='ident'>build</span>: <span class='ident'>build</span>,
+    <span class="prelude-val">Ok</span>(<span class="ident">Version</span> {
+        <span class="ident">major</span>: <span class="ident">major</span>,
+        <span class="ident">minor</span>: <span class="ident">minor</span>,
+        <span class="ident">patch</span>: <span class="ident">patch</span>,
+        <span class="ident">pre</span>: <span class="ident">pre</span>,
+        <span class="ident">build</span>: <span class="ident">build</span>,
     })
 }
 
-<span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>Version</span> {
-    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;{}.{}.{}&quot;</span>, <span class='self'>self</span>.<span class='ident'>major</span>, <span class='self'>self</span>.<span class='ident'>minor</span>, <span class='self'>self</span>.<span class='ident'>patch</span>));
-        <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>pre</span>.<span class='ident'>is_empty</span>() {
-            <span class='kw'>let</span> <span class='ident'>strs</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span>
-                <span class='self'>self</span>.<span class='ident'>pre</span>.<span class='ident'>iter</span>().<span class='ident'>map</span>(<span class='ident'>ToString</span>::<span class='ident'>to_string</span>).<span class='ident'>collect</span>();
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;-{}&quot;</span>, <span class='ident'>strs</span>.<span class='ident'>join</span>(<span class='string'>&quot;.&quot;</span>)));
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Version</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="macro">try</span><span class="macro">!</span>(<span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}.{}.{}&quot;</span>, <span class="self">self</span>.<span class="ident">major</span>, <span class="self">self</span>.<span class="ident">minor</span>, <span class="self">self</span>.<span class="ident">patch</span>));
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">pre</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">let</span> <span class="ident">strs</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span>
+                <span class="self">self</span>.<span class="ident">pre</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">ToString</span>::<span class="ident">to_string</span>).<span class="ident">collect</span>();
+            <span class="macro">try</span><span class="macro">!</span>(<span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;-{}&quot;</span>, <span class="ident">strs</span>.<span class="ident">join</span>(<span class="string">&quot;.&quot;</span>)));
         }
-        <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>build</span>.<span class='ident'>is_empty</span>() {
-            <span class='kw'>let</span> <span class='ident'>strs</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;</span> <span class='op'>=</span>
-                <span class='self'>self</span>.<span class='ident'>build</span>.<span class='ident'>iter</span>().<span class='ident'>map</span>(<span class='ident'>ToString</span>::<span class='ident'>to_string</span>).<span class='ident'>collect</span>();
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;+{}&quot;</span>, <span class='ident'>strs</span>.<span class='ident'>join</span>(<span class='string'>&quot;.&quot;</span>)));
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">build</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">let</span> <span class="ident">strs</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span>
+                <span class="self">self</span>.<span class="ident">build</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">ToString</span>::<span class="ident">to_string</span>).<span class="ident">collect</span>();
+            <span class="macro">try</span><span class="macro">!</span>(<span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;+{}&quot;</span>, <span class="ident">strs</span>.<span class="ident">join</span>(<span class="string">&quot;.&quot;</span>)));
         }
-        <span class='prelude-val'>Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>Identifier</span> {
-    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
-        <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-            <span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='kw-2'>ref</span> <span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>id</span>.<span class='ident'>fmt</span>(<span class='ident'>f</span>),
-            <span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='kw-2'>ref</span> <span class='ident'>id</span>) <span class='op'>=&gt;</span> <span class='ident'>id</span>.<span class='ident'>fmt</span>(<span class='ident'>f</span>),
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Identifier</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="kw-2">ref</span> <span class="ident">id</span>) <span class="op">=&gt;</span> <span class="ident">id</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
+            <span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="kw-2">ref</span> <span class="ident">id</span>) <span class="op">=&gt;</span> <span class="ident">id</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>tests</span> {
-    <span class='kw'>use</span> <span class='ident'>version</span>;
-    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='kw-2'>*</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="ident">version</span>;
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_empty</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_empty</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;empty string incorrectly considered a valid parse&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;empty string incorrectly considered a valid parse&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_blank</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;  &quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_blank</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;  &quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;blank string incorrectly considered a valid parse&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;blank string incorrectly considered a valid parse&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_minor_patch</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_minor_patch</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class='ident'>version</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class="ident">version</span>));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_patch</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_patch</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class='ident'>version</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class="ident">version</span>));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_empty_pre</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3-&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_empty_pre</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3-&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class='ident'>version</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class="ident">version</span>));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_letters</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;a.b.c&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_letters</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;a.b.c&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class='ident'>version</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class="ident">version</span>));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_with_letters</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3 a.b.c&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_with_letters</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3 a.b.c&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class='ident'>version</span>));
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{}&#39; incorrectly considered a valid parse&quot;</span>, <span class="ident">version</span>));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_basic_version</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_basic_version</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>parsed</span>.<span class='ident'>major</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>2</span>, <span class='ident'>parsed</span>.<span class='ident'>minor</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>3</span>, <span class='ident'>parsed</span>.<span class='ident'>patch</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">1</span>, <span class="ident">parsed</span>.<span class="ident">major</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">2</span>, <span class="ident">parsed</span>.<span class="ident">minor</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">3</span>, <span class="ident">parsed</span>.<span class="ident">patch</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_trims_input</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;  1.2.3  &quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_trims_input</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;  1.2.3  &quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>1</span>, <span class='ident'>parsed</span>.<span class='ident'>major</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>2</span>, <span class='ident'>parsed</span>.<span class='ident'>minor</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>3</span>, <span class='ident'>parsed</span>.<span class='ident'>patch</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">1</span>, <span class="ident">parsed</span>.<span class="ident">major</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">2</span>, <span class="ident">parsed</span>.<span class="ident">minor</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">3</span>, <span class="ident">parsed</span>.<span class="ident">patch</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_major_leading_zeroes</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;01.0.0&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_major_leading_zeroes</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;01.0.0&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;01 incorrectly considered a valid major version&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;01 incorrectly considered a valid major version&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_minor_leading_zeroes</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.01.0&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_minor_leading_zeroes</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.01.0&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;01 incorrectly considered a valid minor version&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;01 incorrectly considered a valid minor version&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_patch_leading_zeroes</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.0.01&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_patch_leading_zeroes</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.0.01&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;01 incorrectly considered a valid patch version&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;01 incorrectly considered a valid patch version&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_major_overflow</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;98765432109876543210.0.0&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_major_overflow</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;98765432109876543210.0.0&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;98765432109876543210 incorrectly considered a valid major version&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;98765432109876543210 incorrectly considered a valid major version&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_minor_overflow</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.98765432109876543210.0&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_minor_overflow</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.98765432109876543210.0&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;98765432109876543210 incorrectly considered a valid minor version&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;98765432109876543210 incorrectly considered a valid minor version&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_no_patch_overflow</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.0.98765432109876543210&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_no_patch_overflow</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.0.98765432109876543210&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>);
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>parsed</span>.<span class='ident'>is_err</span>(), <span class='string'>&quot;98765432109876543210 incorrectly considered a valid patch version&quot;</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">parsed</span>.<span class="ident">is_err</span>(), <span class="string">&quot;98765432109876543210 incorrectly considered a valid patch version&quot;</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_basic_prerelease</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3-pre&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_basic_prerelease</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3-pre&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;pre&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;pre&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_prerelease_alphanumeric</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3-alpha1&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_prerelease_alphanumeric</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3-alpha1&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;alpha1&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;alpha1&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_prerelease_zero</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3-pre.0&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_prerelease_zero</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3-pre.0&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;pre&quot;</span>)),
-                                <span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='number'>0</span>)];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;pre&quot;</span>)),
+                                <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="number">0</span>)];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_basic_build</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3+build&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_basic_build</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3+build&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_build</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;build&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_build</span>, <span class='ident'>parsed</span>.<span class='ident'>build</span>);
+        <span class="kw">let</span> <span class="ident">expected_build</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;build&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_build</span>, <span class="ident">parsed</span>.<span class="ident">build</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_build_alphanumeric</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3+build5&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_build_alphanumeric</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3+build5&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_build</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;build5&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_build</span>, <span class='ident'>parsed</span>.<span class='ident'>build</span>);
+        <span class="kw">let</span> <span class="ident">expected_build</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;build5&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_build</span>, <span class="ident">parsed</span>.<span class="ident">build</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_pre_and_build</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3-alpha1+build5&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_pre_and_build</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3-alpha1+build5&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;alpha1&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;alpha1&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
 
-        <span class='kw'>let</span> <span class='ident'>expected_build</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;build5&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_build</span>, <span class='ident'>parsed</span>.<span class='ident'>build</span>);
+        <span class="kw">let</span> <span class="ident">expected_build</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;build5&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_build</span>, <span class="ident">parsed</span>.<span class="ident">build</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_complex_metadata_01</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;1.2.3-1.alpha1.9+build5.7.3aedf  &quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_complex_metadata_01</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;1.2.3-1.alpha1.9+build5.7.3aedf  &quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='number'>1</span>),
-                                <span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;alpha1&quot;</span>)),
-                                <span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='number'>9</span>)];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="number">1</span>),
+                                <span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;alpha1&quot;</span>)),
+                                <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="number">9</span>)];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
 
-        <span class='kw'>let</span> <span class='ident'>expected_build</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;build5&quot;</span>)),
-                                  <span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='number'>7</span>),
-                                  <span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;3aedf&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_build</span>, <span class='ident'>parsed</span>.<span class='ident'>build</span>);
+        <span class="kw">let</span> <span class="ident">expected_build</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;build5&quot;</span>)),
+                                  <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="number">7</span>),
+                                  <span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;3aedf&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_build</span>, <span class="ident">parsed</span>.<span class="ident">build</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_complex_metadata_02</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.4.0-beta.1+0851523&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_complex_metadata_02</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.4.0-beta.1+0851523&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;beta&quot;</span>)),
-                                <span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='number'>1</span>)];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;beta&quot;</span>)),
+                                <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="number">1</span>)];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
 
-        <span class='kw'>let</span> <span class='ident'>expected_build</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;0851523&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_build</span>, <span class='ident'>parsed</span>.<span class='ident'>build</span>);
+        <span class="kw">let</span> <span class="ident">expected_build</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;0851523&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_build</span>, <span class="ident">parsed</span>.<span class="ident">build</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_metadata_overflow</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.4.0-beta.1+98765432109876543210&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_metadata_overflow</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.4.0-beta.1+98765432109876543210&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;beta&quot;</span>)),
-                                <span class='ident'>Identifier</span>::<span class='ident'>Numeric</span>(<span class='number'>1</span>)];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;beta&quot;</span>)),
+                                <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="number">1</span>)];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
 
-        <span class='kw'>let</span> <span class='ident'>expected_build</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;98765432109876543210&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_build</span>, <span class='ident'>parsed</span>.<span class='ident'>build</span>);
+        <span class="kw">let</span> <span class="ident">expected_build</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;98765432109876543210&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_build</span>, <span class="ident">parsed</span>.<span class="ident">build</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>parse_regression_01</span>() {
-        <span class='kw'>let</span> <span class='ident'>version</span> <span class='op'>=</span> <span class='string'>&quot;0.0.0-WIP&quot;</span>;
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">parse_regression_01</span>() {
+        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="string">&quot;0.0.0-WIP&quot;</span>;
 
-        <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>version</span>::<span class='ident'>parse</span>(<span class='ident'>version</span>).<span class='ident'>unwrap</span>();
+        <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>).<span class="ident">unwrap</span>();
 
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='ident'>parsed</span>.<span class='ident'>major</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='ident'>parsed</span>.<span class='ident'>minor</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='number'>0</span>, <span class='ident'>parsed</span>.<span class='ident'>patch</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">parsed</span>.<span class="ident">major</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">parsed</span>.<span class="ident">minor</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">parsed</span>.<span class="ident">patch</span>);
 
-        <span class='kw'>let</span> <span class='ident'>expected_pre</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>Identifier</span>::<span class='ident'>AlphaNumeric</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;WIP&quot;</span>))];
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>expected_pre</span>, <span class='ident'>parsed</span>.<span class='ident'>pre</span>);
+        <span class="kw">let</span> <span class="ident">expected_pre</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;WIP&quot;</span>))];
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected_pre</span>, <span class="ident">parsed</span>.<span class="ident">pre</span>);
     }
 }
 </pre>

@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="https://www.rust-lang.org/favicon.ico">
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -221,185 +221,185 @@
 <span id="176">176</span>
 <span id="177">177</span>
 <span id="178">178</span>
-</pre><pre class='rust '>
-<span class='comment'>// Copyright 2012-2013 The Rust Project Developers. See the COPYRIGHT</span>
-<span class='comment'>// file at the top-level directory of this distribution and at</span>
-<span class='comment'>// http://rust-lang.org/COPYRIGHT.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// Copyright 2012-2013 The Rust Project Developers. See the COPYRIGHT</span>
+<span class="comment">// file at the top-level directory of this distribution and at</span>
+<span class="comment">// http://rust-lang.org/COPYRIGHT.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='doccomment'>//! Semantic version parsing and comparison.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Semantic versioning (see http://semver.org/) is a set of rules for</span>
-<span class='doccomment'>//! assigning version numbers.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ## SemVer overview</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Given a version number MAJOR.MINOR.PATCH, increment the:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! 1. MAJOR version when you make incompatible API changes,</span>
-<span class='doccomment'>//! 2. MINOR version when you add functionality in a backwards-compatible</span>
-<span class='doccomment'>//!    manner, and</span>
-<span class='doccomment'>//! 3. PATCH version when you make backwards-compatible bug fixes.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Additional labels for pre-release and build metadata are available as</span>
-<span class='doccomment'>//! extensions to the MAJOR.MINOR.PATCH format.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Any references to &#39;the spec&#39; in this documentation refer to [version 2.0 of</span>
-<span class='doccomment'>//! the SemVer spec](http://semver.org/spec/v2.0.0.html).</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ## SemVer and the Rust ecosystem</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Rust itself follows the SemVer specification, as does its standard</span>
-<span class='doccomment'>//! libraries. The two are not tied together.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! [Cargo](http://crates.io), Rust&#39;s package manager, uses SemVer to determine</span>
-<span class='doccomment'>//! which versions of packages you need installed.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ## Versions</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! At its simplest, the `semver` crate allows you to construct `Version`</span>
-<span class='doccomment'>//! objects using the `parse` method:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```{rust}</span>
-<span class='doccomment'>//! use semver::Version;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! assert!(Version::parse(&quot;1.2.3&quot;) == Ok(Version {</span>
-<span class='doccomment'>//!    major: 1,</span>
-<span class='doccomment'>//!    minor: 2,</span>
-<span class='doccomment'>//!    patch: 3,</span>
-<span class='doccomment'>//!    pre: vec!(),</span>
-<span class='doccomment'>//!    build: vec!(),</span>
-<span class='doccomment'>//! }));</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! If you have multiple `Version`s, you can use the usual comparison operators</span>
-<span class='doccomment'>//! to compare them:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```{rust}</span>
-<span class='doccomment'>//! use semver::Version;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! assert!(Version::parse(&quot;1.2.3-alpha&quot;) != Version::parse(&quot;1.2.3-beta&quot;));</span>
-<span class='doccomment'>//! assert!(Version::parse(&quot;1.2.3-alpha2&quot;) &gt;  Version::parse(&quot;1.2.0&quot;));</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! If you explicitly need to modify a Version, SemVer also allows you to</span>
-<span class='doccomment'>//! increment the major, minor, and patch numbers in accordance with the spec.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Please note that in order to do this, you must use a mutable Version:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```{rust}</span>
-<span class='doccomment'>//! use semver::Version;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! let mut bugfix_release = Version::parse(&quot;1.0.0&quot;).unwrap();</span>
-<span class='doccomment'>//! bugfix_release.increment_patch();</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! assert_eq!(Ok(bugfix_release), Version::parse(&quot;1.0.1&quot;));</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! When incrementing the minor version number, the patch number resets to zero</span>
-<span class='doccomment'>//! (in accordance with section 7 of the spec)</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```{rust}</span>
-<span class='doccomment'>//! use semver::Version;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! let mut feature_release = Version::parse(&quot;1.4.6&quot;).unwrap();</span>
-<span class='doccomment'>//! feature_release.increment_minor();</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! assert_eq!(Ok(feature_release), Version::parse(&quot;1.5.0&quot;));</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Similarly, when incrementing the major version number, the patch and minor</span>
-<span class='doccomment'>//! numbers reset to zero (in accordance with section 8 of the spec)</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```{rust}</span>
-<span class='doccomment'>//! use semver::Version;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! let mut chrome_release = Version::parse(&quot;41.5.5377&quot;).unwrap();</span>
-<span class='doccomment'>//! chrome_release.increment_major();</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! assert_eq!(Ok(chrome_release), Version::parse(&quot;42.0.0&quot;));</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ## Requirements</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! The `semver` crate also provides the ability to compare requirements, which</span>
-<span class='doccomment'>//! are more complex comparisons.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! For example, creating a requirement that only matches versions greater than</span>
-<span class='doccomment'>//! or equal to 1.0.0:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```{rust}</span>
-<span class='doccomment'>//! # #![allow(unstable)]</span>
-<span class='doccomment'>//! use semver::Version;</span>
-<span class='doccomment'>//! use semver::VersionReq;</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! let r = VersionReq::parse(&quot;&gt;= 1.0.0&quot;).unwrap();</span>
-<span class='doccomment'>//! let v = Version::parse(&quot;1.0.0&quot;).unwrap();</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! assert!(r.to_string() == &quot;&gt;= 1.0.0&quot;.to_string());</span>
-<span class='doccomment'>//! assert!(r.matches(&amp;v))</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! It also allows parsing of `~x.y.z` and `^x.y.z` requirements as defined at</span>
-<span class='doccomment'>//! https://www.npmjs.org/doc/misc/semver.html</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! **Tilde requirements** specify a minimal version with some updates:</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```notrust</span>
-<span class='doccomment'>//! ~1.2.3 := &gt;=1.2.3 &lt;1.3.0</span>
-<span class='doccomment'>//! ~1.2   := &gt;=1.2.0 &lt;1.3.0</span>
-<span class='doccomment'>//! ~1     := &gt;=1.0.0 &lt;2.0.0</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! **Caret requirements** allow SemVer compatible updates to a specified</span>
-<span class='doccomment'>//! verion, `0.x` and `0.x+1` are not considered compatible, but `1.x` and</span>
-<span class='doccomment'>//! `1.x+1` are.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! `0.0.x` is not considered compatible with any other version.</span>
-<span class='doccomment'>//! Missing minor and patch versions are desugared to `0` but allow flexibility</span>
-<span class='doccomment'>//! for that value.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```notrust</span>
-<span class='doccomment'>//! ^1.2.3 := &gt;=1.2.3 &lt;2.0.0</span>
-<span class='doccomment'>//! ^0.2.3 := &gt;=0.2.3 &lt;0.3.0</span>
-<span class='doccomment'>//! ^0.0.3 := &gt;=0.0.3 &lt;0.0.4</span>
-<span class='doccomment'>//! ^0.0   := &gt;=0.0.0 &lt;0.1.0</span>
-<span class='doccomment'>//! ^0     := &gt;=0.0.0 &lt;1.0.0</span>
-<span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! **Wildcard requirements** allows parsing of version requirements of the</span>
-<span class='doccomment'>//! formats `*`, `x.*` and `x.y.*`.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```notrust</span>
-<span class='doccomment'>//! *     := &gt;=0.0.0</span>
-<span class='doccomment'>//! 1.*   := &gt;=1.0.0 &lt;2.0.0</span>
-<span class='doccomment'>//! 1.2.* := &gt;=1.2.0 &lt;1.3.0</span>
-<span class='doccomment'>//! ```</span>
+<span class="doccomment">//! Semantic version parsing and comparison.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Semantic versioning (see http://semver.org/) is a set of rules for</span>
+<span class="doccomment">//! assigning version numbers.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## SemVer overview</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Given a version number MAJOR.MINOR.PATCH, increment the:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! 1. MAJOR version when you make incompatible API changes,</span>
+<span class="doccomment">//! 2. MINOR version when you add functionality in a backwards-compatible</span>
+<span class="doccomment">//!    manner, and</span>
+<span class="doccomment">//! 3. PATCH version when you make backwards-compatible bug fixes.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Additional labels for pre-release and build metadata are available as</span>
+<span class="doccomment">//! extensions to the MAJOR.MINOR.PATCH format.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Any references to &#39;the spec&#39; in this documentation refer to [version 2.0 of</span>
+<span class="doccomment">//! the SemVer spec](http://semver.org/spec/v2.0.0.html).</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## SemVer and the Rust ecosystem</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Rust itself follows the SemVer specification, as does its standard</span>
+<span class="doccomment">//! libraries. The two are not tied together.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! [Cargo](http://crates.io), Rust&#39;s package manager, uses SemVer to determine</span>
+<span class="doccomment">//! which versions of packages you need installed.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Versions</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! At its simplest, the `semver` crate allows you to construct `Version`</span>
+<span class="doccomment">//! objects using the `parse` method:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```{rust}</span>
+<span class="doccomment">//! use semver::Version;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert!(Version::parse(&quot;1.2.3&quot;) == Ok(Version {</span>
+<span class="doccomment">//!    major: 1,</span>
+<span class="doccomment">//!    minor: 2,</span>
+<span class="doccomment">//!    patch: 3,</span>
+<span class="doccomment">//!    pre: vec!(),</span>
+<span class="doccomment">//!    build: vec!(),</span>
+<span class="doccomment">//! }));</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! If you have multiple `Version`s, you can use the usual comparison operators</span>
+<span class="doccomment">//! to compare them:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```{rust}</span>
+<span class="doccomment">//! use semver::Version;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert!(Version::parse(&quot;1.2.3-alpha&quot;) != Version::parse(&quot;1.2.3-beta&quot;));</span>
+<span class="doccomment">//! assert!(Version::parse(&quot;1.2.3-alpha2&quot;) &gt;  Version::parse(&quot;1.2.0&quot;));</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! If you explicitly need to modify a Version, SemVer also allows you to</span>
+<span class="doccomment">//! increment the major, minor, and patch numbers in accordance with the spec.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Please note that in order to do this, you must use a mutable Version:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```{rust}</span>
+<span class="doccomment">//! use semver::Version;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let mut bugfix_release = Version::parse(&quot;1.0.0&quot;).unwrap();</span>
+<span class="doccomment">//! bugfix_release.increment_patch();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert_eq!(Ok(bugfix_release), Version::parse(&quot;1.0.1&quot;));</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! When incrementing the minor version number, the patch number resets to zero</span>
+<span class="doccomment">//! (in accordance with section 7 of the spec)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```{rust}</span>
+<span class="doccomment">//! use semver::Version;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let mut feature_release = Version::parse(&quot;1.4.6&quot;).unwrap();</span>
+<span class="doccomment">//! feature_release.increment_minor();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert_eq!(Ok(feature_release), Version::parse(&quot;1.5.0&quot;));</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Similarly, when incrementing the major version number, the patch and minor</span>
+<span class="doccomment">//! numbers reset to zero (in accordance with section 8 of the spec)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```{rust}</span>
+<span class="doccomment">//! use semver::Version;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let mut chrome_release = Version::parse(&quot;41.5.5377&quot;).unwrap();</span>
+<span class="doccomment">//! chrome_release.increment_major();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert_eq!(Ok(chrome_release), Version::parse(&quot;42.0.0&quot;));</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Requirements</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! The `semver` crate also provides the ability to compare requirements, which</span>
+<span class="doccomment">//! are more complex comparisons.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! For example, creating a requirement that only matches versions greater than</span>
+<span class="doccomment">//! or equal to 1.0.0:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```{rust}</span>
+<span class="doccomment">//! # #![allow(unstable)]</span>
+<span class="doccomment">//! use semver::Version;</span>
+<span class="doccomment">//! use semver::VersionReq;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! let r = VersionReq::parse(&quot;&gt;= 1.0.0&quot;).unwrap();</span>
+<span class="doccomment">//! let v = Version::parse(&quot;1.0.0&quot;).unwrap();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert!(r.to_string() == &quot;&gt;= 1.0.0&quot;.to_string());</span>
+<span class="doccomment">//! assert!(r.matches(&amp;v))</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! It also allows parsing of `~x.y.z` and `^x.y.z` requirements as defined at</span>
+<span class="doccomment">//! https://www.npmjs.org/doc/misc/semver.html</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! **Tilde requirements** specify a minimal version with some updates:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```notrust</span>
+<span class="doccomment">//! ~1.2.3 := &gt;=1.2.3 &lt;1.3.0</span>
+<span class="doccomment">//! ~1.2   := &gt;=1.2.0 &lt;1.3.0</span>
+<span class="doccomment">//! ~1     := &gt;=1.0.0 &lt;2.0.0</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! **Caret requirements** allow SemVer compatible updates to a specified</span>
+<span class="doccomment">//! verion, `0.x` and `0.x+1` are not considered compatible, but `1.x` and</span>
+<span class="doccomment">//! `1.x+1` are.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! `0.0.x` is not considered compatible with any other version.</span>
+<span class="doccomment">//! Missing minor and patch versions are desugared to `0` but allow flexibility</span>
+<span class="doccomment">//! for that value.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```notrust</span>
+<span class="doccomment">//! ^1.2.3 := &gt;=1.2.3 &lt;2.0.0</span>
+<span class="doccomment">//! ^0.2.3 := &gt;=0.2.3 &lt;0.3.0</span>
+<span class="doccomment">//! ^0.0.3 := &gt;=0.0.3 &lt;0.0.4</span>
+<span class="doccomment">//! ^0.0   := &gt;=0.0.0 &lt;0.1.0</span>
+<span class="doccomment">//! ^0     := &gt;=0.0.0 &lt;1.0.0</span>
+<span class="doccomment">//! ```</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! **Wildcard requirements** allows parsing of version requirements of the</span>
+<span class="doccomment">//! formats `*`, `x.*` and `x.y.*`.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```notrust</span>
+<span class="doccomment">//! *     := &gt;=0.0.0</span>
+<span class="doccomment">//! 1.*   := &gt;=1.0.0 &lt;2.0.0</span>
+<span class="doccomment">//! 1.2.* := &gt;=1.2.0 &lt;1.3.0</span>
+<span class="doccomment">//! ```</span>
 
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_logo_url</span> <span class='op'>=</span> <span class='string'>&quot;https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png&quot;</span>,
-       <span class='ident'>html_favicon_url</span> <span class='op'>=</span> <span class='string'>&quot;https://www.rust-lang.org/favicon.ico&quot;</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>deny</span>(<span class='ident'>missing_docs</span>)]</span>
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>test</span>, <span class='ident'>deny</span>(<span class='ident'>warnings</span>))]</span>
+<span class="attribute">#<span class="op">!</span>[<span class="ident">doc</span>(<span class="ident">html_logo_url</span> <span class="op">=</span> <span class="string">&quot;https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png&quot;</span>,
+       <span class="ident">html_favicon_url</span> <span class="op">=</span> <span class="string">&quot;https://www.rust-lang.org/favicon.ico&quot;</span>)]</span>
+<span class="attribute">#<span class="op">!</span>[<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="attribute">#<span class="op">!</span>[<span class="ident">cfg_attr</span>(<span class="ident">test</span>, <span class="ident">deny</span>(<span class="ident">warnings</span>))]</span>
 
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>semver_parser</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">semver_parser</span>;
 
-<span class='comment'>// We take the common approach of keeping our own module system private, and</span>
-<span class='comment'>// just re-exporting the interface that we want.</span>
+<span class="comment">// We take the common approach of keeping our own module system private, and</span>
+<span class="comment">// just re-exporting the interface that we want.</span>
 
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>version</span>::{<span class='ident'>Version</span>, <span class='ident'>Identifier</span>, <span class='ident'>SemVerError</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>version</span>::<span class='ident'>Identifier</span>::{<span class='ident'>Numeric</span>, <span class='ident'>AlphaNumeric</span>};
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='ident'>version_req</span>::{<span class='ident'>VersionReq</span>, <span class='ident'>ReqParseError</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">version</span>::{<span class="ident">Version</span>, <span class="ident">Identifier</span>, <span class="ident">SemVerError</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">version</span>::<span class="ident">Identifier</span>::{<span class="ident">Numeric</span>, <span class="ident">AlphaNumeric</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">version_req</span>::{<span class="ident">VersionReq</span>, <span class="ident">ReqParseError</span>};
 
-<span class='comment'>// SemVer-compliant versions.</span>
-<span class='kw'>mod</span> <span class='ident'>version</span>;
+<span class="comment">// SemVer-compliant versions.</span>
+<span class="kw">mod</span> <span class="ident">version</span>;
 
-<span class='comment'>// advanced version comparisons</span>
-<span class='kw'>mod</span> <span class='ident'>version_req</span>;
+<span class="comment">// advanced version comparisons</span>
+<span class="kw">mod</span> <span class="ident">version_req</span>;
 </pre>
 </section>
     <section id='search' class="content hidden"></section>

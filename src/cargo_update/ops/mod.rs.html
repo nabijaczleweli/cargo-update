@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -432,393 +432,393 @@
 <span id="387">387</span>
 <span id="388">388</span>
 <span id="389">389</span>
-</pre><pre class='rust '>
-<span class='doccomment'>//! Main functions doing actual work.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Use `installed_main_repo_packages()` to list the installed packages,</span>
-<span class='doccomment'>//! then use `intersect_packages()` to confirm which ones should be updated,</span>
-<span class='doccomment'>//! poll the packages&#39; latest versions by calling `MainRepoPackage::pull_version` on them,</span>
-<span class='doccomment'>//! continue with doing whatever you wish.</span>
+</pre><pre class="rust ">
+<span class="doccomment">//! Main functions doing actual work.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Use `installed_main_repo_packages()` to list the installed packages,</span>
+<span class="doccomment">//! then use `intersect_packages()` to confirm which ones should be updated,</span>
+<span class="doccomment">//! poll the packages&#39; latest versions by calling `MainRepoPackage::pull_version` on them,</span>
+<span class="doccomment">//! continue with doing whatever you wish.</span>
 
 
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>path</span>::{<span class='ident'>PathBuf</span>, <span class='ident'>Path</span>};
-<span class='kw'>use</span> <span class='ident'>semver</span>::<span class='ident'>Version</span> <span class='kw'>as</span> <span class='ident'>Semver</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::{<span class='self'>self</span>, <span class='ident'>File</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::<span class='ident'>Read</span>;
-<span class='kw'>use</span> <span class='ident'>regex</span>::<span class='ident'>Regex</span>;
-<span class='kw'>use</span> <span class='ident'>toml</span>;
-<span class='kw'>use</span> <span class='ident'>json</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::{<span class="ident">PathBuf</span>, <span class="ident">Path</span>};
+<span class="kw">use</span> <span class="ident">semver</span>::<span class="ident">Version</span> <span class="kw">as</span> <span class="ident">Semver</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::{<span class="self">self</span>, <span class="ident">File</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
+<span class="kw">use</span> <span class="ident">regex</span>::<span class="ident">Regex</span>;
+<span class="kw">use</span> <span class="ident">toml</span>;
+<span class="kw">use</span> <span class="ident">json</span>;
 
-<span class='kw'>mod</span> <span class='ident'>config</span>;
+<span class="kw">mod</span> <span class="ident">config</span>;
 
-<span class='kw'>pub</span> <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>config</span>::<span class='kw-2'>*</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">config</span>::<span class="kw-2">*</span>;
 
 
-<span class='macro'>lazy_static</span><span class='macro'>!</span> {
-    <span class='kw'>static</span> <span class='kw-2'>ref</span> <span class='ident'>PACKAGE_RGX</span>: <span class='ident'>Regex</span> <span class='op'>=</span> <span class='ident'>Regex</span>::<span class='ident'>new</span>(<span class='string'>r&quot;([^\s]+) ([^\s]+) \(([^+\s]+)+\+([^\s]+)\)&quot;</span>).<span class='ident'>unwrap</span>();
+<span class="macro">lazy_static</span><span class="macro">!</span> {
+    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">PACKAGE_RGX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;([^\s]+) ([^\s]+) \(([^+\s]+)+\+([^\s]+)\)&quot;</span>).<span class="ident">unwrap</span>();
 }
 
 
-<span class='doccomment'>/// A representation of a package from the main [`crates.io`](https://crates.io) repository.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The newest version of a package is pulled from [`crates.io`](https://crates.io) via `pull_version()`.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The `parse()` function parses the format used in `$HOME/.cargo/.crates.toml`.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # extern crate cargo_update;</span>
-<span class='doccomment'>/// # extern crate semver;</span>
-<span class='doccomment'>/// # use cargo_update::ops::{MainRepoPackage, get_index_path};</span>
-<span class='doccomment'>/// # use semver::Version as Semver;</span>
-<span class='doccomment'>/// # use std::fs::{self, File};</span>
-<span class='doccomment'>/// # use std::io::Write;</span>
-<span class='doccomment'>/// # use std::env;</span>
-<span class='doccomment'>/// # fn main() {</span>
-<span class='doccomment'>/// # let mut cargo_dir = env::temp_dir();</span>
-<span class='doccomment'>/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-<span class='doccomment'>/// # cargo_dir.push(&quot;MainRepoPackage-0&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-<span class='doccomment'>/// # File::create([&quot;registry&quot;, &quot;index&quot;, &quot;github.com-1ecc6299db9ec823&quot;, &quot;ra&quot;, &quot;ce&quot;].into_iter()</span>
-<span class='doccomment'>/// #     .fold(cargo_dir.clone(), |pb, chunk| {</span>
-<span class='doccomment'>/// #         let _ = fs::create_dir(pb.join(chunk));</span>
-<span class='doccomment'>/// #         pb.join(chunk)</span>
-<span class='doccomment'>/// #     }).join(&quot;racer&quot;))</span>
-<span class='doccomment'>/// # .unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;, &quot;yanked&quot;: false}&quot;#).unwrap();</span>
-<span class='doccomment'>/// let registry = get_index_path(&amp;cargo_dir);</span>
-<span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
-<span class='doccomment'>/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
-<span class='doccomment'>/// assert_eq!(package,</span>
-<span class='doccomment'>///            MainRepoPackage {</span>
-<span class='doccomment'>///                name: &quot;racer&quot;.to_string(),</span>
-<span class='doccomment'>///                version: Some(Semver::parse(&quot;1.2.10&quot;).unwrap()),</span>
-<span class='doccomment'>///                newest_version: None,</span>
-<span class='doccomment'>///            });</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// package.pull_version(&amp;registry);</span>
-<span class='doccomment'>/// assert!(package.newest_version.is_some());</span>
-<span class='doccomment'>/// # }</span>
-<span class='doccomment'>/// ```</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Hash</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>MainRepoPackage</span> {
-    <span class='doccomment'>/// The package&#39;s name.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Go to `https://crates.io/crates/{name}` to get the crate info.</span>
-    <span class='kw'>pub</span> <span class='ident'>name</span>: <span class='ident'>String</span>,
-    <span class='doccomment'>/// The package&#39;s locally installed version.</span>
-    <span class='kw'>pub</span> <span class='ident'>version</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Semver</span><span class='op'>&gt;</span>,
-    <span class='doccomment'>/// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// `None` by default, acquire via `MainRepoPackage::pull_version()`.</span>
-    <span class='kw'>pub</span> <span class='ident'>newest_version</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Semver</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// A representation of a package from the main [`crates.io`](https://crates.io) repository.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The newest version of a package is pulled from [`crates.io`](https://crates.io) via `pull_version()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `parse()` function parses the format used in `$HOME/.cargo/.crates.toml`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # extern crate cargo_update;</span>
+<span class="doccomment">/// # extern crate semver;</span>
+<span class="doccomment">/// # use cargo_update::ops::{MainRepoPackage, get_index_path};</span>
+<span class="doccomment">/// # use semver::Version as Semver;</span>
+<span class="doccomment">/// # use std::fs::{self, File};</span>
+<span class="doccomment">/// # use std::io::Write;</span>
+<span class="doccomment">/// # use std::env;</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// # let mut cargo_dir = env::temp_dir();</span>
+<span class="doccomment">/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class="doccomment">/// # cargo_dir.push(&quot;MainRepoPackage-0&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class="doccomment">/// # File::create([&quot;registry&quot;, &quot;index&quot;, &quot;github.com-1ecc6299db9ec823&quot;, &quot;ra&quot;, &quot;ce&quot;].into_iter()</span>
+<span class="doccomment">/// #     .fold(cargo_dir.clone(), |pb, chunk| {</span>
+<span class="doccomment">/// #         let _ = fs::create_dir(pb.join(chunk));</span>
+<span class="doccomment">/// #         pb.join(chunk)</span>
+<span class="doccomment">/// #     }).join(&quot;racer&quot;))</span>
+<span class="doccomment">/// # .unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;, &quot;yanked&quot;: false}&quot;#).unwrap();</span>
+<span class="doccomment">/// let registry = get_index_path(&amp;cargo_dir);</span>
+<span class="doccomment">/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
+<span class="doccomment">/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
+<span class="doccomment">/// assert_eq!(package,</span>
+<span class="doccomment">///            MainRepoPackage {</span>
+<span class="doccomment">///                name: &quot;racer&quot;.to_string(),</span>
+<span class="doccomment">///                version: Some(Semver::parse(&quot;1.2.10&quot;).unwrap()),</span>
+<span class="doccomment">///                newest_version: None,</span>
+<span class="doccomment">///            });</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// package.pull_version(&amp;registry);</span>
+<span class="doccomment">/// assert!(package.newest_version.is_some());</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MainRepoPackage</span> {
+    <span class="doccomment">/// The package&#39;s name.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Go to `https://crates.io/crates/{name}` to get the crate info.</span>
+    <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The package&#39;s locally installed version.</span>
+    <span class="kw">pub</span> <span class="ident">version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `None` by default, acquire via `MainRepoPackage::pull_version()`.</span>
+    <span class="kw">pub</span> <span class="ident">newest_version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>MainRepoPackage</span> {
-    <span class='doccomment'>/// Try to decypher a package descriptor into a `MainRepoPackage`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Will return `None` if:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>///   * the given package descriptor is invalid, or</span>
-    <span class='doccomment'>///   * the package descriptor is not from the main [`crates.io`](https://crates.io) registry.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// In the returned instance, `newest_version` is always `None`, get it via `MainRepoPackage::pull_version()`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Main repository packages:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # extern crate cargo_update;</span>
-    <span class='doccomment'>/// # extern crate semver;</span>
-    <span class='doccomment'>/// # use cargo_update::ops::MainRepoPackage;</span>
-    <span class='doccomment'>/// # use semver::Version as Semver;</span>
-    <span class='doccomment'>/// # fn main() {</span>
-    <span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
-    <span class='doccomment'>/// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),</span>
-    <span class='doccomment'>///            MainRepoPackage {</span>
-    <span class='doccomment'>///                name: &quot;racer&quot;.to_string(),</span>
-    <span class='doccomment'>///                version: Some(Semver::parse(&quot;1.2.10&quot;).unwrap()),</span>
-    <span class='doccomment'>///                newest_version: None,</span>
-    <span class='doccomment'>///            });</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// let package_s = &quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
-    <span class='doccomment'>/// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),</span>
-    <span class='doccomment'>///            MainRepoPackage {</span>
-    <span class='doccomment'>///                name: &quot;cargo-outdated&quot;.to_string(),</span>
-    <span class='doccomment'>///                version: Some(Semver::parse(&quot;0.2.0&quot;).unwrap()),</span>
-    <span class='doccomment'>///                newest_version: None,</span>
-    <span class='doccomment'>///            });</span>
-    <span class='doccomment'>/// # }</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Git repository:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # use cargo_update::ops::MainRepoPackage;</span>
-    <span class='doccomment'>/// let package_s = &quot;treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#v0.2.1)&quot;;</span>
-    <span class='doccomment'>/// assert!(MainRepoPackage::parse(package_s).is_none());</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>parse</span>(<span class='ident'>what</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>MainRepoPackage</span><span class='op'>&gt;</span> {
-        <span class='ident'>PACKAGE_RGX</span>.<span class='ident'>captures</span>(<span class='ident'>what</span>).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='kw'>if</span> <span class='ident'>c</span>.<span class='ident'>get</span>(<span class='number'>3</span>).<span class='ident'>unwrap</span>().<span class='ident'>as_str</span>() <span class='op'>==</span> <span class='string'>&quot;registry&quot;</span> {
-            <span class='prelude-val'>Some</span>(<span class='ident'>MainRepoPackage</span> {
-                <span class='ident'>name</span>: <span class='ident'>c</span>.<span class='ident'>get</span>(<span class='number'>1</span>).<span class='ident'>unwrap</span>().<span class='ident'>as_str</span>().<span class='ident'>to_string</span>(),
-                <span class='ident'>version</span>: <span class='prelude-val'>Some</span>(<span class='ident'>Semver</span>::<span class='ident'>parse</span>(<span class='ident'>c</span>.<span class='ident'>get</span>(<span class='number'>2</span>).<span class='ident'>unwrap</span>().<span class='ident'>as_str</span>()).<span class='ident'>unwrap</span>()),
-                <span class='ident'>newest_version</span>: <span class='prelude-val'>None</span>,
+<span class="kw">impl</span> <span class="ident">MainRepoPackage</span> {
+    <span class="doccomment">/// Try to decypher a package descriptor into a `MainRepoPackage`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Will return `None` if:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * the given package descriptor is invalid, or</span>
+    <span class="doccomment">///   * the package descriptor is not from the main [`crates.io`](https://crates.io) registry.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In the returned instance, `newest_version` is always `None`, get it via `MainRepoPackage::pull_version()`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Main repository packages:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # extern crate cargo_update;</span>
+    <span class="doccomment">/// # extern crate semver;</span>
+    <span class="doccomment">/// # use cargo_update::ops::MainRepoPackage;</span>
+    <span class="doccomment">/// # use semver::Version as Semver;</span>
+    <span class="doccomment">/// # fn main() {</span>
+    <span class="doccomment">/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
+    <span class="doccomment">/// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),</span>
+    <span class="doccomment">///            MainRepoPackage {</span>
+    <span class="doccomment">///                name: &quot;racer&quot;.to_string(),</span>
+    <span class="doccomment">///                version: Some(Semver::parse(&quot;1.2.10&quot;).unwrap()),</span>
+    <span class="doccomment">///                newest_version: None,</span>
+    <span class="doccomment">///            });</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let package_s = &quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
+    <span class="doccomment">/// assert_eq!(MainRepoPackage::parse(package_s).unwrap(),</span>
+    <span class="doccomment">///            MainRepoPackage {</span>
+    <span class="doccomment">///                name: &quot;cargo-outdated&quot;.to_string(),</span>
+    <span class="doccomment">///                version: Some(Semver::parse(&quot;0.2.0&quot;).unwrap()),</span>
+    <span class="doccomment">///                newest_version: None,</span>
+    <span class="doccomment">///            });</span>
+    <span class="doccomment">/// # }</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Git repository:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use cargo_update::ops::MainRepoPackage;</span>
+    <span class="doccomment">/// let package_s = &quot;treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#v0.2.1)&quot;;</span>
+    <span class="doccomment">/// assert!(MainRepoPackage::parse(package_s).is_none());</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">what</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span> {
+        <span class="ident">PACKAGE_RGX</span>.<span class="ident">captures</span>(<span class="ident">what</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">get</span>(<span class="number">3</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>() <span class="op">==</span> <span class="string">&quot;registry&quot;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">MainRepoPackage</span> {
+                <span class="ident">name</span>: <span class="ident">c</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_string</span>(),
+                <span class="ident">version</span>: <span class="prelude-val">Some</span>(<span class="ident">Semver</span>::<span class="ident">parse</span>(<span class="ident">c</span>.<span class="ident">get</span>(<span class="number">2</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>()).<span class="ident">unwrap</span>()),
+                <span class="ident">newest_version</span>: <span class="prelude-val">None</span>,
             })
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">None</span>
         })
     }
 
-    <span class='doccomment'>/// Download the version list for this crate off the main [`crates.io`](https://crates.io) registry.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # use cargo_update::ops::{MainRepoPackage, get_index_path};</span>
-    <span class='doccomment'>/// # use std::fs::{self, File};</span>
-    <span class='doccomment'>/// # use std::io::Write;</span>
-    <span class='doccomment'>/// # use std::env;</span>
-    <span class='doccomment'>/// # let mut cargo_dir = env::temp_dir();</span>
-    <span class='doccomment'>/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
-    <span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-    <span class='doccomment'>/// # cargo_dir.push(&quot;MainRepoPackage-pull_version-0&quot;);</span>
-    <span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-    <span class='doccomment'>/// # File::create([&quot;registry&quot;, &quot;index&quot;, &quot;github.com-1ecc6299db9ec823&quot;, &quot;ra&quot;, &quot;ce&quot;].into_iter()</span>
-    <span class='doccomment'>/// #     .fold(cargo_dir.clone(), |pb, chunk| {</span>
-    <span class='doccomment'>/// #         let _ = fs::create_dir(pb.join(chunk));</span>
-    <span class='doccomment'>/// #         pb.join(chunk)</span>
-    <span class='doccomment'>/// #     }).join(&quot;racer&quot;))</span>
-    <span class='doccomment'>/// # .unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;, &quot;yanked&quot;: false}&quot;#).unwrap();</span>
-    <span class='doccomment'>/// let registry = get_index_path(&amp;cargo_dir);</span>
-    <span class='doccomment'>/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
-    <span class='doccomment'>/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
-    <span class='doccomment'>/// package.pull_version(&amp;registry);</span>
-    <span class='doccomment'>/// assert!(package.newest_version.is_some());</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pull_version</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>registry</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) {
-        <span class='kw'>let</span> <span class='ident'>vers</span> <span class='op'>=</span> <span class='ident'>crate_versions</span>(<span class='kw-2'>&amp;</span><span class='ident'>find_package_data</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>name</span>, <span class='ident'>registry</span>).<span class='ident'>unwrap</span>());
-        <span class='self'>self</span>.<span class='ident'>newest_version</span> <span class='op'>=</span> <span class='ident'>vers</span>.<span class='ident'>into_iter</span>().<span class='ident'>max</span>();
+    <span class="doccomment">/// Download the version list for this crate off the main [`crates.io`](https://crates.io) registry.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # use cargo_update::ops::{MainRepoPackage, get_index_path};</span>
+    <span class="doccomment">/// # use std::fs::{self, File};</span>
+    <span class="doccomment">/// # use std::io::Write;</span>
+    <span class="doccomment">/// # use std::env;</span>
+    <span class="doccomment">/// # let mut cargo_dir = env::temp_dir();</span>
+    <span class="doccomment">/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
+    <span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+    <span class="doccomment">/// # cargo_dir.push(&quot;MainRepoPackage-pull_version-0&quot;);</span>
+    <span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+    <span class="doccomment">/// # File::create([&quot;registry&quot;, &quot;index&quot;, &quot;github.com-1ecc6299db9ec823&quot;, &quot;ra&quot;, &quot;ce&quot;].into_iter()</span>
+    <span class="doccomment">/// #     .fold(cargo_dir.clone(), |pb, chunk| {</span>
+    <span class="doccomment">/// #         let _ = fs::create_dir(pb.join(chunk));</span>
+    <span class="doccomment">/// #         pb.join(chunk)</span>
+    <span class="doccomment">/// #     }).join(&quot;racer&quot;))</span>
+    <span class="doccomment">/// # .unwrap().write_all(br#&quot;{&quot;vers&quot;: &quot;1.2.10&quot;, &quot;yanked&quot;: false}&quot;#).unwrap();</span>
+    <span class="doccomment">/// let registry = get_index_path(&amp;cargo_dir);</span>
+    <span class="doccomment">/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
+    <span class="doccomment">/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
+    <span class="doccomment">/// package.pull_version(&amp;registry);</span>
+    <span class="doccomment">/// assert!(package.newest_version.is_some());</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pull_version</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">registry</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) {
+        <span class="kw">let</span> <span class="ident">vers</span> <span class="op">=</span> <span class="ident">crate_versions</span>(<span class="kw-2">&amp;</span><span class="ident">find_package_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>, <span class="ident">registry</span>).<span class="ident">unwrap</span>());
+        <span class="self">self</span>.<span class="ident">newest_version</span> <span class="op">=</span> <span class="ident">vers</span>.<span class="ident">into_iter</span>().<span class="ident">max</span>();
     }
 
-    <span class='doccomment'>/// Check whether this package needs to be installed</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// # Examples</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>/// # extern crate cargo_update;</span>
-    <span class='doccomment'>/// # extern crate semver;</span>
-    <span class='doccomment'>/// # use cargo_update::ops::MainRepoPackage;</span>
-    <span class='doccomment'>/// # use semver::Version as Semver;</span>
-    <span class='doccomment'>/// # fn main() {</span>
-    <span class='doccomment'>/// assert!(MainRepoPackage {</span>
-    <span class='doccomment'>///             name: &quot;racer&quot;.to_string(),</span>
-    <span class='doccomment'>///             version: Some(Semver::parse(&quot;1.7.2&quot;).unwrap()),</span>
-    <span class='doccomment'>///             newest_version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
-    <span class='doccomment'>///         }.needs_update());</span>
-    <span class='doccomment'>/// assert!(MainRepoPackage {</span>
-    <span class='doccomment'>///             name: &quot;racer&quot;.to_string(),</span>
-    <span class='doccomment'>///             version: None,</span>
-    <span class='doccomment'>///             newest_version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
-    <span class='doccomment'>///         }.needs_update());</span>
-    <span class='doccomment'>/// assert!(!MainRepoPackage {</span>
-    <span class='doccomment'>///             name: &quot;racer&quot;.to_string(),</span>
-    <span class='doccomment'>///             version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
-    <span class='doccomment'>///             newest_version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
-    <span class='doccomment'>///         }.needs_update());</span>
-    <span class='doccomment'>/// # }</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>needs_update</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>version</span>.<span class='ident'>is_none</span>() <span class='op'>||</span> <span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>version</span>.<span class='ident'>as_ref</span>().<span class='ident'>unwrap</span>() <span class='op'>&lt;</span> <span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>newest_version</span>.<span class='ident'>as_ref</span>().<span class='ident'>unwrap</span>()
+    <span class="doccomment">/// Check whether this package needs to be installed</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// # extern crate cargo_update;</span>
+    <span class="doccomment">/// # extern crate semver;</span>
+    <span class="doccomment">/// # use cargo_update::ops::MainRepoPackage;</span>
+    <span class="doccomment">/// # use semver::Version as Semver;</span>
+    <span class="doccomment">/// # fn main() {</span>
+    <span class="doccomment">/// assert!(MainRepoPackage {</span>
+    <span class="doccomment">///             name: &quot;racer&quot;.to_string(),</span>
+    <span class="doccomment">///             version: Some(Semver::parse(&quot;1.7.2&quot;).unwrap()),</span>
+    <span class="doccomment">///             newest_version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
+    <span class="doccomment">///         }.needs_update());</span>
+    <span class="doccomment">/// assert!(MainRepoPackage {</span>
+    <span class="doccomment">///             name: &quot;racer&quot;.to_string(),</span>
+    <span class="doccomment">///             version: None,</span>
+    <span class="doccomment">///             newest_version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
+    <span class="doccomment">///         }.needs_update());</span>
+    <span class="doccomment">/// assert!(!MainRepoPackage {</span>
+    <span class="doccomment">///             name: &quot;racer&quot;.to_string(),</span>
+    <span class="doccomment">///             version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
+    <span class="doccomment">///             newest_version: Some(Semver::parse(&quot;2.0.6&quot;).unwrap()),</span>
+    <span class="doccomment">///         }.needs_update());</span>
+    <span class="doccomment">/// # }</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">needs_update</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">version</span>.<span class="ident">is_none</span>() <span class="op">||</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">&lt;</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">newest_version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
     }
 }
 
 
-<span class='doccomment'>/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file</span>
-<span class='doccomment'>/// parallel to the specified crates file up to the final one.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::resolve_crates_file;</span>
-<span class='doccomment'>/// # use std::env::temp_dir;</span>
-<span class='doccomment'>/// # let crates_file = temp_dir().join(&quot;.crates.toml&quot;);</span>
-<span class='doccomment'>/// let crates_file = resolve_crates_file(crates_file);</span>
-<span class='doccomment'>/// # let _ = crates_file;</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>resolve_crates_file</span>(<span class='ident'>crates_file</span>: <span class='ident'>PathBuf</span>) <span class='op'>-&gt;</span> <span class='ident'>PathBuf</span> {
-    <span class='kw'>let</span> <span class='ident'>config_file</span> <span class='op'>=</span> <span class='ident'>crates_file</span>.<span class='ident'>with_file_name</span>(<span class='string'>&quot;config&quot;</span>);
-    <span class='kw'>if</span> <span class='ident'>config_file</span>.<span class='ident'>exists</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>crates</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-        <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='kw-2'>&amp;</span><span class='ident'>config_file</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>crates</span>).<span class='ident'>unwrap</span>();
+<span class="doccomment">/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file</span>
+<span class="doccomment">/// parallel to the specified crates file up to the final one.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::resolve_crates_file;</span>
+<span class="doccomment">/// # use std::env::temp_dir;</span>
+<span class="doccomment">/// # let crates_file = temp_dir().join(&quot;.crates.toml&quot;);</span>
+<span class="doccomment">/// let crates_file = resolve_crates_file(crates_file);</span>
+<span class="doccomment">/// # let _ = crates_file;</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve_crates_file</span>(<span class="ident">crates_file</span>: <span class="ident">PathBuf</span>) <span class="op">-&gt;</span> <span class="ident">PathBuf</span> {
+    <span class="kw">let</span> <span class="ident">config_file</span> <span class="op">=</span> <span class="ident">crates_file</span>.<span class="ident">with_file_name</span>(<span class="string">&quot;config&quot;</span>);
+    <span class="kw">if</span> <span class="ident">config_file</span>.<span class="ident">exists</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crates</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+        <span class="ident">File</span>::<span class="ident">open</span>(<span class="kw-2">&amp;</span><span class="ident">config_file</span>).<span class="ident">unwrap</span>().<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">crates</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>idir</span>) <span class='op'>=</span> <span class='ident'>toml</span>::<span class='ident'>from_str</span>::<span class='op'>&lt;</span><span class='ident'>toml</span>::<span class='ident'>Value</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>crates</span>)
-            .<span class='ident'>unwrap</span>()
-            .<span class='ident'>get</span>(<span class='string'>&quot;install&quot;</span>)
-            .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>as_table</span>())
-            .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>get</span>(<span class='string'>&quot;root&quot;</span>))
-            .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>as_str</span>()) {
-            <span class='kw'>return</span> <span class='ident'>resolve_crates_file</span>(<span class='ident'>Path</span>::<span class='ident'>new</span>(<span class='ident'>idir</span>).<span class='ident'>join</span>(<span class='string'>&quot;.crates.toml&quot;</span>));
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">idir</span>) <span class="op">=</span> <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">crates</span>)
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">get</span>(<span class="string">&quot;install&quot;</span>)
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">as_table</span>())
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">get</span>(<span class="string">&quot;root&quot;</span>))
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">as_str</span>()) {
+            <span class="kw">return</span> <span class="ident">resolve_crates_file</span>(<span class="ident">Path</span>::<span class="ident">new</span>(<span class="ident">idir</span>).<span class="ident">join</span>(<span class="string">&quot;.crates.toml&quot;</span>));
         }
     }
-    <span class='ident'>crates_file</span>
+    <span class="ident">crates_file</span>
 }
 
-<span class='doccomment'>/// List the installed packages at the specified location that originate</span>
-<span class='doccomment'>/// from the main [`crates.io`](https://crates.io) registry.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// If the `.crates.toml` file doesn&#39;t exist an empty vector is returned.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::installed_main_repo_packages;</span>
-<span class='doccomment'>/// # use std::env::temp_dir;</span>
-<span class='doccomment'>/// # let cargo_dir = temp_dir().join(&quot;.crates.toml&quot;);</span>
-<span class='doccomment'>/// let packages = installed_main_repo_packages(&amp;cargo_dir);</span>
-<span class='doccomment'>/// for package in &amp;packages {</span>
-<span class='doccomment'>///     println!(&quot;{} v{}&quot;, package.name, package.version.as_ref().unwrap());</span>
-<span class='doccomment'>/// }</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>installed_main_repo_packages</span>(<span class='ident'>crates_file</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>MainRepoPackage</span><span class='op'>&gt;</span> {
-    <span class='kw'>if</span> <span class='ident'>crates_file</span>.<span class='ident'>exists</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>crates</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-        <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>crates_file</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>crates</span>).<span class='ident'>unwrap</span>();
+<span class="doccomment">/// List the installed packages at the specified location that originate</span>
+<span class="doccomment">/// from the main [`crates.io`](https://crates.io) registry.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the `.crates.toml` file doesn&#39;t exist an empty vector is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::installed_main_repo_packages;</span>
+<span class="doccomment">/// # use std::env::temp_dir;</span>
+<span class="doccomment">/// # let cargo_dir = temp_dir().join(&quot;.crates.toml&quot;);</span>
+<span class="doccomment">/// let packages = installed_main_repo_packages(&amp;cargo_dir);</span>
+<span class="doccomment">/// for package in &amp;packages {</span>
+<span class="doccomment">///     println!(&quot;{} v{}&quot;, package.name, package.version.as_ref().unwrap());</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">installed_main_repo_packages</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">crates_file</span>.<span class="ident">exists</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crates</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+        <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">crates_file</span>).<span class="ident">unwrap</span>().<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">crates</span>).<span class="ident">unwrap</span>();
 
-        <span class='ident'>toml</span>::<span class='ident'>from_str</span>::<span class='op'>&lt;</span><span class='ident'>toml</span>::<span class='ident'>Value</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='ident'>crates</span>).<span class='ident'>unwrap</span>()[<span class='string'>&quot;v1&quot;</span>].<span class='ident'>as_table</span>().<span class='ident'>unwrap</span>().<span class='ident'>keys</span>().<span class='ident'>flat_map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='ident'>MainRepoPackage</span>::<span class='ident'>parse</span>(<span class='ident'>s</span>)).<span class='ident'>collect</span>()
-    } <span class='kw'>else</span> {
-        <span class='ident'>Vec</span>::<span class='ident'>new</span>()
+        <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">crates</span>).<span class="ident">unwrap</span>()[<span class="string">&quot;v1&quot;</span>].<span class="ident">as_table</span>().<span class="ident">unwrap</span>().<span class="ident">keys</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">MainRepoPackage</span>::<span class="ident">parse</span>(<span class="ident">s</span>)).<span class="ident">collect</span>()
+    } <span class="kw">else</span> {
+        <span class="ident">Vec</span>::<span class="ident">new</span>()
     }
 }
 
-<span class='doccomment'>/// Filter out the installed packages not specified to be updated.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// List installed packages with `installed_main_repo_packages()`.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::{MainRepoPackage, intersect_packages};</span>
-<span class='doccomment'>/// # fn installed_main_repo_packages(_: &amp;()) {}</span>
-<span class='doccomment'>/// # let cargo_dir = ();</span>
-<span class='doccomment'>/// # let packages_to_update = [&quot;racer&quot;.to_string(), &quot;cargo-outdated&quot;.to_string()];</span>
-<span class='doccomment'>/// let mut installed_packages = installed_main_repo_packages(&amp;cargo_dir);</span>
-<span class='doccomment'>/// # let mut installed_packages =</span>
-<span class='doccomment'>/// #     vec![MainRepoPackage::parse(&quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
-<span class='doccomment'>/// #          MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
-<span class='doccomment'>/// #          MainRepoPackage::parse(&quot;rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap()];</span>
-<span class='doccomment'>/// installed_packages = intersect_packages(installed_packages, &amp;packages_to_update, false);</span>
-<span class='doccomment'>/// # assert_eq!(&amp;installed_packages,</span>
-<span class='doccomment'>/// #   &amp;[MainRepoPackage::parse(&quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
-<span class='doccomment'>/// #     MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap()]);</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>intersect_packages</span>(<span class='ident'>installed</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>MainRepoPackage</span><span class='op'>&gt;</span>, <span class='ident'>to_update</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>String</span>], <span class='ident'>allow_installs</span>: <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>MainRepoPackage</span><span class='op'>&gt;</span> {
-    <span class='ident'>installed</span>.<span class='ident'>iter</span>()
-        .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>to_update</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>p</span>.<span class='ident'>name</span>))
-        .<span class='ident'>cloned</span>()
-        .<span class='ident'>chain</span>(<span class='ident'>to_update</span>.<span class='ident'>iter</span>().<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>allow_installs</span> <span class='op'>&amp;&amp;</span> <span class='ident'>installed</span>.<span class='ident'>iter</span>().<span class='ident'>find</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='ident'>i</span>.<span class='ident'>name</span> <span class='op'>==</span> <span class='kw-2'>*</span><span class='kw-2'>*</span><span class='ident'>p</span>).<span class='ident'>is_none</span>()).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> {
-            <span class='ident'>MainRepoPackage</span> {
-                <span class='ident'>name</span>: <span class='ident'>p</span>.<span class='ident'>clone</span>(),
-                <span class='ident'>version</span>: <span class='prelude-val'>None</span>,
-                <span class='ident'>newest_version</span>: <span class='prelude-val'>None</span>,
+<span class="doccomment">/// Filter out the installed packages not specified to be updated.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// List installed packages with `installed_main_repo_packages()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::{MainRepoPackage, intersect_packages};</span>
+<span class="doccomment">/// # fn installed_main_repo_packages(_: &amp;()) {}</span>
+<span class="doccomment">/// # let cargo_dir = ();</span>
+<span class="doccomment">/// # let packages_to_update = [&quot;racer&quot;.to_string(), &quot;cargo-outdated&quot;.to_string()];</span>
+<span class="doccomment">/// let mut installed_packages = installed_main_repo_packages(&amp;cargo_dir);</span>
+<span class="doccomment">/// # let mut installed_packages =</span>
+<span class="doccomment">/// #     vec![MainRepoPackage::parse(&quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
+<span class="doccomment">/// #          MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
+<span class="doccomment">/// #          MainRepoPackage::parse(&quot;rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap()];</span>
+<span class="doccomment">/// installed_packages = intersect_packages(installed_packages, &amp;packages_to_update, false);</span>
+<span class="doccomment">/// # assert_eq!(&amp;installed_packages,</span>
+<span class="doccomment">/// #   &amp;[MainRepoPackage::parse(&quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
+<span class="doccomment">/// #     MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap()]);</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intersect_packages</span>(<span class="ident">installed</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span>, <span class="ident">to_update</span>: <span class="kw-2">&amp;</span>[<span class="ident">String</span>], <span class="ident">allow_installs</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span> {
+    <span class="ident">installed</span>.<span class="ident">iter</span>()
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">to_update</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">name</span>))
+        .<span class="ident">cloned</span>()
+        .<span class="ident">chain</span>(<span class="ident">to_update</span>.<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">allow_installs</span> <span class="op">&amp;&amp;</span> <span class="ident">installed</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">name</span> <span class="op">==</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">p</span>).<span class="ident">is_none</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> {
+            <span class="ident">MainRepoPackage</span> {
+                <span class="ident">name</span>: <span class="ident">p</span>.<span class="ident">clone</span>(),
+                <span class="ident">version</span>: <span class="prelude-val">None</span>,
+                <span class="ident">newest_version</span>: <span class="prelude-val">None</span>,
             }
         }))
-        .<span class='ident'>collect</span>()
+        .<span class="ident">collect</span>()
 }
 
-<span class='doccomment'>/// Parse the raw crate descriptor from the repository into a collection of `Semver`s.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::crate_versions;</span>
-<span class='doccomment'>/// # use std::path::PathBuf;</span>
-<span class='doccomment'>/// # let desc_path = PathBuf::from(&quot;test-data/checksums-versions.json&quot;);</span>
-<span class='doccomment'>/// let versions = crate_versions(&amp;desc_path);</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// println!(&quot;Released versions of checksums:&quot;);</span>
-<span class='doccomment'>/// for ver in &amp;versions {</span>
-<span class='doccomment'>///     println!(&quot;  {}&quot;, ver);</span>
-<span class='doccomment'>/// }</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>crate_versions</span>(<span class='ident'>package_desc</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Semver</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span> <span class='op'>=</span> <span class='ident'>String</span>::<span class='ident'>new</span>();
-    <span class='ident'>File</span>::<span class='ident'>open</span>(<span class='ident'>package_desc</span>).<span class='ident'>unwrap</span>().<span class='ident'>read_to_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>).<span class='ident'>unwrap</span>();
+<span class="doccomment">/// Parse the raw crate descriptor from the repository into a collection of `Semver`s.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::crate_versions;</span>
+<span class="doccomment">/// # use std::path::PathBuf;</span>
+<span class="doccomment">/// # let desc_path = PathBuf::from(&quot;test-data/checksums-versions.json&quot;);</span>
+<span class="doccomment">/// let versions = crate_versions(&amp;desc_path);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// println!(&quot;Released versions of checksums:&quot;);</span>
+<span class="doccomment">/// for ver in &amp;versions {</span>
+<span class="doccomment">///     println!(&quot;  {}&quot;, ver);</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crate_versions</span>(<span class="ident">package_desc</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+    <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">package_desc</span>).<span class="ident">unwrap</span>().<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>).<span class="ident">unwrap</span>();
 
-    <span class='ident'>buf</span>.<span class='ident'>lines</span>()
-        .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>p</span><span class='op'>|</span> <span class='ident'>json</span>::<span class='ident'>parse</span>(<span class='ident'>p</span>).<span class='ident'>unwrap</span>())
-        .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>j</span><span class='op'>|</span> <span class='op'>!</span><span class='ident'>j</span>[<span class='string'>&quot;yanked&quot;</span>].<span class='ident'>as_bool</span>().<span class='ident'>unwrap</span>())
-        .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>j</span><span class='op'>|</span> <span class='ident'>Semver</span>::<span class='ident'>parse</span>(<span class='ident'>j</span>[<span class='string'>&quot;vers&quot;</span>].<span class='ident'>as_str</span>().<span class='ident'>unwrap</span>()).<span class='ident'>unwrap</span>())
-        .<span class='ident'>collect</span>()
+    <span class="ident">buf</span>.<span class="ident">lines</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">json</span>::<span class="ident">parse</span>(<span class="ident">p</span>).<span class="ident">unwrap</span>())
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">j</span><span class="op">|</span> <span class="op">!</span><span class="ident">j</span>[<span class="string">&quot;yanked&quot;</span>].<span class="ident">as_bool</span>().<span class="ident">unwrap</span>())
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">j</span><span class="op">|</span> <span class="ident">Semver</span>::<span class="ident">parse</span>(<span class="ident">j</span>[<span class="string">&quot;vers&quot;</span>].<span class="ident">as_str</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>())
+        .<span class="ident">collect</span>()
 }
 
-<span class='doccomment'>/// Get the location of the latest registry index in the specified cargo directory.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::get_index_path;</span>
-<span class='doccomment'>/// # use std::env::temp_dir;</span>
-<span class='doccomment'>/// # use std::fs;</span>
-<span class='doccomment'>/// # let mut cargo_dir = temp_dir();</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-<span class='doccomment'>/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-<span class='doccomment'>/// # cargo_dir.push(&quot;get_index_path-0&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
-<span class='doccomment'>/// # let idx_dir = cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir_all(&amp;idx_dir);</span>
-<span class='doccomment'>/// let index = get_index_path(&amp;cargo_dir);</span>
-<span class='doccomment'>/// // Use find_package_data() to look for packages</span>
-<span class='doccomment'>/// # assert_eq!(index, idx_dir);</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_index_path</span>(<span class='ident'>cargo_dir</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='ident'>PathBuf</span> {
-    <span class='ident'>fs</span>::<span class='ident'>read_dir</span>(<span class='ident'>cargo_dir</span>.<span class='ident'>join</span>(<span class='string'>&quot;registry&quot;</span>).<span class='ident'>join</span>(<span class='string'>&quot;index&quot;</span>))
-        .<span class='ident'>unwrap</span>()
-        .<span class='ident'>map</span>(<span class='prelude-ty'>Result</span>::<span class='ident'>unwrap</span>)
-        .<span class='ident'>filter</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='ident'>i</span>.<span class='ident'>file_type</span>().<span class='ident'>unwrap</span>().<span class='ident'>is_dir</span>())
-        .<span class='ident'>max_by_key</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='ident'>i</span>.<span class='ident'>metadata</span>().<span class='ident'>unwrap</span>().<span class='ident'>modified</span>().<span class='ident'>unwrap</span>())
-        .<span class='ident'>unwrap</span>()
-        .<span class='ident'>path</span>()
+<span class="doccomment">/// Get the location of the latest registry index in the specified cargo directory.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::get_index_path;</span>
+<span class="doccomment">/// # use std::env::temp_dir;</span>
+<span class="doccomment">/// # use std::fs;</span>
+<span class="doccomment">/// # let mut cargo_dir = temp_dir();</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class="doccomment">/// # cargo_dir.push(&quot;cargo_update-doctest&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class="doccomment">/// # cargo_dir.push(&quot;get_index_path-0&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
+<span class="doccomment">/// # let idx_dir = cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir_all(&amp;idx_dir);</span>
+<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir);</span>
+<span class="doccomment">/// // Use find_package_data() to look for packages</span>
+<span class="doccomment">/// # assert_eq!(index, idx_dir);</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_path</span>(<span class="ident">cargo_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="ident">PathBuf</span> {
+    <span class="ident">fs</span>::<span class="ident">read_dir</span>(<span class="ident">cargo_dir</span>.<span class="ident">join</span>(<span class="string">&quot;registry&quot;</span>).<span class="ident">join</span>(<span class="string">&quot;index&quot;</span>))
+        .<span class="ident">unwrap</span>()
+        .<span class="ident">map</span>(<span class="prelude-ty">Result</span>::<span class="ident">unwrap</span>)
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">file_type</span>().<span class="ident">unwrap</span>().<span class="ident">is_dir</span>())
+        .<span class="ident">max_by_key</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">metadata</span>().<span class="ident">unwrap</span>().<span class="ident">modified</span>().<span class="ident">unwrap</span>())
+        .<span class="ident">unwrap</span>()
+        .<span class="ident">path</span>()
 }
 
-<span class='doccomment'>/// Find a package in the cargo index.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// # Examples</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```</span>
-<span class='doccomment'>/// # use cargo_update::ops::find_package_data;</span>
-<span class='doccomment'>/// # use std::fs::{self, File};</span>
-<span class='doccomment'>/// # use std::env::temp_dir;</span>
-<span class='doccomment'>/// # let mut index_dir = temp_dir();</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;index_dir);</span>
-<span class='doccomment'>/// # index_dir.push(&quot;cargo_update-doctest&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;index_dir);</span>
-<span class='doccomment'>/// # index_dir.push(&quot;find_package_data-0&quot;);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir(&amp;index_dir);</span>
-<span class='doccomment'>/// # let _ = fs::create_dir_all(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;));</span>
-<span class='doccomment'>/// # File::create(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;).join(&quot;cargo&quot;)).unwrap();</span>
-<span class='doccomment'>/// # let cargo =</span>
-<span class='doccomment'>/// find_package_data(&quot;cargo&quot;, &amp;index_dir);</span>
-<span class='doccomment'>/// # assert_eq!(cargo, Some(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;).join(&quot;cargo&quot;)));</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_package_data</span>(<span class='ident'>cratename</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>index_dir</span>: <span class='kw-2'>&amp;</span><span class='ident'>Path</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>PathBuf</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>maybepath</span> <span class='op'>=</span> <span class='op'>|</span><span class='ident'>pb</span>: <span class='ident'>PathBuf</span><span class='op'>|</span> <span class='kw'>if</span> <span class='ident'>pb</span>.<span class='ident'>exists</span>() { <span class='prelude-val'>Some</span>(<span class='ident'>pb</span>) } <span class='kw'>else</span> { <span class='prelude-val'>None</span> };
+<span class="doccomment">/// Find a package in the cargo index.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # use cargo_update::ops::find_package_data;</span>
+<span class="doccomment">/// # use std::fs::{self, File};</span>
+<span class="doccomment">/// # use std::env::temp_dir;</span>
+<span class="doccomment">/// # let mut index_dir = temp_dir();</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;index_dir);</span>
+<span class="doccomment">/// # index_dir.push(&quot;cargo_update-doctest&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;index_dir);</span>
+<span class="doccomment">/// # index_dir.push(&quot;find_package_data-0&quot;);</span>
+<span class="doccomment">/// # let _ = fs::create_dir(&amp;index_dir);</span>
+<span class="doccomment">/// # let _ = fs::create_dir_all(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;));</span>
+<span class="doccomment">/// # File::create(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;).join(&quot;cargo&quot;)).unwrap();</span>
+<span class="doccomment">/// # let cargo =</span>
+<span class="doccomment">/// find_package_data(&quot;cargo&quot;, &amp;index_dir);</span>
+<span class="doccomment">/// # assert_eq!(cargo, Some(index_dir.join(&quot;ca&quot;).join(&quot;rg&quot;).join(&quot;cargo&quot;)));</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_package_data</span>(<span class="ident">cratename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">index_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">maybepath</span> <span class="op">=</span> <span class="op">|</span><span class="ident">pb</span>: <span class="ident">PathBuf</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">pb</span>.<span class="ident">exists</span>() { <span class="prelude-val">Some</span>(<span class="ident">pb</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> };
 
-    <span class='kw'>match</span> <span class='ident'>cratename</span>.<span class='ident'>len</span>() {
-        <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;0-length cratename&quot;</span>),
-        <span class='number'>1</span> <span class='op'>|</span> <span class='number'>2</span> <span class='op'>=&gt;</span> <span class='ident'>maybepath</span>(<span class='ident'>index_dir</span>.<span class='ident'>join</span>(<span class='ident'>cratename</span>.<span class='ident'>len</span>().<span class='ident'>to_string</span>())).<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>pb</span><span class='op'>|</span> <span class='ident'>maybepath</span>(<span class='ident'>pb</span>.<span class='ident'>join</span>(<span class='ident'>cratename</span>))),
-        <span class='number'>3</span> <span class='op'>=&gt;</span> {
-            <span class='ident'>maybepath</span>(<span class='ident'>index_dir</span>.<span class='ident'>join</span>(<span class='string'>&quot;3&quot;</span>))
-                .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>pb</span><span class='op'>|</span> <span class='ident'>maybepath</span>(<span class='ident'>pb</span>.<span class='ident'>join</span>(<span class='kw-2'>&amp;</span><span class='ident'>cratename</span>[<span class='number'>0</span>..<span class='number'>1</span>])))
-                .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>pb</span><span class='op'>|</span> <span class='ident'>maybepath</span>(<span class='ident'>pb</span>.<span class='ident'>join</span>(<span class='ident'>cratename</span>)))
+    <span class="kw">match</span> <span class="ident">cratename</span>.<span class="ident">len</span>() {
+        <span class="number">0</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;0-length cratename&quot;</span>),
+        <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=&gt;</span> <span class="ident">maybepath</span>(<span class="ident">index_dir</span>.<span class="ident">join</span>(<span class="ident">cratename</span>.<span class="ident">len</span>().<span class="ident">to_string</span>())).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">pb</span><span class="op">|</span> <span class="ident">maybepath</span>(<span class="ident">pb</span>.<span class="ident">join</span>(<span class="ident">cratename</span>))),
+        <span class="number">3</span> <span class="op">=&gt;</span> {
+            <span class="ident">maybepath</span>(<span class="ident">index_dir</span>.<span class="ident">join</span>(<span class="string">&quot;3&quot;</span>))
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">pb</span><span class="op">|</span> <span class="ident">maybepath</span>(<span class="ident">pb</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">cratename</span>[<span class="number">0</span>..<span class="number">1</span>])))
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">pb</span><span class="op">|</span> <span class="ident">maybepath</span>(<span class="ident">pb</span>.<span class="ident">join</span>(<span class="ident">cratename</span>)))
         }
-        _ <span class='op'>=&gt;</span> {
-            <span class='ident'>maybepath</span>(<span class='ident'>index_dir</span>.<span class='ident'>join</span>(<span class='kw-2'>&amp;</span><span class='ident'>cratename</span>[<span class='number'>0</span>..<span class='number'>2</span>]))
-                .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>pb</span><span class='op'>|</span> <span class='ident'>maybepath</span>(<span class='ident'>pb</span>.<span class='ident'>join</span>(<span class='kw-2'>&amp;</span><span class='ident'>cratename</span>[<span class='number'>2</span>..<span class='number'>4</span>])))
-                .<span class='ident'>and_then</span>(<span class='op'>|</span><span class='ident'>pb</span><span class='op'>|</span> <span class='ident'>maybepath</span>(<span class='ident'>pb</span>.<span class='ident'>join</span>(<span class='ident'>cratename</span>)))
+        _ <span class="op">=&gt;</span> {
+            <span class="ident">maybepath</span>(<span class="ident">index_dir</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">cratename</span>[<span class="number">0</span>..<span class="number">2</span>]))
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">pb</span><span class="op">|</span> <span class="ident">maybepath</span>(<span class="ident">pb</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">cratename</span>[<span class="number">2</span>..<span class="number">4</span>])))
+                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">pb</span><span class="op">|</span> <span class="ident">maybepath</span>(<span class="ident">pb</span>.<span class="ident">join</span>(<span class="ident">cratename</span>)))
         }
     }
 }

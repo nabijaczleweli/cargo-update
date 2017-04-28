@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -159,121 +159,121 @@
 <span id="114">114</span>
 <span id="115">115</span>
 <span id="116">116</span>
-</pre><pre class='rust '>
-<span class='comment'>// This file comes from the `dtoa` port by David Tolnay:</span>
-<span class='comment'>// https://github.com/dtolnay/dtoa</span>
-<span class='comment'>//</span>
-<span class='comment'>// It&#39;s an implementation of a Grisu2 algorithm by Florian Loitsch:</span>
-<span class='comment'>// http://www.cs.tufts.edu/~nr/cs257/archive/florian-loitsch/printf.pdf</span>
-<span class='comment'>//</span>
-<span class='comment'>// The algorithm here has been modified to produce a `u64` mantisa and</span>
-<span class='comment'>// a decimal exponent instead of writing to a string.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Copyright 2016 Dtoa Developers</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// This file comes from the `dtoa` port by David Tolnay:</span>
+<span class="comment">// https://github.com/dtolnay/dtoa</span>
+<span class="comment">//</span>
+<span class="comment">// It&#39;s an implementation of a Grisu2 algorithm by Florian Loitsch:</span>
+<span class="comment">// http://www.cs.tufts.edu/~nr/cs257/archive/florian-loitsch/printf.pdf</span>
+<span class="comment">//</span>
+<span class="comment">// The algorithm here has been modified to produce a `u64` mantisa and</span>
+<span class="comment">// a decimal exponent instead of writing to a string.</span>
+<span class="comment">//</span>
+<span class="comment">// Copyright 2016 Dtoa Developers</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='kw'>use</span> <span class='ident'>util</span>::<span class='ident'>diyfp</span>::{ <span class='self'>self</span>, <span class='ident'>DiyFp</span> };
+<span class="kw">use</span> <span class="ident">util</span>::<span class="ident">diyfp</span>::{ <span class="self">self</span>, <span class="ident">DiyFp</span> };
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>grisu_round</span>(<span class='ident'>buffer</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>u64</span>, <span class='ident'>delta</span>: <span class='ident'>u64</span>, <span class='kw-2'>mut</span> <span class='ident'>rest</span>: <span class='ident'>u64</span>, <span class='ident'>ten_kappa</span>: <span class='ident'>u64</span>, <span class='ident'>wp_w</span>: <span class='ident'>u64</span>) {
-    <span class='kw'>while</span> <span class='ident'>rest</span> <span class='op'>&lt;</span> <span class='ident'>wp_w</span> <span class='op'>&amp;&amp;</span> <span class='ident'>delta</span> <span class='op'>-</span> <span class='ident'>rest</span> <span class='op'>&gt;=</span> <span class='ident'>ten_kappa</span> <span class='op'>&amp;&amp;</span>
-           (<span class='ident'>rest</span> <span class='op'>+</span> <span class='ident'>ten_kappa</span> <span class='op'>&lt;</span> <span class='ident'>wp_w</span> <span class='op'>||</span> <span class='comment'>// closer</span>
-            <span class='ident'>wp_w</span> <span class='op'>-</span> <span class='ident'>rest</span> <span class='op'>&gt;</span> <span class='ident'>rest</span> <span class='op'>+</span> <span class='ident'>ten_kappa</span> <span class='op'>-</span> <span class='ident'>wp_w</span>) {
-        <span class='kw-2'>*</span><span class='ident'>buffer</span> <span class='op'>-=</span> <span class='number'>1</span>;
-        <span class='ident'>rest</span> <span class='op'>+=</span> <span class='ident'>ten_kappa</span>;
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">grisu_round</span>(<span class="ident">buffer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">u64</span>, <span class="ident">delta</span>: <span class="ident">u64</span>, <span class="kw-2">mut</span> <span class="ident">rest</span>: <span class="ident">u64</span>, <span class="ident">ten_kappa</span>: <span class="ident">u64</span>, <span class="ident">wp_w</span>: <span class="ident">u64</span>) {
+    <span class="kw">while</span> <span class="ident">rest</span> <span class="op">&lt;</span> <span class="ident">wp_w</span> <span class="op">&amp;&amp;</span> <span class="ident">delta</span> <span class="op">-</span> <span class="ident">rest</span> <span class="op">&gt;=</span> <span class="ident">ten_kappa</span> <span class="op">&amp;&amp;</span>
+           (<span class="ident">rest</span> <span class="op">+</span> <span class="ident">ten_kappa</span> <span class="op">&lt;</span> <span class="ident">wp_w</span> <span class="op">||</span> <span class="comment">// closer</span>
+            <span class="ident">wp_w</span> <span class="op">-</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="ident">rest</span> <span class="op">+</span> <span class="ident">ten_kappa</span> <span class="op">-</span> <span class="ident">wp_w</span>) {
+        <span class="kw-2">*</span><span class="ident">buffer</span> <span class="op">-=</span> <span class="number">1</span>;
+        <span class="ident">rest</span> <span class="op">+=</span> <span class="ident">ten_kappa</span>;
     }
 }
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>fn</span> <span class='ident'>count_decimal_digit32</span>(<span class='ident'>n</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='ident'>i16</span> {
-    <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>10</span> { <span class='number'>1</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>100</span> { <span class='number'>2</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>1000</span> { <span class='number'>3</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>10000</span> { <span class='number'>4</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>100000</span> { <span class='number'>5</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>1000000</span> { <span class='number'>6</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>10000000</span> { <span class='number'>7</span> }
-    <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span> <span class='number'>100000000</span> { <span class='number'>8</span> }
-    <span class='comment'>// Will not reach 10 digits in digit_gen()</span>
-    <span class='kw'>else</span> { <span class='number'>9</span> }
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">count_decimal_digit32</span>(<span class="ident">n</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">i16</span> {
+    <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">10</span> { <span class="number">1</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">100</span> { <span class="number">2</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">1000</span> { <span class="number">3</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">10000</span> { <span class="number">4</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">100000</span> { <span class="number">5</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">1000000</span> { <span class="number">6</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">10000000</span> { <span class="number">7</span> }
+    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span> <span class="number">100000000</span> { <span class="number">8</span> }
+    <span class="comment">// Will not reach 10 digits in digit_gen()</span>
+    <span class="kw">else</span> { <span class="number">9</span> }
 }
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>digit_gen</span>(<span class='ident'>w</span>: <span class='ident'>DiyFp</span>, <span class='ident'>mp</span>: <span class='ident'>DiyFp</span>, <span class='kw-2'>mut</span> <span class='ident'>delta</span>: <span class='ident'>u64</span>, <span class='kw-2'>mut</span> <span class='ident'>k</span>: <span class='ident'>i16</span>) <span class='op'>-&gt;</span> (<span class='ident'>u64</span>, <span class='ident'>i16</span>) {
-    <span class='kw'>static</span> <span class='ident'>POW10</span>: [<span class='ident'>u32</span>; <span class='number'>10</span>] <span class='op'>=</span> [ <span class='number'>1</span>, <span class='number'>10</span>, <span class='number'>100</span>, <span class='number'>1000</span>, <span class='number'>10000</span>, <span class='number'>100000</span>, <span class='number'>1000000</span>, <span class='number'>10000000</span>, <span class='number'>100000000</span>, <span class='number'>1000000000</span> ];
-    <span class='kw'>let</span> <span class='ident'>one</span> <span class='op'>=</span> <span class='ident'>DiyFp</span>::<span class='ident'>new</span>(<span class='number'>1u64</span> <span class='op'>&lt;&lt;</span> <span class='op'>-</span><span class='ident'>mp</span>.<span class='ident'>e</span>, <span class='ident'>mp</span>.<span class='ident'>e</span>);
-    <span class='kw'>let</span> <span class='ident'>wp_w</span> <span class='op'>=</span> <span class='ident'>mp</span> <span class='op'>-</span> <span class='ident'>w</span>;
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>p1</span> <span class='op'>=</span> (<span class='ident'>mp</span>.<span class='ident'>f</span> <span class='op'>&gt;&gt;</span> <span class='op'>-</span><span class='ident'>one</span>.<span class='ident'>e</span>) <span class='kw'>as</span> <span class='ident'>u32</span>;
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>p2</span> <span class='op'>=</span> <span class='ident'>mp</span>.<span class='ident'>f</span> <span class='op'>&amp;</span> (<span class='ident'>one</span>.<span class='ident'>f</span> <span class='op'>-</span> <span class='number'>1</span>);
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>kappa</span> <span class='op'>=</span> <span class='ident'>count_decimal_digit32</span>(<span class='ident'>p1</span>); <span class='comment'>// kappa in [0, 9]</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">digit_gen</span>(<span class="ident">w</span>: <span class="ident">DiyFp</span>, <span class="ident">mp</span>: <span class="ident">DiyFp</span>, <span class="kw-2">mut</span> <span class="ident">delta</span>: <span class="ident">u64</span>, <span class="kw-2">mut</span> <span class="ident">k</span>: <span class="ident">i16</span>) <span class="op">-&gt;</span> (<span class="ident">u64</span>, <span class="ident">i16</span>) {
+    <span class="kw">static</span> <span class="ident">POW10</span>: [<span class="ident">u32</span>; <span class="number">10</span>] <span class="op">=</span> [ <span class="number">1</span>, <span class="number">10</span>, <span class="number">100</span>, <span class="number">1000</span>, <span class="number">10000</span>, <span class="number">100000</span>, <span class="number">1000000</span>, <span class="number">10000000</span>, <span class="number">100000000</span>, <span class="number">1000000000</span> ];
+    <span class="kw">let</span> <span class="ident">one</span> <span class="op">=</span> <span class="ident">DiyFp</span>::<span class="ident">new</span>(<span class="number">1u64</span> <span class="op">&lt;&lt;</span> <span class="op">-</span><span class="ident">mp</span>.<span class="ident">e</span>, <span class="ident">mp</span>.<span class="ident">e</span>);
+    <span class="kw">let</span> <span class="ident">wp_w</span> <span class="op">=</span> <span class="ident">mp</span> <span class="op">-</span> <span class="ident">w</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">p1</span> <span class="op">=</span> (<span class="ident">mp</span>.<span class="ident">f</span> <span class="op">&gt;&gt;</span> <span class="op">-</span><span class="ident">one</span>.<span class="ident">e</span>) <span class="kw">as</span> <span class="ident">u32</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">p2</span> <span class="op">=</span> <span class="ident">mp</span>.<span class="ident">f</span> <span class="op">&amp;</span> (<span class="ident">one</span>.<span class="ident">f</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kappa</span> <span class="op">=</span> <span class="ident">count_decimal_digit32</span>(<span class="ident">p1</span>); <span class="comment">// kappa in [0, 9]</span>
 
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buffer</span> <span class='op'>=</span> <span class='ident'>p1</span> <span class='kw'>as</span> <span class='ident'>u64</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">p1</span> <span class="kw">as</span> <span class="ident">u64</span>;
 
-    <span class='kw'>while</span> <span class='ident'>kappa</span> <span class='op'>&gt;</span> <span class='number'>0</span> {
-        <span class='kw'>match</span> <span class='ident'>kappa</span> {
-            <span class='number'>9</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>  <span class='number'>100000000</span>; }
-            <span class='number'>8</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>   <span class='number'>10000000</span>; }
-            <span class='number'>7</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>    <span class='number'>1000000</span>; }
-            <span class='number'>6</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>     <span class='number'>100000</span>; }
-            <span class='number'>5</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>      <span class='number'>10000</span>; }
-            <span class='number'>4</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>       <span class='number'>1000</span>; }
-            <span class='number'>3</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>        <span class='number'>100</span>; }
-            <span class='number'>2</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>%=</span>         <span class='number'>10</span>; }
-            <span class='number'>1</span> <span class='op'>=&gt;</span> { <span class='ident'>p1</span> <span class='op'>=</span>           <span class='number'>0</span>; }
-            _ <span class='op'>=&gt;</span> {}
+    <span class="kw">while</span> <span class="ident">kappa</span> <span class="op">&gt;</span> <span class="number">0</span> {
+        <span class="kw">match</span> <span class="ident">kappa</span> {
+            <span class="number">9</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>  <span class="number">100000000</span>; }
+            <span class="number">8</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>   <span class="number">10000000</span>; }
+            <span class="number">7</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>    <span class="number">1000000</span>; }
+            <span class="number">6</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>     <span class="number">100000</span>; }
+            <span class="number">5</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>      <span class="number">10000</span>; }
+            <span class="number">4</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>       <span class="number">1000</span>; }
+            <span class="number">3</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>        <span class="number">100</span>; }
+            <span class="number">2</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">%=</span>         <span class="number">10</span>; }
+            <span class="number">1</span> <span class="op">=&gt;</span> { <span class="ident">p1</span> <span class="op">=</span>           <span class="number">0</span>; }
+            _ <span class="op">=&gt;</span> {}
         }
-        <span class='ident'>kappa</span> <span class='op'>=</span> <span class='ident'>kappa</span>.<span class='ident'>wrapping_sub</span>(<span class='number'>1</span>);
-        <span class='kw'>let</span> <span class='ident'>tmp</span> <span class='op'>=</span> ((<span class='ident'>p1</span> <span class='kw'>as</span> <span class='ident'>u64</span>) <span class='op'>&lt;&lt;</span> <span class='op'>-</span><span class='ident'>one</span>.<span class='ident'>e</span>) <span class='op'>+</span> <span class='ident'>p2</span>;
-        <span class='kw'>if</span> <span class='ident'>tmp</span> <span class='op'>&lt;=</span> <span class='ident'>delta</span> {
-            <span class='ident'>k</span> <span class='op'>+=</span> <span class='ident'>kappa</span>;
-            <span class='kw'>let</span> <span class='ident'>pow10</span> <span class='op'>=</span> <span class='ident'>POW10</span>[<span class='ident'>kappa</span> <span class='kw'>as</span> <span class='ident'>usize</span>] <span class='kw'>as</span> <span class='ident'>u64</span>;
-            <span class='ident'>buffer</span> <span class='op'>/=</span> <span class='ident'>pow10</span>;
+        <span class="ident">kappa</span> <span class="op">=</span> <span class="ident">kappa</span>.<span class="ident">wrapping_sub</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">tmp</span> <span class="op">=</span> ((<span class="ident">p1</span> <span class="kw">as</span> <span class="ident">u64</span>) <span class="op">&lt;&lt;</span> <span class="op">-</span><span class="ident">one</span>.<span class="ident">e</span>) <span class="op">+</span> <span class="ident">p2</span>;
+        <span class="kw">if</span> <span class="ident">tmp</span> <span class="op">&lt;=</span> <span class="ident">delta</span> {
+            <span class="ident">k</span> <span class="op">+=</span> <span class="ident">kappa</span>;
+            <span class="kw">let</span> <span class="ident">pow10</span> <span class="op">=</span> <span class="ident">POW10</span>[<span class="ident">kappa</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="kw">as</span> <span class="ident">u64</span>;
+            <span class="ident">buffer</span> <span class="op">/=</span> <span class="ident">pow10</span>;
 
-            <span class='ident'>grisu_round</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buffer</span>, <span class='ident'>delta</span>, <span class='ident'>tmp</span>, <span class='ident'>pow10</span> <span class='op'>&lt;&lt;</span> <span class='op'>-</span><span class='ident'>one</span>.<span class='ident'>e</span>, <span class='ident'>wp_w</span>.<span class='ident'>f</span>);
-            <span class='kw'>return</span> (<span class='ident'>buffer</span>, <span class='ident'>k</span>);
+            <span class="ident">grisu_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>, <span class="ident">delta</span>, <span class="ident">tmp</span>, <span class="ident">pow10</span> <span class="op">&lt;&lt;</span> <span class="op">-</span><span class="ident">one</span>.<span class="ident">e</span>, <span class="ident">wp_w</span>.<span class="ident">f</span>);
+            <span class="kw">return</span> (<span class="ident">buffer</span>, <span class="ident">k</span>);
         }
     }
 
-    <span class='kw'>loop</span> {
-        <span class='ident'>p2</span> <span class='op'>*=</span> <span class='number'>10</span>;
-        <span class='ident'>delta</span> <span class='op'>*=</span> <span class='number'>10</span>;
-        <span class='kw'>let</span> <span class='ident'>d</span> <span class='op'>=</span> (<span class='ident'>p2</span> <span class='op'>&gt;&gt;</span> <span class='op'>-</span><span class='ident'>one</span>.<span class='ident'>e</span>) <span class='kw'>as</span> <span class='ident'>u8</span>;
-        <span class='kw'>if</span> <span class='ident'>d</span> <span class='op'>!=</span> <span class='number'>0</span> <span class='op'>||</span> <span class='ident'>buffer</span> <span class='op'>!=</span> <span class='number'>0</span> {
-            <span class='ident'>buffer</span> <span class='op'>=</span> <span class='ident'>buffer</span> <span class='op'>*</span> <span class='number'>10</span> <span class='op'>+</span> <span class='ident'>d</span> <span class='kw'>as</span> <span class='ident'>u64</span>;
+    <span class="kw">loop</span> {
+        <span class="ident">p2</span> <span class="op">*=</span> <span class="number">10</span>;
+        <span class="ident">delta</span> <span class="op">*=</span> <span class="number">10</span>;
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> (<span class="ident">p2</span> <span class="op">&gt;&gt;</span> <span class="op">-</span><span class="ident">one</span>.<span class="ident">e</span>) <span class="kw">as</span> <span class="ident">u8</span>;
+        <span class="kw">if</span> <span class="ident">d</span> <span class="op">!=</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">buffer</span> <span class="op">!=</span> <span class="number">0</span> {
+            <span class="ident">buffer</span> <span class="op">=</span> <span class="ident">buffer</span> <span class="op">*</span> <span class="number">10</span> <span class="op">+</span> <span class="ident">d</span> <span class="kw">as</span> <span class="ident">u64</span>;
         }
-        <span class='ident'>p2</span> <span class='op'>&amp;=</span> <span class='ident'>one</span>.<span class='ident'>f</span> <span class='op'>-</span> <span class='number'>1</span>;
-        <span class='ident'>kappa</span> <span class='op'>=</span> <span class='ident'>kappa</span>.<span class='ident'>wrapping_sub</span>(<span class='number'>1</span>);
-        <span class='kw'>if</span> <span class='ident'>p2</span> <span class='op'>&lt;</span> <span class='ident'>delta</span> {
-            <span class='ident'>k</span> <span class='op'>+=</span> <span class='ident'>kappa</span>;
-            <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='op'>-</span>(<span class='ident'>kappa</span> <span class='kw'>as</span> <span class='ident'>isize</span>);
+        <span class="ident">p2</span> <span class="op">&amp;=</span> <span class="ident">one</span>.<span class="ident">f</span> <span class="op">-</span> <span class="number">1</span>;
+        <span class="ident">kappa</span> <span class="op">=</span> <span class="ident">kappa</span>.<span class="ident">wrapping_sub</span>(<span class="number">1</span>);
+        <span class="kw">if</span> <span class="ident">p2</span> <span class="op">&lt;</span> <span class="ident">delta</span> {
+            <span class="ident">k</span> <span class="op">+=</span> <span class="ident">kappa</span>;
+            <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="op">-</span>(<span class="ident">kappa</span> <span class="kw">as</span> <span class="ident">isize</span>);
 
-            <span class='ident'>grisu_round</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buffer</span>, <span class='ident'>delta</span>, <span class='ident'>p2</span>, <span class='ident'>one</span>.<span class='ident'>f</span>, <span class='ident'>wp_w</span>.<span class='ident'>f</span> <span class='op'>*</span> <span class='kw'>if</span> <span class='ident'>index</span> <span class='op'>&lt;</span> <span class='number'>9</span> { <span class='ident'>POW10</span>[<span class='op'>-</span>(<span class='ident'>kappa</span> <span class='kw'>as</span> <span class='ident'>isize</span>) <span class='kw'>as</span> <span class='ident'>usize</span>] <span class='kw'>as</span> <span class='ident'>u64</span> } <span class='kw'>else</span> { <span class='number'>0</span> });
-            <span class='kw'>return</span> (<span class='ident'>buffer</span>, <span class='ident'>k</span>);
+            <span class="ident">grisu_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>, <span class="ident">delta</span>, <span class="ident">p2</span>, <span class="ident">one</span>.<span class="ident">f</span>, <span class="ident">wp_w</span>.<span class="ident">f</span> <span class="op">*</span> <span class="kw">if</span> <span class="ident">index</span> <span class="op">&lt;</span> <span class="number">9</span> { <span class="ident">POW10</span>[<span class="op">-</span>(<span class="ident">kappa</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="kw">as</span> <span class="ident">usize</span>] <span class="kw">as</span> <span class="ident">u64</span> } <span class="kw">else</span> { <span class="number">0</span> });
+            <span class="kw">return</span> (<span class="ident">buffer</span>, <span class="ident">k</span>);
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>convert</span>(<span class='ident'>float</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> (<span class='ident'>u64</span>, <span class='ident'>i16</span>) {
-    <span class='kw'>if</span> <span class='ident'>float</span> <span class='op'>==</span> <span class='number'>0.0</span> {
-        <span class='kw'>return</span> (<span class='number'>0</span>, <span class='number'>0</span>);
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">convert</span>(<span class="ident">float</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> (<span class="ident">u64</span>, <span class="ident">i16</span>) {
+    <span class="kw">if</span> <span class="ident">float</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">return</span> (<span class="number">0</span>, <span class="number">0</span>);
     }
-    <span class='kw'>unsafe</span> {
-        <span class='kw'>let</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>DiyFp</span>::<span class='ident'>from_f64</span>(<span class='ident'>float</span>);
-        <span class='kw'>let</span> (<span class='ident'>w_m</span>, <span class='ident'>w_p</span>) <span class='op'>=</span> <span class='ident'>v</span>.<span class='ident'>normalized_boundaries</span>();
-        <span class='kw'>let</span> (<span class='ident'>c_mk</span>, <span class='ident'>k</span>) <span class='op'>=</span> <span class='ident'>diyfp</span>::<span class='ident'>get_cached_power</span>(<span class='ident'>w_p</span>.<span class='ident'>e</span>);
-        <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> <span class='ident'>v</span>.<span class='ident'>normalize</span>() <span class='op'>*</span> <span class='ident'>c_mk</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>wp</span> <span class='op'>=</span> <span class='ident'>w_p</span> <span class='op'>*</span> <span class='ident'>c_mk</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>wm</span> <span class='op'>=</span> <span class='ident'>w_m</span> <span class='op'>*</span> <span class='ident'>c_mk</span>;
-        <span class='ident'>wm</span>.<span class='ident'>f</span> <span class='op'>+=</span> <span class='number'>1</span>;
-        <span class='ident'>wp</span>.<span class='ident'>f</span> <span class='op'>-=</span> <span class='number'>1</span>;
+    <span class="kw">unsafe</span> {
+        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">DiyFp</span>::<span class="ident">from_f64</span>(<span class="ident">float</span>);
+        <span class="kw">let</span> (<span class="ident">w_m</span>, <span class="ident">w_p</span>) <span class="op">=</span> <span class="ident">v</span>.<span class="ident">normalized_boundaries</span>();
+        <span class="kw">let</span> (<span class="ident">c_mk</span>, <span class="ident">k</span>) <span class="op">=</span> <span class="ident">diyfp</span>::<span class="ident">get_cached_power</span>(<span class="ident">w_p</span>.<span class="ident">e</span>);
+        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">normalize</span>() <span class="op">*</span> <span class="ident">c_mk</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">wp</span> <span class="op">=</span> <span class="ident">w_p</span> <span class="op">*</span> <span class="ident">c_mk</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">wm</span> <span class="op">=</span> <span class="ident">w_m</span> <span class="op">*</span> <span class="ident">c_mk</span>;
+        <span class="ident">wm</span>.<span class="ident">f</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">wp</span>.<span class="ident">f</span> <span class="op">-=</span> <span class="number">1</span>;
 
-        <span class='ident'>digit_gen</span>(<span class='ident'>w</span>, <span class='ident'>wp</span>, <span class='ident'>wp</span>.<span class='ident'>f</span> <span class='op'>-</span> <span class='ident'>wm</span>.<span class='ident'>f</span>, <span class='ident'>k</span> <span class='kw'>as</span> <span class='ident'>i16</span>)
+        <span class="ident">digit_gen</span>(<span class="ident">w</span>, <span class="ident">wp</span>, <span class="ident">wp</span>.<span class="ident">f</span> <span class="op">-</span> <span class="ident">wm</span>.<span class="ident">f</span>, <span class="ident">k</span> <span class="kw">as</span> <span class="ident">i16</span>)
     }
 }
 </pre>

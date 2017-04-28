@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -400,192 +400,192 @@
 <span id="355">355</span>
 <span id="356">356</span>
 <span id="357">357</span>
-</pre><pre class='rust '>
-<span class='kw'>use</span> <span class='kw'>super</span>::<span class='ident'>Tokens</span>;
+</pre><pre class="rust ">
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Tokens</span>;
 
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>borrow</span>::<span class='ident'>Cow</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 
-<span class='doccomment'>/// Types that can be interpolated inside a `quote!(...)` invocation.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>ToTokens</span> {
-    <span class='doccomment'>/// Write `self` to the given `Tokens`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Example implementation for a struct representing Rust paths like</span>
-    <span class='doccomment'>/// `std::cmp::PartialEq`:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```ignore</span>
-    <span class='doccomment'>/// pub struct Path {</span>
-    <span class='doccomment'>///     pub global: bool,</span>
-    <span class='doccomment'>///     pub segments: Vec&lt;PathSegment&gt;,</span>
-    <span class='doccomment'>/// }</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// impl ToTokens for Path {</span>
-    <span class='doccomment'>///     fn to_tokens(&amp;self, tokens: &amp;mut Tokens) {</span>
-    <span class='doccomment'>///         for (i, segment) in self.segments.iter().enumerate() {</span>
-    <span class='doccomment'>///             if i &gt; 0 || self.global {</span>
-    <span class='doccomment'>///                 tokens.append(&quot;::&quot;);</span>
-    <span class='doccomment'>///             }</span>
-    <span class='doccomment'>///             segment.to_tokens(tokens);</span>
-    <span class='doccomment'>///         }</span>
-    <span class='doccomment'>///     }</span>
-    <span class='doccomment'>/// }</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>);
+<span class="doccomment">/// Types that can be interpolated inside a `quote!(...)` invocation.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ToTokens</span> {
+    <span class="doccomment">/// Write `self` to the given `Tokens`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Example implementation for a struct representing Rust paths like</span>
+    <span class="doccomment">/// `std::cmp::PartialEq`:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```ignore</span>
+    <span class="doccomment">/// pub struct Path {</span>
+    <span class="doccomment">///     pub global: bool,</span>
+    <span class="doccomment">///     pub segments: Vec&lt;PathSegment&gt;,</span>
+    <span class="doccomment">/// }</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// impl ToTokens for Path {</span>
+    <span class="doccomment">///     fn to_tokens(&amp;self, tokens: &amp;mut Tokens) {</span>
+    <span class="doccomment">///         for (i, segment) in self.segments.iter().enumerate() {</span>
+    <span class="doccomment">///             if i &gt; 0 || self.global {</span>
+    <span class="doccomment">///                 tokens.append(&quot;::&quot;);</span>
+    <span class="doccomment">///             }</span>
+    <span class="doccomment">///             segment.to_tokens(tokens);</span>
+    <span class="doccomment">///         }</span>
+    <span class="doccomment">///     }</span>
+    <span class="doccomment">/// }</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>);
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>T</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>ToOwned</span> <span class='op'>+</span> <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>Cow</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ToOwned</span> <span class="op">+</span> <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>t</span>) <span class='op'>=</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-            <span class='ident'>t</span>.<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">t</span>) <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">t</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>str</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>escaped</span> <span class='op'>=</span> <span class='string'>&quot;\&quot;&quot;</span>.<span class='ident'>to_string</span>();
-        <span class='kw'>for</span> <span class='ident'>ch</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>chars</span>() {
-            <span class='kw'>match</span> <span class='ident'>ch</span> {
-                <span class='string'>&#39;\0&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>r&quot;\0&quot;</span>),
-                <span class='string'>&#39;\&#39;&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>&quot;&#39;&quot;</span>),
-                _ <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>extend</span>(<span class='ident'>ch</span>.<span class='ident'>escape_default</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>c</span> <span class='kw'>as</span> <span class='ident'>char</span>)),
+<span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">escaped</span> <span class="op">=</span> <span class="string">&quot;\&quot;&quot;</span>.<span class="ident">to_string</span>();
+        <span class="kw">for</span> <span class="ident">ch</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">chars</span>() {
+            <span class="kw">match</span> <span class="ident">ch</span> {
+                <span class="string">&#39;\0&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">r&quot;\0&quot;</span>),
+                <span class="string">&#39;\&#39;&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">&quot;&#39;&quot;</span>),
+                _ <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">extend</span>(<span class="ident">ch</span>.<span class="ident">escape_default</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="kw">as</span> <span class="ident">char</span>)),
             }
         }
-        <span class='ident'>escaped</span>.<span class='ident'>push</span>(<span class='string'>&#39;&quot;&#39;</span>);
+        <span class="ident">escaped</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>);
 
-        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='ident'>escaped</span>);
+        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">escaped</span>);
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>String</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='self'>self</span>.<span class='ident'>as_str</span>().<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
+<span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">String</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="self">self</span>.<span class="ident">as_str</span>().<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>char</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-            <span class='string'>&#39;\0&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>r&quot;&#39;\0&#39;&quot;</span>),
-            <span class='string'>&#39;&quot;&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;&#39;\&quot;&#39;&quot;</span>),
-            _ <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='self'>self</span>)),
+<span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">char</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="string">&#39;\0&#39;</span> <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">r&quot;&#39;\0&#39;&quot;</span>),
+            <span class="string">&#39;&quot;&#39;</span> <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;&#39;\&quot;&#39;&quot;</span>),
+            _ <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)),
         }
     }
 }
 
-<span class='doccomment'>/// Wrap a `&amp;str` so it interpolates as a byte-string: `b&quot;abc&quot;`.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>ByteStr</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw'>pub</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span>);
+<span class="doccomment">/// Wrap a `&amp;str` so it interpolates as a byte-string: `b&quot;abc&quot;`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ByteStr</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>);
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>ByteStr</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>escaped</span> <span class='op'>=</span> <span class='string'>&quot;b\&quot;&quot;</span>.<span class='ident'>to_string</span>();
-        <span class='kw'>for</span> <span class='ident'>b</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='number'>0</span>.<span class='ident'>bytes</span>() {
-            <span class='kw'>match</span> <span class='ident'>b</span> {
-                <span class='string'>b&#39;\0&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>r&quot;\0&quot;</span>),
-                <span class='string'>b&#39;\t&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>r&quot;\t&quot;</span>),
-                <span class='string'>b&#39;\n&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>r&quot;\n&quot;</span>),
-                <span class='string'>b&#39;\r&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>r&quot;\r&quot;</span>),
-                <span class='string'>b&#39;&quot;&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>&quot;\\\&quot;&quot;</span>),
-                <span class='string'>b&#39;\\&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>&quot;\\\\&quot;</span>),
-                <span class='string'>b&#39;\x20&#39;</span> ... <span class='string'>b&#39;\x7E&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push</span>(<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>char</span>),
-                _ <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;\\x{:02X}&quot;</span>, <span class='ident'>b</span>)),
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ByteStr</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">escaped</span> <span class="op">=</span> <span class="string">&quot;b\&quot;&quot;</span>.<span class="ident">to_string</span>();
+        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">bytes</span>() {
+            <span class="kw">match</span> <span class="ident">b</span> {
+                <span class="string">b&#39;\0&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">r&quot;\0&quot;</span>),
+                <span class="string">b&#39;\t&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">r&quot;\t&quot;</span>),
+                <span class="string">b&#39;\n&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">r&quot;\n&quot;</span>),
+                <span class="string">b&#39;\r&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">r&quot;\r&quot;</span>),
+                <span class="string">b&#39;&quot;&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">&quot;\\\&quot;&quot;</span>),
+                <span class="string">b&#39;\\&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">&quot;\\\\&quot;</span>),
+                <span class="string">b&#39;\x20&#39;</span> ... <span class="string">b&#39;\x7E&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push</span>(<span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>),
+                _ <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\\x{:02X}&quot;</span>, <span class="ident">b</span>)),
             }
         }
-        <span class='ident'>escaped</span>.<span class='ident'>push</span>(<span class='string'>&#39;&quot;&#39;</span>);
+        <span class="ident">escaped</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>);
 
-        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='ident'>escaped</span>);
+        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">escaped</span>);
     }
 }
 
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>impl_to_tokens_display</span> {
-    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> {
-        <span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span> {
-            <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-                <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>to_string</span>());
-            }
-        }
-    };
-}
-
-<span class='macro'>impl_to_tokens_display</span><span class='macro'>!</span>(<span class='ident'>Tokens</span>);
-<span class='macro'>impl_to_tokens_display</span><span class='macro'>!</span>(<span class='ident'>bool</span>);
-
-<span class='doccomment'>/// Wrap an integer so it interpolates as a hexadecimal.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Hex</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>(<span class='kw'>pub</span> <span class='ident'>T</span>);
-
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>impl_to_tokens_integer</span> {
-    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> {
-        <span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span> {
-            <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-                <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='macro'>concat</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='macro'>stringify</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>)), <span class='self'>self</span>));
-            }
-        }
-
-        <span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>Hex</span><span class='op'>&lt;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span><span class='op'>&gt;</span> {
-            <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-                <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='macro'>concat</span><span class='macro'>!</span>(<span class='string'>&quot;0x{:X}&quot;</span>, <span class='macro'>stringify</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>)), <span class='self'>self</span>.<span class='number'>0</span>));
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_to_tokens_display</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> {
+        <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
+            <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+                <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">to_string</span>());
             }
         }
     };
 }
 
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>i8</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>i16</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>i32</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>i64</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>isize</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>u8</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>u16</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>u32</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>u64</span>);
-<span class='macro'>impl_to_tokens_integer</span><span class='macro'>!</span>(<span class='ident'>usize</span>);
+<span class="macro">impl_to_tokens_display</span><span class="macro">!</span>(<span class="ident">Tokens</span>);
+<span class="macro">impl_to_tokens_display</span><span class="macro">!</span>(<span class="ident">bool</span>);
 
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>impl_to_tokens_floating</span> {
-    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>:<span class='ident'>ty</span>) <span class='op'>=&gt;</span> {
-        <span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span> {
-            <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-                <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>num</span>::<span class='ident'>FpCategory</span>::<span class='kw-2'>*</span>;
-                <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>classify</span>() {
-                    <span class='ident'>Zero</span> <span class='op'>|</span> <span class='ident'>Subnormal</span> <span class='op'>|</span> <span class='ident'>Normal</span> <span class='op'>=&gt;</span> {
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='macro'>concat</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='macro'>stringify</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>)), <span class='self'>self</span>));
+<span class="doccomment">/// Wrap an integer so it interpolates as a hexadecimal.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Hex</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">T</span>);
+
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_to_tokens_integer</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> {
+        <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
+            <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+                <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>)), <span class="self">self</span>));
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">Hex</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+                <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;0x{:X}&quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>)), <span class="self">self</span>.<span class="number">0</span>));
+            }
+        }
+    };
+}
+
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">i8</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">i16</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">i32</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">i64</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">isize</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">u8</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">u16</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">u32</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">u64</span>);
+<span class="macro">impl_to_tokens_integer</span><span class="macro">!</span>(<span class="ident">usize</span>);
+
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_to_tokens_floating</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> {
+        <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
+            <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+                <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">num</span>::<span class="ident">FpCategory</span>::<span class="kw-2">*</span>;
+                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">classify</span>() {
+                    <span class="ident">Zero</span> <span class="op">|</span> <span class="ident">Subnormal</span> <span class="op">|</span> <span class="ident">Normal</span> <span class="op">=&gt;</span> {
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>)), <span class="self">self</span>));
                     }
-                    <span class='ident'>Nan</span> <span class='op'>=&gt;</span> {
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;::&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;std&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;::&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='macro'>stringify</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>));
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;::&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;NAN&quot;</span>);
+                    <span class="ident">Nan</span> <span class="op">=&gt;</span> {
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;::&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;std&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;::&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>));
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;::&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;NAN&quot;</span>);
                     }
-                    <span class='ident'>Infinite</span> <span class='op'>=&gt;</span> {
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;::&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;std&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;::&quot;</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='macro'>stringify</span><span class='macro'>!</span>(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ty</span>));
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;::&quot;</span>);
-                        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>is_sign_positive</span>() {
-                            <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;INFINITY&quot;</span>);
-                        } <span class='kw'>else</span> {
-                            <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;NEG_INFINITY&quot;</span>);
+                    <span class="ident">Infinite</span> <span class="op">=&gt;</span> {
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;::&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;std&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;::&quot;</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>));
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;::&quot;</span>);
+                        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_sign_positive</span>() {
+                            <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;INFINITY&quot;</span>);
+                        } <span class="kw">else</span> {
+                            <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;NEG_INFINITY&quot;</span>);
                         }
                     }
                 }
@@ -593,169 +593,169 @@
         }
     };
 }
-<span class='macro'>impl_to_tokens_floating</span><span class='macro'>!</span>(<span class='ident'>f32</span>);
-<span class='macro'>impl_to_tokens_floating</span><span class='macro'>!</span>(<span class='ident'>f64</span>);
+<span class="macro">impl_to_tokens_floating</span><span class="macro">!</span>(<span class="ident">f32</span>);
+<span class="macro">impl_to_tokens_floating</span><span class="macro">!</span>(<span class="ident">f64</span>);
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> [<span class='ident'>T</span>] {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;[&quot;</span>);
-        <span class='kw'>for</span> <span class='ident'>item</span> <span class='kw'>in</span> <span class='self'>self</span> {
-            <span class='ident'>item</span>.<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
-            <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;,&quot;</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> [<span class="ident">T</span>] {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;[&quot;</span>);
+        <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="self">self</span> {
+            <span class="ident">item</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+            <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;,&quot;</span>);
         }
-        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;]&quot;</span>);
+        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;]&quot;</span>);
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-        <span class='self'>self</span>[..].<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+        <span class="self">self</span>[..].<span class="ident">to_tokens</span>(<span class="ident">tokens</span>)
     }
 }
 
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>array_impls</span> {
-    ($(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>N</span>:<span class='ident'>expr</span>)<span class='op'>+</span>) <span class='op'>=&gt;</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">array_impls</span> {
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">N</span>:<span class="ident">expr</span>)<span class="op">+</span>) <span class="op">=&gt;</span> {
         $(
-            <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>ToTokens</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> [<span class='ident'>T</span>; <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>N</span>] {
-                <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-                    <span class='self'>self</span>[..].<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>)
+            <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToTokens</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">N</span>] {
+                <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+                    <span class="self">self</span>[..].<span class="ident">to_tokens</span>(<span class="ident">tokens</span>)
                 }
             }
-        )<span class='op'>+</span>
+        )<span class="op">+</span>
     }
 }
 
-<span class='macro'>array_impls</span><span class='macro'>!</span> {
-     <span class='number'>0</span>  <span class='number'>1</span>  <span class='number'>2</span>  <span class='number'>3</span>  <span class='number'>4</span>  <span class='number'>5</span>  <span class='number'>6</span>  <span class='number'>7</span>  <span class='number'>8</span>  <span class='number'>9</span>
-    <span class='number'>10</span> <span class='number'>11</span> <span class='number'>12</span> <span class='number'>13</span> <span class='number'>14</span> <span class='number'>15</span> <span class='number'>16</span> <span class='number'>17</span> <span class='number'>18</span> <span class='number'>19</span>
-    <span class='number'>20</span> <span class='number'>21</span> <span class='number'>22</span> <span class='number'>23</span> <span class='number'>24</span> <span class='number'>25</span> <span class='number'>26</span> <span class='number'>27</span> <span class='number'>28</span> <span class='number'>29</span>
-    <span class='number'>30</span> <span class='number'>31</span> <span class='number'>32</span>
+<span class="macro">array_impls</span><span class="macro">!</span> {
+     <span class="number">0</span>  <span class="number">1</span>  <span class="number">2</span>  <span class="number">3</span>  <span class="number">4</span>  <span class="number">5</span>  <span class="number">6</span>  <span class="number">7</span>  <span class="number">8</span>  <span class="number">9</span>
+    <span class="number">10</span> <span class="number">11</span> <span class="number">12</span> <span class="number">13</span> <span class="number">14</span> <span class="number">15</span> <span class="number">16</span> <span class="number">17</span> <span class="number">18</span> <span class="number">19</span>
+    <span class="number">20</span> <span class="number">21</span> <span class="number">22</span> <span class="number">23</span> <span class="number">24</span> <span class="number">25</span> <span class="number">26</span> <span class="number">27</span> <span class="number">28</span> <span class="number">29</span>
+    <span class="number">30</span> <span class="number">31</span> <span class="number">32</span>
 }
 
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>tuple_impls</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">tuple_impls</span> {
     ($(
-        <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>Tuple</span>:<span class='ident'>ident</span> {
-            $((<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>idx</span>:<span class='ident'>tt</span>) <span class='op'>-&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>:<span class='ident'>ident</span>)<span class='op'>*</span>
+        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Tuple</span>:<span class="ident">ident</span> {
+            $((<span class="macro-nonterminal">$</span><span class="macro-nonterminal">idx</span>:<span class="ident">tt</span>) <span class="op">-&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ident</span>)<span class="op">*</span>
         }
-    )<span class='op'>+</span>) <span class='op'>=&gt;</span> {
+    )<span class="op">+</span>) <span class="op">=&gt;</span> {
         $(
-            <span class='kw'>impl</span><span class='op'>&lt;</span>$(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>: <span class='ident'>ToTokens</span>),<span class='kw-2'>*</span><span class='op'>&gt;</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> ($(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>T</span>,)<span class='kw-2'>*</span>) {
-                <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-                    <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;(&quot;</span>);
+            <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">ToTokens</span>),<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">ToTokens</span> <span class="kw">for</span> ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>,)<span class="kw-2">*</span>) {
+                <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+                    <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;(&quot;</span>);
                     $(
-                        <span class='self'>self</span>.<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>idx</span>.<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>);
-                        <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;,&quot;</span>);
-                    )<span class='op'>*</span>
-                    <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;)&quot;</span>);
+                        <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">idx</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+                        <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;,&quot;</span>);
+                    )<span class="op">*</span>
+                    <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;)&quot;</span>);
                 }
             }
-        )<span class='op'>+</span>
+        )<span class="op">+</span>
     }
 }
 
-<span class='macro'>tuple_impls</span><span class='macro'>!</span> {
-    <span class='ident'>Tuple0</span> {}
-    <span class='ident'>Tuple1</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
+<span class="macro">tuple_impls</span><span class="macro">!</span> {
+    <span class="ident">Tuple0</span> {}
+    <span class="ident">Tuple1</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
     }
-    <span class='ident'>Tuple2</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
+    <span class="ident">Tuple2</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
     }
-    <span class='ident'>Tuple3</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
+    <span class="ident">Tuple3</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
     }
-    <span class='ident'>Tuple4</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
+    <span class="ident">Tuple4</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
     }
-    <span class='ident'>Tuple5</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
+    <span class="ident">Tuple5</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
     }
-    <span class='ident'>Tuple6</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
+    <span class="ident">Tuple6</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
     }
-    <span class='ident'>Tuple7</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
-        (<span class='number'>6</span>) <span class='op'>-&gt;</span> <span class='ident'>G</span>
+    <span class="ident">Tuple7</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
+        (<span class="number">6</span>) <span class="op">-&gt;</span> <span class="ident">G</span>
     }
-    <span class='ident'>Tuple8</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
-        (<span class='number'>6</span>) <span class='op'>-&gt;</span> <span class='ident'>G</span>
-        (<span class='number'>7</span>) <span class='op'>-&gt;</span> <span class='ident'>H</span>
+    <span class="ident">Tuple8</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
+        (<span class="number">6</span>) <span class="op">-&gt;</span> <span class="ident">G</span>
+        (<span class="number">7</span>) <span class="op">-&gt;</span> <span class="ident">H</span>
     }
-    <span class='ident'>Tuple9</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
-        (<span class='number'>6</span>) <span class='op'>-&gt;</span> <span class='ident'>G</span>
-        (<span class='number'>7</span>) <span class='op'>-&gt;</span> <span class='ident'>H</span>
-        (<span class='number'>8</span>) <span class='op'>-&gt;</span> <span class='ident'>I</span>
+    <span class="ident">Tuple9</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
+        (<span class="number">6</span>) <span class="op">-&gt;</span> <span class="ident">G</span>
+        (<span class="number">7</span>) <span class="op">-&gt;</span> <span class="ident">H</span>
+        (<span class="number">8</span>) <span class="op">-&gt;</span> <span class="ident">I</span>
     }
-    <span class='ident'>Tuple10</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
-        (<span class='number'>6</span>) <span class='op'>-&gt;</span> <span class='ident'>G</span>
-        (<span class='number'>7</span>) <span class='op'>-&gt;</span> <span class='ident'>H</span>
-        (<span class='number'>8</span>) <span class='op'>-&gt;</span> <span class='ident'>I</span>
-        (<span class='number'>9</span>) <span class='op'>-&gt;</span> <span class='ident'>J</span>
+    <span class="ident">Tuple10</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
+        (<span class="number">6</span>) <span class="op">-&gt;</span> <span class="ident">G</span>
+        (<span class="number">7</span>) <span class="op">-&gt;</span> <span class="ident">H</span>
+        (<span class="number">8</span>) <span class="op">-&gt;</span> <span class="ident">I</span>
+        (<span class="number">9</span>) <span class="op">-&gt;</span> <span class="ident">J</span>
     }
-    <span class='ident'>Tuple11</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
-        (<span class='number'>6</span>) <span class='op'>-&gt;</span> <span class='ident'>G</span>
-        (<span class='number'>7</span>) <span class='op'>-&gt;</span> <span class='ident'>H</span>
-        (<span class='number'>8</span>) <span class='op'>-&gt;</span> <span class='ident'>I</span>
-        (<span class='number'>9</span>) <span class='op'>-&gt;</span> <span class='ident'>J</span>
-        (<span class='number'>10</span>) <span class='op'>-&gt;</span> <span class='ident'>K</span>
+    <span class="ident">Tuple11</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
+        (<span class="number">6</span>) <span class="op">-&gt;</span> <span class="ident">G</span>
+        (<span class="number">7</span>) <span class="op">-&gt;</span> <span class="ident">H</span>
+        (<span class="number">8</span>) <span class="op">-&gt;</span> <span class="ident">I</span>
+        (<span class="number">9</span>) <span class="op">-&gt;</span> <span class="ident">J</span>
+        (<span class="number">10</span>) <span class="op">-&gt;</span> <span class="ident">K</span>
     }
-    <span class='ident'>Tuple12</span> {
-        (<span class='number'>0</span>) <span class='op'>-&gt;</span> <span class='ident'>A</span>
-        (<span class='number'>1</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span>
-        (<span class='number'>2</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span>
-        (<span class='number'>3</span>) <span class='op'>-&gt;</span> <span class='ident'>D</span>
-        (<span class='number'>4</span>) <span class='op'>-&gt;</span> <span class='ident'>E</span>
-        (<span class='number'>5</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>
-        (<span class='number'>6</span>) <span class='op'>-&gt;</span> <span class='ident'>G</span>
-        (<span class='number'>7</span>) <span class='op'>-&gt;</span> <span class='ident'>H</span>
-        (<span class='number'>8</span>) <span class='op'>-&gt;</span> <span class='ident'>I</span>
-        (<span class='number'>9</span>) <span class='op'>-&gt;</span> <span class='ident'>J</span>
-        (<span class='number'>10</span>) <span class='op'>-&gt;</span> <span class='ident'>K</span>
-        (<span class='number'>11</span>) <span class='op'>-&gt;</span> <span class='ident'>L</span>
+    <span class="ident">Tuple12</span> {
+        (<span class="number">0</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+        (<span class="number">1</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+        (<span class="number">2</span>) <span class="op">-&gt;</span> <span class="ident">C</span>
+        (<span class="number">3</span>) <span class="op">-&gt;</span> <span class="ident">D</span>
+        (<span class="number">4</span>) <span class="op">-&gt;</span> <span class="ident">E</span>
+        (<span class="number">5</span>) <span class="op">-&gt;</span> <span class="ident">F</span>
+        (<span class="number">6</span>) <span class="op">-&gt;</span> <span class="ident">G</span>
+        (<span class="number">7</span>) <span class="op">-&gt;</span> <span class="ident">H</span>
+        (<span class="number">8</span>) <span class="op">-&gt;</span> <span class="ident">I</span>
+        (<span class="number">9</span>) <span class="op">-&gt;</span> <span class="ident">J</span>
+        (<span class="number">10</span>) <span class="op">-&gt;</span> <span class="ident">K</span>
+        (<span class="number">11</span>) <span class="op">-&gt;</span> <span class="ident">L</span>
     }
 }
 </pre>

@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -297,40 +297,40 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
-</pre><pre class='rust '>
-<span class='comment'>// This file comes from the `dtoa` port by David Tolnay:</span>
-<span class='comment'>// https://github.com/dtolnay/dtoa</span>
-<span class='comment'>//</span>
-<span class='comment'>// Copyright 2016 Dtoa Developers</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// This file comes from the `dtoa` port by David Tolnay:</span>
+<span class="comment">// https://github.com/dtolnay/dtoa</span>
+<span class="comment">//</span>
+<span class="comment">// Copyright 2016 Dtoa Developers</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>mem</span>, <span class='ident'>ops</span>};
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">mem</span>, <span class="ident">ops</span>};
 
-<span class='kw'>const</span> <span class='ident'>DIY_SIGNIFICAND_SIZE</span>: <span class='ident'>isize</span> <span class='op'>=</span> <span class='number'>64</span>;
-<span class='kw'>const</span> <span class='ident'>DP_SIGNIFICAND_SIZE</span>: <span class='ident'>isize</span> <span class='op'>=</span> <span class='number'>52</span>;
-<span class='kw'>const</span> <span class='ident'>DP_EXPONENT_BIAS</span>: <span class='ident'>isize</span> <span class='op'>=</span> <span class='number'>0x3FF</span> <span class='op'>+</span> <span class='ident'>DP_SIGNIFICAND_SIZE</span>;
-<span class='kw'>const</span> <span class='ident'>DP_MIN_EXPONENT</span>: <span class='ident'>isize</span> <span class='op'>=</span> <span class='op'>-</span><span class='ident'>DP_EXPONENT_BIAS</span>;
-<span class='kw'>const</span> <span class='ident'>DP_EXPONENT_MASK</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>0x7FF0000000000000</span>;
-<span class='kw'>const</span> <span class='ident'>DP_SIGNIFICAND_MASK</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>0x000FFFFFFFFFFFFF</span>;
-<span class='kw'>const</span> <span class='ident'>DP_HIDDEN_BIT</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='number'>0x0010000000000000</span>;
+<span class="kw">const</span> <span class="ident">DIY_SIGNIFICAND_SIZE</span>: <span class="ident">isize</span> <span class="op">=</span> <span class="number">64</span>;
+<span class="kw">const</span> <span class="ident">DP_SIGNIFICAND_SIZE</span>: <span class="ident">isize</span> <span class="op">=</span> <span class="number">52</span>;
+<span class="kw">const</span> <span class="ident">DP_EXPONENT_BIAS</span>: <span class="ident">isize</span> <span class="op">=</span> <span class="number">0x3FF</span> <span class="op">+</span> <span class="ident">DP_SIGNIFICAND_SIZE</span>;
+<span class="kw">const</span> <span class="ident">DP_MIN_EXPONENT</span>: <span class="ident">isize</span> <span class="op">=</span> <span class="op">-</span><span class="ident">DP_EXPONENT_BIAS</span>;
+<span class="kw">const</span> <span class="ident">DP_EXPONENT_MASK</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x7FF0000000000000</span>;
+<span class="kw">const</span> <span class="ident">DP_SIGNIFICAND_MASK</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x000FFFFFFFFFFFFF</span>;
+<span class="kw">const</span> <span class="ident">DP_HIDDEN_BIT</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="number">0x0010000000000000</span>;
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>, <span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>DiyFp</span> {
-    <span class='kw'>pub</span> <span class='ident'>f</span>: <span class='ident'>u64</span>,
-    <span class='kw'>pub</span> <span class='ident'>e</span>: <span class='ident'>isize</span>,
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DiyFp</span> {
+    <span class="kw">pub</span> <span class="ident">f</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">e</span>: <span class="ident">isize</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>DiyFp</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>f</span>: <span class='ident'>u64</span>, <span class='ident'>e</span>: <span class='ident'>isize</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>DiyFp</span> { <span class='ident'>f</span>: <span class='ident'>f</span>, <span class='ident'>e</span>: <span class='ident'>e</span> }
+<span class="kw">impl</span> <span class="ident">DiyFp</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">f</span>: <span class="ident">u64</span>, <span class="ident">e</span>: <span class="ident">isize</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">DiyFp</span> { <span class="ident">f</span>: <span class="ident">f</span>, <span class="ident">e</span>: <span class="ident">e</span> }
     }
 
-    <span class='comment'>/*
+    <span class="comment">/*
     explicit DiyFp(double d) {
         union {
             double d;
@@ -349,25 +349,25 @@
         }
     }
     */</span>
-    <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>from_f64</span>(<span class='ident'>d</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>u</span>: <span class='ident'>u64</span> <span class='op'>=</span> <span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='ident'>d</span>);
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_f64</span>(<span class="ident">d</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">u</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="ident">d</span>);
 
-        <span class='kw'>let</span> <span class='ident'>biased_e</span> <span class='op'>=</span> ((<span class='ident'>u</span> <span class='op'>&amp;</span> <span class='ident'>DP_EXPONENT_MASK</span>) <span class='op'>&gt;&gt;</span> <span class='ident'>DP_SIGNIFICAND_SIZE</span>) <span class='kw'>as</span> <span class='ident'>isize</span>;
-        <span class='kw'>let</span> <span class='ident'>significand</span> <span class='op'>=</span> <span class='ident'>u</span> <span class='op'>&amp;</span> <span class='ident'>DP_SIGNIFICAND_MASK</span>;
-        <span class='kw'>if</span> <span class='ident'>biased_e</span> <span class='op'>!=</span> <span class='number'>0</span> {
-            <span class='ident'>DiyFp</span> {
-                <span class='ident'>f</span>: <span class='ident'>significand</span> <span class='op'>+</span> <span class='ident'>DP_HIDDEN_BIT</span>,
-                <span class='ident'>e</span>: <span class='ident'>biased_e</span> <span class='op'>-</span> <span class='ident'>DP_EXPONENT_BIAS</span>,
+        <span class="kw">let</span> <span class="ident">biased_e</span> <span class="op">=</span> ((<span class="ident">u</span> <span class="op">&amp;</span> <span class="ident">DP_EXPONENT_MASK</span>) <span class="op">&gt;&gt;</span> <span class="ident">DP_SIGNIFICAND_SIZE</span>) <span class="kw">as</span> <span class="ident">isize</span>;
+        <span class="kw">let</span> <span class="ident">significand</span> <span class="op">=</span> <span class="ident">u</span> <span class="op">&amp;</span> <span class="ident">DP_SIGNIFICAND_MASK</span>;
+        <span class="kw">if</span> <span class="ident">biased_e</span> <span class="op">!=</span> <span class="number">0</span> {
+            <span class="ident">DiyFp</span> {
+                <span class="ident">f</span>: <span class="ident">significand</span> <span class="op">+</span> <span class="ident">DP_HIDDEN_BIT</span>,
+                <span class="ident">e</span>: <span class="ident">biased_e</span> <span class="op">-</span> <span class="ident">DP_EXPONENT_BIAS</span>,
             }
-        } <span class='kw'>else</span> {
-            <span class='ident'>DiyFp</span> {
-                <span class='ident'>f</span>: <span class='ident'>significand</span>,
-                <span class='ident'>e</span>: <span class='ident'>DP_MIN_EXPONENT</span> <span class='op'>+</span> <span class='number'>1</span>,
+        } <span class="kw">else</span> {
+            <span class="ident">DiyFp</span> {
+                <span class="ident">f</span>: <span class="ident">significand</span>,
+                <span class="ident">e</span>: <span class="ident">DP_MIN_EXPONENT</span> <span class="op">+</span> <span class="number">1</span>,
             }
         }
     }
 
-    <span class='comment'>/*
+    <span class="comment">/*
     DiyFp Normalize() const {
         DiyFp res = *this;
         while (!(res.f &amp; (static_cast&lt;uint64_t&gt;(1) &lt;&lt; 63))) {
@@ -377,16 +377,16 @@
         return res;
     }
     */</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>normalize</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>DiyFp</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='self'>self</span>;
-        <span class='kw'>while</span> (<span class='ident'>res</span>.<span class='ident'>f</span> <span class='op'>&amp;</span> (<span class='number'>1u64</span> <span class='op'>&lt;&lt;</span> <span class='number'>63</span>)) <span class='op'>==</span> <span class='number'>0</span> {
-            <span class='ident'>res</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;=</span> <span class='number'>1</span>;
-            <span class='ident'>res</span>.<span class='ident'>e</span> <span class='op'>-=</span> <span class='number'>1</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">DiyFp</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>;
+        <span class="kw">while</span> (<span class="ident">res</span>.<span class="ident">f</span> <span class="op">&amp;</span> (<span class="number">1u64</span> <span class="op">&lt;&lt;</span> <span class="number">63</span>)) <span class="op">==</span> <span class="number">0</span> {
+            <span class="ident">res</span>.<span class="ident">f</span> <span class="op">&lt;&lt;=</span> <span class="number">1</span>;
+            <span class="ident">res</span>.<span class="ident">e</span> <span class="op">-=</span> <span class="number">1</span>;
         }
-        <span class='ident'>res</span>
+        <span class="ident">res</span>
     }
 
-    <span class='comment'>/*
+    <span class="comment">/*
     DiyFp NormalizeBoundary() const {
         DiyFp res = *this;
         while (!(res.f &amp; (kDpHiddenBit &lt;&lt; 1))) {
@@ -398,18 +398,18 @@
         return res;
     }
     */</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>normalize_boundary</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>DiyFp</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='self'>self</span>;
-        <span class='kw'>while</span> (<span class='ident'>res</span>.<span class='ident'>f</span> <span class='op'>&amp;</span> <span class='ident'>DP_HIDDEN_BIT</span> <span class='op'>&lt;&lt;</span> <span class='number'>1</span>) <span class='op'>==</span> <span class='number'>0</span> {
-            <span class='ident'>res</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;=</span> <span class='number'>1</span>;
-            <span class='ident'>res</span>.<span class='ident'>e</span> <span class='op'>-=</span> <span class='number'>1</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize_boundary</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">DiyFp</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="self">self</span>;
+        <span class="kw">while</span> (<span class="ident">res</span>.<span class="ident">f</span> <span class="op">&amp;</span> <span class="ident">DP_HIDDEN_BIT</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>) <span class="op">==</span> <span class="number">0</span> {
+            <span class="ident">res</span>.<span class="ident">f</span> <span class="op">&lt;&lt;=</span> <span class="number">1</span>;
+            <span class="ident">res</span>.<span class="ident">e</span> <span class="op">-=</span> <span class="number">1</span>;
         }
-        <span class='ident'>res</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;=</span> <span class='ident'>DIY_SIGNIFICAND_SIZE</span> <span class='op'>-</span> <span class='ident'>DP_SIGNIFICAND_SIZE</span> <span class='op'>-</span> <span class='number'>2</span>;
-        <span class='ident'>res</span>.<span class='ident'>e</span> <span class='op'>-=</span> <span class='ident'>DIY_SIGNIFICAND_SIZE</span> <span class='op'>-</span> <span class='ident'>DP_SIGNIFICAND_SIZE</span> <span class='op'>-</span> <span class='number'>2</span>;
-        <span class='ident'>res</span>
+        <span class="ident">res</span>.<span class="ident">f</span> <span class="op">&lt;&lt;=</span> <span class="ident">DIY_SIGNIFICAND_SIZE</span> <span class="op">-</span> <span class="ident">DP_SIGNIFICAND_SIZE</span> <span class="op">-</span> <span class="number">2</span>;
+        <span class="ident">res</span>.<span class="ident">e</span> <span class="op">-=</span> <span class="ident">DIY_SIGNIFICAND_SIZE</span> <span class="op">-</span> <span class="ident">DP_SIGNIFICAND_SIZE</span> <span class="op">-</span> <span class="number">2</span>;
+        <span class="ident">res</span>
     }
 
-    <span class='comment'>/*
+    <span class="comment">/*
     void NormalizedBoundaries(DiyFp* minus, DiyFp* plus) const {
         DiyFp pl = DiyFp((f &lt;&lt; 1) + 1, e - 1).NormalizeBoundary();
         DiyFp mi = (f == kDpHiddenBit) ? DiyFp((f &lt;&lt; 2) - 1, e - 2) : DiyFp((f &lt;&lt; 1) - 1, e - 1);
@@ -419,113 +419,113 @@
         *minus = mi;
     }
     */</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>normalized_boundaries</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>DiyFp</span>, <span class='ident'>DiyFp</span>) {
-        <span class='kw'>let</span> <span class='ident'>pl</span> <span class='op'>=</span> <span class='ident'>DiyFp</span>::<span class='ident'>new</span>((<span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;</span> <span class='number'>1</span>) <span class='op'>+</span> <span class='number'>1</span>, <span class='self'>self</span>.<span class='ident'>e</span> <span class='op'>-</span> <span class='number'>1</span>).<span class='ident'>normalize_boundary</span>();
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>mi</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>==</span> <span class='ident'>DP_HIDDEN_BIT</span> {
-            <span class='ident'>DiyFp</span>::<span class='ident'>new</span>((<span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;</span> <span class='number'>2</span>) <span class='op'>-</span> <span class='number'>1</span>, <span class='self'>self</span>.<span class='ident'>e</span> <span class='op'>-</span> <span class='number'>2</span>)
-        } <span class='kw'>else</span> {
-            <span class='ident'>DiyFp</span>::<span class='ident'>new</span>((<span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;</span> <span class='number'>1</span>) <span class='op'>-</span> <span class='number'>1</span>, <span class='self'>self</span>.<span class='ident'>e</span> <span class='op'>-</span> <span class='number'>1</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalized_boundaries</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">DiyFp</span>, <span class="ident">DiyFp</span>) {
+        <span class="kw">let</span> <span class="ident">pl</span> <span class="op">=</span> <span class="ident">DiyFp</span>::<span class="ident">new</span>((<span class="self">self</span>.<span class="ident">f</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>) <span class="op">+</span> <span class="number">1</span>, <span class="self">self</span>.<span class="ident">e</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">normalize_boundary</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mi</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">f</span> <span class="op">==</span> <span class="ident">DP_HIDDEN_BIT</span> {
+            <span class="ident">DiyFp</span>::<span class="ident">new</span>((<span class="self">self</span>.<span class="ident">f</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>) <span class="op">-</span> <span class="number">1</span>, <span class="self">self</span>.<span class="ident">e</span> <span class="op">-</span> <span class="number">2</span>)
+        } <span class="kw">else</span> {
+            <span class="ident">DiyFp</span>::<span class="ident">new</span>((<span class="self">self</span>.<span class="ident">f</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>) <span class="op">-</span> <span class="number">1</span>, <span class="self">self</span>.<span class="ident">e</span> <span class="op">-</span> <span class="number">1</span>)
         };
-        <span class='ident'>mi</span>.<span class='ident'>f</span> <span class='op'>&lt;&lt;=</span> <span class='ident'>mi</span>.<span class='ident'>e</span> <span class='op'>-</span> <span class='ident'>pl</span>.<span class='ident'>e</span>;
-        <span class='ident'>mi</span>.<span class='ident'>e</span> <span class='op'>=</span> <span class='ident'>pl</span>.<span class='ident'>e</span>;
-        (<span class='ident'>mi</span>, <span class='ident'>pl</span>)
+        <span class="ident">mi</span>.<span class="ident">f</span> <span class="op">&lt;&lt;=</span> <span class="ident">mi</span>.<span class="ident">e</span> <span class="op">-</span> <span class="ident">pl</span>.<span class="ident">e</span>;
+        <span class="ident">mi</span>.<span class="ident">e</span> <span class="op">=</span> <span class="ident">pl</span>.<span class="ident">e</span>;
+        (<span class="ident">mi</span>, <span class="ident">pl</span>)
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>ops</span>::<span class='ident'>Sub</span> <span class='kw'>for</span> <span class='ident'>DiyFp</span> {
-    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>DiyFp</span>;
-    <span class='kw'>fn</span> <span class='ident'>sub</span>(<span class='self'>self</span>, <span class='ident'>rhs</span>: <span class='ident'>DiyFp</span>) <span class='op'>-&gt;</span> <span class='ident'>DiyFp</span> {
-        <span class='ident'>DiyFp</span> {
-            <span class='ident'>f</span>: <span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>-</span> <span class='ident'>rhs</span>.<span class='ident'>f</span>,
-            <span class='ident'>e</span>: <span class='self'>self</span>.<span class='ident'>e</span>,
+<span class="kw">impl</span> <span class="ident">ops</span>::<span class="ident">Sub</span> <span class="kw">for</span> <span class="ident">DiyFp</span> {
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">DiyFp</span>;
+    <span class="kw">fn</span> <span class="ident">sub</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">DiyFp</span>) <span class="op">-&gt;</span> <span class="ident">DiyFp</span> {
+        <span class="ident">DiyFp</span> {
+            <span class="ident">f</span>: <span class="self">self</span>.<span class="ident">f</span> <span class="op">-</span> <span class="ident">rhs</span>.<span class="ident">f</span>,
+            <span class="ident">e</span>: <span class="self">self</span>.<span class="ident">e</span>,
         }
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>ops</span>::<span class='ident'>Mul</span> <span class='kw'>for</span> <span class='ident'>DiyFp</span> {
-    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>DiyFp</span>;
-    <span class='kw'>fn</span> <span class='ident'>mul</span>(<span class='self'>self</span>, <span class='ident'>rhs</span>: <span class='ident'>DiyFp</span>) <span class='op'>-&gt;</span> <span class='ident'>DiyFp</span> {
-        <span class='kw'>let</span> <span class='ident'>m32</span> <span class='op'>=</span> <span class='number'>0xFFFFFFFFu64</span>;
-        <span class='kw'>let</span> <span class='ident'>a</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>&gt;&gt;</span> <span class='number'>32</span>;
-        <span class='kw'>let</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>f</span> <span class='op'>&amp;</span> <span class='ident'>m32</span>;
-        <span class='kw'>let</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>rhs</span>.<span class='ident'>f</span> <span class='op'>&gt;&gt;</span> <span class='number'>32</span>;
-        <span class='kw'>let</span> <span class='ident'>d</span> <span class='op'>=</span> <span class='ident'>rhs</span>.<span class='ident'>f</span> <span class='op'>&amp;</span> <span class='ident'>m32</span>;
-        <span class='kw'>let</span> <span class='ident'>ac</span> <span class='op'>=</span> <span class='ident'>a</span> <span class='op'>*</span> <span class='ident'>c</span>;
-        <span class='kw'>let</span> <span class='ident'>bc</span> <span class='op'>=</span> <span class='ident'>b</span> <span class='op'>*</span> <span class='ident'>c</span>;
-        <span class='kw'>let</span> <span class='ident'>ad</span> <span class='op'>=</span> <span class='ident'>a</span> <span class='op'>*</span> <span class='ident'>d</span>;
-        <span class='kw'>let</span> <span class='ident'>bd</span> <span class='op'>=</span> <span class='ident'>b</span> <span class='op'>*</span> <span class='ident'>d</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tmp</span> <span class='op'>=</span> (<span class='ident'>bd</span> <span class='op'>&gt;&gt;</span> <span class='number'>32</span>) <span class='op'>+</span> (<span class='ident'>ad</span> <span class='op'>&amp;</span> <span class='ident'>m32</span>) <span class='op'>+</span> (<span class='ident'>bc</span> <span class='op'>&amp;</span> <span class='ident'>m32</span>);
-        <span class='ident'>tmp</span> <span class='op'>+=</span> <span class='number'>1u64</span> <span class='op'>&lt;&lt;</span> <span class='number'>31</span>; <span class='comment'>// mult_round</span>
-        <span class='ident'>DiyFp</span> {
-            <span class='ident'>f</span>: <span class='ident'>ac</span> <span class='op'>+</span> (<span class='ident'>ad</span> <span class='op'>&gt;&gt;</span> <span class='number'>32</span>) <span class='op'>+</span> (<span class='ident'>bc</span> <span class='op'>&gt;&gt;</span> <span class='number'>32</span>) <span class='op'>+</span> (<span class='ident'>tmp</span> <span class='op'>&gt;&gt;</span> <span class='number'>32</span>),
-            <span class='ident'>e</span>: <span class='self'>self</span>.<span class='ident'>e</span> <span class='op'>+</span> <span class='ident'>rhs</span>.<span class='ident'>e</span> <span class='op'>+</span> <span class='number'>64</span>,
+<span class="kw">impl</span> <span class="ident">ops</span>::<span class="ident">Mul</span> <span class="kw">for</span> <span class="ident">DiyFp</span> {
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">DiyFp</span>;
+    <span class="kw">fn</span> <span class="ident">mul</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">DiyFp</span>) <span class="op">-&gt;</span> <span class="ident">DiyFp</span> {
+        <span class="kw">let</span> <span class="ident">m32</span> <span class="op">=</span> <span class="number">0xFFFFFFFFu64</span>;
+        <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">f</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>;
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">f</span> <span class="op">&amp;</span> <span class="ident">m32</span>;
+        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">f</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>;
+        <span class="kw">let</span> <span class="ident">d</span> <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">f</span> <span class="op">&amp;</span> <span class="ident">m32</span>;
+        <span class="kw">let</span> <span class="ident">ac</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">c</span>;
+        <span class="kw">let</span> <span class="ident">bc</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">c</span>;
+        <span class="kw">let</span> <span class="ident">ad</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">d</span>;
+        <span class="kw">let</span> <span class="ident">bd</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">d</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> <span class="op">=</span> (<span class="ident">bd</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>) <span class="op">+</span> (<span class="ident">ad</span> <span class="op">&amp;</span> <span class="ident">m32</span>) <span class="op">+</span> (<span class="ident">bc</span> <span class="op">&amp;</span> <span class="ident">m32</span>);
+        <span class="ident">tmp</span> <span class="op">+=</span> <span class="number">1u64</span> <span class="op">&lt;&lt;</span> <span class="number">31</span>; <span class="comment">// mult_round</span>
+        <span class="ident">DiyFp</span> {
+            <span class="ident">f</span>: <span class="ident">ac</span> <span class="op">+</span> (<span class="ident">ad</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>) <span class="op">+</span> (<span class="ident">bc</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>) <span class="op">+</span> (<span class="ident">tmp</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>),
+            <span class="ident">e</span>: <span class="self">self</span>.<span class="ident">e</span> <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">e</span> <span class="op">+</span> <span class="number">64</span>,
         }
     }
 }
 
-<span class='kw'>fn</span> <span class='ident'>get_cached_power_by_index</span>(<span class='ident'>index</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>DiyFp</span> {
-    <span class='comment'>// 10^-348, 10^-340, ..., 10^340</span>
-    <span class='kw'>static</span> <span class='ident'>CACHED_POWERS_F</span>: [<span class='ident'>u64</span>; <span class='number'>87</span>] <span class='op'>=</span> [
-        <span class='number'>0xfa8fd5a0081c0288</span>, <span class='number'>0xbaaee17fa23ebf76</span>,
-        <span class='number'>0x8b16fb203055ac76</span>, <span class='number'>0xcf42894a5dce35ea</span>,
-        <span class='number'>0x9a6bb0aa55653b2d</span>, <span class='number'>0xe61acf033d1a45df</span>,
-        <span class='number'>0xab70fe17c79ac6ca</span>, <span class='number'>0xff77b1fcbebcdc4f</span>,
-        <span class='number'>0xbe5691ef416bd60c</span>, <span class='number'>0x8dd01fad907ffc3c</span>,
-        <span class='number'>0xd3515c2831559a83</span>, <span class='number'>0x9d71ac8fada6c9b5</span>,
-        <span class='number'>0xea9c227723ee8bcb</span>, <span class='number'>0xaecc49914078536d</span>,
-        <span class='number'>0x823c12795db6ce57</span>, <span class='number'>0xc21094364dfb5637</span>,
-        <span class='number'>0x9096ea6f3848984f</span>, <span class='number'>0xd77485cb25823ac7</span>,
-        <span class='number'>0xa086cfcd97bf97f4</span>, <span class='number'>0xef340a98172aace5</span>,
-        <span class='number'>0xb23867fb2a35b28e</span>, <span class='number'>0x84c8d4dfd2c63f3b</span>,
-        <span class='number'>0xc5dd44271ad3cdba</span>, <span class='number'>0x936b9fcebb25c996</span>,
-        <span class='number'>0xdbac6c247d62a584</span>, <span class='number'>0xa3ab66580d5fdaf6</span>,
-        <span class='number'>0xf3e2f893dec3f126</span>, <span class='number'>0xb5b5ada8aaff80b8</span>,
-        <span class='number'>0x87625f056c7c4a8b</span>, <span class='number'>0xc9bcff6034c13053</span>,
-        <span class='number'>0x964e858c91ba2655</span>, <span class='number'>0xdff9772470297ebd</span>,
-        <span class='number'>0xa6dfbd9fb8e5b88f</span>, <span class='number'>0xf8a95fcf88747d94</span>,
-        <span class='number'>0xb94470938fa89bcf</span>, <span class='number'>0x8a08f0f8bf0f156b</span>,
-        <span class='number'>0xcdb02555653131b6</span>, <span class='number'>0x993fe2c6d07b7fac</span>,
-        <span class='number'>0xe45c10c42a2b3b06</span>, <span class='number'>0xaa242499697392d3</span>,
-        <span class='number'>0xfd87b5f28300ca0e</span>, <span class='number'>0xbce5086492111aeb</span>,
-        <span class='number'>0x8cbccc096f5088cc</span>, <span class='number'>0xd1b71758e219652c</span>,
-        <span class='number'>0x9c40000000000000</span>, <span class='number'>0xe8d4a51000000000</span>,
-        <span class='number'>0xad78ebc5ac620000</span>, <span class='number'>0x813f3978f8940984</span>,
-        <span class='number'>0xc097ce7bc90715b3</span>, <span class='number'>0x8f7e32ce7bea5c70</span>,
-        <span class='number'>0xd5d238a4abe98068</span>, <span class='number'>0x9f4f2726179a2245</span>,
-        <span class='number'>0xed63a231d4c4fb27</span>, <span class='number'>0xb0de65388cc8ada8</span>,
-        <span class='number'>0x83c7088e1aab65db</span>, <span class='number'>0xc45d1df942711d9a</span>,
-        <span class='number'>0x924d692ca61be758</span>, <span class='number'>0xda01ee641a708dea</span>,
-        <span class='number'>0xa26da3999aef774a</span>, <span class='number'>0xf209787bb47d6b85</span>,
-        <span class='number'>0xb454e4a179dd1877</span>, <span class='number'>0x865b86925b9bc5c2</span>,
-        <span class='number'>0xc83553c5c8965d3d</span>, <span class='number'>0x952ab45cfa97a0b3</span>,
-        <span class='number'>0xde469fbd99a05fe3</span>, <span class='number'>0xa59bc234db398c25</span>,
-        <span class='number'>0xf6c69a72a3989f5c</span>, <span class='number'>0xb7dcbf5354e9bece</span>,
-        <span class='number'>0x88fcf317f22241e2</span>, <span class='number'>0xcc20ce9bd35c78a5</span>,
-        <span class='number'>0x98165af37b2153df</span>, <span class='number'>0xe2a0b5dc971f303a</span>,
-        <span class='number'>0xa8d9d1535ce3b396</span>, <span class='number'>0xfb9b7cd9a4a7443c</span>,
-        <span class='number'>0xbb764c4ca7a44410</span>, <span class='number'>0x8bab8eefb6409c1a</span>,
-        <span class='number'>0xd01fef10a657842c</span>, <span class='number'>0x9b10a4e5e9913129</span>,
-        <span class='number'>0xe7109bfba19c0c9d</span>, <span class='number'>0xac2820d9623bf429</span>,
-        <span class='number'>0x80444b5e7aa7cf85</span>, <span class='number'>0xbf21e44003acdd2d</span>,
-        <span class='number'>0x8e679c2f5e44ff8f</span>, <span class='number'>0xd433179d9c8cb841</span>,
-        <span class='number'>0x9e19db92b4e31ba9</span>, <span class='number'>0xeb96bf6ebadf77d9</span>,
-        <span class='number'>0xaf87023b9bf0ee6b</span>,
+<span class="kw">fn</span> <span class="ident">get_cached_power_by_index</span>(<span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">DiyFp</span> {
+    <span class="comment">// 10^-348, 10^-340, ..., 10^340</span>
+    <span class="kw">static</span> <span class="ident">CACHED_POWERS_F</span>: [<span class="ident">u64</span>; <span class="number">87</span>] <span class="op">=</span> [
+        <span class="number">0xfa8fd5a0081c0288</span>, <span class="number">0xbaaee17fa23ebf76</span>,
+        <span class="number">0x8b16fb203055ac76</span>, <span class="number">0xcf42894a5dce35ea</span>,
+        <span class="number">0x9a6bb0aa55653b2d</span>, <span class="number">0xe61acf033d1a45df</span>,
+        <span class="number">0xab70fe17c79ac6ca</span>, <span class="number">0xff77b1fcbebcdc4f</span>,
+        <span class="number">0xbe5691ef416bd60c</span>, <span class="number">0x8dd01fad907ffc3c</span>,
+        <span class="number">0xd3515c2831559a83</span>, <span class="number">0x9d71ac8fada6c9b5</span>,
+        <span class="number">0xea9c227723ee8bcb</span>, <span class="number">0xaecc49914078536d</span>,
+        <span class="number">0x823c12795db6ce57</span>, <span class="number">0xc21094364dfb5637</span>,
+        <span class="number">0x9096ea6f3848984f</span>, <span class="number">0xd77485cb25823ac7</span>,
+        <span class="number">0xa086cfcd97bf97f4</span>, <span class="number">0xef340a98172aace5</span>,
+        <span class="number">0xb23867fb2a35b28e</span>, <span class="number">0x84c8d4dfd2c63f3b</span>,
+        <span class="number">0xc5dd44271ad3cdba</span>, <span class="number">0x936b9fcebb25c996</span>,
+        <span class="number">0xdbac6c247d62a584</span>, <span class="number">0xa3ab66580d5fdaf6</span>,
+        <span class="number">0xf3e2f893dec3f126</span>, <span class="number">0xb5b5ada8aaff80b8</span>,
+        <span class="number">0x87625f056c7c4a8b</span>, <span class="number">0xc9bcff6034c13053</span>,
+        <span class="number">0x964e858c91ba2655</span>, <span class="number">0xdff9772470297ebd</span>,
+        <span class="number">0xa6dfbd9fb8e5b88f</span>, <span class="number">0xf8a95fcf88747d94</span>,
+        <span class="number">0xb94470938fa89bcf</span>, <span class="number">0x8a08f0f8bf0f156b</span>,
+        <span class="number">0xcdb02555653131b6</span>, <span class="number">0x993fe2c6d07b7fac</span>,
+        <span class="number">0xe45c10c42a2b3b06</span>, <span class="number">0xaa242499697392d3</span>,
+        <span class="number">0xfd87b5f28300ca0e</span>, <span class="number">0xbce5086492111aeb</span>,
+        <span class="number">0x8cbccc096f5088cc</span>, <span class="number">0xd1b71758e219652c</span>,
+        <span class="number">0x9c40000000000000</span>, <span class="number">0xe8d4a51000000000</span>,
+        <span class="number">0xad78ebc5ac620000</span>, <span class="number">0x813f3978f8940984</span>,
+        <span class="number">0xc097ce7bc90715b3</span>, <span class="number">0x8f7e32ce7bea5c70</span>,
+        <span class="number">0xd5d238a4abe98068</span>, <span class="number">0x9f4f2726179a2245</span>,
+        <span class="number">0xed63a231d4c4fb27</span>, <span class="number">0xb0de65388cc8ada8</span>,
+        <span class="number">0x83c7088e1aab65db</span>, <span class="number">0xc45d1df942711d9a</span>,
+        <span class="number">0x924d692ca61be758</span>, <span class="number">0xda01ee641a708dea</span>,
+        <span class="number">0xa26da3999aef774a</span>, <span class="number">0xf209787bb47d6b85</span>,
+        <span class="number">0xb454e4a179dd1877</span>, <span class="number">0x865b86925b9bc5c2</span>,
+        <span class="number">0xc83553c5c8965d3d</span>, <span class="number">0x952ab45cfa97a0b3</span>,
+        <span class="number">0xde469fbd99a05fe3</span>, <span class="number">0xa59bc234db398c25</span>,
+        <span class="number">0xf6c69a72a3989f5c</span>, <span class="number">0xb7dcbf5354e9bece</span>,
+        <span class="number">0x88fcf317f22241e2</span>, <span class="number">0xcc20ce9bd35c78a5</span>,
+        <span class="number">0x98165af37b2153df</span>, <span class="number">0xe2a0b5dc971f303a</span>,
+        <span class="number">0xa8d9d1535ce3b396</span>, <span class="number">0xfb9b7cd9a4a7443c</span>,
+        <span class="number">0xbb764c4ca7a44410</span>, <span class="number">0x8bab8eefb6409c1a</span>,
+        <span class="number">0xd01fef10a657842c</span>, <span class="number">0x9b10a4e5e9913129</span>,
+        <span class="number">0xe7109bfba19c0c9d</span>, <span class="number">0xac2820d9623bf429</span>,
+        <span class="number">0x80444b5e7aa7cf85</span>, <span class="number">0xbf21e44003acdd2d</span>,
+        <span class="number">0x8e679c2f5e44ff8f</span>, <span class="number">0xd433179d9c8cb841</span>,
+        <span class="number">0x9e19db92b4e31ba9</span>, <span class="number">0xeb96bf6ebadf77d9</span>,
+        <span class="number">0xaf87023b9bf0ee6b</span>,
     ];
-    <span class='kw'>static</span> <span class='ident'>CACHED_POWERS_E</span>: [<span class='ident'>i16</span>; <span class='number'>87</span>] <span class='op'>=</span> [
-        <span class='op'>-</span><span class='number'>1220</span>, <span class='op'>-</span><span class='number'>1193</span>, <span class='op'>-</span><span class='number'>1166</span>, <span class='op'>-</span><span class='number'>1140</span>, <span class='op'>-</span><span class='number'>1113</span>, <span class='op'>-</span><span class='number'>1087</span>, <span class='op'>-</span><span class='number'>1060</span>, <span class='op'>-</span><span class='number'>1034</span>, <span class='op'>-</span><span class='number'>1007</span>,  <span class='op'>-</span><span class='number'>980</span>,
-        <span class='op'>-</span><span class='number'>954</span>,  <span class='op'>-</span><span class='number'>927</span>,  <span class='op'>-</span><span class='number'>901</span>,  <span class='op'>-</span><span class='number'>874</span>,  <span class='op'>-</span><span class='number'>847</span>,  <span class='op'>-</span><span class='number'>821</span>,  <span class='op'>-</span><span class='number'>794</span>,  <span class='op'>-</span><span class='number'>768</span>,  <span class='op'>-</span><span class='number'>741</span>,  <span class='op'>-</span><span class='number'>715</span>,
-        <span class='op'>-</span><span class='number'>688</span>,  <span class='op'>-</span><span class='number'>661</span>,  <span class='op'>-</span><span class='number'>635</span>,  <span class='op'>-</span><span class='number'>608</span>,  <span class='op'>-</span><span class='number'>582</span>,  <span class='op'>-</span><span class='number'>555</span>,  <span class='op'>-</span><span class='number'>529</span>,  <span class='op'>-</span><span class='number'>502</span>,  <span class='op'>-</span><span class='number'>475</span>,  <span class='op'>-</span><span class='number'>449</span>,
-        <span class='op'>-</span><span class='number'>422</span>,  <span class='op'>-</span><span class='number'>396</span>,  <span class='op'>-</span><span class='number'>369</span>,  <span class='op'>-</span><span class='number'>343</span>,  <span class='op'>-</span><span class='number'>316</span>,  <span class='op'>-</span><span class='number'>289</span>,  <span class='op'>-</span><span class='number'>263</span>,  <span class='op'>-</span><span class='number'>236</span>,  <span class='op'>-</span><span class='number'>210</span>,  <span class='op'>-</span><span class='number'>183</span>,
-        <span class='op'>-</span><span class='number'>157</span>,  <span class='op'>-</span><span class='number'>130</span>,  <span class='op'>-</span><span class='number'>103</span>,   <span class='op'>-</span><span class='number'>77</span>,   <span class='op'>-</span><span class='number'>50</span>,   <span class='op'>-</span><span class='number'>24</span>,     <span class='number'>3</span>,    <span class='number'>30</span>,    <span class='number'>56</span>,    <span class='number'>83</span>,
-        <span class='number'>109</span>,   <span class='number'>136</span>,   <span class='number'>162</span>,   <span class='number'>189</span>,   <span class='number'>216</span>,   <span class='number'>242</span>,   <span class='number'>269</span>,   <span class='number'>295</span>,   <span class='number'>322</span>,   <span class='number'>348</span>,
-        <span class='number'>375</span>,   <span class='number'>402</span>,   <span class='number'>428</span>,   <span class='number'>455</span>,   <span class='number'>481</span>,   <span class='number'>508</span>,   <span class='number'>534</span>,   <span class='number'>561</span>,   <span class='number'>588</span>,   <span class='number'>614</span>,
-        <span class='number'>641</span>,   <span class='number'>667</span>,   <span class='number'>694</span>,   <span class='number'>720</span>,   <span class='number'>747</span>,   <span class='number'>774</span>,   <span class='number'>800</span>,   <span class='number'>827</span>,   <span class='number'>853</span>,   <span class='number'>880</span>,
-        <span class='number'>907</span>,   <span class='number'>933</span>,   <span class='number'>960</span>,   <span class='number'>986</span>,  <span class='number'>1013</span>,  <span class='number'>1039</span>,  <span class='number'>1066</span>,
+    <span class="kw">static</span> <span class="ident">CACHED_POWERS_E</span>: [<span class="ident">i16</span>; <span class="number">87</span>] <span class="op">=</span> [
+        <span class="op">-</span><span class="number">1220</span>, <span class="op">-</span><span class="number">1193</span>, <span class="op">-</span><span class="number">1166</span>, <span class="op">-</span><span class="number">1140</span>, <span class="op">-</span><span class="number">1113</span>, <span class="op">-</span><span class="number">1087</span>, <span class="op">-</span><span class="number">1060</span>, <span class="op">-</span><span class="number">1034</span>, <span class="op">-</span><span class="number">1007</span>,  <span class="op">-</span><span class="number">980</span>,
+        <span class="op">-</span><span class="number">954</span>,  <span class="op">-</span><span class="number">927</span>,  <span class="op">-</span><span class="number">901</span>,  <span class="op">-</span><span class="number">874</span>,  <span class="op">-</span><span class="number">847</span>,  <span class="op">-</span><span class="number">821</span>,  <span class="op">-</span><span class="number">794</span>,  <span class="op">-</span><span class="number">768</span>,  <span class="op">-</span><span class="number">741</span>,  <span class="op">-</span><span class="number">715</span>,
+        <span class="op">-</span><span class="number">688</span>,  <span class="op">-</span><span class="number">661</span>,  <span class="op">-</span><span class="number">635</span>,  <span class="op">-</span><span class="number">608</span>,  <span class="op">-</span><span class="number">582</span>,  <span class="op">-</span><span class="number">555</span>,  <span class="op">-</span><span class="number">529</span>,  <span class="op">-</span><span class="number">502</span>,  <span class="op">-</span><span class="number">475</span>,  <span class="op">-</span><span class="number">449</span>,
+        <span class="op">-</span><span class="number">422</span>,  <span class="op">-</span><span class="number">396</span>,  <span class="op">-</span><span class="number">369</span>,  <span class="op">-</span><span class="number">343</span>,  <span class="op">-</span><span class="number">316</span>,  <span class="op">-</span><span class="number">289</span>,  <span class="op">-</span><span class="number">263</span>,  <span class="op">-</span><span class="number">236</span>,  <span class="op">-</span><span class="number">210</span>,  <span class="op">-</span><span class="number">183</span>,
+        <span class="op">-</span><span class="number">157</span>,  <span class="op">-</span><span class="number">130</span>,  <span class="op">-</span><span class="number">103</span>,   <span class="op">-</span><span class="number">77</span>,   <span class="op">-</span><span class="number">50</span>,   <span class="op">-</span><span class="number">24</span>,     <span class="number">3</span>,    <span class="number">30</span>,    <span class="number">56</span>,    <span class="number">83</span>,
+        <span class="number">109</span>,   <span class="number">136</span>,   <span class="number">162</span>,   <span class="number">189</span>,   <span class="number">216</span>,   <span class="number">242</span>,   <span class="number">269</span>,   <span class="number">295</span>,   <span class="number">322</span>,   <span class="number">348</span>,
+        <span class="number">375</span>,   <span class="number">402</span>,   <span class="number">428</span>,   <span class="number">455</span>,   <span class="number">481</span>,   <span class="number">508</span>,   <span class="number">534</span>,   <span class="number">561</span>,   <span class="number">588</span>,   <span class="number">614</span>,
+        <span class="number">641</span>,   <span class="number">667</span>,   <span class="number">694</span>,   <span class="number">720</span>,   <span class="number">747</span>,   <span class="number">774</span>,   <span class="number">800</span>,   <span class="number">827</span>,   <span class="number">853</span>,   <span class="number">880</span>,
+        <span class="number">907</span>,   <span class="number">933</span>,   <span class="number">960</span>,   <span class="number">986</span>,  <span class="number">1013</span>,  <span class="number">1039</span>,  <span class="number">1066</span>,
     ];
-    <span class='ident'>DiyFp</span>::<span class='ident'>new</span>(<span class='ident'>CACHED_POWERS_F</span>[<span class='ident'>index</span>], <span class='ident'>CACHED_POWERS_E</span>[<span class='ident'>index</span>] <span class='kw'>as</span> <span class='ident'>isize</span>)
+    <span class="ident">DiyFp</span>::<span class="ident">new</span>(<span class="ident">CACHED_POWERS_F</span>[<span class="ident">index</span>], <span class="ident">CACHED_POWERS_E</span>[<span class="ident">index</span>] <span class="kw">as</span> <span class="ident">isize</span>)
 }
 
-<span class='comment'>/*
+<span class="comment">/*
 inline DiyFp GetCachedPower(int e, int* K) {
     //int k = static_cast&lt;int&gt;(ceil((-61 - e) * 0.30102999566398114)) + 374;
     double dk = (-61 - e) * 0.30102999566398114 + 347;  // dk must be positive, so can do ceiling in positive
@@ -539,18 +539,18 @@ inline DiyFp GetCachedPower(int e, int* K) {
     return GetCachedPowerByIndex(index);
 }
 */</span>
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_cached_power</span>(<span class='ident'>e</span>: <span class='ident'>isize</span>) <span class='op'>-&gt;</span> (<span class='ident'>DiyFp</span>, <span class='ident'>isize</span>) {
-    <span class='kw'>let</span> <span class='ident'>dk</span> <span class='op'>=</span> (<span class='op'>-</span><span class='number'>61</span> <span class='op'>-</span> <span class='ident'>e</span>) <span class='kw'>as</span> <span class='ident'>f64</span> <span class='op'>*</span> <span class='number'>0.30102999566398114f64</span> <span class='op'>+</span> <span class='number'>347f64</span>; <span class='comment'>// dk must be positive, so can do ceiling in positive</span>
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>k</span> <span class='op'>=</span> <span class='ident'>dk</span> <span class='kw'>as</span> <span class='ident'>isize</span>;
-    <span class='kw'>if</span> <span class='ident'>dk</span> <span class='op'>-</span> <span class='ident'>k</span> <span class='kw'>as</span> <span class='ident'>f64</span> <span class='op'>&gt;</span> <span class='number'>0.0</span> {
-        <span class='ident'>k</span> <span class='op'>+=</span> <span class='number'>1</span>;
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cached_power</span>(<span class="ident">e</span>: <span class="ident">isize</span>) <span class="op">-&gt;</span> (<span class="ident">DiyFp</span>, <span class="ident">isize</span>) {
+    <span class="kw">let</span> <span class="ident">dk</span> <span class="op">=</span> (<span class="op">-</span><span class="number">61</span> <span class="op">-</span> <span class="ident">e</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> <span class="number">0.30102999566398114f64</span> <span class="op">+</span> <span class="number">347f64</span>; <span class="comment">// dk must be positive, so can do ceiling in positive</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">dk</span> <span class="kw">as</span> <span class="ident">isize</span>;
+    <span class="kw">if</span> <span class="ident">dk</span> <span class="op">-</span> <span class="ident">k</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
+        <span class="ident">k</span> <span class="op">+=</span> <span class="number">1</span>;
     }
 
-    <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> ((<span class='ident'>k</span> <span class='op'>&gt;&gt;</span> <span class='number'>3</span>) <span class='op'>+</span> <span class='number'>1</span>) <span class='kw'>as</span> <span class='ident'>usize</span>;
-    <span class='kw'>let</span> <span class='ident'>k</span> <span class='op'>=</span> <span class='op'>-</span>(<span class='op'>-</span><span class='number'>348</span> <span class='op'>+</span> (<span class='ident'>index</span> <span class='op'>&lt;&lt;</span> <span class='number'>3</span>) <span class='kw'>as</span> <span class='ident'>isize</span>); <span class='comment'>// decimal exponent no need lookup table</span>
+    <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> ((<span class="ident">k</span> <span class="op">&gt;&gt;</span> <span class="number">3</span>) <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">usize</span>;
+    <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="op">-</span>(<span class="op">-</span><span class="number">348</span> <span class="op">+</span> (<span class="ident">index</span> <span class="op">&lt;&lt;</span> <span class="number">3</span>) <span class="kw">as</span> <span class="ident">isize</span>); <span class="comment">// decimal exponent no need lookup table</span>
 
-    (<span class='ident'>get_cached_power_by_index</span>(<span class='ident'>index</span>), <span class='ident'>k</span>)
+    (<span class="ident">get_cached_power_by_index</span>(<span class="ident">index</span>), <span class="ident">k</span>)
 }
 </pre>
 </section>

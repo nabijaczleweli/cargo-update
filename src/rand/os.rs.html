@@ -17,7 +17,7 @@
     <link rel="shortcut icon" href="https://www.rust-lang.org/favicon.ico">
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -627,588 +627,588 @@
 <span id="582">582</span>
 <span id="583">583</span>
 <span id="584">584</span>
-</pre><pre class='rust '>
-<span class='comment'>// Copyright 2013-2015 The Rust Project Developers. See the COPYRIGHT</span>
-<span class='comment'>// file at the top-level directory of this distribution and at</span>
-<span class='comment'>// http://rust-lang.org/COPYRIGHT.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// Copyright 2013-2015 The Rust Project Developers. See the COPYRIGHT</span>
+<span class="comment">// file at the top-level directory of this distribution and at</span>
+<span class="comment">// http://rust-lang.org/COPYRIGHT.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='doccomment'>//! Interfaces to the operating system provided random number</span>
-<span class='doccomment'>//! generators.</span>
+<span class="doccomment">//! Interfaces to the operating system provided random number</span>
+<span class="doccomment">//! generators.</span>
 
-<span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>io</span>, <span class='ident'>mem</span>};
-<span class='kw'>use</span> <span class='ident'>Rng</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">io</span>, <span class="ident">mem</span>};
+<span class="kw">use</span> <span class="ident">Rng</span>;
 
-<span class='doccomment'>/// A random number generator that retrieves randomness straight from</span>
-<span class='doccomment'>/// the operating system. Platform sources:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// - Unix-like systems (Linux, Android, Mac OSX): read directly from</span>
-<span class='doccomment'>///   `/dev/urandom`, or from `getrandom(2)` system call if available.</span>
-<span class='doccomment'>/// - OpenBSD: calls `getentropy(2)`</span>
-<span class='doccomment'>/// - FreeBSD: uses the `kern.arandom` `sysctl(2)` mib</span>
-<span class='doccomment'>/// - Windows: calls `CryptGenRandom`, using the default cryptographic</span>
-<span class='doccomment'>///   service provider with the `PROV_RSA_FULL` type.</span>
-<span class='doccomment'>/// - iOS: calls SecRandomCopyBytes as /dev/(u)random is sandboxed.</span>
-<span class='doccomment'>/// - PNaCl: calls into the `nacl-irt-random-0.1` IRT interface.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This does not block.</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>(<span class='ident'>imp</span>::<span class='ident'>OsRng</span>);
+<span class="doccomment">/// A random number generator that retrieves randomness straight from</span>
+<span class="doccomment">/// the operating system. Platform sources:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// - Unix-like systems (Linux, Android, Mac OSX): read directly from</span>
+<span class="doccomment">///   `/dev/urandom`, or from `getrandom(2)` system call if available.</span>
+<span class="doccomment">/// - OpenBSD: calls `getentropy(2)`</span>
+<span class="doccomment">/// - FreeBSD: uses the `kern.arandom` `sysctl(2)` mib</span>
+<span class="doccomment">/// - Windows: calls `CryptGenRandom`, using the default cryptographic</span>
+<span class="doccomment">///   service provider with the `PROV_RSA_FULL` type.</span>
+<span class="doccomment">/// - iOS: calls SecRandomCopyBytes as /dev/(u)random is sandboxed.</span>
+<span class="doccomment">/// - PNaCl: calls into the `nacl-irt-random-0.1` IRT interface.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This does not block.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span>(<span class="ident">imp</span>::<span class="ident">OsRng</span>);
 
-<span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-    <span class='doccomment'>/// Create a new `OsRng`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-        <span class='ident'>imp</span>::<span class='ident'>OsRng</span>::<span class='ident'>new</span>().<span class='ident'>map</span>(<span class='ident'>OsRng</span>)
+<span class="kw">impl</span> <span class="ident">OsRng</span> {
+    <span class="doccomment">/// Create a new `OsRng`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+        <span class="ident">imp</span>::<span class="ident">OsRng</span>::<span class="ident">new</span>().<span class="ident">map</span>(<span class="ident">OsRng</span>)
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-    <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> { <span class='self'>self</span>.<span class='number'>0</span>.<span class='ident'>next_u32</span>() }
-    <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> { <span class='self'>self</span>.<span class='number'>0</span>.<span class='ident'>next_u64</span>() }
-    <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) { <span class='self'>self</span>.<span class='number'>0</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>) }
+<span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+    <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> { <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next_u32</span>() }
+    <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> { <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next_u64</span>() }
+    <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) { <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>) }
 }
 
-<span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>mut</span> <span class='ident'>fill_buf</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>FnMut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>])) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span>: [<span class='ident'>u8</span>; <span class='number'>4</span>] <span class='op'>=</span> [<span class='number'>0</span>; <span class='number'>4</span>];
-    <span class='ident'>fill_buf</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>);
-    <span class='kw'>unsafe</span> { <span class='ident'>mem</span>::<span class='ident'>transmute</span>::<span class='op'>&lt;</span>[<span class='ident'>u8</span>; <span class='number'>4</span>], <span class='ident'>u32</span><span class='op'>&gt;</span>(<span class='ident'>buf</span>) }
+<span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">mut</span> <span class="ident">fill_buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>])) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> [<span class="number">0</span>; <span class="number">4</span>];
+    <span class="ident">fill_buf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>);
+    <span class="kw">unsafe</span> { <span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">4</span>], <span class="ident">u32</span><span class="op">&gt;</span>(<span class="ident">buf</span>) }
 }
 
-<span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>mut</span> <span class='ident'>fill_buf</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>FnMut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>])) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span>: [<span class='ident'>u8</span>; <span class='number'>8</span>] <span class='op'>=</span> [<span class='number'>0</span>; <span class='number'>8</span>];
-    <span class='ident'>fill_buf</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>);
-    <span class='kw'>unsafe</span> { <span class='ident'>mem</span>::<span class='ident'>transmute</span>::<span class='op'>&lt;</span>[<span class='ident'>u8</span>; <span class='number'>8</span>], <span class='ident'>u64</span><span class='op'>&gt;</span>(<span class='ident'>buf</span>) }
+<span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">mut</span> <span class="ident">fill_buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>])) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: [<span class="ident">u8</span>; <span class="number">8</span>] <span class="op">=</span> [<span class="number">0</span>; <span class="number">8</span>];
+    <span class="ident">fill_buf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>);
+    <span class="kw">unsafe</span> { <span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">8</span>], <span class="ident">u64</span><span class="op">&gt;</span>(<span class="ident">buf</span>) }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>unix</span>, <span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>),
-          <span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;nacl&quot;</span>),
-          <span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>),
-          <span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>),
-          <span class='ident'>not</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;redox&quot;</span>)))]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>),
+          <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;nacl&quot;</span>),
+          <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>),
+          <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;openbsd&quot;</span>),
+          <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>)))]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
-    <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>OsRngInner</span>::<span class='kw-2'>*</span>;
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">next_u32</span>, <span class="ident">next_u64</span>};
+    <span class="kw">use</span> <span class="self">self</span>::<span class="ident">OsRngInner</span>::<span class="kw-2">*</span>;
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::<span class='ident'>File</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
-    <span class='kw'>use</span> <span class='ident'>read</span>::<span class='ident'>ReadRng</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
+    <span class="kw">use</span> <span class="ident">read</span>::<span class="ident">ReadRng</span>;
 
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
-              <span class='ident'>any</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86_64&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;arm&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;aarch64&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;powerpc&quot;</span>)))]</span>
-    <span class='kw'>fn</span> <span class='ident'>getrandom</span>(<span class='ident'>buf</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_long</span> {
-        <span class='kw'>extern</span> <span class='string'>&quot;C&quot;</span> {
-            <span class='kw'>fn</span> <span class='ident'>syscall</span>(<span class='ident'>number</span>: <span class='ident'>libc</span>::<span class='ident'>c_long</span>, ...) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_long</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>,
+              <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>)))]</span>
+    <span class="kw">fn</span> <span class="ident">getrandom</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">libc</span>::<span class="ident">c_long</span> {
+        <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+            <span class="kw">fn</span> <span class="ident">syscall</span>(<span class="ident">number</span>: <span class="ident">libc</span>::<span class="ident">c_long</span>, ...) <span class="op">-&gt;</span> <span class="ident">libc</span>::<span class="ident">c_long</span>;
         }
 
-        <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86_64&quot;</span>)]</span>
-        <span class='kw'>const</span> <span class='ident'>NR_GETRANDOM</span>: <span class='ident'>libc</span>::<span class='ident'>c_long</span> <span class='op'>=</span> <span class='number'>318</span>;
-        <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86&quot;</span>)]</span>
-        <span class='kw'>const</span> <span class='ident'>NR_GETRANDOM</span>: <span class='ident'>libc</span>::<span class='ident'>c_long</span> <span class='op'>=</span> <span class='number'>355</span>;
-        <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;arm&quot;</span>)]</span>
-        <span class='kw'>const</span> <span class='ident'>NR_GETRANDOM</span>: <span class='ident'>libc</span>::<span class='ident'>c_long</span> <span class='op'>=</span> <span class='number'>384</span>;
-        <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;aarch64&quot;</span>)]</span>
-        <span class='kw'>const</span> <span class='ident'>NR_GETRANDOM</span>: <span class='ident'>libc</span>::<span class='ident'>c_long</span> <span class='op'>=</span> <span class='number'>278</span>;
-        <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;powerpc&quot;</span>)]</span>
-        <span class='kw'>const</span> <span class='ident'>NR_GETRANDOM</span>: <span class='ident'>libc</span>::<span class='ident'>c_long</span> <span class='op'>=</span> <span class='number'>384</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>)]</span>
+        <span class="kw">const</span> <span class="ident">NR_GETRANDOM</span>: <span class="ident">libc</span>::<span class="ident">c_long</span> <span class="op">=</span> <span class="number">318</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)]</span>
+        <span class="kw">const</span> <span class="ident">NR_GETRANDOM</span>: <span class="ident">libc</span>::<span class="ident">c_long</span> <span class="op">=</span> <span class="number">355</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>)]</span>
+        <span class="kw">const</span> <span class="ident">NR_GETRANDOM</span>: <span class="ident">libc</span>::<span class="ident">c_long</span> <span class="op">=</span> <span class="number">384</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>)]</span>
+        <span class="kw">const</span> <span class="ident">NR_GETRANDOM</span>: <span class="ident">libc</span>::<span class="ident">c_long</span> <span class="op">=</span> <span class="number">278</span>;
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>)]</span>
+        <span class="kw">const</span> <span class="ident">NR_GETRANDOM</span>: <span class="ident">libc</span>::<span class="ident">c_long</span> <span class="op">=</span> <span class="number">384</span>;
 
-        <span class='kw'>unsafe</span> {
-            <span class='ident'>syscall</span>(<span class='ident'>NR_GETRANDOM</span>, <span class='ident'>buf</span>.<span class='ident'>as_mut_ptr</span>(), <span class='ident'>buf</span>.<span class='ident'>len</span>(), <span class='number'>0</span>)
+        <span class="kw">unsafe</span> {
+            <span class="ident">syscall</span>(<span class="ident">NR_GETRANDOM</span>, <span class="ident">buf</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">buf</span>.<span class="ident">len</span>(), <span class="number">0</span>)
         }
     }
 
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>all</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
-                  <span class='ident'>any</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86_64&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;arm&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;aarch64&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;powerpc&quot;</span>))))]</span>
-    <span class='kw'>fn</span> <span class='ident'>getrandom</span>(<span class='ident'>_buf</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_long</span> { <span class='op'>-</span><span class='number'>1</span> }
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>,
+                  <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>))))]</span>
+    <span class="kw">fn</span> <span class="ident">getrandom</span>(<span class="ident">_buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">libc</span>::<span class="ident">c_long</span> { <span class="op">-</span><span class="number">1</span> }
 
-    <span class='kw'>fn</span> <span class='ident'>getrandom_fill_bytes</span>(<span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>read</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='ident'>len</span> <span class='op'>=</span> <span class='ident'>v</span>.<span class='ident'>len</span>();
-        <span class='kw'>while</span> <span class='ident'>read</span> <span class='op'>&lt;</span> <span class='ident'>len</span> {
-            <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>getrandom</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>v</span>[<span class='ident'>read</span>..]);
-            <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-                <span class='kw'>let</span> <span class='ident'>err</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>();
-                <span class='kw'>if</span> <span class='ident'>err</span>.<span class='ident'>kind</span>() <span class='op'>==</span> <span class='ident'>io</span>::<span class='ident'>ErrorKind</span>::<span class='ident'>Interrupted</span> {
-                    <span class='kw'>continue</span>
-                } <span class='kw'>else</span> {
-                    <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;unexpected getrandom error: {}&quot;</span>, <span class='ident'>err</span>);
+    <span class="kw">fn</span> <span class="ident">getrandom_fill_bytes</span>(<span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">read</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">len</span>();
+        <span class="kw">while</span> <span class="ident">read</span> <span class="op">&lt;</span> <span class="ident">len</span> {
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">getrandom</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">v</span>[<span class="ident">read</span>..]);
+            <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>();
+                <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">Interrupted</span> {
+                    <span class="kw">continue</span>
+                } <span class="kw">else</span> {
+                    <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;unexpected getrandom error: {}&quot;</span>, <span class="ident">err</span>);
                 }
-            } <span class='kw'>else</span> {
-                <span class='ident'>read</span> <span class='op'>+=</span> <span class='ident'>result</span> <span class='kw'>as</span> <span class='ident'>usize</span>;
+            } <span class="kw">else</span> {
+                <span class="ident">read</span> <span class="op">+=</span> <span class="ident">result</span> <span class="kw">as</span> <span class="ident">usize</span>;
             }
         }
     }
 
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>all</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
-              <span class='ident'>any</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86_64&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;arm&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;aarch64&quot;</span>,
-                  <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;powerpc&quot;</span>)))]</span>
-    <span class='kw'>fn</span> <span class='ident'>is_getrandom_available</span>() <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicBool</span>, <span class='ident'>ATOMIC_BOOL_INIT</span>, <span class='ident'>Ordering</span>};
-        <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::{<span class='ident'>Once</span>, <span class='ident'>ONCE_INIT</span>};
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>,
+              <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>,
+                  <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>)))]</span>
+    <span class="kw">fn</span> <span class="ident">is_getrandom_available</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">atomic</span>::{<span class="ident">AtomicBool</span>, <span class="ident">ATOMIC_BOOL_INIT</span>, <span class="ident">Ordering</span>};
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Once</span>, <span class="ident">ONCE_INIT</span>};
 
-        <span class='kw'>static</span> <span class='ident'>CHECKER</span>: <span class='ident'>Once</span> <span class='op'>=</span> <span class='ident'>ONCE_INIT</span>;
-        <span class='kw'>static</span> <span class='ident'>AVAILABLE</span>: <span class='ident'>AtomicBool</span> <span class='op'>=</span> <span class='ident'>ATOMIC_BOOL_INIT</span>;
+        <span class="kw">static</span> <span class="ident">CHECKER</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">ONCE_INIT</span>;
+        <span class="kw">static</span> <span class="ident">AVAILABLE</span>: <span class="ident">AtomicBool</span> <span class="op">=</span> <span class="ident">ATOMIC_BOOL_INIT</span>;
 
-        <span class='ident'>CHECKER</span>.<span class='ident'>call_once</span>(<span class='op'>||</span> {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>buf</span>: [<span class='ident'>u8</span>; <span class='number'>0</span>] <span class='op'>=</span> [];
-            <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>getrandom</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>buf</span>);
-            <span class='kw'>let</span> <span class='ident'>available</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-                <span class='kw'>let</span> <span class='ident'>err</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>().<span class='ident'>raw_os_error</span>();
-                <span class='ident'>err</span> <span class='op'>!=</span> <span class='prelude-val'>Some</span>(<span class='ident'>libc</span>::<span class='ident'>ENOSYS</span>)
-            } <span class='kw'>else</span> {
-                <span class='bool-val'>true</span>
+        <span class="ident">CHECKER</span>.<span class="ident">call_once</span>(<span class="op">||</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: [<span class="ident">u8</span>; <span class="number">0</span>] <span class="op">=</span> [];
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">getrandom</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>);
+            <span class="kw">let</span> <span class="ident">available</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">result</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+                <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>().<span class="ident">raw_os_error</span>();
+                <span class="ident">err</span> <span class="op">!=</span> <span class="prelude-val">Some</span>(<span class="ident">libc</span>::<span class="ident">ENOSYS</span>)
+            } <span class="kw">else</span> {
+                <span class="bool-val">true</span>
             };
-            <span class='ident'>AVAILABLE</span>.<span class='ident'>store</span>(<span class='ident'>available</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>);
+            <span class="ident">AVAILABLE</span>.<span class="ident">store</span>(<span class="ident">available</span>, <span class="ident">Ordering</span>::<span class="ident">Relaxed</span>);
         });
 
-        <span class='ident'>AVAILABLE</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>)
+        <span class="ident">AVAILABLE</span>.<span class="ident">load</span>(<span class="ident">Ordering</span>::<span class="ident">Relaxed</span>)
     }
 
-    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>not</span>(<span class='ident'>all</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;linux&quot;</span>,
-                  <span class='ident'>any</span>(<span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86_64&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;x86&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;arm&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;aarch64&quot;</span>,
-                      <span class='ident'>target_arch</span> <span class='op'>=</span> <span class='string'>&quot;powerpc&quot;</span>))))]</span>
-    <span class='kw'>fn</span> <span class='ident'>is_getrandom_available</span>() <span class='op'>-&gt;</span> <span class='ident'>bool</span> { <span class='bool-val'>false</span> }
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>,
+                  <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>,
+                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>))))]</span>
+    <span class="kw">fn</span> <span class="ident">is_getrandom_available</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="bool-val">false</span> }
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span> {
-        <span class='ident'>inner</span>: <span class='ident'>OsRngInner</span>,
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span> {
+        <span class="ident">inner</span>: <span class="ident">OsRngInner</span>,
     }
 
-    <span class='kw'>enum</span> <span class='ident'>OsRngInner</span> {
-        <span class='ident'>OsGetrandomRng</span>,
-        <span class='ident'>OsReadRng</span>(<span class='ident'>ReadRng</span><span class='op'>&lt;</span><span class='ident'>File</span><span class='op'>&gt;</span>),
+    <span class="kw">enum</span> <span class="ident">OsRngInner</span> {
+        <span class="ident">OsGetrandomRng</span>,
+        <span class="ident">OsReadRng</span>(<span class="ident">ReadRng</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>),
     }
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='kw'>if</span> <span class='ident'>is_getrandom_available</span>() {
-                <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span> { <span class='ident'>inner</span>: <span class='ident'>OsGetrandomRng</span> });
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="kw">if</span> <span class="ident">is_getrandom_available</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span> { <span class="ident">inner</span>: <span class="ident">OsGetrandomRng</span> });
             }
 
-            <span class='kw'>let</span> <span class='ident'>reader</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>File</span>::<span class='ident'>open</span>(<span class='string'>&quot;/dev/urandom&quot;</span>));
-            <span class='kw'>let</span> <span class='ident'>reader_rng</span> <span class='op'>=</span> <span class='ident'>ReadRng</span>::<span class='ident'>new</span>(<span class='ident'>reader</span>);
+            <span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">open</span>(<span class="string">&quot;/dev/urandom&quot;</span>));
+            <span class="kw">let</span> <span class="ident">reader_rng</span> <span class="op">=</span> <span class="ident">ReadRng</span>::<span class="ident">new</span>(<span class="ident">reader</span>);
 
-            <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span> { <span class='ident'>inner</span>: <span class='ident'>OsReadRng</span>(<span class='ident'>reader_rng</span>) })
+            <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span> { <span class="ident">inner</span>: <span class="ident">OsReadRng</span>(<span class="ident">reader_rng</span>) })
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>inner</span> {
-                <span class='ident'>OsGetrandomRng</span> <span class='op'>=&gt;</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>getrandom_fill_bytes</span>),
-                <span class='ident'>OsReadRng</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span>) <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>next_u32</span>(),
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span> {
+                <span class="ident">OsGetrandomRng</span> <span class="op">=&gt;</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">getrandom_fill_bytes</span>),
+                <span class="ident">OsReadRng</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=&gt;</span> <span class="ident">rng</span>.<span class="ident">next_u32</span>(),
             }
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>inner</span> {
-                <span class='ident'>OsGetrandomRng</span> <span class='op'>=&gt;</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>getrandom_fill_bytes</span>),
-                <span class='ident'>OsReadRng</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span>) <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>next_u64</span>(),
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span> {
+                <span class="ident">OsGetrandomRng</span> <span class="op">=&gt;</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">getrandom_fill_bytes</span>),
+                <span class="ident">OsReadRng</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=&gt;</span> <span class="ident">rng</span>.<span class="ident">next_u64</span>(),
             }
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>inner</span> {
-                <span class='ident'>OsGetrandomRng</span> <span class='op'>=&gt;</span> <span class='ident'>getrandom_fill_bytes</span>(<span class='ident'>v</span>),
-                <span class='ident'>OsReadRng</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span>) <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>)
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span> {
+                <span class="ident">OsGetrandomRng</span> <span class="op">=&gt;</span> <span class="ident">getrandom_fill_bytes</span>(<span class="ident">v</span>),
+                <span class="ident">OsReadRng</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=&gt;</span> <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>)
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;ios&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">next_u32</span>, <span class="ident">next_u64</span>};
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
-    <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>libc</span>::{<span class='ident'>c_int</span>, <span class='ident'>size_t</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
+    <span class="kw">use</span> <span class="self">self</span>::<span class="ident">libc</span>::{<span class="ident">c_int</span>, <span class="ident">size_t</span>};
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>;
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span>;
 
-    <span class='kw'>enum</span> <span class='ident'>SecRandom</span> {}
+    <span class="kw">enum</span> <span class="ident">SecRandom</span> {}
 
-    <span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>non_upper_case_globals</span>)]</span>
-    <span class='kw'>const</span> <span class='ident'>kSecRandomDefault</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span> <span class='op'>=</span> <span class='number'>0</span> <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span>;
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_upper_case_globals</span>)]</span>
+    <span class="kw">const</span> <span class="ident">kSecRandomDefault</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SecRandom</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SecRandom</span>;
 
-    <span class='attribute'>#[<span class='ident'>link</span>(<span class='ident'>name</span> <span class='op'>=</span> <span class='string'>&quot;Security&quot;</span>, <span class='ident'>kind</span> <span class='op'>=</span> <span class='string'>&quot;framework&quot;</span>)]</span>
-    <span class='kw'>extern</span> {
-        <span class='kw'>fn</span> <span class='ident'>SecRandomCopyBytes</span>(<span class='ident'>rnd</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>SecRandom</span>,
-                              <span class='ident'>count</span>: <span class='ident'>size_t</span>, <span class='ident'>bytes</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>c_int</span>;
+    <span class="attribute">#[<span class="ident">link</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;Security&quot;</span>, <span class="ident">kind</span> <span class="op">=</span> <span class="string">&quot;framework&quot;</span>)]</span>
+    <span class="kw">extern</span> {
+        <span class="kw">fn</span> <span class="ident">SecRandomCopyBytes</span>(<span class="ident">rnd</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SecRandom</span>,
+                              <span class="ident">count</span>: <span class="ident">size_t</span>, <span class="ident">bytes</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span>;
     }
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span>)
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span>)
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                <span class='ident'>SecRandomCopyBytes</span>(<span class='ident'>kSecRandomDefault</span>, <span class='ident'>v</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>size_t</span>, <span class='ident'>v</span>.<span class='ident'>as_mut_ptr</span>())
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                <span class="ident">SecRandomCopyBytes</span>(<span class="ident">kSecRandomDefault</span>, <span class="ident">v</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>, <span class="ident">v</span>.<span class="ident">as_mut_ptr</span>())
             };
-            <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-                <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;couldn&#39;t generate random bytes: {}&quot;</span>, <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>());
+            <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+                <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;couldn&#39;t generate random bytes: {}&quot;</span>, <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>());
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;freebsd&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;freebsd&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>io</span>, <span class='ident'>ptr</span>};
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">io</span>, <span class="ident">ptr</span>};
+    <span class="kw">use</span> <span class="ident">Rng</span>;
 
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">next_u32</span>, <span class="ident">next_u64</span>};
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>;
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span>;
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span>)
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span>)
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='kw'>let</span> <span class='ident'>mib</span> <span class='op'>=</span> [<span class='ident'>libc</span>::<span class='ident'>CTL_KERN</span>, <span class='ident'>libc</span>::<span class='ident'>KERN_ARND</span>];
-            <span class='comment'>// kern.arandom permits a maximum buffer size of 256 bytes</span>
-            <span class='kw'>for</span> <span class='ident'>s</span> <span class='kw'>in</span> <span class='ident'>v</span>.<span class='ident'>chunks_mut</span>(<span class='number'>256</span>) {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>s_len</span> <span class='op'>=</span> <span class='ident'>s</span>.<span class='ident'>len</span>();
-                <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                    <span class='ident'>libc</span>::<span class='ident'>sysctl</span>(<span class='ident'>mib</span>.<span class='ident'>as_ptr</span>(), <span class='ident'>mib</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>libc</span>::<span class='ident'>c_uint</span>,
-                                 <span class='ident'>s</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> _, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>s_len</span>,
-                                 <span class='ident'>ptr</span>::<span class='ident'>null</span>(), <span class='number'>0</span>)
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="kw">let</span> <span class="ident">mib</span> <span class="op">=</span> [<span class="ident">libc</span>::<span class="ident">CTL_KERN</span>, <span class="ident">libc</span>::<span class="ident">KERN_ARND</span>];
+            <span class="comment">// kern.arandom permits a maximum buffer size of 256 bytes</span>
+            <span class="kw">for</span> <span class="ident">s</span> <span class="kw">in</span> <span class="ident">v</span>.<span class="ident">chunks_mut</span>(<span class="number">256</span>) {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s_len</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">len</span>();
+                <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                    <span class="ident">libc</span>::<span class="ident">sysctl</span>(<span class="ident">mib</span>.<span class="ident">as_ptr</span>(), <span class="ident">mib</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">libc</span>::<span class="ident">c_uint</span>,
+                                 <span class="ident">s</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s_len</span>,
+                                 <span class="ident">ptr</span>::<span class="ident">null</span>(), <span class="number">0</span>)
                 };
-                <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> <span class='op'>||</span> <span class='ident'>s_len</span> <span class='op'>!=</span> <span class='ident'>s</span>.<span class='ident'>len</span>() {
-                    <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;kern.arandom sysctl failed! (returned {}, s.len() {}, oldlenp {})&quot;</span>,
-                           <span class='ident'>ret</span>, <span class='ident'>s</span>.<span class='ident'>len</span>(), <span class='ident'>s_len</span>);
+                <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> <span class="op">||</span> <span class="ident">s_len</span> <span class="op">!=</span> <span class="ident">s</span>.<span class="ident">len</span>() {
+                    <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;kern.arandom sysctl failed! (returned {}, s.len() {}, oldlenp {})&quot;</span>,
+                           <span class="ident">ret</span>, <span class="ident">s</span>.<span class="ident">len</span>(), <span class="ident">s_len</span>);
                 }
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;openbsd&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;openbsd&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
 
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">next_u32</span>, <span class="ident">next_u64</span>};
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>;
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span>;
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span>)
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span>)
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='comment'>// getentropy(2) permits a maximum buffer size of 256 bytes</span>
-            <span class='kw'>for</span> <span class='ident'>s</span> <span class='kw'>in</span> <span class='ident'>v</span>.<span class='ident'>chunks_mut</span>(<span class='number'>256</span>) {
-                <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                    <span class='ident'>libc</span>::<span class='ident'>getentropy</span>(<span class='ident'>s</span>.<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>, <span class='ident'>s</span>.<span class='ident'>len</span>())
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="comment">// getentropy(2) permits a maximum buffer size of 256 bytes</span>
+            <span class="kw">for</span> <span class="ident">s</span> <span class="kw">in</span> <span class="ident">v</span>.<span class="ident">chunks_mut</span>(<span class="number">256</span>) {
+                <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                    <span class="ident">libc</span>::<span class="ident">getentropy</span>(<span class="ident">s</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">c_void</span>, <span class="ident">s</span>.<span class="ident">len</span>())
                 };
-                <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='op'>-</span><span class='number'>1</span> {
-                    <span class='kw'>let</span> <span class='ident'>err</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>();
-                    <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;getentropy failed: {}&quot;</span>, <span class='ident'>err</span>);
+                <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="op">-</span><span class="number">1</span> {
+                    <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>();
+                    <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;getentropy failed: {}&quot;</span>, <span class="ident">err</span>);
                 }
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;redox&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fs</span>::<span class='ident'>File</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
-    <span class='kw'>use</span> <span class='ident'>read</span>::<span class='ident'>ReadRng</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
+    <span class="kw">use</span> <span class="ident">read</span>::<span class="ident">ReadRng</span>;
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span> {
-        <span class='ident'>inner</span>: <span class='ident'>ReadRng</span><span class='op'>&lt;</span><span class='ident'>File</span><span class='op'>&gt;</span>,
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span> {
+        <span class="ident">inner</span>: <span class="ident">ReadRng</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>,
     }
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='kw'>let</span> <span class='ident'>reader</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>File</span>::<span class='ident'>open</span>(<span class='string'>&quot;rand:&quot;</span>));
-            <span class='kw'>let</span> <span class='ident'>reader_rng</span> <span class='op'>=</span> <span class='ident'>ReadRng</span>::<span class='ident'>new</span>(<span class='ident'>reader</span>);
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">open</span>(<span class="string">&quot;rand:&quot;</span>));
+            <span class="kw">let</span> <span class="ident">reader_rng</span> <span class="op">=</span> <span class="ident">ReadRng</span>::<span class="ident">new</span>(<span class="ident">reader</span>);
 
-            <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span> { <span class='ident'>inner</span>: <span class='ident'>reader_rng</span> })
+            <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span> { <span class="ident">inner</span>: <span class="ident">reader_rng</span> })
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='self'>self</span>.<span class='ident'>inner</span>.<span class='ident'>next_u32</span>()
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next_u32</span>()
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='self'>self</span>.<span class='ident'>inner</span>.<span class='ident'>next_u64</span>()
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next_u64</span>()
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='self'>self</span>.<span class='ident'>inner</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>)
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>)
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>windows</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
 
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">next_u32</span>, <span class="ident">next_u64</span>};
 
-    <span class='kw'>type</span> <span class='ident'>BOOL</span> <span class='op'>=</span> <span class='ident'>i32</span>;
-    <span class='kw'>type</span> <span class='ident'>LPCSTR</span> <span class='op'>=</span> <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>i8</span>;
-    <span class='kw'>type</span> <span class='ident'>DWORD</span> <span class='op'>=</span> <span class='ident'>u32</span>;
-    <span class='kw'>type</span> <span class='ident'>HCRYPTPROV</span> <span class='op'>=</span> <span class='ident'>usize</span>;
-    <span class='kw'>type</span> <span class='ident'>BYTE</span> <span class='op'>=</span> <span class='ident'>u8</span>;
+    <span class="kw">type</span> <span class="ident">BOOL</span> <span class="op">=</span> <span class="ident">i32</span>;
+    <span class="kw">type</span> <span class="ident">LPCSTR</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">i8</span>;
+    <span class="kw">type</span> <span class="ident">DWORD</span> <span class="op">=</span> <span class="ident">u32</span>;
+    <span class="kw">type</span> <span class="ident">HCRYPTPROV</span> <span class="op">=</span> <span class="ident">usize</span>;
+    <span class="kw">type</span> <span class="ident">BYTE</span> <span class="op">=</span> <span class="ident">u8</span>;
 
-    <span class='kw'>const</span> <span class='ident'>PROV_RSA_FULL</span>: <span class='ident'>DWORD</span> <span class='op'>=</span> <span class='number'>1</span>;
-    <span class='kw'>const</span> <span class='ident'>CRYPT_SILENT</span>: <span class='ident'>DWORD</span> <span class='op'>=</span> <span class='number'>0x00000040</span>;
-    <span class='kw'>const</span> <span class='ident'>CRYPT_VERIFYCONTEXT</span>: <span class='ident'>DWORD</span> <span class='op'>=</span> <span class='number'>0xF0000000</span>;
+    <span class="kw">const</span> <span class="ident">PROV_RSA_FULL</span>: <span class="ident">DWORD</span> <span class="op">=</span> <span class="number">1</span>;
+    <span class="kw">const</span> <span class="ident">CRYPT_SILENT</span>: <span class="ident">DWORD</span> <span class="op">=</span> <span class="number">0x00000040</span>;
+    <span class="kw">const</span> <span class="ident">CRYPT_VERIFYCONTEXT</span>: <span class="ident">DWORD</span> <span class="op">=</span> <span class="number">0xF0000000</span>;
 
-    <span class='attribute'>#[<span class='ident'>link</span>(<span class='ident'>name</span> <span class='op'>=</span> <span class='string'>&quot;advapi32&quot;</span>)]</span>
-    <span class='kw'>extern</span> <span class='string'>&quot;system&quot;</span> {
-        <span class='kw'>fn</span> <span class='ident'>CryptAcquireContextA</span>(<span class='ident'>phProv</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>HCRYPTPROV</span>,
-                                <span class='ident'>szContainer</span>: <span class='ident'>LPCSTR</span>,
-                                <span class='ident'>szProvider</span>: <span class='ident'>LPCSTR</span>,
-                                <span class='ident'>dwProvType</span>: <span class='ident'>DWORD</span>,
-                                <span class='ident'>dwFlags</span>: <span class='ident'>DWORD</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
-        <span class='kw'>fn</span> <span class='ident'>CryptGenRandom</span>(<span class='ident'>hProv</span>: <span class='ident'>HCRYPTPROV</span>,
-                          <span class='ident'>dwLen</span>: <span class='ident'>DWORD</span>,
-                          <span class='ident'>pbBuffer</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>BYTE</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
-        <span class='kw'>fn</span> <span class='ident'>CryptReleaseContext</span>(<span class='ident'>hProv</span>: <span class='ident'>HCRYPTPROV</span>, <span class='ident'>dwFlags</span>: <span class='ident'>DWORD</span>) <span class='op'>-&gt;</span> <span class='ident'>BOOL</span>;
+    <span class="attribute">#[<span class="ident">link</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;advapi32&quot;</span>)]</span>
+    <span class="kw">extern</span> <span class="string">&quot;system&quot;</span> {
+        <span class="kw">fn</span> <span class="ident">CryptAcquireContextA</span>(<span class="ident">phProv</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">HCRYPTPROV</span>,
+                                <span class="ident">szContainer</span>: <span class="ident">LPCSTR</span>,
+                                <span class="ident">szProvider</span>: <span class="ident">LPCSTR</span>,
+                                <span class="ident">dwProvType</span>: <span class="ident">DWORD</span>,
+                                <span class="ident">dwFlags</span>: <span class="ident">DWORD</span>) <span class="op">-&gt;</span> <span class="ident">BOOL</span>;
+        <span class="kw">fn</span> <span class="ident">CryptGenRandom</span>(<span class="ident">hProv</span>: <span class="ident">HCRYPTPROV</span>,
+                          <span class="ident">dwLen</span>: <span class="ident">DWORD</span>,
+                          <span class="ident">pbBuffer</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">BYTE</span>) <span class="op">-&gt;</span> <span class="ident">BOOL</span>;
+        <span class="kw">fn</span> <span class="ident">CryptReleaseContext</span>(<span class="ident">hProv</span>: <span class="ident">HCRYPTPROV</span>, <span class="ident">dwFlags</span>: <span class="ident">DWORD</span>) <span class="op">-&gt;</span> <span class="ident">BOOL</span>;
     }
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span> {
-        <span class='ident'>hcryptprov</span>: <span class='ident'>HCRYPTPROV</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span> {
+        <span class="ident">hcryptprov</span>: <span class="ident">HCRYPTPROV</span>
     }
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>hcp</span> <span class='op'>=</span> <span class='number'>0</span>;
-            <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                <span class='ident'>CryptAcquireContextA</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>hcp</span>, <span class='ident'>ptr</span>::<span class='ident'>null</span>(), <span class='ident'>ptr</span>::<span class='ident'>null</span>(),
-                                     <span class='ident'>PROV_RSA_FULL</span>,
-                                     <span class='ident'>CRYPT_VERIFYCONTEXT</span> <span class='op'>|</span> <span class='ident'>CRYPT_SILENT</span>)
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hcp</span> <span class="op">=</span> <span class="number">0</span>;
+            <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                <span class="ident">CryptAcquireContextA</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">hcp</span>, <span class="ident">ptr</span>::<span class="ident">null</span>(), <span class="ident">ptr</span>::<span class="ident">null</span>(),
+                                     <span class="ident">PROV_RSA_FULL</span>,
+                                     <span class="ident">CRYPT_VERIFYCONTEXT</span> <span class="op">|</span> <span class="ident">CRYPT_SILENT</span>)
             };
 
-            <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='number'>0</span> {
-                <span class='prelude-val'>Err</span>(<span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>())
-            } <span class='kw'>else</span> {
-                <span class='prelude-val'>Ok</span>(<span class='ident'>OsRng</span> { <span class='ident'>hcryptprov</span>: <span class='ident'>hcp</span> })
+            <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="number">0</span> {
+                <span class="prelude-val">Err</span>(<span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>())
+            } <span class="kw">else</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">OsRng</span> { <span class="ident">hcryptprov</span>: <span class="ident">hcp</span> })
             }
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='comment'>// CryptGenRandom takes a DWORD (u32) for the length so we need to</span>
-            <span class='comment'>// split up the buffer.</span>
-            <span class='kw'>for</span> <span class='ident'>slice</span> <span class='kw'>in</span> <span class='ident'>v</span>.<span class='ident'>chunks_mut</span>(<span class='op'>&lt;</span><span class='ident'>DWORD</span><span class='op'>&gt;</span>::<span class='ident'>max_value</span>() <span class='kw'>as</span> <span class='ident'>usize</span>) {
-                <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                    <span class='ident'>CryptGenRandom</span>(<span class='self'>self</span>.<span class='ident'>hcryptprov</span>, <span class='ident'>slice</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>DWORD</span>,
-                                   <span class='ident'>slice</span>.<span class='ident'>as_mut_ptr</span>())
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="comment">// CryptGenRandom takes a DWORD (u32) for the length so we need to</span>
+            <span class="comment">// split up the buffer.</span>
+            <span class="kw">for</span> <span class="ident">slice</span> <span class="kw">in</span> <span class="ident">v</span>.<span class="ident">chunks_mut</span>(<span class="op">&lt;</span><span class="ident">DWORD</span><span class="op">&gt;</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>) {
+                <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                    <span class="ident">CryptGenRandom</span>(<span class="self">self</span>.<span class="ident">hcryptprov</span>, <span class="ident">slice</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">DWORD</span>,
+                                   <span class="ident">slice</span>.<span class="ident">as_mut_ptr</span>())
                 };
-                <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='number'>0</span> {
-                    <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;couldn&#39;t generate random bytes: {}&quot;</span>,
-                           <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>());
+                <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="number">0</span> {
+                    <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;couldn&#39;t generate random bytes: {}&quot;</span>,
+                           <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>());
                 }
             }
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Drop</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>drop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-            <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                <span class='ident'>CryptReleaseContext</span>(<span class='self'>self</span>.<span class='ident'>hcryptprov</span>, <span class='number'>0</span>)
+    <span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+            <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                <span class="ident">CryptReleaseContext</span>(<span class="self">self</span>.<span class="ident">hcryptprov</span>, <span class="number">0</span>)
             };
-            <span class='kw'>if</span> <span class='ident'>ret</span> <span class='op'>==</span> <span class='number'>0</span> {
-                <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;couldn&#39;t release context: {}&quot;</span>,
-                       <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>last_os_error</span>());
+            <span class="kw">if</span> <span class="ident">ret</span> <span class="op">==</span> <span class="number">0</span> {
+                <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;couldn&#39;t release context: {}&quot;</span>,
+                       <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">last_os_error</span>());
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>target_os</span> <span class='op'>=</span> <span class='string'>&quot;nacl&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>imp</span> {
-    <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>libc</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;nacl&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">imp</span> {
+    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
 
-    <span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>next_u32</span>, <span class='ident'>next_u64</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">next_u32</span>, <span class="ident">next_u64</span>};
 
-    <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>OsRng</span>(<span class='kw'>extern</span> <span class='kw'>fn</span>(<span class='ident'>dest</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
-                               <span class='ident'>bytes</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span>,
-                               <span class='ident'>read</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_int</span>);
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OsRng</span>(<span class="kw">extern</span> <span class="kw">fn</span>(<span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">c_void</span>,
+                               <span class="ident">bytes</span>: <span class="ident">libc</span>::<span class="ident">size_t</span>,
+                               <span class="ident">read</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">size_t</span>) <span class="op">-&gt;</span> <span class="ident">libc</span>::<span class="ident">c_int</span>);
 
-    <span class='kw'>extern</span> {
-        <span class='kw'>fn</span> <span class='ident'>nacl_interface_query</span>(<span class='ident'>name</span>: <span class='kw-2'>*</span><span class='kw'>const</span> <span class='ident'>libc</span>::<span class='ident'>c_char</span>,
-                                <span class='ident'>table</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
-                                <span class='ident'>table_size</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>;
+    <span class="kw">extern</span> {
+        <span class="kw">fn</span> <span class="ident">nacl_interface_query</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">libc</span>::<span class="ident">c_char</span>,
+                                <span class="ident">table</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">c_void</span>,
+                                <span class="ident">table_size</span>: <span class="ident">libc</span>::<span class="ident">size_t</span>) <span class="op">-&gt;</span> <span class="ident">libc</span>::<span class="ident">size_t</span>;
     }
 
-    <span class='kw'>const</span> <span class='ident'>INTERFACE</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> [<span class='ident'>u8</span>] <span class='op'>=</span> <span class='string'>b&quot;nacl-irt-random-0.1\0&quot;</span>;
+    <span class="kw">const</span> <span class="ident">INTERFACE</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;nacl-irt-random-0.1\0&quot;</span>;
 
-    <span class='attribute'>#[<span class='ident'>repr</span>(<span class='ident'>C</span>)]</span>
-    <span class='kw'>struct</span> <span class='ident'>NaClIRTRandom</span> {
-        <span class='ident'>get_random_bytes</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw'>extern</span> <span class='kw'>fn</span>(<span class='ident'>dest</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>c_void</span>,
-                                           <span class='ident'>bytes</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span>,
-                                           <span class='ident'>read</span>: <span class='kw-2'>*</span><span class='kw-2'>mut</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>) <span class='op'>-&gt;</span> <span class='ident'>libc</span>::<span class='ident'>c_int</span><span class='op'>&gt;</span>,
+    <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+    <span class="kw">struct</span> <span class="ident">NaClIRTRandom</span> {
+        <span class="ident">get_random_bytes</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="kw">fn</span>(<span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">c_void</span>,
+                                           <span class="ident">bytes</span>: <span class="ident">libc</span>::<span class="ident">size_t</span>,
+                                           <span class="ident">read</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">size_t</span>) <span class="op">-&gt;</span> <span class="ident">libc</span>::<span class="ident">c_int</span><span class="op">&gt;</span>,
     }
 
-    <span class='kw'>impl</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>OsRng</span><span class='op'>&gt;</span> {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iface</span> <span class='op'>=</span> <span class='ident'>NaClIRTRandom</span> {
-                <span class='ident'>get_random_bytes</span>: <span class='prelude-val'>None</span>,
+    <span class="kw">impl</span> <span class="ident">OsRng</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OsRng</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iface</span> <span class="op">=</span> <span class="ident">NaClIRTRandom</span> {
+                <span class="ident">get_random_bytes</span>: <span class="prelude-val">None</span>,
             };
-            <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='kw'>unsafe</span> {
-                <span class='ident'>nacl_interface_query</span>(<span class='ident'>INTERFACE</span>.<span class='ident'>as_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw'>const</span> _,
-                                     <span class='ident'>mem</span>::<span class='ident'>transmute</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>iface</span>),
-                                     <span class='ident'>mem</span>::<span class='ident'>size_of</span>::<span class='op'>&lt;</span><span class='ident'>NaClIRTRandom</span><span class='op'>&gt;</span>() <span class='kw'>as</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>)
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+                <span class="ident">nacl_interface_query</span>(<span class="ident">INTERFACE</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _,
+                                     <span class="ident">mem</span>::<span class="ident">transmute</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">iface</span>),
+                                     <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">NaClIRTRandom</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">libc</span>::<span class="ident">size_t</span>)
             };
-            <span class='kw'>if</span> <span class='ident'>result</span> <span class='op'>!=</span> <span class='number'>0</span> {
-                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>iface</span>.<span class='ident'>get_random_bytes</span>.<span class='ident'>is_some</span>());
-                <span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>OsRng</span>(<span class='ident'>iface</span>.<span class='ident'>get_random_bytes</span>.<span class='ident'>take</span>().<span class='ident'>unwrap</span>());
-                <span class='prelude-val'>Ok</span>(<span class='ident'>result</span>)
-            } <span class='kw'>else</span> {
-                <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>ErrorKind</span>::<span class='ident'>NotFound</span>;
-                <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='ident'>Error</span>::<span class='ident'>new</span>(<span class='ident'>error</span>, <span class='string'>&quot;IRT random interface missing&quot;</span>);
-                <span class='prelude-val'>Err</span>(<span class='ident'>error</span>)
+            <span class="kw">if</span> <span class="ident">result</span> <span class="op">!=</span> <span class="number">0</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">iface</span>.<span class="ident">get_random_bytes</span>.<span class="ident">is_some</span>());
+                <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">OsRng</span>(<span class="ident">iface</span>.<span class="ident">get_random_bytes</span>.<span class="ident">take</span>().<span class="ident">unwrap</span>());
+                <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+            } <span class="kw">else</span> {
+                <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">ErrorKind</span>::<span class="ident">NotFound</span>;
+                <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">io</span>::<span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">error</span>, <span class="string">&quot;IRT random interface missing&quot;</span>);
+                <span class="prelude-val">Err</span>(<span class="ident">error</span>)
             }
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Rng</span> <span class='kw'>for</span> <span class='ident'>OsRng</span> {
-        <span class='kw'>fn</span> <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> {
-            <span class='ident'>next_u32</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+    <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">OsRng</span> {
+        <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+            <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span> {
-            <span class='ident'>next_u64</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='op'>|</span><span class='ident'>v</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>fill_bytes</span>(<span class='ident'>v</span>))
+        <span class="kw">fn</span> <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+            <span class="ident">next_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">fill_bytes</span>(<span class="ident">v</span>))
         }
-        <span class='kw'>fn</span> <span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>v</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>u8</span>]) {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>read</span> <span class='op'>=</span> <span class='number'>0</span>;
-            <span class='kw'>loop</span> {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>r</span>: <span class='ident'>libc</span>::<span class='ident'>size_t</span> <span class='op'>=</span> <span class='number'>0</span>;
-                <span class='kw'>let</span> <span class='ident'>len</span> <span class='op'>=</span> <span class='ident'>v</span>.<span class='ident'>len</span>();
-                <span class='kw'>let</span> <span class='ident'>error</span> <span class='op'>=</span> (<span class='self'>self</span>.<span class='number'>0</span>)(<span class='ident'>v</span>[<span class='ident'>read</span>..].<span class='ident'>as_mut_ptr</span>() <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> _,
-                                     (<span class='ident'>len</span> <span class='op'>-</span> <span class='ident'>read</span>) <span class='kw'>as</span> <span class='ident'>libc</span>::<span class='ident'>size_t</span>,
-                                     <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>r</span> <span class='kw'>as</span> <span class='kw-2'>*</span><span class='kw-2'>mut</span> _);
-                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>error</span> <span class='op'>==</span> <span class='number'>0</span>, <span class='string'>&quot;`get_random_bytes` failed!&quot;</span>);
-                <span class='ident'>read</span> <span class='op'>+=</span> <span class='ident'>r</span> <span class='kw'>as</span> <span class='ident'>usize</span>;
+        <span class="kw">fn</span> <span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>]) {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">read</span> <span class="op">=</span> <span class="number">0</span>;
+            <span class="kw">loop</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span>: <span class="ident">libc</span>::<span class="ident">size_t</span> <span class="op">=</span> <span class="number">0</span>;
+                <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">len</span>();
+                <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> (<span class="self">self</span>.<span class="number">0</span>)(<span class="ident">v</span>[<span class="ident">read</span>..].<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _,
+                                     (<span class="ident">len</span> <span class="op">-</span> <span class="ident">read</span>) <span class="kw">as</span> <span class="ident">libc</span>::<span class="ident">size_t</span>,
+                                     <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">r</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _);
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">error</span> <span class="op">==</span> <span class="number">0</span>, <span class="string">&quot;`get_random_bytes` failed!&quot;</span>);
+                <span class="ident">read</span> <span class="op">+=</span> <span class="ident">r</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
-                <span class='kw'>if</span> <span class='ident'>read</span> <span class='op'>&gt;=</span> <span class='ident'>v</span>.<span class='ident'>len</span>() { <span class='kw'>break</span>; }
+                <span class="kw">if</span> <span class="ident">read</span> <span class="op">&gt;=</span> <span class="ident">v</span>.<span class="ident">len</span>() { <span class="kw">break</span>; }
             }
         }
     }
 }
 
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>test</span> {
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>mpsc</span>::<span class='ident'>channel</span>;
-    <span class='kw'>use</span> <span class='ident'>Rng</span>;
-    <span class='kw'>use</span> <span class='ident'>OsRng</span>;
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>thread</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">test</span> {
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">mpsc</span>::<span class="ident">channel</span>;
+    <span class="kw">use</span> <span class="ident">Rng</span>;
+    <span class="kw">use</span> <span class="ident">OsRng</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">thread</span>;
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>test_os_rng</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>r</span> <span class='op'>=</span> <span class='ident'>OsRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_os_rng</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">OsRng</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
 
-        <span class='ident'>r</span>.<span class='ident'>next_u32</span>();
-        <span class='ident'>r</span>.<span class='ident'>next_u64</span>();
+        <span class="ident">r</span>.<span class="ident">next_u32</span>();
+        <span class="ident">r</span>.<span class="ident">next_u64</span>();
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> [<span class='number'>0u8</span>; <span class='number'>1000</span>];
-        <span class='ident'>r</span>.<span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>v</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1000</span>];
+        <span class="ident">r</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">v</span>);
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>test_os_rng_tasks</span>() {
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_os_rng_tasks</span>() {
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>txs</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>();
-        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>20</span> {
-            <span class='kw'>let</span> (<span class='ident'>tx</span>, <span class='ident'>rx</span>) <span class='op'>=</span> <span class='ident'>channel</span>();
-            <span class='ident'>txs</span>.<span class='ident'>push</span>(<span class='ident'>tx</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txs</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>();
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="number">0</span>..<span class="number">20</span> {
+            <span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">channel</span>();
+            <span class="ident">txs</span>.<span class="ident">push</span>(<span class="ident">tx</span>);
 
-            <span class='ident'>thread</span>::<span class='ident'>spawn</span>(<span class='kw'>move</span><span class='op'>||</span> {
-                <span class='comment'>// wait until all the tasks are ready to go.</span>
-                <span class='ident'>rx</span>.<span class='ident'>recv</span>().<span class='ident'>unwrap</span>();
+            <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span><span class="op">||</span> {
+                <span class="comment">// wait until all the tasks are ready to go.</span>
+                <span class="ident">rx</span>.<span class="ident">recv</span>().<span class="ident">unwrap</span>();
 
-                <span class='comment'>// deschedule to attempt to interleave things as much</span>
-                <span class='comment'>// as possible (XXX: is this a good test?)</span>
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>r</span> <span class='op'>=</span> <span class='ident'>OsRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
-                <span class='ident'>thread</span>::<span class='ident'>yield_now</span>();
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>v</span> <span class='op'>=</span> [<span class='number'>0u8</span>; <span class='number'>1000</span>];
+                <span class="comment">// deschedule to attempt to interleave things as much</span>
+                <span class="comment">// as possible (XXX: is this a good test?)</span>
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">OsRng</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+                <span class="ident">thread</span>::<span class="ident">yield_now</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1000</span>];
 
-                <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>100</span> {
-                    <span class='ident'>r</span>.<span class='ident'>next_u32</span>();
-                    <span class='ident'>thread</span>::<span class='ident'>yield_now</span>();
-                    <span class='ident'>r</span>.<span class='ident'>next_u64</span>();
-                    <span class='ident'>thread</span>::<span class='ident'>yield_now</span>();
-                    <span class='ident'>r</span>.<span class='ident'>fill_bytes</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>v</span>);
-                    <span class='ident'>thread</span>::<span class='ident'>yield_now</span>();
+                <span class="kw">for</span> _ <span class="kw">in</span> <span class="number">0</span>..<span class="number">100</span> {
+                    <span class="ident">r</span>.<span class="ident">next_u32</span>();
+                    <span class="ident">thread</span>::<span class="ident">yield_now</span>();
+                    <span class="ident">r</span>.<span class="ident">next_u64</span>();
+                    <span class="ident">thread</span>::<span class="ident">yield_now</span>();
+                    <span class="ident">r</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">v</span>);
+                    <span class="ident">thread</span>::<span class="ident">yield_now</span>();
                 }
             });
         }
 
-        <span class='comment'>// start all the tasks</span>
-        <span class='kw'>for</span> <span class='ident'>tx</span> <span class='kw'>in</span> <span class='ident'>txs</span>.<span class='ident'>iter</span>() {
-            <span class='ident'>tx</span>.<span class='ident'>send</span>(()).<span class='ident'>unwrap</span>();
+        <span class="comment">// start all the tasks</span>
+        <span class="kw">for</span> <span class="ident">tx</span> <span class="kw">in</span> <span class="ident">txs</span>.<span class="ident">iter</span>() {
+            <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">unwrap</span>();
         }
     }
 }

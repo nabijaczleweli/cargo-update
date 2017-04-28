@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -573,535 +573,535 @@
 <span id="528">528</span>
 <span id="529">529</span>
 <span id="530">530</span>
-</pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::{<span class='self'>self</span>, <span class='ident'>BufRead</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>::<span class='ident'>PhantomData</span>;
+</pre><pre class="rust ">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="self">self</span>, <span class="ident">BufRead</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 
-<span class='kw'>use</span> <span class='ident'>memchr</span>::{<span class='ident'>memchr</span>, <span class='ident'>memchr2</span>, <span class='ident'>memchr3</span>};
+<span class="kw">use</span> <span class="ident">memchr</span>::{<span class="ident">memchr</span>, <span class="ident">memchr2</span>, <span class="ident">memchr3</span>};
 
-<span class='kw'>use</span> <span class='kw'>super</span>::{<span class='ident'>ROOT_STATE</span>, <span class='ident'>StateIdx</span>};
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ROOT_STATE</span>, <span class="ident">StateIdx</span>};
 
-<span class='doccomment'>/// An abstraction over automatons and their corresponding iterators.</span>
-<span class='doccomment'>/// The type parameter `P` is the type of the pattern that was used to</span>
-<span class='doccomment'>/// construct this Automaton.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Return the next state given the current state and next character.</span>
-    <span class='kw'>fn</span> <span class='ident'>next_state</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>si</span>: <span class='ident'>StateIdx</span>, <span class='ident'>b</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>StateIdx</span>;
+<span class="doccomment">/// An abstraction over automatons and their corresponding iterators.</span>
+<span class="doccomment">/// The type parameter `P` is the type of the pattern that was used to</span>
+<span class="doccomment">/// construct this Automaton.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Return the next state given the current state and next character.</span>
+    <span class="kw">fn</span> <span class="ident">next_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">si</span>: <span class="ident">StateIdx</span>, <span class="ident">b</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">StateIdx</span>;
 
-    <span class='doccomment'>/// Return true if and only if the given state and current pattern index</span>
-    <span class='doccomment'>/// indicate a match.</span>
-    <span class='kw'>fn</span> <span class='ident'>has_match</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>si</span>: <span class='ident'>StateIdx</span>, <span class='ident'>outi</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span>;
+    <span class="doccomment">/// Return true if and only if the given state and current pattern index</span>
+    <span class="doccomment">/// indicate a match.</span>
+    <span class="kw">fn</span> <span class="ident">has_match</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">si</span>: <span class="ident">StateIdx</span>, <span class="ident">outi</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
 
-    <span class='doccomment'>/// Build a match given the current state, pattern index and input index.</span>
-    <span class='kw'>fn</span> <span class='ident'>get_match</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>si</span>: <span class='ident'>StateIdx</span>, <span class='ident'>outi</span>: <span class='ident'>usize</span>, <span class='ident'>texti</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Match</span>;
+    <span class="doccomment">/// Build a match given the current state, pattern index and input index.</span>
+    <span class="kw">fn</span> <span class="ident">get_match</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">si</span>: <span class="ident">StateIdx</span>, <span class="ident">outi</span>: <span class="ident">usize</span>, <span class="ident">texti</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Match</span>;
 
-    <span class='doccomment'>/// Return the set of bytes that have transitions in the root state.</span>
-    <span class='kw'>fn</span> <span class='ident'>start_bytes</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>];
+    <span class="doccomment">/// Return the set of bytes that have transitions in the root state.</span>
+    <span class="kw">fn</span> <span class="ident">start_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>];
 
-    <span class='doccomment'>/// Returns all of the patterns matched by this automaton.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// The order of the patterns is the order in which they were added.</span>
-    <span class='kw'>fn</span> <span class='ident'>patterns</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span>[<span class='ident'>P</span>];
+    <span class="doccomment">/// Returns all of the patterns matched by this automaton.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The order of the patterns is the order in which they were added.</span>
+    <span class="kw">fn</span> <span class="ident">patterns</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">P</span>];
 
-    <span class='doccomment'>/// Returns the pattern indexed at `i`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// The index corresponds to the position at which the pattern was added</span>
-    <span class='doccomment'>/// to the automaton, starting at `0`.</span>
-    <span class='kw'>fn</span> <span class='ident'>pattern</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>i</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>P</span>;
+    <span class="doccomment">/// Returns the pattern indexed at `i`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The index corresponds to the position at which the pattern was added</span>
+    <span class="doccomment">/// to the automaton, starting at `0`.</span>
+    <span class="kw">fn</span> <span class="ident">pattern</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">P</span>;
 
-    <span class='doccomment'>/// Return the number of patterns in the automaton.</span>
-    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>len</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='self'>self</span>.<span class='ident'>patterns</span>().<span class='ident'>len</span>()
+    <span class="doccomment">/// Return the number of patterns in the automaton.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">patterns</span>().<span class="ident">len</span>()
     }
 
-    <span class='doccomment'>/// Returns true if the automaton has no patterns.</span>
-    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>is_empty</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>0</span>
+    <span class="doccomment">/// Returns true if the automaton has no patterns.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>
     }
 
-    <span class='doccomment'>/// Returns an iterator of non-overlapping matches in `s`.</span>
-    <span class='kw'>fn</span> <span class='ident'>find</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>Q</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>AsRef</span><span class='op'>&lt;</span>[<span class='ident'>u8</span>]<span class='op'>&gt;&gt;</span>(
-        <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>,
-        <span class='ident'>s</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Q</span>,
-    ) <span class='op'>-&gt;</span> <span class='ident'>Matches</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='self'>Self</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='self'>Self</span>: <span class='ident'>Sized</span> {
-        <span class='ident'>Matches</span> {
-            <span class='ident'>aut</span>: <span class='self'>self</span>,
-            <span class='ident'>text</span>: <span class='ident'>s</span>.<span class='ident'>as_ref</span>(),
-            <span class='ident'>texti</span>: <span class='number'>0</span>,
-            <span class='ident'>si</span>: <span class='ident'>ROOT_STATE</span>,
-            <span class='ident'>_m</span>: <span class='ident'>PhantomData</span>,
+    <span class="doccomment">/// Returns an iterator of non-overlapping matches in `s`.</span>
+    <span class="kw">fn</span> <span class="ident">find</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>,
+        <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Q</span>,
+    ) <span class="op">-&gt;</span> <span class="ident">Matches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span> {
+        <span class="ident">Matches</span> {
+            <span class="ident">aut</span>: <span class="self">self</span>,
+            <span class="ident">text</span>: <span class="ident">s</span>.<span class="ident">as_ref</span>(),
+            <span class="ident">texti</span>: <span class="number">0</span>,
+            <span class="ident">si</span>: <span class="ident">ROOT_STATE</span>,
+            <span class="ident">_m</span>: <span class="ident">PhantomData</span>,
         }
     }
 
-    <span class='doccomment'>/// Returns an iterator of overlapping matches in `s`.</span>
-    <span class='kw'>fn</span> <span class='ident'>find_overlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>Q</span>: <span class='question-mark'>?</span><span class='ident'>Sized</span> <span class='op'>+</span> <span class='ident'>AsRef</span><span class='op'>&lt;</span>[<span class='ident'>u8</span>]<span class='op'>&gt;&gt;</span>(
-        <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>,
-        <span class='ident'>s</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> <span class='ident'>Q</span>,
-    ) <span class='op'>-&gt;</span> <span class='ident'>MatchesOverlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='self'>Self</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='self'>Self</span>: <span class='ident'>Sized</span> {
-        <span class='ident'>MatchesOverlapping</span> {
-            <span class='ident'>aut</span>: <span class='self'>self</span>,
-            <span class='ident'>text</span>: <span class='ident'>s</span>.<span class='ident'>as_ref</span>(),
-            <span class='ident'>texti</span>: <span class='number'>0</span>,
-            <span class='ident'>si</span>: <span class='ident'>ROOT_STATE</span>,
-            <span class='ident'>outi</span>: <span class='number'>0</span>,
-            <span class='ident'>_m</span>: <span class='ident'>PhantomData</span>,
+    <span class="doccomment">/// Returns an iterator of overlapping matches in `s`.</span>
+    <span class="kw">fn</span> <span class="ident">find_overlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>,
+        <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">Q</span>,
+    ) <span class="op">-&gt;</span> <span class="ident">MatchesOverlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span> {
+        <span class="ident">MatchesOverlapping</span> {
+            <span class="ident">aut</span>: <span class="self">self</span>,
+            <span class="ident">text</span>: <span class="ident">s</span>.<span class="ident">as_ref</span>(),
+            <span class="ident">texti</span>: <span class="number">0</span>,
+            <span class="ident">si</span>: <span class="ident">ROOT_STATE</span>,
+            <span class="ident">outi</span>: <span class="number">0</span>,
+            <span class="ident">_m</span>: <span class="ident">PhantomData</span>,
         }
     }
 
-    <span class='doccomment'>/// Returns an iterator of non-overlapping matches in the given reader.</span>
-    <span class='kw'>fn</span> <span class='ident'>stream_find</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>: <span class='ident'>io</span>::<span class='ident'>Read</span><span class='op'>&gt;</span>(
-        <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>,
-        <span class='ident'>rdr</span>: <span class='ident'>R</span>,
-    ) <span class='op'>-&gt;</span> <span class='ident'>StreamMatches</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>, <span class='ident'>P</span>, <span class='self'>Self</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='self'>Self</span>: <span class='ident'>Sized</span> {
-        <span class='ident'>StreamMatches</span> {
-            <span class='ident'>aut</span>: <span class='self'>self</span>,
-            <span class='ident'>buf</span>: <span class='ident'>io</span>::<span class='ident'>BufReader</span>::<span class='ident'>new</span>(<span class='ident'>rdr</span>),
-            <span class='ident'>texti</span>: <span class='number'>0</span>,
-            <span class='ident'>si</span>: <span class='ident'>ROOT_STATE</span>,
-            <span class='ident'>_m</span>: <span class='ident'>PhantomData</span>,
+    <span class="doccomment">/// Returns an iterator of non-overlapping matches in the given reader.</span>
+    <span class="kw">fn</span> <span class="ident">stream_find</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>,
+        <span class="ident">rdr</span>: <span class="ident">R</span>,
+    ) <span class="op">-&gt;</span> <span class="ident">StreamMatches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">P</span>, <span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span> {
+        <span class="ident">StreamMatches</span> {
+            <span class="ident">aut</span>: <span class="self">self</span>,
+            <span class="ident">buf</span>: <span class="ident">io</span>::<span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">rdr</span>),
+            <span class="ident">texti</span>: <span class="number">0</span>,
+            <span class="ident">si</span>: <span class="ident">ROOT_STATE</span>,
+            <span class="ident">_m</span>: <span class="ident">PhantomData</span>,
         }
     }
 
-    <span class='doccomment'>/// Returns an iterator of overlapping matches in the given reader.</span>
-    <span class='kw'>fn</span> <span class='ident'>stream_find_overlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>: <span class='ident'>io</span>::<span class='ident'>Read</span><span class='op'>&gt;</span>(
-        <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>,
-        <span class='ident'>rdr</span>: <span class='ident'>R</span>,
-    ) <span class='op'>-&gt;</span> <span class='ident'>StreamMatchesOverlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>, <span class='ident'>P</span>, <span class='self'>Self</span><span class='op'>&gt;</span>
-    <span class='kw'>where</span> <span class='self'>Self</span>: <span class='ident'>Sized</span> {
-        <span class='ident'>StreamMatchesOverlapping</span> {
-            <span class='ident'>aut</span>: <span class='self'>self</span>,
-            <span class='ident'>buf</span>: <span class='ident'>io</span>::<span class='ident'>BufReader</span>::<span class='ident'>new</span>(<span class='ident'>rdr</span>),
-            <span class='ident'>texti</span>: <span class='number'>0</span>,
-            <span class='ident'>si</span>: <span class='ident'>ROOT_STATE</span>,
-            <span class='ident'>outi</span>: <span class='number'>0</span>,
-            <span class='ident'>_m</span>: <span class='ident'>PhantomData</span>,
+    <span class="doccomment">/// Returns an iterator of overlapping matches in the given reader.</span>
+    <span class="kw">fn</span> <span class="ident">stream_find_overlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>,
+        <span class="ident">rdr</span>: <span class="ident">R</span>,
+    ) <span class="op">-&gt;</span> <span class="ident">StreamMatchesOverlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">P</span>, <span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span> {
+        <span class="ident">StreamMatchesOverlapping</span> {
+            <span class="ident">aut</span>: <span class="self">self</span>,
+            <span class="ident">buf</span>: <span class="ident">io</span>::<span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">rdr</span>),
+            <span class="ident">texti</span>: <span class="number">0</span>,
+            <span class="ident">si</span>: <span class="ident">ROOT_STATE</span>,
+            <span class="ident">outi</span>: <span class="number">0</span>,
+            <span class="ident">_m</span>: <span class="ident">PhantomData</span>,
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>P</span>: <span class='ident'>AsRef</span><span class='op'>&lt;</span>[<span class='ident'>u8</span>]<span class='op'>&gt;</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>
-        <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>A</span> {
-    <span class='kw'>fn</span> <span class='ident'>next_state</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>si</span>: <span class='ident'>StateIdx</span>, <span class='ident'>b</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>StateIdx</span> {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>b</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>
+        <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
+    <span class="kw">fn</span> <span class="ident">next_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">si</span>: <span class="ident">StateIdx</span>, <span class="ident">b</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">StateIdx</span> {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">b</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>has_match</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>si</span>: <span class='ident'>StateIdx</span>, <span class='ident'>outi</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='ident'>outi</span>)
+    <span class="kw">fn</span> <span class="ident">has_match</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">si</span>: <span class="ident">StateIdx</span>, <span class="ident">outi</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="ident">outi</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>start_bytes</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>] {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>start_bytes</span>()
+    <span class="kw">fn</span> <span class="ident">start_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">start_bytes</span>()
     }
 
-    <span class='kw'>fn</span> <span class='ident'>patterns</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span>[<span class='ident'>P</span>] {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>patterns</span>()
+    <span class="kw">fn</span> <span class="ident">patterns</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">P</span>] {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">patterns</span>()
     }
 
-    <span class='kw'>fn</span> <span class='ident'>pattern</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>i</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>P</span> {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>pattern</span>(<span class='ident'>i</span>)
+    <span class="kw">fn</span> <span class="ident">pattern</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">P</span> {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">pattern</span>(<span class="ident">i</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>get_match</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>si</span>: <span class='ident'>StateIdx</span>, <span class='ident'>outi</span>: <span class='ident'>usize</span>, <span class='ident'>texti</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Match</span> {
-        (<span class='kw-2'>*</span><span class='kw-2'>*</span><span class='self'>self</span>).<span class='ident'>get_match</span>(<span class='ident'>si</span>, <span class='ident'>outi</span>, <span class='ident'>texti</span>)
+    <span class="kw">fn</span> <span class="ident">get_match</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">si</span>: <span class="ident">StateIdx</span>, <span class="ident">outi</span>: <span class="ident">usize</span>, <span class="ident">texti</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Match</span> {
+        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">get_match</span>(<span class="ident">si</span>, <span class="ident">outi</span>, <span class="ident">texti</span>)
     }
 }
 
-<span class='doccomment'>/// Records a match in the search text.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>, <span class='ident'>Debug</span>, <span class='ident'>Hash</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Eq</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Match</span> {
-    <span class='doccomment'>/// The pattern index.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// This corresponds to the ordering in which the matched pattern was</span>
-    <span class='doccomment'>/// added to the automaton, starting at `0`.</span>
-    <span class='kw'>pub</span> <span class='ident'>pati</span>: <span class='ident'>usize</span>,
-    <span class='doccomment'>/// The starting byte offset of the match in the search text.</span>
-    <span class='kw'>pub</span> <span class='ident'>start</span>: <span class='ident'>usize</span>,
-    <span class='doccomment'>/// The ending byte offset of the match in the search text.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// (This can be re-captiulated with `pati` and adding the pattern&#39;s</span>
-    <span class='doccomment'>/// length to `start`, but it is convenient to have it here.)</span>
-    <span class='kw'>pub</span> <span class='ident'>end</span>: <span class='ident'>usize</span>,
+<span class="doccomment">/// Records a match in the search text.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Match</span> {
+    <span class="doccomment">/// The pattern index.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This corresponds to the ordering in which the matched pattern was</span>
+    <span class="doccomment">/// added to the automaton, starting at `0`.</span>
+    <span class="kw">pub</span> <span class="ident">pati</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// The starting byte offset of the match in the search text.</span>
+    <span class="kw">pub</span> <span class="ident">start</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// The ending byte offset of the match in the search text.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// (This can be re-captiulated with `pati` and adding the pattern&#39;s</span>
+    <span class="doccomment">/// length to `start`, but it is convenient to have it here.)</span>
+    <span class="kw">pub</span> <span class="ident">end</span>: <span class="ident">usize</span>,
 }
 
-<span class='doccomment'>/// An iterator of non-overlapping matches for in-memory text.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This iterator yields `Match` values.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// `&#39;a` is the lifetime of the automaton, `&#39;s` is the lifetime of the</span>
-<span class='doccomment'>/// search text, and `P` is the type of the Automaton&#39;s pattern.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Matches</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> {
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> [<span class='ident'>u8</span>],
-    <span class='ident'>texti</span>: <span class='ident'>usize</span>,
-    <span class='ident'>si</span>: <span class='ident'>StateIdx</span>,
-    <span class='ident'>_m</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// An iterator of non-overlapping matches for in-memory text.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This iterator yields `Match` values.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `&#39;a` is the lifetime of the automaton, `&#39;s` is the lifetime of the</span>
+<span class="doccomment">/// search text, and `P` is the type of the Automaton&#39;s pattern.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Matches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> {
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> [<span class="ident">u8</span>],
+    <span class="ident">texti</span>: <span class="ident">usize</span>,
+    <span class="ident">si</span>: <span class="ident">StateIdx</span>,
+    <span class="ident">_m</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
 }
 
-<span class='comment'>// When there&#39;s an initial lone start byte, it is usually worth it</span>
-<span class='comment'>// to use `memchr` to skip along the input. The problem is that</span>
-<span class='comment'>// the skipping function is called in the inner match loop, which</span>
-<span class='comment'>// can be quite costly if the skipping condition is never met.</span>
-<span class='comment'>// Therefore, we lift the case analysis outside of the inner loop at</span>
-<span class='comment'>// the cost of repeating code.</span>
-<span class='comment'>//</span>
-<span class='comment'>// `step_to_match` is the version of the inner loop without skipping,</span>
-<span class='comment'>// and `skip_to_match` is the version with skipping.</span>
-<span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>never</span>)]</span>
-<span class='kw'>fn</span> <span class='ident'>step_to_match</span><span class='op'>&lt;</span><span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>(
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-    <span class='kw-2'>mut</span> <span class='ident'>texti</span>: <span class='ident'>usize</span>,
-    <span class='kw-2'>mut</span> <span class='ident'>si</span>: <span class='ident'>StateIdx</span>
-) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>StateIdx</span>)<span class='op'>&gt;</span> {
-    <span class='kw'>while</span> <span class='ident'>texti</span> <span class='op'>&lt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>() {
-        <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-        <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-            <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+<span class="comment">// When there&#39;s an initial lone start byte, it is usually worth it</span>
+<span class="comment">// to use `memchr` to skip along the input. The problem is that</span>
+<span class="comment">// the skipping function is called in the inner match loop, which</span>
+<span class="comment">// can be quite costly if the skipping condition is never met.</span>
+<span class="comment">// Therefore, we lift the case analysis outside of the inner loop at</span>
+<span class="comment">// the cost of repeating code.</span>
+<span class="comment">//</span>
+<span class="comment">// `step_to_match` is the version of the inner loop without skipping,</span>
+<span class="comment">// and `skip_to_match` is the version with skipping.</span>
+<span class="attribute">#[<span class="ident">inline</span>(<span class="ident">never</span>)]</span>
+<span class="kw">fn</span> <span class="ident">step_to_match</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    <span class="kw-2">mut</span> <span class="ident">texti</span>: <span class="ident">usize</span>,
+    <span class="kw-2">mut</span> <span class="ident">si</span>: <span class="ident">StateIdx</span>
+) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">StateIdx</span>)<span class="op">&gt;</span> {
+    <span class="kw">while</span> <span class="ident">texti</span> <span class="op">&lt;</span> <span class="ident">text</span>.<span class="ident">len</span>() {
+        <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+        <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+            <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
         }
-        <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-        <span class='kw'>if</span> <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>4</span> <span class='op'>&lt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>() {
-            <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-            <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+        <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="kw">if</span> <span class="ident">texti</span> <span class="op">+</span> <span class="number">4</span> <span class="op">&lt;</span> <span class="ident">text</span>.<span class="ident">len</span>() {
+            <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+            <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
             }
-            <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-            <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+            <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+            <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
             }
-            <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-            <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+            <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+            <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
             }
-            <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-            <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+            <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+            <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
             }
-            <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-            <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+            <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+            <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
             }
-            <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+            <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
         }
     }
-    <span class='prelude-val'>None</span>
+    <span class="prelude-val">None</span>
 }
 
-<span class='kw'>fn</span> <span class='ident'>skip_to_match</span><span class='op'>&lt;</span><span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span>, <span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='kw-2'>&amp;</span><span class='ident'>A</span>, <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span><span class='op'>&gt;</span>(
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-    <span class='kw-2'>mut</span> <span class='ident'>texti</span>: <span class='ident'>usize</span>,
-    <span class='kw-2'>mut</span> <span class='ident'>si</span>: <span class='ident'>StateIdx</span>,
-    <span class='ident'>skip</span>: <span class='ident'>F</span>,
-) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>StateIdx</span>)<span class='op'>&gt;</span> {
-    <span class='kw'>if</span> <span class='ident'>si</span> <span class='op'>==</span> <span class='ident'>ROOT_STATE</span> {
-        <span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>skip</span>(<span class='ident'>aut</span>, <span class='ident'>text</span>, <span class='ident'>texti</span>);
+<span class="kw">fn</span> <span class="ident">skip_to_match</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>, <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">A</span>, <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">usize</span><span class="op">&gt;</span>(
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    <span class="kw-2">mut</span> <span class="ident">texti</span>: <span class="ident">usize</span>,
+    <span class="kw-2">mut</span> <span class="ident">si</span>: <span class="ident">StateIdx</span>,
+    <span class="ident">skip</span>: <span class="ident">F</span>,
+) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">StateIdx</span>)<span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">si</span> <span class="op">==</span> <span class="ident">ROOT_STATE</span> {
+        <span class="ident">texti</span> <span class="op">=</span> <span class="ident">skip</span>(<span class="ident">aut</span>, <span class="ident">text</span>, <span class="ident">texti</span>);
     }
-    <span class='kw'>while</span> <span class='ident'>texti</span> <span class='op'>&lt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>() {
-        <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-        <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-            <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+    <span class="kw">while</span> <span class="ident">texti</span> <span class="op">&lt;</span> <span class="ident">text</span>.<span class="ident">len</span>() {
+        <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+        <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+            <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
         }
-        <span class='kw'>if</span> <span class='ident'>si</span> <span class='op'>==</span> <span class='ident'>ROOT_STATE</span> {
-            <span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>skip</span>(<span class='ident'>aut</span>, <span class='ident'>text</span>, <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>1</span>);
-        } <span class='kw'>else</span> {
-            <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='kw'>if</span> <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>4</span> <span class='op'>&lt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>() {
-                <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-                <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                    <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+        <span class="kw">if</span> <span class="ident">si</span> <span class="op">==</span> <span class="ident">ROOT_STATE</span> {
+            <span class="ident">texti</span> <span class="op">=</span> <span class="ident">skip</span>(<span class="ident">aut</span>, <span class="ident">text</span>, <span class="ident">texti</span> <span class="op">+</span> <span class="number">1</span>);
+        } <span class="kw">else</span> {
+            <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="ident">texti</span> <span class="op">+</span> <span class="number">4</span> <span class="op">&lt;</span> <span class="ident">text</span>.<span class="ident">len</span>() {
+                <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+                <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
                 }
-                <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-                <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                    <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+                <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+                <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
                 }
-                <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-                <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                    <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+                <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+                <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
                 }
-                <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-                <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                    <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+                <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+                <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
                 }
-                <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                <span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='ident'>si</span>, <span class='ident'>text</span>[<span class='ident'>texti</span>]);
-                <span class='kw'>if</span> <span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>) {
-                    <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>));
+                <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">si</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="ident">si</span>, <span class="ident">text</span>[<span class="ident">texti</span>]);
+                <span class="kw">if</span> <span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="ident">si</span>, <span class="number">0</span>) {
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>));
                 }
-                <span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+                <span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
             }
         }
     }
-    <span class='prelude-val'>None</span>
+    <span class="prelude-val">None</span>
 }
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>fn</span> <span class='ident'>skip1</span><span class='op'>&lt;</span><span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>(
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-    <span class='ident'>at</span>: <span class='ident'>usize</span>,
-) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-    <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span>);
-    <span class='kw'>let</span> <span class='ident'>b</span> <span class='op'>=</span> <span class='ident'>aut</span>.<span class='ident'>start_bytes</span>()[<span class='number'>0</span>];
-    <span class='kw'>match</span> <span class='ident'>memchr</span>(<span class='ident'>b</span>, <span class='kw-2'>&amp;</span><span class='ident'>text</span>[<span class='ident'>at</span>..]) {
-        <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>(),
-        <span class='prelude-val'>Some</span>(<span class='ident'>i</span>) <span class='op'>=&gt;</span> <span class='ident'>at</span> <span class='op'>+</span> <span class='ident'>i</span>,
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">skip1</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    <span class="ident">at</span>: <span class="ident">usize</span>,
+) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">aut</span>.<span class="ident">start_bytes</span>()[<span class="number">0</span>];
+    <span class="kw">match</span> <span class="ident">memchr</span>(<span class="ident">b</span>, <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">at</span>..]) {
+        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">text</span>.<span class="ident">len</span>(),
+        <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">at</span> <span class="op">+</span> <span class="ident">i</span>,
     }
 }
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>fn</span> <span class='ident'>skip2</span><span class='op'>&lt;</span><span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>(
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-    <span class='ident'>at</span>: <span class='ident'>usize</span>,
-) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-    <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>2</span>);
-    <span class='kw'>let</span> (<span class='ident'>b1</span>, <span class='ident'>b2</span>) <span class='op'>=</span> (<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>()[<span class='number'>0</span>], <span class='ident'>aut</span>.<span class='ident'>start_bytes</span>()[<span class='number'>1</span>]);
-    <span class='kw'>match</span> <span class='ident'>memchr2</span>(<span class='ident'>b1</span>, <span class='ident'>b2</span>, <span class='kw-2'>&amp;</span><span class='ident'>text</span>[<span class='ident'>at</span>..]) {
-        <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>(),
-        <span class='prelude-val'>Some</span>(<span class='ident'>i</span>) <span class='op'>=&gt;</span> <span class='ident'>at</span> <span class='op'>+</span> <span class='ident'>i</span>,
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">skip2</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    <span class="ident">at</span>: <span class="ident">usize</span>,
+) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span>);
+    <span class="kw">let</span> (<span class="ident">b1</span>, <span class="ident">b2</span>) <span class="op">=</span> (<span class="ident">aut</span>.<span class="ident">start_bytes</span>()[<span class="number">0</span>], <span class="ident">aut</span>.<span class="ident">start_bytes</span>()[<span class="number">1</span>]);
+    <span class="kw">match</span> <span class="ident">memchr2</span>(<span class="ident">b1</span>, <span class="ident">b2</span>, <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">at</span>..]) {
+        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">text</span>.<span class="ident">len</span>(),
+        <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">at</span> <span class="op">+</span> <span class="ident">i</span>,
     }
 }
 
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>fn</span> <span class='ident'>skip3</span><span class='op'>&lt;</span><span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>(
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>],
-    <span class='ident'>at</span>: <span class='ident'>usize</span>,
-) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-    <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>3</span>);
-    <span class='kw'>let</span> (<span class='ident'>b1</span>, <span class='ident'>b2</span>, <span class='ident'>b3</span>) <span class='op'>=</span> (
-        <span class='ident'>aut</span>.<span class='ident'>start_bytes</span>()[<span class='number'>0</span>], <span class='ident'>aut</span>.<span class='ident'>start_bytes</span>()[<span class='number'>1</span>], <span class='ident'>aut</span>.<span class='ident'>start_bytes</span>()[<span class='number'>2</span>],
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">skip3</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    <span class="ident">at</span>: <span class="ident">usize</span>,
+) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">3</span>);
+    <span class="kw">let</span> (<span class="ident">b1</span>, <span class="ident">b2</span>, <span class="ident">b3</span>) <span class="op">=</span> (
+        <span class="ident">aut</span>.<span class="ident">start_bytes</span>()[<span class="number">0</span>], <span class="ident">aut</span>.<span class="ident">start_bytes</span>()[<span class="number">1</span>], <span class="ident">aut</span>.<span class="ident">start_bytes</span>()[<span class="number">2</span>],
     );
-    <span class='kw'>match</span> <span class='ident'>memchr3</span>(<span class='ident'>b1</span>, <span class='ident'>b2</span>, <span class='ident'>b3</span>, <span class='kw-2'>&amp;</span><span class='ident'>text</span>[<span class='ident'>at</span>..]) {
-        <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>text</span>.<span class='ident'>len</span>(),
-        <span class='prelude-val'>Some</span>(<span class='ident'>i</span>) <span class='op'>=&gt;</span> <span class='ident'>at</span> <span class='op'>+</span> <span class='ident'>i</span>,
+    <span class="kw">match</span> <span class="ident">memchr3</span>(<span class="ident">b1</span>, <span class="ident">b2</span>, <span class="ident">b3</span>, <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">at</span>..]) {
+        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">text</span>.<span class="ident">len</span>(),
+        <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">at</span> <span class="op">+</span> <span class="ident">i</span>,
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>Matches</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>Match</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Matches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Match</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Match</span><span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span> {
-            <span class='kw'>let</span> <span class='ident'>skip</span> <span class='op'>=</span> <span class='ident'>skip_to_match</span>(
-                <span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>skip1</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>skip</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>1</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>ROOT_STATE</span>;
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>, <span class='ident'>texti</span>));
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+            <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">skip_to_match</span>(
+                <span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>, <span class="ident">skip1</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">skip</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span> <span class="op">+</span> <span class="number">1</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">ROOT_STATE</span>;
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="ident">si</span>, <span class="number">0</span>, <span class="ident">texti</span>));
             }
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>2</span> {
-            <span class='kw'>let</span> <span class='ident'>skip</span> <span class='op'>=</span> <span class='ident'>skip_to_match</span>(
-                <span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>skip2</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>skip</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>1</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>ROOT_STATE</span>;
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>, <span class='ident'>texti</span>));
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span> {
+            <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">skip_to_match</span>(
+                <span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>, <span class="ident">skip2</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">skip</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span> <span class="op">+</span> <span class="number">1</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">ROOT_STATE</span>;
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="ident">si</span>, <span class="number">0</span>, <span class="ident">texti</span>));
             }
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>3</span> {
-            <span class='kw'>let</span> <span class='ident'>skip</span> <span class='op'>=</span> <span class='ident'>skip_to_match</span>(
-                <span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>skip3</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>skip</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>1</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>ROOT_STATE</span>;
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>, <span class='ident'>texti</span>));
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">3</span> {
+            <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">skip_to_match</span>(
+                <span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>, <span class="ident">skip3</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">skip</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span> <span class="op">+</span> <span class="number">1</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">ROOT_STATE</span>;
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="ident">si</span>, <span class="number">0</span>, <span class="ident">texti</span>));
             }
-        } <span class='kw'>else</span> {
-            <span class='kw'>let</span> <span class='ident'>step</span> <span class='op'>=</span> <span class='ident'>step_to_match</span>(<span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>step</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span> <span class='op'>+</span> <span class='number'>1</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>ROOT_STATE</span>;
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='ident'>si</span>, <span class='number'>0</span>, <span class='ident'>texti</span>));
+        } <span class="kw">else</span> {
+            <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="ident">step_to_match</span>(<span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">step</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span> <span class="op">+</span> <span class="number">1</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">ROOT_STATE</span>;
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="ident">si</span>, <span class="number">0</span>, <span class="ident">texti</span>));
             }
         }
-        <span class='prelude-val'>None</span>
+        <span class="prelude-val">None</span>
     }
 }
 
-<span class='doccomment'>/// An iterator of non-overlapping matches for streaming text.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This iterator yields `io::Result&lt;Match&gt;` values.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// `&#39;a` is the lifetime of the automaton, `R` is the type of the underlying</span>
-<span class='doccomment'>/// `io::Read`er, and P is the type of the Automaton&#39;s pattern.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>StreamMatches</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> {
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>A</span>,
-    <span class='ident'>buf</span>: <span class='ident'>io</span>::<span class='ident'>BufReader</span><span class='op'>&lt;</span><span class='ident'>R</span><span class='op'>&gt;</span>,
-    <span class='ident'>texti</span>: <span class='ident'>usize</span>,
-    <span class='ident'>si</span>: <span class='ident'>StateIdx</span>,
-    <span class='ident'>_m</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// An iterator of non-overlapping matches for streaming text.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This iterator yields `io::Result&lt;Match&gt;` values.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `&#39;a` is the lifetime of the automaton, `R` is the type of the underlying</span>
+<span class="doccomment">/// `io::Read`er, and P is the type of the Automaton&#39;s pattern.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StreamMatches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> {
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span>,
+    <span class="ident">buf</span>: <span class="ident">io</span>::<span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
+    <span class="ident">texti</span>: <span class="ident">usize</span>,
+    <span class="ident">si</span>: <span class="ident">StateIdx</span>,
+    <span class="ident">_m</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>: <span class='ident'>io</span>::<span class='ident'>Read</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;&gt;</span>
-        <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>StreamMatches</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>, <span class='ident'>P</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Match</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;&gt;</span>
+        <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">StreamMatches</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">P</span>, <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Match</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>m</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>consumed</span> <span class='op'>=</span> <span class='number'>0</span>;
-<span class='lifetime'>&#39;LOOP</span>:  <span class='kw'>loop</span> {
-            <span class='self'>self</span>.<span class='ident'>buf</span>.<span class='ident'>consume</span>(<span class='ident'>consumed</span>);
-            <span class='kw'>let</span> <span class='ident'>bs</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>buf</span>.<span class='ident'>fill_buf</span>() {
-                <span class='prelude-val'>Err</span>(<span class='ident'>err</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(<span class='ident'>err</span>)),
-                <span class='prelude-val'>Ok</span>(<span class='ident'>bs</span>) <span class='kw'>if</span> <span class='ident'>bs</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='kw'>break</span>,
-                <span class='prelude-val'>Ok</span>(<span class='ident'>bs</span>) <span class='op'>=&gt;</span> <span class='ident'>bs</span>,
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">consumed</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="lifetime">&#39;LOOP</span>:  <span class="kw">loop</span> {
+            <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">consume</span>(<span class="ident">consumed</span>);
+            <span class="kw">let</span> <span class="ident">bs</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">fill_buf</span>() {
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">err</span>)),
+                <span class="prelude-val">Ok</span>(<span class="ident">bs</span>) <span class="kw">if</span> <span class="ident">bs</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> <span class="op">=&gt;</span> <span class="kw">break</span>,
+                <span class="prelude-val">Ok</span>(<span class="ident">bs</span>) <span class="op">=&gt;</span> <span class="ident">bs</span>,
             };
-            <span class='ident'>consumed</span> <span class='op'>=</span> <span class='ident'>bs</span>.<span class='ident'>len</span>(); <span class='comment'>// is shortened if we find a match</span>
-            <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='kw-2'>&amp;</span><span class='ident'>b</span>) <span class='kw'>in</span> <span class='ident'>bs</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>b</span>);
-                <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='number'>0</span>) {
-                    <span class='ident'>m</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='number'>0</span>, <span class='self'>self</span>.<span class='ident'>texti</span>)));
-                    <span class='ident'>consumed</span> <span class='op'>=</span> <span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>;
-                    <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>ROOT_STATE</span>;
-                    <span class='kw'>break</span> <span class='lifetime'>&#39;LOOP</span>;
+            <span class="ident">consumed</span> <span class="op">=</span> <span class="ident">bs</span>.<span class="ident">len</span>(); <span class="comment">// is shortened if we find a match</span>
+            <span class="kw">for</span> (<span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="kw">in</span> <span class="ident">bs</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="ident">b</span>);
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="number">0</span>) {
+                    <span class="ident">m</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="number">0</span>, <span class="self">self</span>.<span class="ident">texti</span>)));
+                    <span class="ident">consumed</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>;
+                    <span class="self">self</span>.<span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">ROOT_STATE</span>;
+                    <span class="kw">break</span> <span class="lifetime">&#39;LOOP</span>;
                 }
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
             }
         }
-        <span class='self'>self</span>.<span class='ident'>buf</span>.<span class='ident'>consume</span>(<span class='ident'>consumed</span>);
-        <span class='ident'>m</span>
+        <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">consume</span>(<span class="ident">consumed</span>);
+        <span class="ident">m</span>
     }
 }
 
-<span class='doccomment'>/// An iterator of overlapping matches for in-memory text.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This iterator yields `Match` values.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// `&#39;a` is the lifetime of the automaton, `&#39;s` is the lifetime of the</span>
-<span class='doccomment'>/// search text, and `P` is the type of the Automaton&#39;s pattern.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>MatchesOverlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> {
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>A</span>,
-    <span class='ident'>text</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;s</span> [<span class='ident'>u8</span>],
-    <span class='ident'>texti</span>: <span class='ident'>usize</span>,
-    <span class='ident'>si</span>: <span class='ident'>StateIdx</span>,
-    <span class='ident'>outi</span>: <span class='ident'>usize</span>,
-    <span class='ident'>_m</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// An iterator of overlapping matches for in-memory text.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This iterator yields `Match` values.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `&#39;a` is the lifetime of the automaton, `&#39;s` is the lifetime of the</span>
+<span class="doccomment">/// search text, and `P` is the type of the Automaton&#39;s pattern.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MatchesOverlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> {
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span>,
+    <span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> [<span class="ident">u8</span>],
+    <span class="ident">texti</span>: <span class="ident">usize</span>,
+    <span class="ident">si</span>: <span class="ident">StateIdx</span>,
+    <span class="ident">outi</span>: <span class="ident">usize</span>,
+    <span class="ident">_m</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>
-        <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>MatchesOverlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='lifetime'>&#39;s</span>, <span class='ident'>P</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>Match</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>
+        <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">MatchesOverlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;s</span>, <span class="ident">P</span>, <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Match</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Match</span><span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>) {
-            <span class='kw'>let</span> <span class='ident'>m</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>, <span class='self'>self</span>.<span class='ident'>texti</span>);
-            <span class='self'>self</span>.<span class='ident'>outi</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>) {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>) {
+            <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>, <span class="self">self</span>.<span class="ident">texti</span>);
+            <span class="self">self</span>.<span class="ident">outi</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>) {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
             }
-            <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>m</span>);
+            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>);
         }
 
-        <span class='self'>self</span>.<span class='ident'>outi</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span> {
-            <span class='kw'>let</span> <span class='ident'>skip</span> <span class='op'>=</span> <span class='ident'>skip_to_match</span>(
-                <span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>skip1</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>skip</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>si</span>;
-                <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>next</span>();
+        <span class="self">self</span>.<span class="ident">outi</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+            <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">skip_to_match</span>(
+                <span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>, <span class="ident">skip1</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">skip</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">si</span>;
+                <span class="kw">return</span> <span class="self">self</span>.<span class="ident">next</span>();
             }
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>2</span> {
-            <span class='kw'>let</span> <span class='ident'>skip</span> <span class='op'>=</span> <span class='ident'>skip_to_match</span>(
-                <span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>skip2</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>skip</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>si</span>;
-                <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>next</span>();
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span> {
+            <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">skip_to_match</span>(
+                <span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>, <span class="ident">skip2</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">skip</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">si</span>;
+                <span class="kw">return</span> <span class="self">self</span>.<span class="ident">next</span>();
             }
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>start_bytes</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>3</span> {
-            <span class='kw'>let</span> <span class='ident'>skip</span> <span class='op'>=</span> <span class='ident'>skip_to_match</span>(
-                <span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>skip3</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>skip</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>si</span>;
-                <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>next</span>();
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">start_bytes</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">3</span> {
+            <span class="kw">let</span> <span class="ident">skip</span> <span class="op">=</span> <span class="ident">skip_to_match</span>(
+                <span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>, <span class="ident">skip3</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">skip</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">si</span>;
+                <span class="kw">return</span> <span class="self">self</span>.<span class="ident">next</span>();
             }
-        } <span class='kw'>else</span> {
-            <span class='kw'>let</span> <span class='ident'>step</span> <span class='op'>=</span> <span class='ident'>step_to_match</span>(<span class='self'>self</span>.<span class='ident'>aut</span>, <span class='self'>self</span>.<span class='ident'>text</span>, <span class='self'>self</span>.<span class='ident'>texti</span>, <span class='self'>self</span>.<span class='ident'>si</span>);
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>texti</span>, <span class='ident'>si</span>)) <span class='op'>=</span> <span class='ident'>step</span> {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>=</span> <span class='ident'>texti</span>;
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='ident'>si</span>;
-                <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>next</span>();
+        } <span class="kw">else</span> {
+            <span class="kw">let</span> <span class="ident">step</span> <span class="op">=</span> <span class="ident">step_to_match</span>(<span class="self">self</span>.<span class="ident">aut</span>, <span class="self">self</span>.<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">texti</span>, <span class="self">self</span>.<span class="ident">si</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">texti</span>, <span class="ident">si</span>)) <span class="op">=</span> <span class="ident">step</span> {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">=</span> <span class="ident">texti</span>;
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="ident">si</span>;
+                <span class="kw">return</span> <span class="self">self</span>.<span class="ident">next</span>();
             }
         }
-        <span class='prelude-val'>None</span>
+        <span class="prelude-val">None</span>
     }
 }
 
-<span class='doccomment'>/// An iterator of overlapping matches for streaming text.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This iterator yields `io::Result&lt;Match&gt;` values.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// `&#39;a` is the lifetime of the automaton, `R` is the type of the underlying</span>
-<span class='doccomment'>/// `io::Read`er, and P is the type of the Automaton&#39;s pattern.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>StreamMatchesOverlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span> {
-    <span class='ident'>aut</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>A</span>,
-    <span class='ident'>buf</span>: <span class='ident'>io</span>::<span class='ident'>BufReader</span><span class='op'>&lt;</span><span class='ident'>R</span><span class='op'>&gt;</span>,
-    <span class='ident'>texti</span>: <span class='ident'>usize</span>,
-    <span class='ident'>si</span>: <span class='ident'>StateIdx</span>,
-    <span class='ident'>outi</span>: <span class='ident'>usize</span>,
-    <span class='ident'>_m</span>: <span class='ident'>PhantomData</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// An iterator of overlapping matches for streaming text.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This iterator yields `io::Result&lt;Match&gt;` values.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `&#39;a` is the lifetime of the automaton, `R` is the type of the underlying</span>
+<span class="doccomment">/// `io::Read`er, and P is the type of the Automaton&#39;s pattern.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StreamMatchesOverlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> {
+    <span class="ident">aut</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span>,
+    <span class="ident">buf</span>: <span class="ident">io</span>::<span class="ident">BufReader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
+    <span class="ident">texti</span>: <span class="ident">usize</span>,
+    <span class="ident">si</span>: <span class="ident">StateIdx</span>,
+    <span class="ident">outi</span>: <span class="ident">usize</span>,
+    <span class="ident">_m</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>: <span class='ident'>io</span>::<span class='ident'>Read</span>, <span class='ident'>P</span>, <span class='ident'>A</span>: <span class='ident'>Automaton</span><span class='op'>&lt;</span><span class='ident'>P</span><span class='op'>&gt;</span> <span class='op'>+</span> <span class='question-mark'>?</span><span class='ident'>Sized</span><span class='op'>&gt;</span>
-        <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>StreamMatchesOverlapping</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>R</span>, <span class='ident'>P</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Match</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>: <span class="ident">io</span>::<span class="ident">Read</span>, <span class="ident">P</span>, <span class="ident">A</span>: <span class="ident">Automaton</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>
+        <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">StreamMatchesOverlapping</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>, <span class="ident">P</span>, <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Match</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>) {
-            <span class='kw'>let</span> <span class='ident'>m</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>, <span class='self'>self</span>.<span class='ident'>texti</span>);
-            <span class='self'>self</span>.<span class='ident'>outi</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>) {
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>) {
+            <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>, <span class="self">self</span>.<span class="ident">texti</span>);
+            <span class="self">self</span>.<span class="ident">outi</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>) {
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
             }
-            <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='ident'>m</span>));
+            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">m</span>));
         }
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>m</span> <span class='op'>=</span> <span class='prelude-val'>None</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>consumed</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='self'>self</span>.<span class='ident'>outi</span> <span class='op'>=</span> <span class='number'>0</span>;
-<span class='lifetime'>&#39;LOOP</span>:  <span class='kw'>loop</span> {
-            <span class='self'>self</span>.<span class='ident'>buf</span>.<span class='ident'>consume</span>(<span class='ident'>consumed</span>);
-            <span class='kw'>let</span> <span class='ident'>bs</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>buf</span>.<span class='ident'>fill_buf</span>() {
-                <span class='prelude-val'>Err</span>(<span class='ident'>err</span>) <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='prelude-val'>Err</span>(<span class='ident'>err</span>)),
-                <span class='prelude-val'>Ok</span>(<span class='ident'>bs</span>) <span class='kw'>if</span> <span class='ident'>bs</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='kw'>break</span>,
-                <span class='prelude-val'>Ok</span>(<span class='ident'>bs</span>) <span class='op'>=&gt;</span> <span class='ident'>bs</span>,
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">consumed</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="self">self</span>.<span class="ident">outi</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="lifetime">&#39;LOOP</span>:  <span class="kw">loop</span> {
+            <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">consume</span>(<span class="ident">consumed</span>);
+            <span class="kw">let</span> <span class="ident">bs</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">fill_buf</span>() {
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">err</span>)),
+                <span class="prelude-val">Ok</span>(<span class="ident">bs</span>) <span class="kw">if</span> <span class="ident">bs</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> <span class="op">=&gt;</span> <span class="kw">break</span>,
+                <span class="prelude-val">Ok</span>(<span class="ident">bs</span>) <span class="op">=&gt;</span> <span class="ident">bs</span>,
             };
-            <span class='ident'>consumed</span> <span class='op'>=</span> <span class='ident'>bs</span>.<span class='ident'>len</span>(); <span class='comment'>// is shortened if we find a match</span>
-            <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='kw-2'>&amp;</span><span class='ident'>b</span>) <span class='kw'>in</span> <span class='ident'>bs</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
-                <span class='self'>self</span>.<span class='ident'>si</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>next_state</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='ident'>b</span>);
-                <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>) {
-                    <span class='ident'>m</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='prelude-val'>Ok</span>(<span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>get_match</span>(
-                        <span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>, <span class='self'>self</span>.<span class='ident'>texti</span>)));
-                    <span class='ident'>consumed</span> <span class='op'>=</span> <span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>;
-                    <span class='self'>self</span>.<span class='ident'>outi</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='kw'>if</span> <span class='op'>!</span><span class='self'>self</span>.<span class='ident'>aut</span>.<span class='ident'>has_match</span>(<span class='self'>self</span>.<span class='ident'>si</span>, <span class='self'>self</span>.<span class='ident'>outi</span>) {
-                        <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+            <span class="ident">consumed</span> <span class="op">=</span> <span class="ident">bs</span>.<span class="ident">len</span>(); <span class="comment">// is shortened if we find a match</span>
+            <span class="kw">for</span> (<span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="kw">in</span> <span class="ident">bs</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+                <span class="self">self</span>.<span class="ident">si</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">next_state</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="ident">b</span>);
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>) {
+                    <span class="ident">m</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">get_match</span>(
+                        <span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>, <span class="self">self</span>.<span class="ident">texti</span>)));
+                    <span class="ident">consumed</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>;
+                    <span class="self">self</span>.<span class="ident">outi</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">aut</span>.<span class="ident">has_match</span>(<span class="self">self</span>.<span class="ident">si</span>, <span class="self">self</span>.<span class="ident">outi</span>) {
+                        <span class="self">self</span>.<span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
                     }
-                    <span class='kw'>break</span> <span class='lifetime'>&#39;LOOP</span>;
+                    <span class="kw">break</span> <span class="lifetime">&#39;LOOP</span>;
                 }
-                <span class='self'>self</span>.<span class='ident'>texti</span> <span class='op'>+=</span> <span class='number'>1</span>;
+                <span class="self">self</span>.<span class="ident">texti</span> <span class="op">+=</span> <span class="number">1</span>;
             }
         }
-        <span class='self'>self</span>.<span class='ident'>buf</span>.<span class='ident'>consume</span>(<span class='ident'>consumed</span>);
-        <span class='ident'>m</span>
+        <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">consume</span>(<span class="ident">consumed</span>);
+        <span class="ident">m</span>
     }
 }
 </pre>

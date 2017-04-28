@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.11.10/src/lit.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.11.11/src/lit.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lit.rs.html -- source</title>
@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -527,487 +527,487 @@
 <span id="482">482</span>
 <span id="483">483</span>
 <span id="484">484</span>
-</pre><pre class='rust '>
-<span class='doccomment'>/// Literal kind.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// E.g. `&quot;foo&quot;`, `42`, `12.34` or `bool`</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>Lit</span> {
-    <span class='doccomment'>/// A string literal (`&quot;foo&quot;`)</span>
-    <span class='ident'>Str</span>(<span class='ident'>String</span>, <span class='ident'>StrStyle</span>),
-    <span class='doccomment'>/// A byte string (`b&quot;foo&quot;`)</span>
-    <span class='ident'>ByteStr</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>StrStyle</span>),
-    <span class='doccomment'>/// A byte char (`b&#39;f&#39;`)</span>
-    <span class='ident'>Byte</span>(<span class='ident'>u8</span>),
-    <span class='doccomment'>/// A character literal (`&#39;a&#39;`)</span>
-    <span class='ident'>Char</span>(<span class='ident'>char</span>),
-    <span class='doccomment'>/// An integer literal (`1`)</span>
-    <span class='ident'>Int</span>(<span class='ident'>u64</span>, <span class='ident'>IntTy</span>),
-    <span class='doccomment'>/// A float literal (`1f64` or `1E10f64` or `1.0E10`)</span>
-    <span class='ident'>Float</span>(<span class='ident'>String</span>, <span class='ident'>FloatTy</span>),
-    <span class='doccomment'>/// A boolean literal</span>
-    <span class='ident'>Bool</span>(<span class='ident'>bool</span>),
+</pre><pre class="rust ">
+<span class="doccomment">/// Literal kind.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// E.g. `&quot;foo&quot;`, `42`, `12.34` or `bool`</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Lit</span> {
+    <span class="doccomment">/// A string literal (`&quot;foo&quot;`)</span>
+    <span class="ident">Str</span>(<span class="ident">String</span>, <span class="ident">StrStyle</span>),
+    <span class="doccomment">/// A byte string (`b&quot;foo&quot;`)</span>
+    <span class="ident">ByteStr</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">StrStyle</span>),
+    <span class="doccomment">/// A byte char (`b&#39;f&#39;`)</span>
+    <span class="ident">Byte</span>(<span class="ident">u8</span>),
+    <span class="doccomment">/// A character literal (`&#39;a&#39;`)</span>
+    <span class="ident">Char</span>(<span class="ident">char</span>),
+    <span class="doccomment">/// An integer literal (`1`)</span>
+    <span class="ident">Int</span>(<span class="ident">u64</span>, <span class="ident">IntTy</span>),
+    <span class="doccomment">/// A float literal (`1f64` or `1E10f64` or `1.0E10`)</span>
+    <span class="ident">Float</span>(<span class="ident">String</span>, <span class="ident">FloatTy</span>),
+    <span class="doccomment">/// A boolean literal</span>
+    <span class="ident">Bool</span>(<span class="ident">bool</span>),
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Copy</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>StrStyle</span> {
-    <span class='doccomment'>/// A regular string, like `&quot;foo&quot;`</span>
-    <span class='ident'>Cooked</span>,
-    <span class='doccomment'>/// A raw string, like `r##&quot;foo&quot;##`</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// The uint is the number of `#` symbols used</span>
-    <span class='ident'>Raw</span>(<span class='ident'>usize</span>),
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">StrStyle</span> {
+    <span class="doccomment">/// A regular string, like `&quot;foo&quot;`</span>
+    <span class="ident">Cooked</span>,
+    <span class="doccomment">/// A raw string, like `r##&quot;foo&quot;##`</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The uint is the number of `#` symbols used</span>
+    <span class="ident">Raw</span>(<span class="ident">usize</span>),
 }
 
-<span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='ident'>String</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-        <span class='ident'>Lit</span>::<span class='ident'>Str</span>(<span class='ident'>input</span>, <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span>)
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+        <span class="ident">Lit</span>::<span class="ident">Str</span>(<span class="ident">input</span>, <span class="ident">StrStyle</span>::<span class="ident">Cooked</span>)
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-        <span class='ident'>Lit</span>::<span class='ident'>Str</span>(<span class='ident'>input</span>.<span class='ident'>into</span>(), <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+        <span class="ident">Lit</span>::<span class="ident">Str</span>(<span class="ident">input</span>.<span class="ident">into</span>(), <span class="ident">StrStyle</span>::<span class="ident">Cooked</span>)
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-        <span class='ident'>Lit</span>::<span class='ident'>ByteStr</span>(<span class='ident'>input</span>, <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span>)
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+        <span class="ident">Lit</span>::<span class="ident">ByteStr</span>(<span class="ident">input</span>, <span class="ident">StrStyle</span>::<span class="ident">Cooked</span>)
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]<span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-        <span class='ident'>Lit</span>::<span class='ident'>ByteStr</span>(<span class='ident'>input</span>.<span class='ident'>into</span>(), <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+        <span class="ident">Lit</span>::<span class="ident">ByteStr</span>(<span class="ident">input</span>.<span class="ident">into</span>(), <span class="ident">StrStyle</span>::<span class="ident">Cooked</span>)
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>char</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='ident'>char</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-        <span class='ident'>Lit</span>::<span class='ident'>Char</span>(<span class='ident'>input</span>)
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="ident">char</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+        <span class="ident">Lit</span>::<span class="ident">Char</span>(<span class="ident">input</span>)
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='ident'>bool</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-        <span class='ident'>Lit</span>::<span class='ident'>Bool</span>(<span class='ident'>input</span>)
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+        <span class="ident">Lit</span>::<span class="ident">Bool</span>(<span class="ident">input</span>)
     }
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Copy</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>IntTy</span> {
-    <span class='ident'>Isize</span>,
-    <span class='ident'>I8</span>,
-    <span class='ident'>I16</span>,
-    <span class='ident'>I32</span>,
-    <span class='ident'>I64</span>,
-    <span class='ident'>Usize</span>,
-    <span class='ident'>U8</span>,
-    <span class='ident'>U16</span>,
-    <span class='ident'>U32</span>,
-    <span class='ident'>U64</span>,
-    <span class='ident'>Unsuffixed</span>,
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">IntTy</span> {
+    <span class="ident">Isize</span>,
+    <span class="ident">I8</span>,
+    <span class="ident">I16</span>,
+    <span class="ident">I32</span>,
+    <span class="ident">I64</span>,
+    <span class="ident">Usize</span>,
+    <span class="ident">U8</span>,
+    <span class="ident">U16</span>,
+    <span class="ident">U32</span>,
+    <span class="ident">U64</span>,
+    <span class="ident">Unsuffixed</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Copy</span>, <span class='ident'>Clone</span>, <span class='ident'>Eq</span>, <span class='ident'>PartialEq</span>, <span class='ident'>Hash</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>FloatTy</span> {
-    <span class='ident'>F32</span>,
-    <span class='ident'>F64</span>,
-    <span class='ident'>Unsuffixed</span>,
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Hash</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FloatTy</span> {
+    <span class="ident">F32</span>,
+    <span class="ident">F64</span>,
+    <span class="ident">Unsuffixed</span>,
 }
 
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>impl_from_for_lit</span> {
-    (<span class='ident'>Int</span>, [$(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>rust_type</span>:<span class='ident'>ty</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>syn_type</span>:<span class='ident'>expr</span>),<span class='op'>+</span>]) <span class='op'>=&gt;</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_from_for_lit</span> {
+    (<span class="ident">Int</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rust_type</span>:<span class="ident">ty</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">syn_type</span>:<span class="ident">expr</span>),<span class="op">+</span>]) <span class="op">=&gt;</span> {
         $(
-            <span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>rust_type</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-                <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>rust_type</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-                    <span class='ident'>Lit</span>::<span class='ident'>Int</span>(<span class='ident'>input</span> <span class='kw'>as</span> <span class='ident'>u64</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>syn_type</span>)
+            <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">rust_type</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">rust_type</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+                    <span class="ident">Lit</span>::<span class="ident">Int</span>(<span class="ident">input</span> <span class="kw">as</span> <span class="ident">u64</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">syn_type</span>)
                 }
             }
-        )<span class='op'>+</span>
+        )<span class="op">+</span>
     };
-    (<span class='ident'>Float</span>, [$(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>rust_type</span>:<span class='ident'>ty</span> <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>syn_type</span>:<span class='ident'>expr</span>),<span class='op'>+</span>]) <span class='op'>=&gt;</span> {
+    (<span class="ident">Float</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rust_type</span>:<span class="ident">ty</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">syn_type</span>:<span class="ident">expr</span>),<span class="op">+</span>]) <span class="op">=&gt;</span> {
         $(
-            <span class='kw'>impl</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>rust_type</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-                <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>input</span>: <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>rust_type</span>) <span class='op'>-&gt;</span> <span class='ident'>Lit</span> {
-                    <span class='ident'>Lit</span>::<span class='ident'>Float</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='ident'>input</span>), <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>syn_type</span>)
+            <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">rust_type</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">input</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">rust_type</span>) <span class="op">-&gt;</span> <span class="ident">Lit</span> {
+                    <span class="ident">Lit</span>::<span class="ident">Float</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">input</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">syn_type</span>)
                 }
             }
-        )<span class='op'>+</span>
+        )<span class="op">+</span>
     };
 }
 
-<span class='macro'>impl_from_for_lit</span><span class='macro'>!</span> {<span class='ident'>Int</span>, [
-    <span class='ident'>isize</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>Isize</span>,
-    <span class='ident'>i8</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>I8</span>,
-    <span class='ident'>i16</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>I16</span>,
-    <span class='ident'>i32</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>I32</span>,
-    <span class='ident'>i64</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>I64</span>,
-    <span class='ident'>usize</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>Usize</span>,
-    <span class='ident'>u8</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>U8</span>,
-    <span class='ident'>u16</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>U16</span>,
-    <span class='ident'>u32</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>U32</span>,
-    <span class='ident'>u64</span> <span class='op'>=&gt;</span> <span class='ident'>IntTy</span>::<span class='ident'>U64</span>
+<span class="macro">impl_from_for_lit</span><span class="macro">!</span> {<span class="ident">Int</span>, [
+    <span class="ident">isize</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">Isize</span>,
+    <span class="ident">i8</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">I8</span>,
+    <span class="ident">i16</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">I16</span>,
+    <span class="ident">i32</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">I32</span>,
+    <span class="ident">i64</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">I64</span>,
+    <span class="ident">usize</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">Usize</span>,
+    <span class="ident">u8</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">U8</span>,
+    <span class="ident">u16</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">U16</span>,
+    <span class="ident">u32</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">U32</span>,
+    <span class="ident">u64</span> <span class="op">=&gt;</span> <span class="ident">IntTy</span>::<span class="ident">U64</span>
 ]}
 
-<span class='macro'>impl_from_for_lit</span><span class='macro'>!</span> {<span class='ident'>Float</span>, [
-    <span class='ident'>f32</span> <span class='op'>=&gt;</span> <span class='ident'>FloatTy</span>::<span class='ident'>F32</span>,
-    <span class='ident'>f64</span> <span class='op'>=&gt;</span> <span class='ident'>FloatTy</span>::<span class='ident'>F64</span>
+<span class="macro">impl_from_for_lit</span><span class="macro">!</span> {<span class="ident">Float</span>, [
+    <span class="ident">f32</span> <span class="op">=&gt;</span> <span class="ident">FloatTy</span>::<span class="ident">F32</span>,
+    <span class="ident">f64</span> <span class="op">=&gt;</span> <span class="ident">FloatTy</span>::<span class="ident">F64</span>
 ]}
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;parsing&quot;</span>)]</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>StrLit</span> {
-    <span class='kw'>pub</span> <span class='ident'>value</span>: <span class='ident'>String</span>,
-    <span class='kw'>pub</span> <span class='ident'>style</span>: <span class='ident'>StrStyle</span>,
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StrLit</span> {
+    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">style</span>: <span class="ident">StrStyle</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;parsing&quot;</span>)]</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>ByteStrLit</span> {
-    <span class='kw'>pub</span> <span class='ident'>value</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
-    <span class='kw'>pub</span> <span class='ident'>style</span>: <span class='ident'>StrStyle</span>,
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ByteStrLit</span> {
+    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">style</span>: <span class="ident">StrStyle</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;parsing&quot;</span>)]</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>IntLit</span> {
-    <span class='kw'>pub</span> <span class='ident'>value</span>: <span class='ident'>u64</span>,
-    <span class='kw'>pub</span> <span class='ident'>suffix</span>: <span class='ident'>IntTy</span>,
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IntLit</span> {
+    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">suffix</span>: <span class="ident">IntTy</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;parsing&quot;</span>)]</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>FloatLit</span> {
-    <span class='kw'>pub</span> <span class='ident'>value</span>: <span class='ident'>String</span>,
-    <span class='kw'>pub</span> <span class='ident'>suffix</span>: <span class='ident'>FloatTy</span>,
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FloatLit</span> {
+    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">String</span>,
+    <span class="kw">pub</span> <span class="ident">suffix</span>: <span class="ident">FloatTy</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;parsing&quot;</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>parsing</span> {
-    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='kw-2'>*</span>;
-    <span class='kw'>use</span> <span class='ident'>escape</span>::{<span class='ident'>cooked_byte</span>, <span class='ident'>cooked_byte_string</span>, <span class='ident'>cooked_char</span>, <span class='ident'>cooked_string</span>, <span class='ident'>raw_string</span>};
-    <span class='kw'>use</span> <span class='ident'>synom</span>::<span class='ident'>space</span>::<span class='ident'>skip_whitespace</span>;
-    <span class='kw'>use</span> <span class='ident'>synom</span>::<span class='ident'>IResult</span>;
-    <span class='kw'>use</span> <span class='ident'>unicode_xid</span>::<span class='ident'>UnicodeXID</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">parsing</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">escape</span>::{<span class="ident">cooked_byte</span>, <span class="ident">cooked_byte_string</span>, <span class="ident">cooked_char</span>, <span class="ident">cooked_string</span>, <span class="ident">raw_string</span>};
+    <span class="kw">use</span> <span class="ident">synom</span>::<span class="ident">space</span>::<span class="ident">skip_whitespace</span>;
+    <span class="kw">use</span> <span class="ident">synom</span>::<span class="ident">IResult</span>;
+    <span class="kw">use</span> <span class="ident">unicode_xid</span>::<span class="ident">UnicodeXID</span>;
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>lit</span> <span class='op'>-&gt;</span> <span class='ident'>Lit</span>, <span class='macro'>alt</span><span class='macro'>!</span>(
-        <span class='ident'>string</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>StrLit</span> { <span class='ident'>value</span>, <span class='ident'>style</span> }<span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>Str</span>(<span class='ident'>value</span>, <span class='ident'>style</span>) }
-        <span class='op'>|</span>
-        <span class='ident'>byte_string</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>ByteStrLit</span> { <span class='ident'>value</span>, <span class='ident'>style</span> }<span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>ByteStr</span>(<span class='ident'>value</span>, <span class='ident'>style</span>) }
-        <span class='op'>|</span>
-        <span class='ident'>byte</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>b</span><span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>Byte</span>(<span class='ident'>b</span>) }
-        <span class='op'>|</span>
-        <span class='ident'>character</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>ch</span><span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>Char</span>(<span class='ident'>ch</span>) }
-        <span class='op'>|</span>
-        <span class='ident'>float</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>FloatLit</span> { <span class='ident'>value</span>, <span class='ident'>suffix</span> }<span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>Float</span>(<span class='ident'>value</span>, <span class='ident'>suffix</span>) } <span class='comment'>// must be before int</span>
-        <span class='op'>|</span>
-        <span class='ident'>int</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>IntLit</span> { <span class='ident'>value</span>, <span class='ident'>suffix</span> }<span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>Int</span>(<span class='ident'>value</span>, <span class='ident'>suffix</span>) }
-        <span class='op'>|</span>
-        <span class='ident'>boolean</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>value</span><span class='op'>|</span> <span class='ident'>Lit</span>::<span class='ident'>Bool</span>(<span class='ident'>value</span>) }
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">lit</span> <span class="op">-&gt;</span> <span class="ident">Lit</span>, <span class="macro">alt</span><span class="macro">!</span>(
+        <span class="ident">string</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">StrLit</span> { <span class="ident">value</span>, <span class="ident">style</span> }<span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">Str</span>(<span class="ident">value</span>, <span class="ident">style</span>) }
+        <span class="op">|</span>
+        <span class="ident">byte_string</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">ByteStrLit</span> { <span class="ident">value</span>, <span class="ident">style</span> }<span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">ByteStr</span>(<span class="ident">value</span>, <span class="ident">style</span>) }
+        <span class="op">|</span>
+        <span class="ident">byte</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">Byte</span>(<span class="ident">b</span>) }
+        <span class="op">|</span>
+        <span class="ident">character</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">ch</span><span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">Char</span>(<span class="ident">ch</span>) }
+        <span class="op">|</span>
+        <span class="ident">float</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">FloatLit</span> { <span class="ident">value</span>, <span class="ident">suffix</span> }<span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">Float</span>(<span class="ident">value</span>, <span class="ident">suffix</span>) } <span class="comment">// must be before int</span>
+        <span class="op">|</span>
+        <span class="ident">int</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">IntLit</span> { <span class="ident">value</span>, <span class="ident">suffix</span> }<span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">Int</span>(<span class="ident">value</span>, <span class="ident">suffix</span>) }
+        <span class="op">|</span>
+        <span class="ident">boolean</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="ident">Lit</span>::<span class="ident">Bool</span>(<span class="ident">value</span>) }
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>string</span> <span class='op'>-&gt;</span> <span class='ident'>StrLit</span>, <span class='macro'>alt</span><span class='macro'>!</span>(
-        <span class='ident'>quoted_string</span> <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='ident'>StrLit</span> { <span class='ident'>value</span>: <span class='ident'>s</span>, <span class='ident'>style</span>: <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span> } }
-        <span class='op'>|</span>
-        <span class='macro'>preceded</span><span class='macro'>!</span>(
-            <span class='macro'>punct</span><span class='macro'>!</span>(<span class='string'>&quot;r&quot;</span>),
-            <span class='ident'>raw_string</span>
-        ) <span class='op'>=&gt;</span> { <span class='op'>|</span>(<span class='ident'>s</span>, <span class='ident'>n</span>)<span class='op'>|</span> <span class='ident'>StrLit</span> { <span class='ident'>value</span>: <span class='ident'>s</span>, <span class='ident'>style</span>: <span class='ident'>StrStyle</span>::<span class='ident'>Raw</span>(<span class='ident'>n</span>) }}
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">string</span> <span class="op">-&gt;</span> <span class="ident">StrLit</span>, <span class="macro">alt</span><span class="macro">!</span>(
+        <span class="ident">quoted_string</span> <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">StrLit</span> { <span class="ident">value</span>: <span class="ident">s</span>, <span class="ident">style</span>: <span class="ident">StrStyle</span>::<span class="ident">Cooked</span> } }
+        <span class="op">|</span>
+        <span class="macro">preceded</span><span class="macro">!</span>(
+            <span class="macro">punct</span><span class="macro">!</span>(<span class="string">&quot;r&quot;</span>),
+            <span class="ident">raw_string</span>
+        ) <span class="op">=&gt;</span> { <span class="op">|</span>(<span class="ident">s</span>, <span class="ident">n</span>)<span class="op">|</span> <span class="ident">StrLit</span> { <span class="ident">value</span>: <span class="ident">s</span>, <span class="ident">style</span>: <span class="ident">StrStyle</span>::<span class="ident">Raw</span>(<span class="ident">n</span>) }}
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>quoted_string</span> <span class='op'>-&gt;</span> <span class='ident'>String</span>, <span class='macro'>delimited</span><span class='macro'>!</span>(
-        <span class='macro'>punct</span><span class='macro'>!</span>(<span class='string'>&quot;\&quot;&quot;</span>),
-        <span class='ident'>cooked_string</span>,
-        <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;\&quot;&quot;</span>)
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">quoted_string</span> <span class="op">-&gt;</span> <span class="ident">String</span>, <span class="macro">delimited</span><span class="macro">!</span>(
+        <span class="macro">punct</span><span class="macro">!</span>(<span class="string">&quot;\&quot;&quot;</span>),
+        <span class="ident">cooked_string</span>,
+        <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;\&quot;&quot;</span>)
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>byte_string</span> <span class='op'>-&gt;</span> <span class='ident'>ByteStrLit</span>, <span class='macro'>alt</span><span class='macro'>!</span>(
-        <span class='macro'>delimited</span><span class='macro'>!</span>(
-            <span class='macro'>punct</span><span class='macro'>!</span>(<span class='string'>&quot;b\&quot;&quot;</span>),
-            <span class='ident'>cooked_byte_string</span>,
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;\&quot;&quot;</span>)
-        ) <span class='op'>=&gt;</span> { <span class='op'>|</span><span class='ident'>vec</span><span class='op'>|</span> <span class='ident'>ByteStrLit</span> { <span class='ident'>value</span>: <span class='ident'>vec</span>, <span class='ident'>style</span>: <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span> } }
-        <span class='op'>|</span>
-        <span class='macro'>preceded</span><span class='macro'>!</span>(
-            <span class='macro'>punct</span><span class='macro'>!</span>(<span class='string'>&quot;br&quot;</span>),
-            <span class='ident'>raw_string</span>
-        ) <span class='op'>=&gt;</span> { <span class='op'>|</span>(<span class='ident'>s</span>, <span class='ident'>n</span>): (<span class='ident'>String</span>, _)<span class='op'>|</span> <span class='ident'>ByteStrLit</span> { <span class='ident'>value</span>: <span class='ident'>s</span>.<span class='ident'>into_bytes</span>(), <span class='ident'>style</span>: <span class='ident'>StrStyle</span>::<span class='ident'>Raw</span>(<span class='ident'>n</span>) } }
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">byte_string</span> <span class="op">-&gt;</span> <span class="ident">ByteStrLit</span>, <span class="macro">alt</span><span class="macro">!</span>(
+        <span class="macro">delimited</span><span class="macro">!</span>(
+            <span class="macro">punct</span><span class="macro">!</span>(<span class="string">&quot;b\&quot;&quot;</span>),
+            <span class="ident">cooked_byte_string</span>,
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;\&quot;&quot;</span>)
+        ) <span class="op">=&gt;</span> { <span class="op">|</span><span class="ident">vec</span><span class="op">|</span> <span class="ident">ByteStrLit</span> { <span class="ident">value</span>: <span class="ident">vec</span>, <span class="ident">style</span>: <span class="ident">StrStyle</span>::<span class="ident">Cooked</span> } }
+        <span class="op">|</span>
+        <span class="macro">preceded</span><span class="macro">!</span>(
+            <span class="macro">punct</span><span class="macro">!</span>(<span class="string">&quot;br&quot;</span>),
+            <span class="ident">raw_string</span>
+        ) <span class="op">=&gt;</span> { <span class="op">|</span>(<span class="ident">s</span>, <span class="ident">n</span>): (<span class="ident">String</span>, _)<span class="op">|</span> <span class="ident">ByteStrLit</span> { <span class="ident">value</span>: <span class="ident">s</span>.<span class="ident">into_bytes</span>(), <span class="ident">style</span>: <span class="ident">StrStyle</span>::<span class="ident">Raw</span>(<span class="ident">n</span>) } }
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>byte</span> <span class='op'>-&gt;</span> <span class='ident'>u8</span>, <span class='macro'>do_parse</span><span class='macro'>!</span>(
-        <span class='macro'>punct</span><span class='macro'>!</span>(<span class='string'>&quot;b&quot;</span>) <span class='op'>&gt;&gt;</span>
-        <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;&quot;</span>) <span class='op'>&gt;&gt;</span>
-        <span class='ident'>b</span>: <span class='ident'>cooked_byte</span> <span class='op'>&gt;&gt;</span>
-        <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;&quot;</span>) <span class='op'>&gt;&gt;</span>
-        (<span class='ident'>b</span>)
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">byte</span> <span class="op">-&gt;</span> <span class="ident">u8</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="macro">punct</span><span class="macro">!</span>(<span class="string">&quot;b&quot;</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;&#39;&quot;</span>) <span class="op">&gt;&gt;</span>
+        <span class="ident">b</span>: <span class="ident">cooked_byte</span> <span class="op">&gt;&gt;</span>
+        <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;&#39;&quot;</span>) <span class="op">&gt;&gt;</span>
+        (<span class="ident">b</span>)
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>character</span> <span class='op'>-&gt;</span> <span class='ident'>char</span>, <span class='macro'>do_parse</span><span class='macro'>!</span>(
-        <span class='macro'>punct</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;&quot;</span>) <span class='op'>&gt;&gt;</span>
-        <span class='ident'>ch</span>: <span class='ident'>cooked_char</span> <span class='op'>&gt;&gt;</span>
-        <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;&#39;&quot;</span>) <span class='op'>&gt;&gt;</span>
-        (<span class='ident'>ch</span>)
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">character</span> <span class="op">-&gt;</span> <span class="ident">char</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="macro">punct</span><span class="macro">!</span>(<span class="string">&quot;&#39;&quot;</span>) <span class="op">&gt;&gt;</span>
+        <span class="ident">ch</span>: <span class="ident">cooked_char</span> <span class="op">&gt;&gt;</span>
+        <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;&#39;&quot;</span>) <span class="op">&gt;&gt;</span>
+        (<span class="ident">ch</span>)
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>float</span> <span class='op'>-&gt;</span> <span class='ident'>FloatLit</span>, <span class='macro'>do_parse</span><span class='macro'>!</span>(
-        <span class='ident'>value</span>: <span class='ident'>float_string</span> <span class='op'>&gt;&gt;</span>
-        <span class='ident'>suffix</span>: <span class='macro'>alt</span><span class='macro'>!</span>(
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;f32&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>FloatTy</span>::<span class='ident'>F32</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;f64&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>FloatTy</span>::<span class='ident'>F64</span> }
-            <span class='op'>|</span>
-            <span class='macro'>epsilon</span><span class='macro'>!</span>() <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>FloatTy</span>::<span class='ident'>Unsuffixed</span> }
-        ) <span class='op'>&gt;&gt;</span>
-        (<span class='ident'>FloatLit</span> { <span class='ident'>value</span>: <span class='ident'>value</span>, <span class='ident'>suffix</span>: <span class='ident'>suffix</span> })
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">float</span> <span class="op">-&gt;</span> <span class="ident">FloatLit</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="ident">value</span>: <span class="ident">float_string</span> <span class="op">&gt;&gt;</span>
+        <span class="ident">suffix</span>: <span class="macro">alt</span><span class="macro">!</span>(
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;f32&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">FloatTy</span>::<span class="ident">F32</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;f64&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">FloatTy</span>::<span class="ident">F64</span> }
+            <span class="op">|</span>
+            <span class="macro">epsilon</span><span class="macro">!</span>() <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">FloatTy</span>::<span class="ident">Unsuffixed</span> }
+        ) <span class="op">&gt;&gt;</span>
+        (<span class="ident">FloatLit</span> { <span class="ident">value</span>: <span class="ident">value</span>, <span class="ident">suffix</span>: <span class="ident">suffix</span> })
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>int</span> <span class='op'>-&gt;</span> <span class='ident'>IntLit</span>, <span class='macro'>do_parse</span><span class='macro'>!</span>(
-        <span class='ident'>value</span>: <span class='ident'>digits</span> <span class='op'>&gt;&gt;</span>
-        <span class='ident'>suffix</span>: <span class='macro'>alt</span><span class='macro'>!</span>(
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;isize&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>Isize</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;i8&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>I8</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;i16&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>I16</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;i32&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>I32</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;i64&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>I64</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;usize&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>Usize</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;u8&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>U8</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;u16&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>U16</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;u32&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>U32</span> }
-            <span class='op'>|</span>
-            <span class='macro'>tag</span><span class='macro'>!</span>(<span class='string'>&quot;u64&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>U64</span> }
-            <span class='op'>|</span>
-            <span class='macro'>epsilon</span><span class='macro'>!</span>() <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>IntTy</span>::<span class='ident'>Unsuffixed</span> }
-        ) <span class='op'>&gt;&gt;</span>
-        (<span class='ident'>IntLit</span> { <span class='ident'>value</span>: <span class='ident'>value</span>, <span class='ident'>suffix</span>: <span class='ident'>suffix</span> })
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">int</span> <span class="op">-&gt;</span> <span class="ident">IntLit</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="ident">value</span>: <span class="ident">digits</span> <span class="op">&gt;&gt;</span>
+        <span class="ident">suffix</span>: <span class="macro">alt</span><span class="macro">!</span>(
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;isize&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">Isize</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;i8&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">I8</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;i16&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">I16</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;i32&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">I32</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;i64&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">I64</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;usize&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">Usize</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;u8&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">U8</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;u16&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">U16</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;u32&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">U32</span> }
+            <span class="op">|</span>
+            <span class="macro">tag</span><span class="macro">!</span>(<span class="string">&quot;u64&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">U64</span> }
+            <span class="op">|</span>
+            <span class="macro">epsilon</span><span class="macro">!</span>() <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="ident">IntTy</span>::<span class="ident">Unsuffixed</span> }
+        ) <span class="op">&gt;&gt;</span>
+        (<span class="ident">IntLit</span> { <span class="ident">value</span>: <span class="ident">value</span>, <span class="ident">suffix</span>: <span class="ident">suffix</span> })
     ));
 
-    <span class='macro'>named</span><span class='macro'>!</span>(<span class='kw'>pub</span> <span class='ident'>boolean</span> <span class='op'>-&gt;</span> <span class='ident'>bool</span>, <span class='macro'>alt</span><span class='macro'>!</span>(
-        <span class='macro'>keyword</span><span class='macro'>!</span>(<span class='string'>&quot;true&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='bool-val'>true</span> }
-        <span class='op'>|</span>
-        <span class='macro'>keyword</span><span class='macro'>!</span>(<span class='string'>&quot;false&quot;</span>) <span class='op'>=&gt;</span> { <span class='op'>|</span>_<span class='op'>|</span> <span class='bool-val'>false</span> }
+    <span class="macro">named</span><span class="macro">!</span>(<span class="kw">pub</span> <span class="ident">boolean</span> <span class="op">-&gt;</span> <span class="ident">bool</span>, <span class="macro">alt</span><span class="macro">!</span>(
+        <span class="macro">keyword</span><span class="macro">!</span>(<span class="string">&quot;true&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="bool-val">true</span> }
+        <span class="op">|</span>
+        <span class="macro">keyword</span><span class="macro">!</span>(<span class="string">&quot;false&quot;</span>) <span class="op">=&gt;</span> { <span class="op">|</span>_<span class="op">|</span> <span class="bool-val">false</span> }
     ));
 
-    <span class='kw'>fn</span> <span class='ident'>float_string</span>(<span class='kw-2'>mut</span> <span class='ident'>input</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>IResult</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
-        <span class='ident'>input</span> <span class='op'>=</span> <span class='ident'>skip_whitespace</span>(<span class='ident'>input</span>);
+    <span class="kw">fn</span> <span class="ident">float_string</span>(<span class="kw-2">mut</span> <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="ident">input</span> <span class="op">=</span> <span class="ident">skip_whitespace</span>(<span class="ident">input</span>);
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>chars</span> <span class='op'>=</span> <span class='ident'>input</span>.<span class='ident'>chars</span>().<span class='ident'>peekable</span>();
-        <span class='kw'>match</span> <span class='ident'>chars</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>ch</span>) <span class='kw'>if</span> <span class='ident'>ch</span> <span class='op'>&gt;=</span> <span class='string'>&#39;0&#39;</span> <span class='op'>&amp;&amp;</span> <span class='ident'>ch</span> <span class='op'>&lt;=</span> <span class='string'>&#39;9&#39;</span> <span class='op'>=&gt;</span> {}
-            _ <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>,
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chars</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">chars</span>().<span class="ident">peekable</span>();
+        <span class="kw">match</span> <span class="ident">chars</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">ch</span>) <span class="kw">if</span> <span class="ident">ch</span> <span class="op">&gt;=</span> <span class="string">&#39;0&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">ch</span> <span class="op">&lt;=</span> <span class="string">&#39;9&#39;</span> <span class="op">=&gt;</span> {}
+            _ <span class="op">=&gt;</span> <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>,
         }
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>len</span> <span class='op'>=</span> <span class='number'>1</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>has_dot</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>has_exp</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
-        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>ch</span>) <span class='op'>=</span> <span class='ident'>chars</span>.<span class='ident'>peek</span>() {
-            <span class='kw'>match</span> <span class='ident'>ch</span> {
-                <span class='string'>&#39;0&#39;</span>...<span class='string'>&#39;9&#39;</span> <span class='op'>|</span> <span class='string'>&#39;_&#39;</span> <span class='op'>=&gt;</span> {
-                    <span class='ident'>chars</span>.<span class='ident'>next</span>();
-                    <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">has_dot</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">has_exp</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">ch</span>) <span class="op">=</span> <span class="ident">chars</span>.<span class="ident">peek</span>() {
+            <span class="kw">match</span> <span class="ident">ch</span> {
+                <span class="string">&#39;0&#39;</span>...<span class="string">&#39;9&#39;</span> <span class="op">|</span> <span class="string">&#39;_&#39;</span> <span class="op">=&gt;</span> {
+                    <span class="ident">chars</span>.<span class="ident">next</span>();
+                    <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
                 }
-                <span class='string'>&#39;.&#39;</span> <span class='op'>=&gt;</span> {
-                    <span class='kw'>if</span> <span class='ident'>has_dot</span> {
-                        <span class='kw'>break</span>;
+                <span class="string">&#39;.&#39;</span> <span class="op">=&gt;</span> {
+                    <span class="kw">if</span> <span class="ident">has_dot</span> {
+                        <span class="kw">break</span>;
                     }
-                    <span class='ident'>chars</span>.<span class='ident'>next</span>();
-                    <span class='kw'>if</span> <span class='ident'>chars</span>.<span class='ident'>peek</span>()
-                           .<span class='ident'>map</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>ch</span><span class='op'>|</span> <span class='ident'>ch</span> <span class='op'>==</span> <span class='string'>&#39;.&#39;</span> <span class='op'>||</span> <span class='ident'>UnicodeXID</span>::<span class='ident'>is_xid_start</span>(<span class='ident'>ch</span>))
-                           .<span class='ident'>unwrap_or</span>(<span class='bool-val'>false</span>) {
-                        <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>;
+                    <span class="ident">chars</span>.<span class="ident">next</span>();
+                    <span class="kw">if</span> <span class="ident">chars</span>.<span class="ident">peek</span>()
+                           .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">ch</span><span class="op">|</span> <span class="ident">ch</span> <span class="op">==</span> <span class="string">&#39;.&#39;</span> <span class="op">||</span> <span class="ident">UnicodeXID</span>::<span class="ident">is_xid_start</span>(<span class="ident">ch</span>))
+                           .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>) {
+                        <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>;
                     }
-                    <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='ident'>has_dot</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
+                    <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">has_dot</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
-                <span class='string'>&#39;e&#39;</span> <span class='op'>|</span> <span class='string'>&#39;E&#39;</span> <span class='op'>=&gt;</span> {
-                    <span class='ident'>chars</span>.<span class='ident'>next</span>();
-                    <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='ident'>has_exp</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
-                    <span class='kw'>break</span>;
+                <span class="string">&#39;e&#39;</span> <span class="op">|</span> <span class="string">&#39;E&#39;</span> <span class="op">=&gt;</span> {
+                    <span class="ident">chars</span>.<span class="ident">next</span>();
+                    <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">has_exp</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                    <span class="kw">break</span>;
                 }
-                _ <span class='op'>=&gt;</span> <span class='kw'>break</span>,
+                _ <span class="op">=&gt;</span> <span class="kw">break</span>,
             }
         }
 
-        <span class='kw'>let</span> <span class='ident'>rest</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>input</span>[<span class='ident'>len</span>..];
-        <span class='kw'>if</span> <span class='op'>!</span>(<span class='ident'>has_dot</span> <span class='op'>||</span> <span class='ident'>has_exp</span> <span class='op'>||</span> <span class='ident'>rest</span>.<span class='ident'>starts_with</span>(<span class='string'>&quot;f32&quot;</span>) <span class='op'>||</span> <span class='ident'>rest</span>.<span class='ident'>starts_with</span>(<span class='string'>&quot;f64&quot;</span>)) {
-            <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>;
+        <span class="kw">let</span> <span class="ident">rest</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">len</span>..];
+        <span class="kw">if</span> <span class="op">!</span>(<span class="ident">has_dot</span> <span class="op">||</span> <span class="ident">has_exp</span> <span class="op">||</span> <span class="ident">rest</span>.<span class="ident">starts_with</span>(<span class="string">&quot;f32&quot;</span>) <span class="op">||</span> <span class="ident">rest</span>.<span class="ident">starts_with</span>(<span class="string">&quot;f64&quot;</span>)) {
+            <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>;
         }
 
-        <span class='kw'>if</span> <span class='ident'>has_exp</span> {
-            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>has_exp_value</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
-            <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>ch</span>) <span class='op'>=</span> <span class='ident'>chars</span>.<span class='ident'>peek</span>() {
-                <span class='kw'>match</span> <span class='ident'>ch</span> {
-                    <span class='string'>&#39;+&#39;</span> <span class='op'>|</span> <span class='string'>&#39;-&#39;</span> <span class='op'>=&gt;</span> {
-                        <span class='kw'>if</span> <span class='ident'>has_exp_value</span> {
-                            <span class='kw'>break</span>;
+        <span class="kw">if</span> <span class="ident">has_exp</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">has_exp_value</span> <span class="op">=</span> <span class="bool-val">false</span>;
+            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">ch</span>) <span class="op">=</span> <span class="ident">chars</span>.<span class="ident">peek</span>() {
+                <span class="kw">match</span> <span class="ident">ch</span> {
+                    <span class="string">&#39;+&#39;</span> <span class="op">|</span> <span class="string">&#39;-&#39;</span> <span class="op">=&gt;</span> {
+                        <span class="kw">if</span> <span class="ident">has_exp_value</span> {
+                            <span class="kw">break</span>;
                         }
-                        <span class='ident'>chars</span>.<span class='ident'>next</span>();
-                        <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
+                        <span class="ident">chars</span>.<span class="ident">next</span>();
+                        <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
                     }
-                    <span class='string'>&#39;0&#39;</span>...<span class='string'>&#39;9&#39;</span> <span class='op'>=&gt;</span> {
-                        <span class='ident'>chars</span>.<span class='ident'>next</span>();
-                        <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                        <span class='ident'>has_exp_value</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
+                    <span class="string">&#39;0&#39;</span>...<span class="string">&#39;9&#39;</span> <span class="op">=&gt;</span> {
+                        <span class="ident">chars</span>.<span class="ident">next</span>();
+                        <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
+                        <span class="ident">has_exp_value</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     }
-                    <span class='string'>&#39;_&#39;</span> <span class='op'>=&gt;</span> {
-                        <span class='ident'>chars</span>.<span class='ident'>next</span>();
-                        <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
+                    <span class="string">&#39;_&#39;</span> <span class="op">=&gt;</span> {
+                        <span class="ident">chars</span>.<span class="ident">next</span>();
+                        <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
                     }
-                    _ <span class='op'>=&gt;</span> <span class='kw'>break</span>,
+                    _ <span class="op">=&gt;</span> <span class="kw">break</span>,
                 }
             }
-            <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>has_exp_value</span> {
-                <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>;
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">has_exp_value</span> {
+                <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>;
             }
         }
 
-        <span class='ident'>IResult</span>::<span class='ident'>Done</span>(<span class='kw-2'>&amp;</span><span class='ident'>input</span>[<span class='ident'>len</span>..], <span class='ident'>input</span>[..<span class='ident'>len</span>].<span class='ident'>replace</span>(<span class='string'>&quot;_&quot;</span>, <span class='string'>&quot;&quot;</span>))
+        <span class="ident">IResult</span>::<span class="ident">Done</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">len</span>..], <span class="ident">input</span>[..<span class="ident">len</span>].<span class="ident">replace</span>(<span class="string">&quot;_&quot;</span>, <span class="string">&quot;&quot;</span>))
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>digits</span>(<span class='kw-2'>mut</span> <span class='ident'>input</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>IResult</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>u64</span><span class='op'>&gt;</span> {
-        <span class='ident'>input</span> <span class='op'>=</span> <span class='ident'>skip_whitespace</span>(<span class='ident'>input</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">digits</span>(<span class="kw-2">mut</span> <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">u64</span><span class="op">&gt;</span> {
+        <span class="ident">input</span> <span class="op">=</span> <span class="ident">skip_whitespace</span>(<span class="ident">input</span>);
 
-        <span class='kw'>let</span> <span class='ident'>base</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='ident'>input</span>.<span class='ident'>starts_with</span>(<span class='string'>&quot;0x&quot;</span>) {
-            <span class='ident'>input</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>input</span>[<span class='number'>2</span>..];
-            <span class='number'>16</span>
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>input</span>.<span class='ident'>starts_with</span>(<span class='string'>&quot;0o&quot;</span>) {
-            <span class='ident'>input</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>input</span>[<span class='number'>2</span>..];
-            <span class='number'>8</span>
-        } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>input</span>.<span class='ident'>starts_with</span>(<span class='string'>&quot;0b&quot;</span>) {
-            <span class='ident'>input</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>input</span>[<span class='number'>2</span>..];
-            <span class='number'>2</span>
-        } <span class='kw'>else</span> {
-            <span class='number'>10</span>
+        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0x&quot;</span>) {
+            <span class="ident">input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">2</span>..];
+            <span class="number">16</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0o&quot;</span>) {
+            <span class="ident">input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">2</span>..];
+            <span class="number">8</span>
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0b&quot;</span>) {
+            <span class="ident">input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">2</span>..];
+            <span class="number">2</span>
+        } <span class="kw">else</span> {
+            <span class="number">10</span>
         };
 
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>value</span> <span class='op'>=</span> <span class='number'>0u64</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>len</span> <span class='op'>=</span> <span class='number'>0</span>;
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>empty</span> <span class='op'>=</span> <span class='bool-val'>true</span>;
-        <span class='kw'>for</span> <span class='ident'>b</span> <span class='kw'>in</span> <span class='ident'>input</span>.<span class='ident'>bytes</span>() {
-            <span class='kw'>let</span> <span class='ident'>digit</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>b</span> {
-                <span class='string'>b&#39;0&#39;</span>...<span class='string'>b&#39;9&#39;</span> <span class='op'>=&gt;</span> (<span class='ident'>b</span> <span class='op'>-</span> <span class='string'>b&#39;0&#39;</span>) <span class='kw'>as</span> <span class='ident'>u64</span>,
-                <span class='string'>b&#39;a&#39;</span>...<span class='string'>b&#39;f&#39;</span> <span class='op'>=&gt;</span> <span class='number'>10</span> <span class='op'>+</span> (<span class='ident'>b</span> <span class='op'>-</span> <span class='string'>b&#39;a&#39;</span>) <span class='kw'>as</span> <span class='ident'>u64</span>,
-                <span class='string'>b&#39;A&#39;</span>...<span class='string'>b&#39;F&#39;</span> <span class='op'>=&gt;</span> <span class='number'>10</span> <span class='op'>+</span> (<span class='ident'>b</span> <span class='op'>-</span> <span class='string'>b&#39;A&#39;</span>) <span class='kw'>as</span> <span class='ident'>u64</span>,
-                <span class='string'>b&#39;_&#39;</span> <span class='op'>=&gt;</span> {
-                    <span class='kw'>if</span> <span class='ident'>empty</span> <span class='op'>&amp;&amp;</span> <span class='ident'>base</span> <span class='op'>==</span> <span class='number'>10</span> {
-                        <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="number">0u64</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">empty</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">input</span>.<span class="ident">bytes</span>() {
+            <span class="kw">let</span> <span class="ident">digit</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">b</span> {
+                <span class="string">b&#39;0&#39;</span>...<span class="string">b&#39;9&#39;</span> <span class="op">=&gt;</span> (<span class="ident">b</span> <span class="op">-</span> <span class="string">b&#39;0&#39;</span>) <span class="kw">as</span> <span class="ident">u64</span>,
+                <span class="string">b&#39;a&#39;</span>...<span class="string">b&#39;f&#39;</span> <span class="op">=&gt;</span> <span class="number">10</span> <span class="op">+</span> (<span class="ident">b</span> <span class="op">-</span> <span class="string">b&#39;a&#39;</span>) <span class="kw">as</span> <span class="ident">u64</span>,
+                <span class="string">b&#39;A&#39;</span>...<span class="string">b&#39;F&#39;</span> <span class="op">=&gt;</span> <span class="number">10</span> <span class="op">+</span> (<span class="ident">b</span> <span class="op">-</span> <span class="string">b&#39;A&#39;</span>) <span class="kw">as</span> <span class="ident">u64</span>,
+                <span class="string">b&#39;_&#39;</span> <span class="op">=&gt;</span> {
+                    <span class="kw">if</span> <span class="ident">empty</span> <span class="op">&amp;&amp;</span> <span class="ident">base</span> <span class="op">==</span> <span class="number">10</span> {
+                        <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>;
                     }
-                    <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-                    <span class='kw'>continue</span>;
+                    <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="kw">continue</span>;
                 }
-                _ <span class='op'>=&gt;</span> <span class='kw'>break</span>,
+                _ <span class="op">=&gt;</span> <span class="kw">break</span>,
             };
-            <span class='kw'>if</span> <span class='ident'>digit</span> <span class='op'>&gt;=</span> <span class='ident'>base</span> {
-                <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>;
+            <span class="kw">if</span> <span class="ident">digit</span> <span class="op">&gt;=</span> <span class="ident">base</span> {
+                <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>;
             }
-            <span class='ident'>value</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>value</span>.<span class='ident'>checked_mul</span>(<span class='ident'>base</span>) {
-                <span class='prelude-val'>Some</span>(<span class='ident'>value</span>) <span class='op'>=&gt;</span> <span class='ident'>value</span>,
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>,
+            <span class="ident">value</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">checked_mul</span>(<span class="ident">base</span>) {
+                <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=&gt;</span> <span class="ident">value</span>,
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>,
             };
-            <span class='ident'>value</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='ident'>value</span>.<span class='ident'>checked_add</span>(<span class='ident'>digit</span>) {
-                <span class='prelude-val'>Some</span>(<span class='ident'>value</span>) <span class='op'>=&gt;</span> <span class='ident'>value</span>,
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='ident'>IResult</span>::<span class='ident'>Error</span>,
+            <span class="ident">value</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">checked_add</span>(<span class="ident">digit</span>) {
+                <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=&gt;</span> <span class="ident">value</span>,
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="ident">IResult</span>::<span class="ident">Error</span>,
             };
-            <span class='ident'>len</span> <span class='op'>+=</span> <span class='number'>1</span>;
-            <span class='ident'>empty</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+            <span class="ident">len</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">empty</span> <span class="op">=</span> <span class="bool-val">false</span>;
         }
-        <span class='kw'>if</span> <span class='ident'>empty</span> {
-            <span class='ident'>IResult</span>::<span class='ident'>Error</span>
-        } <span class='kw'>else</span> {
-            <span class='ident'>IResult</span>::<span class='ident'>Done</span>(<span class='kw-2'>&amp;</span><span class='ident'>input</span>[<span class='ident'>len</span>..], <span class='ident'>value</span>)
+        <span class="kw">if</span> <span class="ident">empty</span> {
+            <span class="ident">IResult</span>::<span class="ident">Error</span>
+        } <span class="kw">else</span> {
+            <span class="ident">IResult</span>::<span class="ident">Done</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">len</span>..], <span class="ident">value</span>)
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;printing&quot;</span>)]</span>
-<span class='kw'>mod</span> <span class='ident'>printing</span> {
-    <span class='kw'>use</span> <span class='kw'>super</span>::<span class='kw-2'>*</span>;
-    <span class='kw'>use</span> <span class='ident'>quote</span>::{<span class='ident'>Tokens</span>, <span class='ident'>ToTokens</span>};
-    <span class='kw'>use</span> <span class='ident'>std</span>::{<span class='ident'>ascii</span>, <span class='ident'>iter</span>};
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>::{<span class='self'>self</span>, <span class='ident'>Display</span>};
-    <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>)]</span>
+<span class="kw">mod</span> <span class="ident">printing</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">Tokens</span>, <span class="ident">ToTokens</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">ascii</span>, <span class="ident">iter</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>};
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
 
-    <span class='kw'>impl</span> <span class='ident'>ToTokens</span> <span class='kw'>for</span> <span class='ident'>Lit</span> {
-        <span class='kw'>fn</span> <span class='ident'>to_tokens</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>tokens</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Tokens</span>) {
-            <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-                <span class='ident'>Lit</span>::<span class='ident'>Str</span>(<span class='kw-2'>ref</span> <span class='ident'>s</span>, <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span>) <span class='op'>=&gt;</span> <span class='ident'>s</span>.<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>),
-                <span class='ident'>Lit</span>::<span class='ident'>Str</span>(<span class='kw-2'>ref</span> <span class='ident'>s</span>, <span class='ident'>StrStyle</span>::<span class='ident'>Raw</span>(<span class='ident'>n</span>)) <span class='op'>=&gt;</span> {
-                    <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;r{delim}\&quot;{string}\&quot;{delim}&quot;</span>,
-                                           <span class='ident'>delim</span> <span class='op'>=</span> <span class='ident'>iter</span>::<span class='ident'>repeat</span>(<span class='string'>&quot;#&quot;</span>).<span class='ident'>take</span>(<span class='ident'>n</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>(),
-                                           <span class='ident'>string</span> <span class='op'>=</span> <span class='ident'>s</span>));
+    <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">Lit</span> {
+        <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Tokens</span>) {
+            <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+                <span class="ident">Lit</span>::<span class="ident">Str</span>(<span class="kw-2">ref</span> <span class="ident">s</span>, <span class="ident">StrStyle</span>::<span class="ident">Cooked</span>) <span class="op">=&gt;</span> <span class="ident">s</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>),
+                <span class="ident">Lit</span>::<span class="ident">Str</span>(<span class="kw-2">ref</span> <span class="ident">s</span>, <span class="ident">StrStyle</span>::<span class="ident">Raw</span>(<span class="ident">n</span>)) <span class="op">=&gt;</span> {
+                    <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;r{delim}\&quot;{string}\&quot;{delim}&quot;</span>,
+                                           <span class="ident">delim</span> <span class="op">=</span> <span class="ident">iter</span>::<span class="ident">repeat</span>(<span class="string">&quot;#&quot;</span>).<span class="ident">take</span>(<span class="ident">n</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(),
+                                           <span class="ident">string</span> <span class="op">=</span> <span class="ident">s</span>));
                 }
-                <span class='ident'>Lit</span>::<span class='ident'>ByteStr</span>(<span class='kw-2'>ref</span> <span class='ident'>v</span>, <span class='ident'>StrStyle</span>::<span class='ident'>Cooked</span>) <span class='op'>=&gt;</span> {
-                    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>escaped</span> <span class='op'>=</span> <span class='string'>&quot;b\&quot;&quot;</span>.<span class='ident'>to_string</span>();
-                    <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='ident'>ch</span> <span class='kw'>in</span> <span class='ident'>v</span>.<span class='ident'>iter</span>() {
-                        <span class='kw'>match</span> <span class='ident'>ch</span> {
-                            <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push_str</span>(<span class='string'>r&quot;\0&quot;</span>),
-                            <span class='string'>b&#39;\&#39;&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>push</span>(<span class='string'>&#39;\&#39;&#39;</span>),
-                            _ <span class='op'>=&gt;</span> <span class='ident'>escaped</span>.<span class='ident'>extend</span>(<span class='ident'>ascii</span>::<span class='ident'>escape_default</span>(<span class='ident'>ch</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>c</span> <span class='kw'>as</span> <span class='ident'>char</span>)),
+                <span class="ident">Lit</span>::<span class="ident">ByteStr</span>(<span class="kw-2">ref</span> <span class="ident">v</span>, <span class="ident">StrStyle</span>::<span class="ident">Cooked</span>) <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">escaped</span> <span class="op">=</span> <span class="string">&quot;b\&quot;&quot;</span>.<span class="ident">to_string</span>();
+                    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">ch</span> <span class="kw">in</span> <span class="ident">v</span>.<span class="ident">iter</span>() {
+                        <span class="kw">match</span> <span class="ident">ch</span> {
+                            <span class="number">0</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push_str</span>(<span class="string">r&quot;\0&quot;</span>),
+                            <span class="string">b&#39;\&#39;&#39;</span> <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">push</span>(<span class="string">&#39;\&#39;&#39;</span>),
+                            _ <span class="op">=&gt;</span> <span class="ident">escaped</span>.<span class="ident">extend</span>(<span class="ident">ascii</span>::<span class="ident">escape_default</span>(<span class="ident">ch</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="kw">as</span> <span class="ident">char</span>)),
                         }
                     }
-                    <span class='ident'>escaped</span>.<span class='ident'>push</span>(<span class='string'>&#39;&quot;&#39;</span>);
-                    <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='ident'>escaped</span>);
+                    <span class="ident">escaped</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>);
+                    <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">escaped</span>);
                 }
-                <span class='ident'>Lit</span>::<span class='ident'>ByteStr</span>(<span class='kw-2'>ref</span> <span class='ident'>vec</span>, <span class='ident'>StrStyle</span>::<span class='ident'>Raw</span>(<span class='ident'>n</span>)) <span class='op'>=&gt;</span> {
-                    <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;br{delim}\&quot;{string}\&quot;{delim}&quot;</span>,
-                                           <span class='ident'>delim</span> <span class='op'>=</span> <span class='ident'>iter</span>::<span class='ident'>repeat</span>(<span class='string'>&quot;#&quot;</span>).<span class='ident'>take</span>(<span class='ident'>n</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span>(),
-                                           <span class='ident'>string</span> <span class='op'>=</span> <span class='ident'>str</span>::<span class='ident'>from_utf8</span>(<span class='ident'>vec</span>).<span class='ident'>unwrap</span>()));
+                <span class="ident">Lit</span>::<span class="ident">ByteStr</span>(<span class="kw-2">ref</span> <span class="ident">vec</span>, <span class="ident">StrStyle</span>::<span class="ident">Raw</span>(<span class="ident">n</span>)) <span class="op">=&gt;</span> {
+                    <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;br{delim}\&quot;{string}\&quot;{delim}&quot;</span>,
+                                           <span class="ident">delim</span> <span class="op">=</span> <span class="ident">iter</span>::<span class="ident">repeat</span>(<span class="string">&quot;#&quot;</span>).<span class="ident">take</span>(<span class="ident">n</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(),
+                                           <span class="ident">string</span> <span class="op">=</span> <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">vec</span>).<span class="ident">unwrap</span>()));
                 }
-                <span class='ident'>Lit</span>::<span class='ident'>Byte</span>(<span class='ident'>b</span>) <span class='op'>=&gt;</span> {
-                    <span class='kw'>match</span> <span class='ident'>b</span> {
-                        <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>r&quot;b&#39;\0&#39;&quot;</span>),
-                        <span class='string'>b&#39;\&quot;&#39;</span> <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;b&#39;\&quot;&#39;&quot;</span>),
-                        _ <span class='op'>=&gt;</span> {
-                            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>escaped</span> <span class='op'>=</span> <span class='string'>&quot;b&#39;&quot;</span>.<span class='ident'>to_string</span>();
-                            <span class='ident'>escaped</span>.<span class='ident'>extend</span>(<span class='ident'>ascii</span>::<span class='ident'>escape_default</span>(<span class='ident'>b</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>c</span><span class='op'>|</span> <span class='ident'>c</span> <span class='kw'>as</span> <span class='ident'>char</span>));
-                            <span class='ident'>escaped</span>.<span class='ident'>push</span>(<span class='string'>&#39;\&#39;&#39;</span>);
-                            <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='ident'>escaped</span>);
+                <span class="ident">Lit</span>::<span class="ident">Byte</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> {
+                    <span class="kw">match</span> <span class="ident">b</span> {
+                        <span class="number">0</span> <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">r&quot;b&#39;\0&#39;&quot;</span>),
+                        <span class="string">b&#39;\&quot;&#39;</span> <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;b&#39;\&quot;&#39;&quot;</span>),
+                        _ <span class="op">=&gt;</span> {
+                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">escaped</span> <span class="op">=</span> <span class="string">&quot;b&#39;&quot;</span>.<span class="ident">to_string</span>();
+                            <span class="ident">escaped</span>.<span class="ident">extend</span>(<span class="ident">ascii</span>::<span class="ident">escape_default</span>(<span class="ident">b</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="kw">as</span> <span class="ident">char</span>));
+                            <span class="ident">escaped</span>.<span class="ident">push</span>(<span class="string">&#39;\&#39;&#39;</span>);
+                            <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="ident">escaped</span>);
                         }
                     }
                 }
-                <span class='ident'>Lit</span>::<span class='ident'>Char</span>(<span class='ident'>ch</span>) <span class='op'>=&gt;</span> <span class='ident'>ch</span>.<span class='ident'>to_tokens</span>(<span class='ident'>tokens</span>),
-                <span class='ident'>Lit</span>::<span class='ident'>Int</span>(<span class='ident'>value</span>, <span class='ident'>ty</span>) <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}{}&quot;</span>, <span class='ident'>value</span>, <span class='ident'>ty</span>)),
-                <span class='ident'>Lit</span>::<span class='ident'>Float</span>(<span class='kw-2'>ref</span> <span class='ident'>value</span>, <span class='ident'>ty</span>) <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='kw-2'>&amp;</span><span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{}{}&quot;</span>, <span class='ident'>value</span>, <span class='ident'>ty</span>)),
-                <span class='ident'>Lit</span>::<span class='ident'>Bool</span>(<span class='bool-val'>true</span>) <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;true&quot;</span>),
-                <span class='ident'>Lit</span>::<span class='ident'>Bool</span>(<span class='bool-val'>false</span>) <span class='op'>=&gt;</span> <span class='ident'>tokens</span>.<span class='ident'>append</span>(<span class='string'>&quot;false&quot;</span>),
+                <span class="ident">Lit</span>::<span class="ident">Char</span>(<span class="ident">ch</span>) <span class="op">=&gt;</span> <span class="ident">ch</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>),
+                <span class="ident">Lit</span>::<span class="ident">Int</span>(<span class="ident">value</span>, <span class="ident">ty</span>) <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">value</span>, <span class="ident">ty</span>)),
+                <span class="ident">Lit</span>::<span class="ident">Float</span>(<span class="kw-2">ref</span> <span class="ident">value</span>, <span class="ident">ty</span>) <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">value</span>, <span class="ident">ty</span>)),
+                <span class="ident">Lit</span>::<span class="ident">Bool</span>(<span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;true&quot;</span>),
+                <span class="ident">Lit</span>::<span class="ident">Bool</span>(<span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">tokens</span>.<span class="ident">append</span>(<span class="string">&quot;false&quot;</span>),
             }
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>IntTy</span> {
-        <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>formatter</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>fmt</span>::<span class='ident'>Error</span><span class='op'>&gt;</span> {
-            <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-                <span class='ident'>IntTy</span>::<span class='ident'>Isize</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;isize&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>I8</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;i8&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>I16</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;i16&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>I32</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;i32&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>I64</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;i64&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>Usize</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;usize&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>U8</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;u8&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>U16</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;u16&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>U32</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;u32&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>U64</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;u64&quot;</span>),
-                <span class='ident'>IntTy</span>::<span class='ident'>Unsuffixed</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(()),
+    <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">IntTy</span> {
+        <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">fmt</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+                <span class="ident">IntTy</span>::<span class="ident">Isize</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;isize&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">I8</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;i8&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">I16</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;i16&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">I32</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;i32&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">I64</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;i64&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">Usize</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;usize&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">U8</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;u8&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">U16</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;u16&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">U32</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;u32&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">U64</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;u64&quot;</span>),
+                <span class="ident">IntTy</span>::<span class="ident">Unsuffixed</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(()),
             }
         }
     }
 
-    <span class='kw'>impl</span> <span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>FloatTy</span> {
-        <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>formatter</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>fmt</span>::<span class='ident'>Error</span><span class='op'>&gt;</span> {
-            <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-                <span class='ident'>FloatTy</span>::<span class='ident'>F32</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;f32&quot;</span>),
-                <span class='ident'>FloatTy</span>::<span class='ident'>F64</span> <span class='op'>=&gt;</span> <span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='string'>&quot;f64&quot;</span>),
-                <span class='ident'>FloatTy</span>::<span class='ident'>Unsuffixed</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(()),
+    <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">FloatTy</span> {
+        <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">fmt</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+                <span class="ident">FloatTy</span>::<span class="ident">F32</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;f32&quot;</span>),
+                <span class="ident">FloatTy</span>::<span class="ident">F64</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;f64&quot;</span>),
+                <span class="ident">FloatTy</span>::<span class="ident">Unsuffixed</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(()),
             }
         }
     }

@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -564,527 +564,527 @@
 <span id="519">519</span>
 <span id="520">520</span>
 <span id="521">521</span>
-</pre><pre class='rust '>
-<span class='comment'>// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT</span>
-<span class='comment'>// file at the top-level directory of this distribution and at</span>
-<span class='comment'>// http://rust-lang.org/COPYRIGHT.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT</span>
+<span class="comment">// file at the top-level directory of this distribution and at</span>
+<span class="comment">// http://rust-lang.org/COPYRIGHT.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 
-<span class='kw'>use</span> <span class='ident'>aho_corasick</span>::{<span class='ident'>Automaton</span>, <span class='ident'>AcAutomaton</span>, <span class='ident'>FullAcAutomaton</span>};
-<span class='kw'>use</span> <span class='ident'>memchr</span>::{<span class='ident'>memchr</span>, <span class='ident'>memchr2</span>, <span class='ident'>memchr3</span>};
-<span class='kw'>use</span> <span class='ident'>syntax</span>;
+<span class="kw">use</span> <span class="ident">aho_corasick</span>::{<span class="ident">Automaton</span>, <span class="ident">AcAutomaton</span>, <span class="ident">FullAcAutomaton</span>};
+<span class="kw">use</span> <span class="ident">memchr</span>::{<span class="ident">memchr</span>, <span class="ident">memchr2</span>, <span class="ident">memchr3</span>};
+<span class="kw">use</span> <span class="ident">syntax</span>;
 
-<span class='kw'>use</span> <span class='ident'>freqs</span>::<span class='ident'>BYTE_FREQUENCIES</span>;
+<span class="kw">use</span> <span class="ident">freqs</span>::<span class="ident">BYTE_FREQUENCIES</span>;
 
-<span class='kw'>use</span> <span class='ident'>simd_accel</span>::<span class='ident'>teddy128</span>::{<span class='ident'>Teddy</span>, <span class='ident'>is_teddy_128_available</span>};
+<span class="kw">use</span> <span class="ident">simd_accel</span>::<span class="ident">teddy128</span>::{<span class="ident">Teddy</span>, <span class="ident">is_teddy_128_available</span>};
 
-<span class='doccomment'>/// A prefix extracted from a compiled regular expression.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// A regex prefix is a set of literal strings that *must* be matched at the</span>
-<span class='doccomment'>/// beginning of a regex in order for the entire regex to match.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// There are a variety of ways to efficiently scan the search text for a</span>
-<span class='doccomment'>/// prefix. Currently, there are three implemented:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// 1. The prefix is a single byte. Just use memchr.</span>
-<span class='doccomment'>/// 2. If the prefix is a set of two or more single byte prefixes, then</span>
-<span class='doccomment'>///    a single sparse map is created. Checking if there is a match is a lookup</span>
-<span class='doccomment'>///    in this map for each byte in the search text.</span>
-<span class='doccomment'>/// 3. In all other cases, build an Aho-Corasick automaton.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// It&#39;s possible that there&#39;s room here for other substring algorithms,</span>
-<span class='doccomment'>/// such as Boyer-Moore for single-set prefixes greater than 1, or Rabin-Karp</span>
-<span class='doccomment'>/// for small sets of same-length prefixes.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>LiteralSearcher</span> {
-    <span class='ident'>complete</span>: <span class='ident'>bool</span>,
-    <span class='ident'>lcp</span>: <span class='ident'>SingleSearch</span>,
-    <span class='ident'>lcs</span>: <span class='ident'>SingleSearch</span>,
-    <span class='ident'>matcher</span>: <span class='ident'>Matcher</span>,
+<span class="doccomment">/// A prefix extracted from a compiled regular expression.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// A regex prefix is a set of literal strings that *must* be matched at the</span>
+<span class="doccomment">/// beginning of a regex in order for the entire regex to match.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// There are a variety of ways to efficiently scan the search text for a</span>
+<span class="doccomment">/// prefix. Currently, there are three implemented:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// 1. The prefix is a single byte. Just use memchr.</span>
+<span class="doccomment">/// 2. If the prefix is a set of two or more single byte prefixes, then</span>
+<span class="doccomment">///    a single sparse map is created. Checking if there is a match is a lookup</span>
+<span class="doccomment">///    in this map for each byte in the search text.</span>
+<span class="doccomment">/// 3. In all other cases, build an Aho-Corasick automaton.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// It&#39;s possible that there&#39;s room here for other substring algorithms,</span>
+<span class="doccomment">/// such as Boyer-Moore for single-set prefixes greater than 1, or Rabin-Karp</span>
+<span class="doccomment">/// for small sets of same-length prefixes.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LiteralSearcher</span> {
+    <span class="ident">complete</span>: <span class="ident">bool</span>,
+    <span class="ident">lcp</span>: <span class="ident">SingleSearch</span>,
+    <span class="ident">lcs</span>: <span class="ident">SingleSearch</span>,
+    <span class="ident">matcher</span>: <span class="ident">Matcher</span>,
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>)]</span>
-<span class='kw'>enum</span> <span class='ident'>Matcher</span> {
-    <span class='doccomment'>/// No literals. (Never advances through the input.)</span>
-    <span class='ident'>Empty</span>,
-    <span class='doccomment'>/// A set of four or more single byte literals.</span>
-    <span class='ident'>Bytes</span>(<span class='ident'>SingleByteSet</span>),
-    <span class='doccomment'>/// A single substring. (Likely using Boyer-Moore with memchr.)</span>
-    <span class='ident'>Single</span>(<span class='ident'>SingleSearch</span>),
-    <span class='doccomment'>/// An Aho-Corasick automaton.</span>
-    <span class='ident'>AC</span>(<span class='ident'>FullAcAutomaton</span><span class='op'>&lt;</span><span class='ident'>syntax</span>::<span class='ident'>Lit</span><span class='op'>&gt;</span>),
-    <span class='doccomment'>/// A simd accelerated multiple string matcher.</span>
-    <span class='ident'>Teddy128</span>(<span class='ident'>Teddy</span>),
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">enum</span> <span class="ident">Matcher</span> {
+    <span class="doccomment">/// No literals. (Never advances through the input.)</span>
+    <span class="ident">Empty</span>,
+    <span class="doccomment">/// A set of four or more single byte literals.</span>
+    <span class="ident">Bytes</span>(<span class="ident">SingleByteSet</span>),
+    <span class="doccomment">/// A single substring. (Likely using Boyer-Moore with memchr.)</span>
+    <span class="ident">Single</span>(<span class="ident">SingleSearch</span>),
+    <span class="doccomment">/// An Aho-Corasick automaton.</span>
+    <span class="ident">AC</span>(<span class="ident">FullAcAutomaton</span><span class="op">&lt;</span><span class="ident">syntax</span>::<span class="ident">Lit</span><span class="op">&gt;</span>),
+    <span class="doccomment">/// A simd accelerated multiple string matcher.</span>
+    <span class="ident">Teddy128</span>(<span class="ident">Teddy</span>),
 }
 
-<span class='kw'>impl</span> <span class='ident'>LiteralSearcher</span> {
-    <span class='doccomment'>/// Returns a matcher that never matches and never advances the input.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>empty</span>() <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='self'>Self</span>::<span class='ident'>new</span>(<span class='ident'>syntax</span>::<span class='ident'>Literals</span>::<span class='ident'>empty</span>(), <span class='ident'>Matcher</span>::<span class='ident'>Empty</span>)
+<span class="kw">impl</span> <span class="ident">LiteralSearcher</span> {
+    <span class="doccomment">/// Returns a matcher that never matches and never advances the input.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">empty</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">syntax</span>::<span class="ident">Literals</span>::<span class="ident">empty</span>(), <span class="ident">Matcher</span>::<span class="ident">Empty</span>)
     }
 
-    <span class='doccomment'>/// Returns a matcher for literal prefixes from the given set.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>prefixes</span>(<span class='ident'>lits</span>: <span class='ident'>syntax</span>::<span class='ident'>Literals</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>matcher</span> <span class='op'>=</span> <span class='ident'>Matcher</span>::<span class='ident'>prefixes</span>(<span class='kw-2'>&amp;</span><span class='ident'>lits</span>);
-        <span class='self'>Self</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>, <span class='ident'>matcher</span>)
+    <span class="doccomment">/// Returns a matcher for literal prefixes from the given set.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prefixes</span>(<span class="ident">lits</span>: <span class="ident">syntax</span>::<span class="ident">Literals</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">matcher</span> <span class="op">=</span> <span class="ident">Matcher</span>::<span class="ident">prefixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
+        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">matcher</span>)
     }
 
-    <span class='doccomment'>/// Returns a matcher for literal suffixes from the given set.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>suffixes</span>(<span class='ident'>lits</span>: <span class='ident'>syntax</span>::<span class='ident'>Literals</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>matcher</span> <span class='op'>=</span> <span class='ident'>Matcher</span>::<span class='ident'>suffixes</span>(<span class='kw-2'>&amp;</span><span class='ident'>lits</span>);
-        <span class='self'>Self</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>, <span class='ident'>matcher</span>)
+    <span class="doccomment">/// Returns a matcher for literal suffixes from the given set.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suffixes</span>(<span class="ident">lits</span>: <span class="ident">syntax</span>::<span class="ident">Literals</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">matcher</span> <span class="op">=</span> <span class="ident">Matcher</span>::<span class="ident">suffixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
+        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">matcher</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>lits</span>: <span class='ident'>syntax</span>::<span class='ident'>Literals</span>, <span class='ident'>matcher</span>: <span class='ident'>Matcher</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>complete</span> <span class='op'>=</span> <span class='ident'>lits</span>.<span class='ident'>all_complete</span>();
-        <span class='ident'>LiteralSearcher</span> {
-            <span class='ident'>complete</span>: <span class='ident'>complete</span>,
-            <span class='ident'>lcp</span>: <span class='ident'>SingleSearch</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>.<span class='ident'>longest_common_prefix</span>().<span class='ident'>to_vec</span>()),
-            <span class='ident'>lcs</span>: <span class='ident'>SingleSearch</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>.<span class='ident'>longest_common_suffix</span>().<span class='ident'>to_vec</span>()),
-            <span class='ident'>matcher</span>: <span class='ident'>matcher</span>,
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">lits</span>: <span class="ident">syntax</span>::<span class="ident">Literals</span>, <span class="ident">matcher</span>: <span class="ident">Matcher</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">complete</span> <span class="op">=</span> <span class="ident">lits</span>.<span class="ident">all_complete</span>();
+        <span class="ident">LiteralSearcher</span> {
+            <span class="ident">complete</span>: <span class="ident">complete</span>,
+            <span class="ident">lcp</span>: <span class="ident">SingleSearch</span>::<span class="ident">new</span>(<span class="ident">lits</span>.<span class="ident">longest_common_prefix</span>().<span class="ident">to_vec</span>()),
+            <span class="ident">lcs</span>: <span class="ident">SingleSearch</span>::<span class="ident">new</span>(<span class="ident">lits</span>.<span class="ident">longest_common_suffix</span>().<span class="ident">to_vec</span>()),
+            <span class="ident">matcher</span>: <span class="ident">matcher</span>,
         }
     }
 
-    <span class='doccomment'>/// Returns true if all matches comprise the entire regular expression.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// This does not necessarily mean that a literal match implies a match</span>
-    <span class='doccomment'>/// of the regular expression. For example, the regular expresison `^a`</span>
-    <span class='doccomment'>/// is comprised of a single complete literal `a`, but the regular</span>
-    <span class='doccomment'>/// expression demands that it only match at the beginning of a string.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>complete</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>complete</span> <span class='op'>&amp;&amp;</span> <span class='self'>self</span>.<span class='ident'>len</span>() <span class='op'>&gt;</span> <span class='number'>0</span>
+    <span class="doccomment">/// Returns true if all matches comprise the entire regular expression.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This does not necessarily mean that a literal match implies a match</span>
+    <span class="doccomment">/// of the regular expression. For example, the regular expresison `^a`</span>
+    <span class="doccomment">/// is comprised of a single complete literal `a`, but the regular</span>
+    <span class="doccomment">/// expression demands that it only match at the beginning of a string.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">complete</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">complete</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span>
     }
 
-    <span class='doccomment'>/// Find the position of a literal in `haystack` if it exists.</span>
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span> <span class='comment'>// reduces constant overhead</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>haystack</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>Matcher</span>::<span class='kw-2'>*</span>;
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>matcher</span> {
-            <span class='ident'>Empty</span> <span class='op'>=&gt;</span> <span class='prelude-val'>Some</span>((<span class='number'>0</span>, <span class='number'>0</span>)),
-            <span class='ident'>Bytes</span>(<span class='kw-2'>ref</span> <span class='ident'>sset</span>) <span class='op'>=&gt;</span> <span class='ident'>sset</span>.<span class='ident'>find</span>(<span class='ident'>haystack</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> (<span class='ident'>i</span>, <span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>)),
-            <span class='ident'>Single</span>(<span class='kw-2'>ref</span> <span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>s</span>.<span class='ident'>find</span>(<span class='ident'>haystack</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> (<span class='ident'>i</span>, <span class='ident'>i</span> <span class='op'>+</span> <span class='ident'>s</span>.<span class='ident'>len</span>())),
-            <span class='ident'>AC</span>(<span class='kw-2'>ref</span> <span class='ident'>aut</span>) <span class='op'>=&gt;</span> <span class='ident'>aut</span>.<span class='ident'>find</span>(<span class='ident'>haystack</span>).<span class='ident'>next</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>m</span><span class='op'>|</span> (<span class='ident'>m</span>.<span class='ident'>start</span>, <span class='ident'>m</span>.<span class='ident'>end</span>)),
-            <span class='ident'>Teddy128</span>(<span class='kw-2'>ref</span> <span class='ident'>ted</span>) <span class='op'>=&gt;</span> <span class='ident'>ted</span>.<span class='ident'>find</span>(<span class='ident'>haystack</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>m</span><span class='op'>|</span> (<span class='ident'>m</span>.<span class='ident'>start</span>, <span class='ident'>m</span>.<span class='ident'>end</span>)),
+    <span class="doccomment">/// Find the position of a literal in `haystack` if it exists.</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span> <span class="comment">// reduces constant overhead</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Matcher</span>::<span class="kw-2">*</span>;
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
+            <span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>((<span class="number">0</span>, <span class="number">0</span>)),
+            <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=&gt;</span> <span class="ident">sset</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> (<span class="ident">i</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)),
+            <span class="ident">Single</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">s</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> (<span class="ident">i</span>, <span class="ident">i</span> <span class="op">+</span> <span class="ident">s</span>.<span class="ident">len</span>())),
+            <span class="ident">AC</span>(<span class="kw-2">ref</span> <span class="ident">aut</span>) <span class="op">=&gt;</span> <span class="ident">aut</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">next</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> (<span class="ident">m</span>.<span class="ident">start</span>, <span class="ident">m</span>.<span class="ident">end</span>)),
+            <span class="ident">Teddy128</span>(<span class="kw-2">ref</span> <span class="ident">ted</span>) <span class="op">=&gt;</span> <span class="ident">ted</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> (<span class="ident">m</span>.<span class="ident">start</span>, <span class="ident">m</span>.<span class="ident">end</span>)),
         }
     }
 
-    <span class='doccomment'>/// Like find, except matches must start at index `0`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_start</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>haystack</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>for</span> <span class='ident'>lit</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>iter</span>() {
-            <span class='kw'>if</span> <span class='ident'>lit</span>.<span class='ident'>len</span>() <span class='op'>&gt;</span> <span class='ident'>haystack</span>.<span class='ident'>len</span>() {
-                <span class='kw'>continue</span>;
+    <span class="doccomment">/// Like find, except matches must start at index `0`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">for</span> <span class="ident">lit</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter</span>() {
+            <span class="kw">if</span> <span class="ident">lit</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">haystack</span>.<span class="ident">len</span>() {
+                <span class="kw">continue</span>;
             }
-            <span class='kw'>if</span> <span class='ident'>lit</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>haystack</span>[<span class='number'>0</span>..<span class='ident'>lit</span>.<span class='ident'>len</span>()] {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='number'>0</span>, <span class='ident'>lit</span>.<span class='ident'>len</span>()));
-            }
-        }
-        <span class='prelude-val'>None</span>
-    }
-
-    <span class='doccomment'>/// Like find, except matches must end at index `haystack.len()`.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find_end</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>haystack</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span> {
-        <span class='kw'>for</span> <span class='ident'>lit</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>iter</span>() {
-            <span class='kw'>if</span> <span class='ident'>lit</span>.<span class='ident'>len</span>() <span class='op'>&gt;</span> <span class='ident'>haystack</span>.<span class='ident'>len</span>() {
-                <span class='kw'>continue</span>;
-            }
-            <span class='kw'>if</span> <span class='ident'>lit</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='ident'>haystack</span>[<span class='ident'>haystack</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='ident'>lit</span>.<span class='ident'>len</span>()..] {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>((<span class='ident'>haystack</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='ident'>lit</span>.<span class='ident'>len</span>(), <span class='ident'>haystack</span>.<span class='ident'>len</span>()));
+            <span class="kw">if</span> <span class="ident">lit</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">haystack</span>[<span class="number">0</span>..<span class="ident">lit</span>.<span class="ident">len</span>()] {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="number">0</span>, <span class="ident">lit</span>.<span class="ident">len</span>()));
             }
         }
-        <span class='prelude-val'>None</span>
+        <span class="prelude-val">None</span>
     }
 
-    <span class='doccomment'>/// Returns an iterator over all literals to be matched.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>iter</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>LiteralIter</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>matcher</span> {
-            <span class='ident'>Matcher</span>::<span class='ident'>Empty</span> <span class='op'>=&gt;</span> <span class='ident'>LiteralIter</span>::<span class='ident'>Empty</span>,
-            <span class='ident'>Matcher</span>::<span class='ident'>Bytes</span>(<span class='kw-2'>ref</span> <span class='ident'>sset</span>) <span class='op'>=&gt;</span> <span class='ident'>LiteralIter</span>::<span class='ident'>Bytes</span>(<span class='kw-2'>&amp;</span><span class='ident'>sset</span>.<span class='ident'>dense</span>),
-            <span class='ident'>Matcher</span>::<span class='ident'>Single</span>(<span class='kw-2'>ref</span> <span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='ident'>LiteralIter</span>::<span class='ident'>Single</span>(<span class='kw-2'>&amp;</span><span class='ident'>s</span>.<span class='ident'>pat</span>),
-            <span class='ident'>Matcher</span>::<span class='ident'>AC</span>(<span class='kw-2'>ref</span> <span class='ident'>ac</span>) <span class='op'>=&gt;</span> <span class='ident'>LiteralIter</span>::<span class='ident'>AC</span>(<span class='ident'>ac</span>.<span class='ident'>patterns</span>()),
-            <span class='ident'>Matcher</span>::<span class='ident'>Teddy128</span>(<span class='kw-2'>ref</span> <span class='ident'>ted</span>) <span class='op'>=&gt;</span> {
-                <span class='ident'>LiteralIter</span>::<span class='ident'>Teddy128</span>(<span class='ident'>ted</span>.<span class='ident'>patterns</span>())
+    <span class="doccomment">/// Like find, except matches must end at index `haystack.len()`.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_end</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+        <span class="kw">for</span> <span class="ident">lit</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter</span>() {
+            <span class="kw">if</span> <span class="ident">lit</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">haystack</span>.<span class="ident">len</span>() {
+                <span class="kw">continue</span>;
+            }
+            <span class="kw">if</span> <span class="ident">lit</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">haystack</span>[<span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">lit</span>.<span class="ident">len</span>()..] {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">lit</span>.<span class="ident">len</span>(), <span class="ident">haystack</span>.<span class="ident">len</span>()));
+            }
+        }
+        <span class="prelude-val">None</span>
+    }
+
+    <span class="doccomment">/// Returns an iterator over all literals to be matched.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">LiteralIter</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
+            <span class="ident">Matcher</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Empty</span>,
+            <span class="ident">Matcher</span>::<span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Bytes</span>(<span class="kw-2">&amp;</span><span class="ident">sset</span>.<span class="ident">dense</span>),
+            <span class="ident">Matcher</span>::<span class="ident">Single</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Single</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">pat</span>),
+            <span class="ident">Matcher</span>::<span class="ident">AC</span>(<span class="kw-2">ref</span> <span class="ident">ac</span>) <span class="op">=&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">AC</span>(<span class="ident">ac</span>.<span class="ident">patterns</span>()),
+            <span class="ident">Matcher</span>::<span class="ident">Teddy128</span>(<span class="kw-2">ref</span> <span class="ident">ted</span>) <span class="op">=&gt;</span> {
+                <span class="ident">LiteralIter</span>::<span class="ident">Teddy128</span>(<span class="ident">ted</span>.<span class="ident">patterns</span>())
             }
         }
     }
 
-    <span class='doccomment'>/// Returns a matcher for the longest common prefix of this matcher.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>lcp</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>SingleSearch</span> {
-        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>lcp</span>
+    <span class="doccomment">/// Returns a matcher for the longest common prefix of this matcher.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lcp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">SingleSearch</span> {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">lcp</span>
     }
 
-    <span class='doccomment'>/// Returns a matcher for the longest common suffix of this matcher.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>lcs</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>SingleSearch</span> {
-        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>lcs</span>
+    <span class="doccomment">/// Returns a matcher for the longest common suffix of this matcher.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lcs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">SingleSearch</span> {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">lcs</span>
     }
 
-    <span class='doccomment'>/// Returns true iff this prefix is empty.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_empty</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='self'>self</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>0</span>
+    <span class="doccomment">/// Returns true iff this prefix is empty.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>
     }
 
-    <span class='doccomment'>/// Returns the number of prefixes in this machine.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>len</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>Matcher</span>::<span class='kw-2'>*</span>;
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>matcher</span> {
-            <span class='ident'>Empty</span> <span class='op'>=&gt;</span> <span class='number'>0</span>,
-            <span class='ident'>Bytes</span>(<span class='kw-2'>ref</span> <span class='ident'>sset</span>) <span class='op'>=&gt;</span> <span class='ident'>sset</span>.<span class='ident'>dense</span>.<span class='ident'>len</span>(),
-            <span class='ident'>Single</span>(_) <span class='op'>=&gt;</span> <span class='number'>1</span>,
-            <span class='ident'>AC</span>(<span class='kw-2'>ref</span> <span class='ident'>aut</span>) <span class='op'>=&gt;</span> <span class='ident'>aut</span>.<span class='ident'>len</span>(),
-            <span class='ident'>Teddy128</span>(<span class='kw-2'>ref</span> <span class='ident'>ted</span>) <span class='op'>=&gt;</span> <span class='ident'>ted</span>.<span class='ident'>len</span>(),
+    <span class="doccomment">/// Returns the number of prefixes in this machine.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Matcher</span>::<span class="kw-2">*</span>;
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
+            <span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="number">0</span>,
+            <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=&gt;</span> <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">len</span>(),
+            <span class="ident">Single</span>(_) <span class="op">=&gt;</span> <span class="number">1</span>,
+            <span class="ident">AC</span>(<span class="kw-2">ref</span> <span class="ident">aut</span>) <span class="op">=&gt;</span> <span class="ident">aut</span>.<span class="ident">len</span>(),
+            <span class="ident">Teddy128</span>(<span class="kw-2">ref</span> <span class="ident">ted</span>) <span class="op">=&gt;</span> <span class="ident">ted</span>.<span class="ident">len</span>(),
         }
     }
 
-    <span class='doccomment'>/// Return the approximate heap usage of literals in bytes.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>approximate_size</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='kw'>use</span> <span class='self'>self</span>::<span class='ident'>Matcher</span>::<span class='kw-2'>*</span>;
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>matcher</span> {
-            <span class='ident'>Empty</span> <span class='op'>=&gt;</span> <span class='number'>0</span>,
-            <span class='ident'>Bytes</span>(<span class='kw-2'>ref</span> <span class='ident'>sset</span>) <span class='op'>=&gt;</span> <span class='ident'>sset</span>.<span class='ident'>approximate_size</span>(),
-            <span class='ident'>Single</span>(<span class='kw-2'>ref</span> <span class='ident'>single</span>) <span class='op'>=&gt;</span> <span class='ident'>single</span>.<span class='ident'>approximate_size</span>(),
-            <span class='ident'>AC</span>(<span class='kw-2'>ref</span> <span class='ident'>aut</span>) <span class='op'>=&gt;</span> <span class='ident'>aut</span>.<span class='ident'>heap_bytes</span>(),
-            <span class='ident'>Teddy128</span>(<span class='kw-2'>ref</span> <span class='ident'>ted</span>) <span class='op'>=&gt;</span> <span class='ident'>ted</span>.<span class='ident'>approximate_size</span>(),
+    <span class="doccomment">/// Return the approximate heap usage of literals in bytes.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Matcher</span>::<span class="kw-2">*</span>;
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
+            <span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="number">0</span>,
+            <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=&gt;</span> <span class="ident">sset</span>.<span class="ident">approximate_size</span>(),
+            <span class="ident">Single</span>(<span class="kw-2">ref</span> <span class="ident">single</span>) <span class="op">=&gt;</span> <span class="ident">single</span>.<span class="ident">approximate_size</span>(),
+            <span class="ident">AC</span>(<span class="kw-2">ref</span> <span class="ident">aut</span>) <span class="op">=&gt;</span> <span class="ident">aut</span>.<span class="ident">heap_bytes</span>(),
+            <span class="ident">Teddy128</span>(<span class="kw-2">ref</span> <span class="ident">ted</span>) <span class="op">=&gt;</span> <span class="ident">ted</span>.<span class="ident">approximate_size</span>(),
         }
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>Matcher</span> {
-    <span class='kw'>fn</span> <span class='ident'>prefixes</span>(<span class='ident'>lits</span>: <span class='kw-2'>&amp;</span><span class='ident'>syntax</span>::<span class='ident'>Literals</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>sset</span> <span class='op'>=</span> <span class='ident'>SingleByteSet</span>::<span class='ident'>prefixes</span>(<span class='kw-2'>&amp;</span><span class='ident'>lits</span>);
-        <span class='ident'>Matcher</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>, <span class='ident'>sset</span>)
+<span class="kw">impl</span> <span class="ident">Matcher</span> {
+    <span class="kw">fn</span> <span class="ident">prefixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">syntax</span>::<span class="ident">Literals</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">prefixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
+        <span class="ident">Matcher</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">sset</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>suffixes</span>(<span class='ident'>lits</span>: <span class='kw-2'>&amp;</span><span class='ident'>syntax</span>::<span class='ident'>Literals</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>sset</span> <span class='op'>=</span> <span class='ident'>SingleByteSet</span>::<span class='ident'>suffixes</span>(<span class='kw-2'>&amp;</span><span class='ident'>lits</span>);
-        <span class='ident'>Matcher</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>, <span class='ident'>sset</span>)
+    <span class="kw">fn</span> <span class="ident">suffixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">syntax</span>::<span class="ident">Literals</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">suffixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
+        <span class="ident">Matcher</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">sset</span>)
     }
 
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>lits</span>: <span class='kw-2'>&amp;</span><span class='ident'>syntax</span>::<span class='ident'>Literals</span>, <span class='ident'>sset</span>: <span class='ident'>SingleByteSet</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>if</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>().<span class='ident'>is_empty</span>() {
-            <span class='kw'>return</span> <span class='ident'>Matcher</span>::<span class='ident'>Empty</span>;
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">syntax</span>::<span class="ident">Literals</span>, <span class="ident">sset</span>: <span class="ident">SingleByteSet</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">is_empty</span>() {
+            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Empty</span>;
         }
-        <span class='kw'>if</span> <span class='ident'>sset</span>.<span class='ident'>dense</span>.<span class='ident'>len</span>() <span class='op'>&gt;=</span> <span class='number'>26</span> {
-            <span class='comment'>// Avoid trying to match a large number of single bytes.</span>
-            <span class='comment'>// This is *very* sensitive to a frequency analysis comparison</span>
-            <span class='comment'>// between the bytes in sset and the composition of the haystack.</span>
-            <span class='comment'>// No matter the size of sset, if its members all are rare in the</span>
-            <span class='comment'>// haystack, then it&#39;d be worth using it. How to tune this... IDK.</span>
-            <span class='comment'>// ---AG</span>
-            <span class='kw'>return</span> <span class='ident'>Matcher</span>::<span class='ident'>Empty</span>;
+        <span class="kw">if</span> <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">&gt;=</span> <span class="number">26</span> {
+            <span class="comment">// Avoid trying to match a large number of single bytes.</span>
+            <span class="comment">// This is *very* sensitive to a frequency analysis comparison</span>
+            <span class="comment">// between the bytes in sset and the composition of the haystack.</span>
+            <span class="comment">// No matter the size of sset, if its members all are rare in the</span>
+            <span class="comment">// haystack, then it&#39;d be worth using it. How to tune this... IDK.</span>
+            <span class="comment">// ---AG</span>
+            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Empty</span>;
         }
-        <span class='kw'>if</span> <span class='ident'>sset</span>.<span class='ident'>complete</span> {
-            <span class='kw'>return</span> <span class='ident'>Matcher</span>::<span class='ident'>Bytes</span>(<span class='ident'>sset</span>);
+        <span class="kw">if</span> <span class="ident">sset</span>.<span class="ident">complete</span> {
+            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Bytes</span>(<span class="ident">sset</span>);
         }
-        <span class='kw'>if</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>().<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span> {
-            <span class='kw'>let</span> <span class='ident'>lit</span> <span class='op'>=</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>()[<span class='number'>0</span>].<span class='ident'>to_vec</span>();
-            <span class='kw'>return</span> <span class='ident'>Matcher</span>::<span class='ident'>Single</span>(<span class='ident'>SingleSearch</span>::<span class='ident'>new</span>(<span class='ident'>lit</span>));
+        <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+            <span class="kw">let</span> <span class="ident">lit</span> <span class="op">=</span> <span class="ident">lits</span>.<span class="ident">literals</span>()[<span class="number">0</span>].<span class="ident">to_vec</span>();
+            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Single</span>(<span class="ident">SingleSearch</span>::<span class="ident">new</span>(<span class="ident">lit</span>));
         }
-        <span class='kw'>let</span> <span class='ident'>is_aho_corasick_fast</span> <span class='op'>=</span> <span class='ident'>sset</span>.<span class='ident'>dense</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span> <span class='op'>&amp;&amp;</span> <span class='ident'>sset</span>.<span class='ident'>all_ascii</span>;
-        <span class='kw'>if</span> <span class='ident'>is_teddy_128_available</span>() <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='ident'>is_aho_corasick_fast</span> {
-            <span class='comment'>// Only try Teddy if Aho-Corasick can&#39;t use memchr on an ASCII</span>
-            <span class='comment'>// byte. Also, in its current form, Teddy doesn&#39;t scale well to</span>
-            <span class='comment'>// lots of literals.</span>
-            <span class='comment'>//</span>
-            <span class='comment'>// We impose the ASCII restriction since an alternation of</span>
-            <span class='comment'>// non-ASCII string literals in the same language is likely to all</span>
-            <span class='comment'>// start with the same byte. Even worse, the corpus being searched</span>
-            <span class='comment'>// probably has a similar composition, which ends up completely</span>
-            <span class='comment'>// negating the benefit of memchr.</span>
-            <span class='kw'>const</span> <span class='ident'>MAX_TEDDY_LITERALS</span>: <span class='ident'>usize</span> <span class='op'>=</span> <span class='number'>32</span>;
-            <span class='kw'>if</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>().<span class='ident'>len</span>() <span class='op'>&lt;=</span> <span class='ident'>MAX_TEDDY_LITERALS</span> {
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>ted</span>) <span class='op'>=</span> <span class='ident'>Teddy</span>::<span class='ident'>new</span>(<span class='ident'>lits</span>) {
-                    <span class='kw'>return</span> <span class='ident'>Matcher</span>::<span class='ident'>Teddy128</span>(<span class='ident'>ted</span>);
+        <span class="kw">let</span> <span class="ident">is_aho_corasick_fast</span> <span class="op">=</span> <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">sset</span>.<span class="ident">all_ascii</span>;
+        <span class="kw">if</span> <span class="ident">is_teddy_128_available</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_aho_corasick_fast</span> {
+            <span class="comment">// Only try Teddy if Aho-Corasick can&#39;t use memchr on an ASCII</span>
+            <span class="comment">// byte. Also, in its current form, Teddy doesn&#39;t scale well to</span>
+            <span class="comment">// lots of literals.</span>
+            <span class="comment">//</span>
+            <span class="comment">// We impose the ASCII restriction since an alternation of</span>
+            <span class="comment">// non-ASCII string literals in the same language is likely to all</span>
+            <span class="comment">// start with the same byte. Even worse, the corpus being searched</span>
+            <span class="comment">// probably has a similar composition, which ends up completely</span>
+            <span class="comment">// negating the benefit of memchr.</span>
+            <span class="kw">const</span> <span class="ident">MAX_TEDDY_LITERALS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">32</span>;
+            <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">len</span>() <span class="op">&lt;=</span> <span class="ident">MAX_TEDDY_LITERALS</span> {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ted</span>) <span class="op">=</span> <span class="ident">Teddy</span>::<span class="ident">new</span>(<span class="ident">lits</span>) {
+                    <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Teddy128</span>(<span class="ident">ted</span>);
                 }
             }
-            <span class='comment'>// Fallthrough to ol&#39; reliable Aho-Corasick...</span>
+            <span class="comment">// Fallthrough to ol&#39; reliable Aho-Corasick...</span>
         }
-        <span class='kw'>let</span> <span class='ident'>pats</span> <span class='op'>=</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>().<span class='ident'>to_owned</span>();
-        <span class='ident'>Matcher</span>::<span class='ident'>AC</span>(<span class='ident'>AcAutomaton</span>::<span class='ident'>new</span>(<span class='ident'>pats</span>).<span class='ident'>into_full</span>())
+        <span class="kw">let</span> <span class="ident">pats</span> <span class="op">=</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">to_owned</span>();
+        <span class="ident">Matcher</span>::<span class="ident">AC</span>(<span class="ident">AcAutomaton</span>::<span class="ident">new</span>(<span class="ident">pats</span>).<span class="ident">into_full</span>())
     }
 }
 
-<span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>LiteralIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='ident'>Empty</span>,
-    <span class='ident'>Bytes</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]),
-    <span class='ident'>Single</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]),
-    <span class='ident'>AC</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>syntax</span>::<span class='ident'>Lit</span>]),
-    <span class='ident'>Teddy128</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>]),
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LiteralIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">Empty</span>,
+    <span class="ident">Bytes</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]),
+    <span class="ident">Single</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]),
+    <span class="ident">AC</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">syntax</span>::<span class="ident">Lit</span>]),
+    <span class="ident">Teddy128</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>]),
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>LiteralIter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>];
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">LiteralIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>];
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='self'>Self</span>::<span class='ident'>Item</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='kw-2'>*</span><span class='self'>self</span> {
-            <span class='ident'>LiteralIter</span>::<span class='ident'>Empty</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
-            <span class='ident'>LiteralIter</span>::<span class='ident'>Bytes</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>many</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>if</span> <span class='ident'>many</span>.<span class='ident'>is_empty</span>() {
-                    <span class='prelude-val'>None</span>
-                } <span class='kw'>else</span> {
-                    <span class='kw'>let</span> <span class='ident'>next</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>many</span>[<span class='number'>0</span>..<span class='number'>1</span>];
-                    <span class='kw-2'>*</span><span class='ident'>many</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>many</span>[<span class='number'>1</span>..];
-                    <span class='prelude-val'>Some</span>(<span class='ident'>next</span>)
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">LiteralIter</span>::<span class="ident">Empty</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">LiteralIter</span>::<span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">many</span>) <span class="op">=&gt;</span> {
+                <span class="kw">if</span> <span class="ident">many</span>.<span class="ident">is_empty</span>() {
+                    <span class="prelude-val">None</span>
+                } <span class="kw">else</span> {
+                    <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">many</span>[<span class="number">0</span>..<span class="number">1</span>];
+                    <span class="kw-2">*</span><span class="ident">many</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">many</span>[<span class="number">1</span>..];
+                    <span class="prelude-val">Some</span>(<span class="ident">next</span>)
                 }
             }
-            <span class='ident'>LiteralIter</span>::<span class='ident'>Single</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>one</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>if</span> <span class='ident'>one</span>.<span class='ident'>is_empty</span>() {
-                    <span class='prelude-val'>None</span>
-                } <span class='kw'>else</span> {
-                    <span class='kw'>let</span> <span class='ident'>next</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>one</span>[..];
-                    <span class='kw-2'>*</span><span class='ident'>one</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span>[];
-                    <span class='prelude-val'>Some</span>(<span class='ident'>next</span>)
+            <span class="ident">LiteralIter</span>::<span class="ident">Single</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">one</span>) <span class="op">=&gt;</span> {
+                <span class="kw">if</span> <span class="ident">one</span>.<span class="ident">is_empty</span>() {
+                    <span class="prelude-val">None</span>
+                } <span class="kw">else</span> {
+                    <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">one</span>[..];
+                    <span class="kw-2">*</span><span class="ident">one</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[];
+                    <span class="prelude-val">Some</span>(<span class="ident">next</span>)
                 }
             }
-            <span class='ident'>LiteralIter</span>::<span class='ident'>AC</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>lits</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>if</span> <span class='ident'>lits</span>.<span class='ident'>is_empty</span>() {
-                    <span class='prelude-val'>None</span>
-                } <span class='kw'>else</span> {
-                    <span class='kw'>let</span> <span class='ident'>next</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>lits</span>[<span class='number'>0</span>];
-                    <span class='kw-2'>*</span><span class='ident'>lits</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>lits</span>[<span class='number'>1</span>..];
-                    <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='kw-2'>*</span><span class='ident'>next</span>)
+            <span class="ident">LiteralIter</span>::<span class="ident">AC</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">lits</span>) <span class="op">=&gt;</span> {
+                <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">is_empty</span>() {
+                    <span class="prelude-val">None</span>
+                } <span class="kw">else</span> {
+                    <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">lits</span>[<span class="number">0</span>];
+                    <span class="kw-2">*</span><span class="ident">lits</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">lits</span>[<span class="number">1</span>..];
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">next</span>)
                 }
             }
-            <span class='ident'>LiteralIter</span>::<span class='ident'>Teddy128</span>(<span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>lits</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>if</span> <span class='ident'>lits</span>.<span class='ident'>is_empty</span>() {
-                    <span class='prelude-val'>None</span>
-                } <span class='kw'>else</span> {
-                    <span class='kw'>let</span> <span class='ident'>next</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>lits</span>[<span class='number'>0</span>];
-                    <span class='kw-2'>*</span><span class='ident'>lits</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>lits</span>[<span class='number'>1</span>..];
-                    <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='kw-2'>*</span><span class='ident'>next</span>)
+            <span class="ident">LiteralIter</span>::<span class="ident">Teddy128</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">lits</span>) <span class="op">=&gt;</span> {
+                <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">is_empty</span>() {
+                    <span class="prelude-val">None</span>
+                } <span class="kw">else</span> {
+                    <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">lits</span>[<span class="number">0</span>];
+                    <span class="kw-2">*</span><span class="ident">lits</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">lits</span>[<span class="number">1</span>..];
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">next</span>)
                 }
             }
         }
     }
 }
 
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>)]</span>
-<span class='kw'>struct</span> <span class='ident'>SingleByteSet</span> {
-    <span class='ident'>sparse</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span>,
-    <span class='ident'>dense</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
-    <span class='ident'>complete</span>: <span class='ident'>bool</span>,
-    <span class='ident'>all_ascii</span>: <span class='ident'>bool</span>,
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">struct</span> <span class="ident">SingleByteSet</span> {
+    <span class="ident">sparse</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="ident">dense</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="ident">complete</span>: <span class="ident">bool</span>,
+    <span class="ident">all_ascii</span>: <span class="ident">bool</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>SingleByteSet</span> {
-    <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>SingleByteSet</span> {
-        <span class='ident'>SingleByteSet</span> {
-            <span class='ident'>sparse</span>: <span class='macro'>vec</span><span class='macro'>!</span>[<span class='bool-val'>false</span>; <span class='number'>256</span>],
-            <span class='ident'>dense</span>: <span class='macro'>vec</span><span class='macro'>!</span>[],
-            <span class='ident'>complete</span>: <span class='bool-val'>true</span>,
-            <span class='ident'>all_ascii</span>: <span class='bool-val'>true</span>,
+<span class="kw">impl</span> <span class="ident">SingleByteSet</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">SingleByteSet</span> {
+        <span class="ident">SingleByteSet</span> {
+            <span class="ident">sparse</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">false</span>; <span class="number">256</span>],
+            <span class="ident">dense</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">complete</span>: <span class="bool-val">true</span>,
+            <span class="ident">all_ascii</span>: <span class="bool-val">true</span>,
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>prefixes</span>(<span class='ident'>lits</span>: <span class='kw-2'>&amp;</span><span class='ident'>syntax</span>::<span class='ident'>Literals</span>) <span class='op'>-&gt;</span> <span class='ident'>SingleByteSet</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>sset</span> <span class='op'>=</span> <span class='ident'>SingleByteSet</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>lit</span> <span class='kw'>in</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>() {
-            <span class='ident'>sset</span>.<span class='ident'>complete</span> <span class='op'>=</span> <span class='ident'>sset</span>.<span class='ident'>complete</span> <span class='op'>&amp;&amp;</span> <span class='ident'>lit</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span>;
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>b</span>) <span class='op'>=</span> <span class='ident'>lit</span>.<span class='ident'>get</span>(<span class='number'>0</span>) {
-                <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>sset</span>.<span class='ident'>sparse</span>[<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>usize</span>] {
-                    <span class='kw'>if</span> <span class='ident'>b</span> <span class='op'>&gt;</span> <span class='number'>0x7F</span> {
-                        <span class='ident'>sset</span>.<span class='ident'>all_ascii</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+    <span class="kw">fn</span> <span class="ident">prefixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">syntax</span>::<span class="ident">Literals</span>) <span class="op">-&gt;</span> <span class="ident">SingleByteSet</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">lit</span> <span class="kw">in</span> <span class="ident">lits</span>.<span class="ident">literals</span>() {
+            <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">=</span> <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">&amp;&amp;</span> <span class="ident">lit</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="op">=</span> <span class="ident">lit</span>.<span class="ident">get</span>(<span class="number">0</span>) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">sset</span>.<span class="ident">sparse</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] {
+                    <span class="kw">if</span> <span class="ident">b</span> <span class="op">&gt;</span> <span class="number">0x7F</span> {
+                        <span class="ident">sset</span>.<span class="ident">all_ascii</span> <span class="op">=</span> <span class="bool-val">false</span>;
                     }
-                    <span class='ident'>sset</span>.<span class='ident'>dense</span>.<span class='ident'>push</span>(<span class='ident'>b</span>);
-                    <span class='ident'>sset</span>.<span class='ident'>sparse</span>[<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>usize</span>] <span class='op'>=</span> <span class='bool-val'>true</span>;
+                    <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">push</span>(<span class="ident">b</span>);
+                    <span class="ident">sset</span>.<span class="ident">sparse</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="op">=</span> <span class="bool-val">true</span>;
                 }
             }
         }
-        <span class='ident'>sset</span>
+        <span class="ident">sset</span>
     }
 
-    <span class='kw'>fn</span> <span class='ident'>suffixes</span>(<span class='ident'>lits</span>: <span class='kw-2'>&amp;</span><span class='ident'>syntax</span>::<span class='ident'>Literals</span>) <span class='op'>-&gt;</span> <span class='ident'>SingleByteSet</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>sset</span> <span class='op'>=</span> <span class='ident'>SingleByteSet</span>::<span class='ident'>new</span>();
-        <span class='kw'>for</span> <span class='ident'>lit</span> <span class='kw'>in</span> <span class='ident'>lits</span>.<span class='ident'>literals</span>() {
-            <span class='ident'>sset</span>.<span class='ident'>complete</span> <span class='op'>=</span> <span class='ident'>sset</span>.<span class='ident'>complete</span> <span class='op'>&amp;&amp;</span> <span class='ident'>lit</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>1</span>;
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>b</span>) <span class='op'>=</span> <span class='ident'>lit</span>.<span class='ident'>get</span>(<span class='ident'>lit</span>.<span class='ident'>len</span>().<span class='ident'>checked_sub</span>(<span class='number'>1</span>).<span class='ident'>unwrap</span>()) {
-                <span class='kw'>if</span> <span class='op'>!</span><span class='ident'>sset</span>.<span class='ident'>sparse</span>[<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>usize</span>] {
-                    <span class='kw'>if</span> <span class='ident'>b</span> <span class='op'>&gt;</span> <span class='number'>0x7F</span> {
-                        <span class='ident'>sset</span>.<span class='ident'>all_ascii</span> <span class='op'>=</span> <span class='bool-val'>false</span>;
+    <span class="kw">fn</span> <span class="ident">suffixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">syntax</span>::<span class="ident">Literals</span>) <span class="op">-&gt;</span> <span class="ident">SingleByteSet</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">lit</span> <span class="kw">in</span> <span class="ident">lits</span>.<span class="ident">literals</span>() {
+            <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">=</span> <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">&amp;&amp;</span> <span class="ident">lit</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="op">=</span> <span class="ident">lit</span>.<span class="ident">get</span>(<span class="ident">lit</span>.<span class="ident">len</span>().<span class="ident">checked_sub</span>(<span class="number">1</span>).<span class="ident">unwrap</span>()) {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">sset</span>.<span class="ident">sparse</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] {
+                    <span class="kw">if</span> <span class="ident">b</span> <span class="op">&gt;</span> <span class="number">0x7F</span> {
+                        <span class="ident">sset</span>.<span class="ident">all_ascii</span> <span class="op">=</span> <span class="bool-val">false</span>;
                     }
-                    <span class='ident'>sset</span>.<span class='ident'>dense</span>.<span class='ident'>push</span>(<span class='ident'>b</span>);
-                    <span class='ident'>sset</span>.<span class='ident'>sparse</span>[<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>usize</span>] <span class='op'>=</span> <span class='bool-val'>true</span>;
+                    <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">push</span>(<span class="ident">b</span>);
+                    <span class="ident">sset</span>.<span class="ident">sparse</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="op">=</span> <span class="bool-val">true</span>;
                 }
             }
         }
-        <span class='ident'>sset</span>
+        <span class="ident">sset</span>
     }
 
-    <span class='doccomment'>/// Faster find that special cases certain sizes to use memchr.</span>
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span> <span class='comment'>// reduces constant overhead</span>
-    <span class='kw'>fn</span> <span class='ident'>find</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>dense</span>.<span class='ident'>len</span>() {
-            <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
-            <span class='number'>1</span> <span class='op'>=&gt;</span> <span class='ident'>memchr</span>(<span class='self'>self</span>.<span class='ident'>dense</span>[<span class='number'>0</span>], <span class='ident'>text</span>),
-            <span class='number'>2</span> <span class='op'>=&gt;</span> <span class='ident'>memchr2</span>(<span class='self'>self</span>.<span class='ident'>dense</span>[<span class='number'>0</span>], <span class='self'>self</span>.<span class='ident'>dense</span>[<span class='number'>1</span>], <span class='ident'>text</span>),
-            <span class='number'>3</span> <span class='op'>=&gt;</span> <span class='ident'>memchr3</span>(<span class='self'>self</span>.<span class='ident'>dense</span>[<span class='number'>0</span>], <span class='self'>self</span>.<span class='ident'>dense</span>[<span class='number'>1</span>], <span class='self'>self</span>.<span class='ident'>dense</span>[<span class='number'>2</span>], <span class='ident'>text</span>),
-            _ <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>_find</span>(<span class='ident'>text</span>),
+    <span class="doccomment">/// Faster find that special cases certain sizes to use memchr.</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span> <span class="comment">// reduces constant overhead</span>
+    <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">len</span>() {
+            <span class="number">0</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="number">1</span> <span class="op">=&gt;</span> <span class="ident">memchr</span>(<span class="self">self</span>.<span class="ident">dense</span>[<span class="number">0</span>], <span class="ident">text</span>),
+            <span class="number">2</span> <span class="op">=&gt;</span> <span class="ident">memchr2</span>(<span class="self">self</span>.<span class="ident">dense</span>[<span class="number">0</span>], <span class="self">self</span>.<span class="ident">dense</span>[<span class="number">1</span>], <span class="ident">text</span>),
+            <span class="number">3</span> <span class="op">=&gt;</span> <span class="ident">memchr3</span>(<span class="self">self</span>.<span class="ident">dense</span>[<span class="number">0</span>], <span class="self">self</span>.<span class="ident">dense</span>[<span class="number">1</span>], <span class="self">self</span>.<span class="ident">dense</span>[<span class="number">2</span>], <span class="ident">text</span>),
+            _ <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">_find</span>(<span class="ident">text</span>),
         }
     }
 
-    <span class='doccomment'>/// Generic find that works on any sized set.</span>
-    <span class='kw'>fn</span> <span class='ident'>_find</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>haystack</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span> {
-        <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='kw-2'>&amp;</span><span class='ident'>b</span>) <span class='kw'>in</span> <span class='ident'>haystack</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
-            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>sparse</span>[<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>usize</span>] {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>i</span>);
+    <span class="doccomment">/// Generic find that works on any sized set.</span>
+    <span class="kw">fn</span> <span class="ident">_find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="kw">for</span> (<span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="kw">in</span> <span class="ident">haystack</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">sparse</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">i</span>);
             }
         }
-        <span class='prelude-val'>None</span>
+        <span class="prelude-val">None</span>
     }
 
-    <span class='kw'>fn</span> <span class='ident'>approximate_size</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        (<span class='self'>self</span>.<span class='ident'>dense</span>.<span class='ident'>len</span>() <span class='op'>*</span> <span class='ident'>mem</span>::<span class='ident'>size_of</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>())
-        <span class='op'>+</span> (<span class='self'>self</span>.<span class='ident'>sparse</span>.<span class='ident'>len</span>() <span class='op'>*</span> <span class='ident'>mem</span>::<span class='ident'>size_of</span>::<span class='op'>&lt;</span><span class='ident'>bool</span><span class='op'>&gt;</span>())
+    <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        (<span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>())
+        <span class="op">+</span> (<span class="self">self</span>.<span class="ident">sparse</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>())
     }
 }
 
-<span class='doccomment'>/// Provides an implementation of fast subtring search.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This particular implementation is a Boyer-Moore variant, based on the</span>
-<span class='doccomment'>/// &quot;tuned boyer moore&quot; search from (Hume &amp; Sunday, 1991). It has been tweaked</span>
-<span class='doccomment'>/// slightly to better use memchr.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// memchr is so fast that we do everything we can to keep the loop in memchr</span>
-<span class='doccomment'>/// for as long as possible. The easiest way to do this is to intelligently</span>
-<span class='doccomment'>/// pick the byte to send to memchr. The best byte is the byte that occurs</span>
-<span class='doccomment'>/// least frequently in the haystack. Since doing frequency analysis on the</span>
-<span class='doccomment'>/// haystack is far too expensive, we compute a set of fixed frequencies up</span>
-<span class='doccomment'>/// front and hard code them in src/freqs.rs. Frequency analysis is done via</span>
-<span class='doccomment'>/// scripts/frequencies.py.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// TODO(burntsushi): Add some amount of shifting to this.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>SingleSearch</span> {
-    <span class='doccomment'>/// The pattern.</span>
-    <span class='ident'>pat</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
-    <span class='doccomment'>/// The number of Unicode characters in the pattern. This is useful for</span>
-    <span class='doccomment'>/// determining the effective length of a pattern when deciding which</span>
-    <span class='doccomment'>/// optimizations to perform. A trailing incomplete UTF-8 sequence counts</span>
-    <span class='doccomment'>/// as one character.</span>
-    <span class='ident'>char_len</span>: <span class='ident'>usize</span>,
-    <span class='doccomment'>/// The rarest byte in the pattern, according to pre-computed frequency</span>
-    <span class='doccomment'>/// analysis.</span>
-    <span class='ident'>rare1</span>: <span class='ident'>u8</span>,
-    <span class='doccomment'>/// The offset of the rarest byte in `pat`.</span>
-    <span class='ident'>rare1i</span>: <span class='ident'>usize</span>,
-    <span class='doccomment'>/// The second rarest byte in the pattern, according to pre-computed</span>
-    <span class='doccomment'>/// frequency analysis. (This may be equivalent to the rarest byte.)</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// The second rarest byte is used as a type of guard for quickly detecting</span>
-    <span class='doccomment'>/// a mismatch after memchr locates an instance of the rarest byte. This</span>
-    <span class='doccomment'>/// is a hedge against pathological cases where the pre-computed frequency</span>
-    <span class='doccomment'>/// analysis may be off. (But of course, does not prevent *all*</span>
-    <span class='doccomment'>/// pathological cases.)</span>
-    <span class='ident'>rare2</span>: <span class='ident'>u8</span>,
-    <span class='doccomment'>/// The offset of the second rarest byte in `pat`.</span>
-    <span class='ident'>rare2i</span>: <span class='ident'>usize</span>,
+<span class="doccomment">/// Provides an implementation of fast subtring search.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This particular implementation is a Boyer-Moore variant, based on the</span>
+<span class="doccomment">/// &quot;tuned boyer moore&quot; search from (Hume &amp; Sunday, 1991). It has been tweaked</span>
+<span class="doccomment">/// slightly to better use memchr.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// memchr is so fast that we do everything we can to keep the loop in memchr</span>
+<span class="doccomment">/// for as long as possible. The easiest way to do this is to intelligently</span>
+<span class="doccomment">/// pick the byte to send to memchr. The best byte is the byte that occurs</span>
+<span class="doccomment">/// least frequently in the haystack. Since doing frequency analysis on the</span>
+<span class="doccomment">/// haystack is far too expensive, we compute a set of fixed frequencies up</span>
+<span class="doccomment">/// front and hard code them in src/freqs.rs. Frequency analysis is done via</span>
+<span class="doccomment">/// scripts/frequencies.py.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// TODO(burntsushi): Add some amount of shifting to this.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SingleSearch</span> {
+    <span class="doccomment">/// The pattern.</span>
+    <span class="ident">pat</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The number of Unicode characters in the pattern. This is useful for</span>
+    <span class="doccomment">/// determining the effective length of a pattern when deciding which</span>
+    <span class="doccomment">/// optimizations to perform. A trailing incomplete UTF-8 sequence counts</span>
+    <span class="doccomment">/// as one character.</span>
+    <span class="ident">char_len</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// The rarest byte in the pattern, according to pre-computed frequency</span>
+    <span class="doccomment">/// analysis.</span>
+    <span class="ident">rare1</span>: <span class="ident">u8</span>,
+    <span class="doccomment">/// The offset of the rarest byte in `pat`.</span>
+    <span class="ident">rare1i</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// The second rarest byte in the pattern, according to pre-computed</span>
+    <span class="doccomment">/// frequency analysis. (This may be equivalent to the rarest byte.)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The second rarest byte is used as a type of guard for quickly detecting</span>
+    <span class="doccomment">/// a mismatch after memchr locates an instance of the rarest byte. This</span>
+    <span class="doccomment">/// is a hedge against pathological cases where the pre-computed frequency</span>
+    <span class="doccomment">/// analysis may be off. (But of course, does not prevent *all*</span>
+    <span class="doccomment">/// pathological cases.)</span>
+    <span class="ident">rare2</span>: <span class="ident">u8</span>,
+    <span class="doccomment">/// The offset of the second rarest byte in `pat`.</span>
+    <span class="ident">rare2i</span>: <span class="ident">usize</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>SingleSearch</span> {
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>pat</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>SingleSearch</span> {
-        <span class='kw'>fn</span> <span class='ident'>freq_rank</span>(<span class='ident'>b</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='ident'>BYTE_FREQUENCIES</span>[<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>usize</span>] <span class='kw'>as</span> <span class='ident'>usize</span> }
+<span class="kw">impl</span> <span class="ident">SingleSearch</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pat</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">SingleSearch</span> {
+        <span class="kw">fn</span> <span class="ident">freq_rank</span>(<span class="ident">b</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">BYTE_FREQUENCIES</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="kw">as</span> <span class="ident">usize</span> }
 
-        <span class='kw'>if</span> <span class='ident'>pat</span>.<span class='ident'>is_empty</span>() {
-            <span class='kw'>return</span> <span class='ident'>SingleSearch</span>::<span class='ident'>empty</span>();
+        <span class="kw">if</span> <span class="ident">pat</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">return</span> <span class="ident">SingleSearch</span>::<span class="ident">empty</span>();
         }
 
-        <span class='comment'>// Find the rarest two bytes. Try to make them distinct (but it&#39;s not</span>
-        <span class='comment'>// required).</span>
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rare1</span> <span class='op'>=</span> <span class='ident'>pat</span>[<span class='number'>0</span>];
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rare2</span> <span class='op'>=</span> <span class='ident'>pat</span>[<span class='number'>0</span>];
-        <span class='kw'>for</span> <span class='ident'>b</span> <span class='kw'>in</span> <span class='ident'>pat</span>[<span class='number'>1</span>..].<span class='ident'>iter</span>().<span class='ident'>cloned</span>() {
-            <span class='kw'>if</span> <span class='ident'>freq_rank</span>(<span class='ident'>b</span>) <span class='op'>&lt;</span> <span class='ident'>freq_rank</span>(<span class='ident'>rare1</span>) {
-                <span class='ident'>rare1</span> <span class='op'>=</span> <span class='ident'>b</span>;
+        <span class="comment">// Find the rarest two bytes. Try to make them distinct (but it&#39;s not</span>
+        <span class="comment">// required).</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rare1</span> <span class="op">=</span> <span class="ident">pat</span>[<span class="number">0</span>];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rare2</span> <span class="op">=</span> <span class="ident">pat</span>[<span class="number">0</span>];
+        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">pat</span>[<span class="number">1</span>..].<span class="ident">iter</span>().<span class="ident">cloned</span>() {
+            <span class="kw">if</span> <span class="ident">freq_rank</span>(<span class="ident">b</span>) <span class="op">&lt;</span> <span class="ident">freq_rank</span>(<span class="ident">rare1</span>) {
+                <span class="ident">rare1</span> <span class="op">=</span> <span class="ident">b</span>;
             }
         }
-        <span class='kw'>for</span> <span class='kw-2'>&amp;</span><span class='ident'>b</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>pat</span> {
-            <span class='kw'>if</span> <span class='ident'>rare1</span> <span class='op'>==</span> <span class='ident'>rare2</span> {
-                <span class='ident'>rare2</span> <span class='op'>=</span> <span class='ident'>b</span>
-            } <span class='kw'>else</span> <span class='kw'>if</span> <span class='ident'>b</span> <span class='op'>!=</span> <span class='ident'>rare1</span> <span class='op'>&amp;&amp;</span> <span class='ident'>freq_rank</span>(<span class='ident'>b</span>) <span class='op'>&lt;</span> <span class='ident'>freq_rank</span>(<span class='ident'>rare2</span>) {
-                <span class='ident'>rare2</span> <span class='op'>=</span> <span class='ident'>b</span>;
+        <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">b</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">pat</span> {
+            <span class="kw">if</span> <span class="ident">rare1</span> <span class="op">==</span> <span class="ident">rare2</span> {
+                <span class="ident">rare2</span> <span class="op">=</span> <span class="ident">b</span>
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span> <span class="op">!=</span> <span class="ident">rare1</span> <span class="op">&amp;&amp;</span> <span class="ident">freq_rank</span>(<span class="ident">b</span>) <span class="op">&lt;</span> <span class="ident">freq_rank</span>(<span class="ident">rare2</span>) {
+                <span class="ident">rare2</span> <span class="op">=</span> <span class="ident">b</span>;
             }
         }
 
-        <span class='comment'>// And find the offsets of their last occurrences.</span>
-        <span class='kw'>let</span> <span class='ident'>rare1i</span> <span class='op'>=</span> <span class='ident'>pat</span>.<span class='ident'>iter</span>().<span class='ident'>rposition</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>b</span><span class='op'>|</span> <span class='ident'>b</span> <span class='op'>==</span> <span class='ident'>rare1</span>).<span class='ident'>unwrap</span>();
-        <span class='kw'>let</span> <span class='ident'>rare2i</span> <span class='op'>=</span> <span class='ident'>pat</span>.<span class='ident'>iter</span>().<span class='ident'>rposition</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>b</span><span class='op'>|</span> <span class='ident'>b</span> <span class='op'>==</span> <span class='ident'>rare2</span>).<span class='ident'>unwrap</span>();
+        <span class="comment">// And find the offsets of their last occurrences.</span>
+        <span class="kw">let</span> <span class="ident">rare1i</span> <span class="op">=</span> <span class="ident">pat</span>.<span class="ident">iter</span>().<span class="ident">rposition</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span> <span class="op">==</span> <span class="ident">rare1</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">rare2i</span> <span class="op">=</span> <span class="ident">pat</span>.<span class="ident">iter</span>().<span class="ident">rposition</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span> <span class="op">==</span> <span class="ident">rare2</span>).<span class="ident">unwrap</span>();
 
-        <span class='kw'>let</span> <span class='ident'>char_len</span> <span class='op'>=</span> <span class='ident'>char_len_lossy</span>(<span class='kw-2'>&amp;</span><span class='ident'>pat</span>);
-        <span class='ident'>SingleSearch</span> {
-            <span class='ident'>pat</span>: <span class='ident'>pat</span>,
-            <span class='ident'>char_len</span>: <span class='ident'>char_len</span>,
-            <span class='ident'>rare1</span>: <span class='ident'>rare1</span>,
-            <span class='ident'>rare1i</span>: <span class='ident'>rare1i</span>,
-            <span class='ident'>rare2</span>: <span class='ident'>rare2</span>,
-            <span class='ident'>rare2i</span>: <span class='ident'>rare2i</span>,
+        <span class="kw">let</span> <span class="ident">char_len</span> <span class="op">=</span> <span class="ident">char_len_lossy</span>(<span class="kw-2">&amp;</span><span class="ident">pat</span>);
+        <span class="ident">SingleSearch</span> {
+            <span class="ident">pat</span>: <span class="ident">pat</span>,
+            <span class="ident">char_len</span>: <span class="ident">char_len</span>,
+            <span class="ident">rare1</span>: <span class="ident">rare1</span>,
+            <span class="ident">rare1i</span>: <span class="ident">rare1i</span>,
+            <span class="ident">rare2</span>: <span class="ident">rare2</span>,
+            <span class="ident">rare2i</span>: <span class="ident">rare2i</span>,
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>empty</span>() <span class='op'>-&gt;</span> <span class='ident'>SingleSearch</span> {
-        <span class='ident'>SingleSearch</span> {
-            <span class='ident'>pat</span>: <span class='macro'>vec</span><span class='macro'>!</span>[],
-            <span class='ident'>char_len</span>: <span class='number'>0</span>,
-            <span class='ident'>rare1</span>: <span class='number'>0</span>,
-            <span class='ident'>rare1i</span>: <span class='number'>0</span>,
-            <span class='ident'>rare2</span>: <span class='number'>0</span>,
-            <span class='ident'>rare2i</span>: <span class='number'>0</span>,
+    <span class="kw">fn</span> <span class="ident">empty</span>() <span class="op">-&gt;</span> <span class="ident">SingleSearch</span> {
+        <span class="ident">SingleSearch</span> {
+            <span class="ident">pat</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">char_len</span>: <span class="number">0</span>,
+            <span class="ident">rare1</span>: <span class="number">0</span>,
+            <span class="ident">rare1i</span>: <span class="number">0</span>,
+            <span class="ident">rare2</span>: <span class="number">0</span>,
+            <span class="ident">rare2i</span>: <span class="number">0</span>,
         }
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span> <span class='comment'>// reduces constant overhead</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>find</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>haystack</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>pat</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>pat</span>;
-        <span class='kw'>if</span> <span class='ident'>haystack</span>.<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='ident'>pat</span>.<span class='ident'>len</span>() <span class='op'>||</span> <span class='ident'>pat</span>.<span class='ident'>is_empty</span>() {
-            <span class='kw'>return</span> <span class='prelude-val'>None</span>;
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span> <span class="comment">// reduces constant overhead</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">pat</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">pat</span>;
+        <span class="kw">if</span> <span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">pat</span>.<span class="ident">len</span>() <span class="op">||</span> <span class="ident">pat</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
         }
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>rare1i</span>;
-        <span class='kw'>while</span> <span class='ident'>i</span> <span class='op'>&lt;</span> <span class='ident'>haystack</span>.<span class='ident'>len</span>() {
-            <span class='ident'>i</span> <span class='op'>+=</span> <span class='kw'>match</span> <span class='ident'>memchr</span>(<span class='self'>self</span>.<span class='ident'>rare1</span>, <span class='kw-2'>&amp;</span><span class='ident'>haystack</span>[<span class='ident'>i</span>..]) {
-                <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='kw'>return</span> <span class='prelude-val'>None</span>,
-                <span class='prelude-val'>Some</span>(<span class='ident'>i</span>) <span class='op'>=&gt;</span> <span class='ident'>i</span>,
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">rare1i</span>;
+        <span class="kw">while</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="ident">haystack</span>.<span class="ident">len</span>() {
+            <span class="ident">i</span> <span class="op">+=</span> <span class="kw">match</span> <span class="ident">memchr</span>(<span class="self">self</span>.<span class="ident">rare1</span>, <span class="kw-2">&amp;</span><span class="ident">haystack</span>[<span class="ident">i</span>..]) {
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">i</span>,
             };
-            <span class='kw'>let</span> <span class='ident'>start</span> <span class='op'>=</span> <span class='ident'>i</span> <span class='op'>-</span> <span class='self'>self</span>.<span class='ident'>rare1i</span>;
-            <span class='kw'>let</span> <span class='ident'>end</span> <span class='op'>=</span> <span class='ident'>start</span> <span class='op'>+</span> <span class='ident'>pat</span>.<span class='ident'>len</span>();
-            <span class='kw'>if</span> <span class='ident'>end</span> <span class='op'>&gt;</span> <span class='ident'>haystack</span>.<span class='ident'>len</span>() {
-                <span class='kw'>return</span> <span class='prelude-val'>None</span>;
+            <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">rare1i</span>;
+            <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">start</span> <span class="op">+</span> <span class="ident">pat</span>.<span class="ident">len</span>();
+            <span class="kw">if</span> <span class="ident">end</span> <span class="op">&gt;</span> <span class="ident">haystack</span>.<span class="ident">len</span>() {
+                <span class="kw">return</span> <span class="prelude-val">None</span>;
             }
-            <span class='kw'>let</span> <span class='ident'>aligned</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='ident'>haystack</span>[<span class='ident'>start</span>..<span class='ident'>end</span>];
-            <span class='kw'>if</span> <span class='ident'>aligned</span>[<span class='self'>self</span>.<span class='ident'>rare2i</span>] <span class='op'>==</span> <span class='self'>self</span>.<span class='ident'>rare2</span> <span class='op'>&amp;&amp;</span> <span class='ident'>aligned</span> <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>pat</span> {
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>start</span>);
+            <span class="kw">let</span> <span class="ident">aligned</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">haystack</span>[<span class="ident">start</span>..<span class="ident">end</span>];
+            <span class="kw">if</span> <span class="ident">aligned</span>[<span class="self">self</span>.<span class="ident">rare2i</span>] <span class="op">==</span> <span class="self">self</span>.<span class="ident">rare2</span> <span class="op">&amp;&amp;</span> <span class="ident">aligned</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">pat</span> {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">start</span>);
             }
-            <span class='ident'>i</span> <span class='op'>+=</span> <span class='number'>1</span>;
+            <span class="ident">i</span> <span class="op">+=</span> <span class="number">1</span>;
         }
-        <span class='prelude-val'>None</span>
+        <span class="prelude-val">None</span>
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span> <span class='comment'>// reduces constant overhead</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>is_suffix</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>text</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='kw'>if</span> <span class='ident'>text</span>.<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='self'>self</span>.<span class='ident'>len</span>() {
-            <span class='kw'>return</span> <span class='bool-val'>false</span>;
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span> <span class="comment">// reduces constant overhead</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_suffix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">if</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">len</span>() {
+            <span class="kw">return</span> <span class="bool-val">false</span>;
         }
-        <span class='kw-2'>&amp;</span><span class='ident'>text</span>[<span class='ident'>text</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='self'>self</span>.<span class='ident'>len</span>()..] <span class='op'>==</span> <span class='kw-2'>&amp;</span><span class='kw-2'>*</span><span class='self'>self</span>.<span class='ident'>pat</span>
+        <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">text</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">len</span>()..] <span class="op">==</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">pat</span>
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>len</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='self'>self</span>.<span class='ident'>pat</span>.<span class='ident'>len</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">pat</span>.<span class="ident">len</span>()
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>char_len</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='self'>self</span>.<span class='ident'>char_len</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">char_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">char_len</span>
     }
 
-    <span class='kw'>fn</span> <span class='ident'>approximate_size</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-        <span class='self'>self</span>.<span class='ident'>pat</span>.<span class='ident'>len</span>() <span class='op'>*</span> <span class='ident'>mem</span>::<span class='ident'>size_of</span>::<span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>()
+    <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="ident">pat</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>()
     }
 }
 
-<span class='kw'>fn</span> <span class='ident'>char_len_lossy</span>(<span class='ident'>bytes</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
-    <span class='ident'>String</span>::<span class='ident'>from_utf8_lossy</span>(<span class='ident'>bytes</span>).<span class='ident'>chars</span>().<span class='ident'>count</span>()
+<span class="kw">fn</span> <span class="ident">char_len_lossy</span>(<span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="ident">String</span>::<span class="ident">from_utf8_lossy</span>(<span class="ident">bytes</span>).<span class="ident">chars</span>().<span class="ident">count</span>()
 }
 </pre>
 </section>

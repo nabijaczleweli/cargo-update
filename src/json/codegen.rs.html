@@ -17,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -43,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -421,383 +421,383 @@
 <span id="376">376</span>
 <span id="377">377</span>
 <span id="378">378</span>
-</pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ptr</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::<span class='ident'>Write</span>;
-<span class='kw'>use</span> <span class='ident'>JsonValue</span>;
-<span class='kw'>use</span> <span class='ident'>number</span>::<span class='ident'>Number</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>;
+</pre><pre class="rust ">
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Write</span>;
+<span class="kw">use</span> <span class="ident">JsonValue</span>;
+<span class="kw">use</span> <span class="ident">number</span>::<span class="ident">Number</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 
-<span class='kw'>use</span> <span class='ident'>util</span>::<span class='ident'>print_dec</span>;
+<span class="kw">use</span> <span class="ident">util</span>::<span class="ident">print_dec</span>;
 
-<span class='kw'>const</span> <span class='ident'>QU</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;&quot;&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>BS</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;\\&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>BB</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;b&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>TT</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;t&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>NN</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;n&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>FF</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;f&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>RR</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;r&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>UU</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='string'>b&#39;u&#39;</span>;
-<span class='kw'>const</span> <span class='ident'>__</span>: <span class='ident'>u8</span> <span class='op'>=</span> <span class='number'>0</span>;
+<span class="kw">const</span> <span class="ident">QU</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;&quot;&#39;</span>;
+<span class="kw">const</span> <span class="ident">BS</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;\\&#39;</span>;
+<span class="kw">const</span> <span class="ident">BB</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;b&#39;</span>;
+<span class="kw">const</span> <span class="ident">TT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;t&#39;</span>;
+<span class="kw">const</span> <span class="ident">NN</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;n&#39;</span>;
+<span class="kw">const</span> <span class="ident">FF</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;f&#39;</span>;
+<span class="kw">const</span> <span class="ident">RR</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;r&#39;</span>;
+<span class="kw">const</span> <span class="ident">UU</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;u&#39;</span>;
+<span class="kw">const</span> <span class="ident">__</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
 
-<span class='comment'>// Look up table for characters that need escaping in a product string</span>
-<span class='kw'>static</span> <span class='ident'>ESCAPED</span>: [<span class='ident'>u8</span>; <span class='number'>256</span>] <span class='op'>=</span> [
-<span class='comment'>// 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F</span>
-  <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>BB</span>, <span class='ident'>TT</span>, <span class='ident'>NN</span>, <span class='ident'>UU</span>, <span class='ident'>FF</span>, <span class='ident'>RR</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='comment'>// 0</span>
-  <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='ident'>UU</span>, <span class='comment'>// 1</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>QU</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 2</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 3</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 4</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>BS</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 5</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 6</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 7</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 8</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// 9</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// A</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// B</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// C</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// D</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// E</span>
-  <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='ident'>__</span>, <span class='comment'>// F</span>
+<span class="comment">// Look up table for characters that need escaping in a product string</span>
+<span class="kw">static</span> <span class="ident">ESCAPED</span>: [<span class="ident">u8</span>; <span class="number">256</span>] <span class="op">=</span> [
+<span class="comment">// 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F</span>
+  <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">BB</span>, <span class="ident">TT</span>, <span class="ident">NN</span>, <span class="ident">UU</span>, <span class="ident">FF</span>, <span class="ident">RR</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="comment">// 0</span>
+  <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="ident">UU</span>, <span class="comment">// 1</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">QU</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 2</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 3</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 4</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">BS</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 5</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 6</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 7</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 8</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// 9</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// A</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// B</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// C</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// D</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// E</span>
+  <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="ident">__</span>, <span class="comment">// F</span>
 ];
 
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Generator</span> {
-    <span class='kw'>type</span> <span class='ident'>T</span>: <span class='ident'>Write</span>;
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Generator</span> {
+    <span class="kw">type</span> <span class="ident">T</span>: <span class="ident">Write</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>get_writer</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span>::<span class='ident'>T</span>;
+    <span class="kw">fn</span> <span class="ident">get_writer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">T</span>;
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>slice</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>get_writer</span>().<span class='ident'>write_all</span>(<span class='ident'>slice</span>)
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">get_writer</span>().<span class="ident">write_all</span>(<span class="ident">slice</span>)
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_char</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>ch</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>get_writer</span>().<span class='ident'>write_all</span>(<span class='kw-2'>&amp;</span>[<span class='ident'>ch</span>])
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_char</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">get_writer</span>().<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">ch</span>])
     }
 
-    <span class='kw'>fn</span> <span class='ident'>write_min</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>slice</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>min</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">write_min</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">min</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>new_line</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> { <span class='prelude-val'>Ok</span>(()) }
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">new_line</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(()) }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>indent</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {}
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">indent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {}
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>dedent</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {}
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">dedent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {}
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>never</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_string_complex</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>string</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='kw-2'>mut</span> <span class='ident'>start</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write</span>(<span class='ident'>string</span>[ .. <span class='ident'>start</span>].<span class='ident'>as_bytes</span>()));
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">never</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_string_complex</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">mut</span> <span class="ident">start</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="ident">string</span>[ .. <span class="ident">start</span>].<span class="ident">as_bytes</span>()));
 
-        <span class='kw'>for</span> (<span class='ident'>index</span>, <span class='ident'>ch</span>) <span class='kw'>in</span> <span class='ident'>string</span>.<span class='ident'>bytes</span>().<span class='ident'>enumerate</span>().<span class='ident'>skip</span>(<span class='ident'>start</span>) {
-            <span class='kw'>let</span> <span class='ident'>escape</span> <span class='op'>=</span> <span class='ident'>ESCAPED</span>[<span class='ident'>ch</span> <span class='kw'>as</span> <span class='ident'>usize</span>];
-            <span class='kw'>if</span> <span class='ident'>escape</span> <span class='op'>&gt;</span> <span class='number'>0</span> {
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write</span>(<span class='ident'>string</span>[<span class='ident'>start</span> .. <span class='ident'>index</span>].<span class='ident'>as_bytes</span>()));
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write</span>(<span class='kw-2'>&amp;</span>[<span class='string'>b&#39;\\&#39;</span>, <span class='ident'>escape</span>]));
-                <span class='ident'>start</span> <span class='op'>=</span> <span class='ident'>index</span> <span class='op'>+</span> <span class='number'>1</span>;
+        <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">ch</span>) <span class="kw">in</span> <span class="ident">string</span>.<span class="ident">bytes</span>().<span class="ident">enumerate</span>().<span class="ident">skip</span>(<span class="ident">start</span>) {
+            <span class="kw">let</span> <span class="ident">escape</span> <span class="op">=</span> <span class="ident">ESCAPED</span>[<span class="ident">ch</span> <span class="kw">as</span> <span class="ident">usize</span>];
+            <span class="kw">if</span> <span class="ident">escape</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="ident">string</span>[<span class="ident">start</span> .. <span class="ident">index</span>].<span class="ident">as_bytes</span>()));
+                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span>[<span class="string">b&#39;\\&#39;</span>, <span class="ident">escape</span>]));
+                <span class="ident">start</span> <span class="op">=</span> <span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>;
             }
-            <span class='kw'>if</span> <span class='ident'>escape</span> <span class='op'>==</span> <span class='string'>b&#39;u&#39;</span> {
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>write</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>get_writer</span>(), <span class='string'>&quot;{:04x}&quot;</span>, <span class='ident'>ch</span>));
-            }
-        }
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write</span>(<span class='ident'>string</span>[<span class='ident'>start</span> ..].<span class='ident'>as_bytes</span>()));
-
-        <span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;&quot;&#39;</span>)
-    }
-
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_string</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>string</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;&quot;&#39;</span>));
-
-        <span class='kw'>for</span> (<span class='ident'>index</span>, <span class='ident'>ch</span>) <span class='kw'>in</span> <span class='ident'>string</span>.<span class='ident'>bytes</span>().<span class='ident'>enumerate</span>() {
-            <span class='kw'>if</span> <span class='ident'>ESCAPED</span>[<span class='ident'>ch</span> <span class='kw'>as</span> <span class='ident'>usize</span>] <span class='op'>&gt;</span> <span class='number'>0</span> {
-                <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>write_string_complex</span>(<span class='ident'>string</span>, <span class='ident'>index</span>)
+            <span class="kw">if</span> <span class="ident">escape</span> <span class="op">==</span> <span class="string">b&#39;u&#39;</span> {
+                <span class="macro">try</span><span class="macro">!</span>(<span class="macro">write</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">get_writer</span>(), <span class="string">&quot;{:04x}&quot;</span>, <span class="ident">ch</span>));
             }
         }
+        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="ident">string</span>[<span class="ident">start</span> ..].<span class="ident">as_bytes</span>()));
 
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write</span>(<span class='ident'>string</span>.<span class='ident'>as_bytes</span>()));
-        <span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;&quot;&#39;</span>)
+        <span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;&quot;&#39;</span>)
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_number</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>num</span>: <span class='kw-2'>&amp;</span><span class='ident'>Number</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='ident'>num</span>.<span class='ident'>is_nan</span>() {
-            <span class='kw'>return</span> <span class='self'>self</span>.<span class='ident'>write</span>(<span class='string'>b&quot;null&quot;</span>);
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;&quot;&#39;</span>));
+
+        <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">ch</span>) <span class="kw">in</span> <span class="ident">string</span>.<span class="ident">bytes</span>().<span class="ident">enumerate</span>() {
+            <span class="kw">if</span> <span class="ident">ESCAPED</span>[<span class="ident">ch</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="op">&gt;</span> <span class="number">0</span> {
+                <span class="kw">return</span> <span class="self">self</span>.<span class="ident">write_string_complex</span>(<span class="ident">string</span>, <span class="ident">index</span>)
+            }
         }
-        <span class='kw'>let</span> (<span class='ident'>positive</span>, <span class='ident'>mantissa</span>, <span class='ident'>exponent</span>) <span class='op'>=</span> <span class='ident'>num</span>.<span class='ident'>as_parts</span>();
-        <span class='kw'>unsafe</span> {
-            <span class='ident'>print_dec</span>::<span class='ident'>write</span>(
-                <span class='self'>self</span>.<span class='ident'>get_writer</span>(),
-                <span class='ident'>positive</span>,
-                <span class='ident'>mantissa</span>,
-                <span class='ident'>exponent</span>
+
+        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="ident">string</span>.<span class="ident">as_bytes</span>()));
+        <span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;&quot;&#39;</span>)
+    }
+
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_number</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num</span>: <span class="kw-2">&amp;</span><span class="ident">Number</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">num</span>.<span class="ident">is_nan</span>() {
+            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">write</span>(<span class="string">b&quot;null&quot;</span>);
+        }
+        <span class="kw">let</span> (<span class="ident">positive</span>, <span class="ident">mantissa</span>, <span class="ident">exponent</span>) <span class="op">=</span> <span class="ident">num</span>.<span class="ident">as_parts</span>();
+        <span class="kw">unsafe</span> {
+            <span class="ident">print_dec</span>::<span class="ident">write</span>(
+                <span class="self">self</span>.<span class="ident">get_writer</span>(),
+                <span class="ident">positive</span>,
+                <span class="ident">mantissa</span>,
+                <span class="ident">exponent</span>
             )
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>write_json</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>json</span>: <span class='kw-2'>&amp;</span><span class='ident'>JsonValue</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='kw-2'>*</span><span class='ident'>json</span> {
-            <span class='ident'>JsonValue</span>::<span class='ident'>Null</span>               <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>write</span>(<span class='string'>b&quot;null&quot;</span>),
-            <span class='ident'>JsonValue</span>::<span class='ident'>Short</span>(<span class='kw-2'>ref</span> <span class='ident'>short</span>)   <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>write_string</span>(<span class='ident'>short</span>.<span class='ident'>as_str</span>()),
-            <span class='ident'>JsonValue</span>::<span class='ident'>String</span>(<span class='kw-2'>ref</span> <span class='ident'>string</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>write_string</span>(<span class='ident'>string</span>),
-            <span class='ident'>JsonValue</span>::<span class='ident'>Number</span>(<span class='kw-2'>ref</span> <span class='ident'>number</span>) <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>write_number</span>(<span class='ident'>number</span>),
-            <span class='ident'>JsonValue</span>::<span class='ident'>Boolean</span>(<span class='bool-val'>true</span>)      <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>write</span>(<span class='string'>b&quot;true&quot;</span>),
-            <span class='ident'>JsonValue</span>::<span class='ident'>Boolean</span>(<span class='bool-val'>false</span>)     <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>write</span>(<span class='string'>b&quot;false&quot;</span>),
-            <span class='ident'>JsonValue</span>::<span class='ident'>Array</span>(<span class='kw-2'>ref</span> <span class='ident'>array</span>)   <span class='op'>=&gt;</span> {
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;[&#39;</span>));
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iter</span> <span class='op'>=</span> <span class='ident'>array</span>.<span class='ident'>iter</span>();
+    <span class="kw">fn</span> <span class="ident">write_json</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">json</span>: <span class="kw-2">&amp;</span><span class="ident">JsonValue</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">json</span> {
+            <span class="ident">JsonValue</span>::<span class="ident">Null</span>               <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">write</span>(<span class="string">b&quot;null&quot;</span>),
+            <span class="ident">JsonValue</span>::<span class="ident">Short</span>(<span class="kw-2">ref</span> <span class="ident">short</span>)   <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">write_string</span>(<span class="ident">short</span>.<span class="ident">as_str</span>()),
+            <span class="ident">JsonValue</span>::<span class="ident">String</span>(<span class="kw-2">ref</span> <span class="ident">string</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">write_string</span>(<span class="ident">string</span>),
+            <span class="ident">JsonValue</span>::<span class="ident">Number</span>(<span class="kw-2">ref</span> <span class="ident">number</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">write_number</span>(<span class="ident">number</span>),
+            <span class="ident">JsonValue</span>::<span class="ident">Boolean</span>(<span class="bool-val">true</span>)      <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">write</span>(<span class="string">b&quot;true&quot;</span>),
+            <span class="ident">JsonValue</span>::<span class="ident">Boolean</span>(<span class="bool-val">false</span>)     <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">write</span>(<span class="string">b&quot;false&quot;</span>),
+            <span class="ident">JsonValue</span>::<span class="ident">Array</span>(<span class="kw-2">ref</span> <span class="ident">array</span>)   <span class="op">=&gt;</span> {
+                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;[&#39;</span>));
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">array</span>.<span class="ident">iter</span>();
 
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>item</span>) <span class='op'>=</span> <span class='ident'>iter</span>.<span class='ident'>next</span>() {
-                    <span class='self'>self</span>.<span class='ident'>indent</span>();
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>new_line</span>());
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_json</span>(<span class='ident'>item</span>));
-                } <span class='kw'>else</span> {
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;]&#39;</span>));
-                    <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(());
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
+                    <span class="self">self</span>.<span class="ident">indent</span>();
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">new_line</span>());
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_json</span>(<span class="ident">item</span>));
+                } <span class="kw">else</span> {
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;]&#39;</span>));
+                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
                 }
 
-                <span class='kw'>for</span> <span class='ident'>item</span> <span class='kw'>in</span> <span class='ident'>iter</span> {
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;,&#39;</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>new_line</span>());
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_json</span>(<span class='ident'>item</span>));
+                <span class="kw">for</span> <span class="ident">item</span> <span class="kw">in</span> <span class="ident">iter</span> {
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;,&#39;</span>));
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">new_line</span>());
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_json</span>(<span class="ident">item</span>));
                 }
 
-                <span class='self'>self</span>.<span class='ident'>dedent</span>();
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>new_line</span>());
-                <span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;]&#39;</span>)
+                <span class="self">self</span>.<span class="ident">dedent</span>();
+                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">new_line</span>());
+                <span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;]&#39;</span>)
             },
-            <span class='ident'>JsonValue</span>::<span class='ident'>Object</span>(<span class='kw-2'>ref</span> <span class='ident'>object</span>) <span class='op'>=&gt;</span> {
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;{&#39;</span>));
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>iter</span> <span class='op'>=</span> <span class='ident'>object</span>.<span class='ident'>iter</span>();
+            <span class="ident">JsonValue</span>::<span class="ident">Object</span>(<span class="kw-2">ref</span> <span class="ident">object</span>) <span class="op">=&gt;</span> {
+                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;{&#39;</span>));
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">object</span>.<span class="ident">iter</span>();
 
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>key</span>, <span class='ident'>value</span>)) <span class='op'>=</span> <span class='ident'>iter</span>.<span class='ident'>next</span>() {
-                    <span class='self'>self</span>.<span class='ident'>indent</span>();
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>new_line</span>());
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_string</span>(<span class='ident'>key</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_min</span>(<span class='string'>b&quot;: &quot;</span>, <span class='string'>b&#39;:&#39;</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_json</span>(<span class='ident'>value</span>));
-                } <span class='kw'>else</span> {
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;}&#39;</span>));
-                    <span class='kw'>return</span> <span class='prelude-val'>Ok</span>(());
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">value</span>)) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
+                    <span class="self">self</span>.<span class="ident">indent</span>();
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">new_line</span>());
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_string</span>(<span class="ident">key</span>));
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_min</span>(<span class="string">b&quot;: &quot;</span>, <span class="string">b&#39;:&#39;</span>));
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_json</span>(<span class="ident">value</span>));
+                } <span class="kw">else</span> {
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;}&#39;</span>));
+                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
                 }
 
-                <span class='kw'>for</span> (<span class='ident'>key</span>, <span class='ident'>value</span>) <span class='kw'>in</span> <span class='ident'>iter</span> {
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;,&#39;</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>new_line</span>());
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_string</span>(<span class='ident'>key</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_min</span>(<span class='string'>b&quot;: &quot;</span>, <span class='string'>b&#39;:&#39;</span>));
-                    <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_json</span>(<span class='ident'>value</span>));
+                <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">iter</span> {
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;,&#39;</span>));
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">new_line</span>());
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_string</span>(<span class="ident">key</span>));
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_min</span>(<span class="string">b&quot;: &quot;</span>, <span class="string">b&#39;:&#39;</span>));
+                    <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_json</span>(<span class="ident">value</span>));
                 }
 
-                <span class='self'>self</span>.<span class='ident'>dedent</span>();
-                <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>new_line</span>());
-                <span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;}&#39;</span>)
+                <span class="self">self</span>.<span class="ident">dedent</span>();
+                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">new_line</span>());
+                <span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;}&#39;</span>)
             }
         }
     }
 }
 
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>DumpGenerator</span> {
-    <span class='ident'>code</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DumpGenerator</span> {
+    <span class="ident">code</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>DumpGenerator</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>DumpGenerator</span> {
-            <span class='ident'>code</span>: <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='number'>1024</span>),
+<span class="kw">impl</span> <span class="ident">DumpGenerator</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">DumpGenerator</span> {
+            <span class="ident">code</span>: <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">1024</span>),
         }
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>consume</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
-        <span class='comment'>// Original strings were unicode, numbers are all ASCII,</span>
-        <span class='comment'>// therefore this is safe.</span>
-        <span class='kw'>unsafe</span> { <span class='ident'>String</span>::<span class='ident'>from_utf8_unchecked</span>(<span class='self'>self</span>.<span class='ident'>code</span>) }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">consume</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+        <span class="comment">// Original strings were unicode, numbers are all ASCII,</span>
+        <span class="comment">// therefore this is safe.</span>
+        <span class="kw">unsafe</span> { <span class="ident">String</span>::<span class="ident">from_utf8_unchecked</span>(<span class="self">self</span>.<span class="ident">code</span>) }
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>Generator</span> <span class='kw'>for</span> <span class='ident'>DumpGenerator</span> {
-    <span class='kw'>type</span> <span class='ident'>T</span> <span class='op'>=</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span> <span class="ident">Generator</span> <span class="kw">for</span> <span class="ident">DumpGenerator</span> {
+    <span class="kw">type</span> <span class="ident">T</span> <span class="op">=</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>slice</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>code</span>, <span class='ident'>slice</span>);
-        <span class='prelude-val'>Ok</span>(())
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">code</span>, <span class="ident">slice</span>);
+        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_char</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>ch</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>code</span>.<span class='ident'>push</span>(<span class='ident'>ch</span>);
-        <span class='prelude-val'>Ok</span>(())
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_char</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">push</span>(<span class="ident">ch</span>);
+        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>get_writer</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>code</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">get_writer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">code</span>
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_min</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, _: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>min</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>code</span>.<span class='ident'>push</span>(<span class='ident'>min</span>);
-        <span class='prelude-val'>Ok</span>(())
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_min</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, _: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">min</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">push</span>(<span class="ident">min</span>);
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PrettyGenerator</span> {
-    <span class='ident'>code</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>,
-    <span class='ident'>dent</span>: <span class='ident'>u16</span>,
-    <span class='ident'>spaces_per_indent</span>: <span class='ident'>u16</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrettyGenerator</span> {
+    <span class="ident">code</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="ident">dent</span>: <span class="ident">u16</span>,
+    <span class="ident">spaces_per_indent</span>: <span class="ident">u16</span>,
 }
 
-<span class='kw'>impl</span> <span class='ident'>PrettyGenerator</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>spaces</span>: <span class='ident'>u16</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>PrettyGenerator</span> {
-            <span class='ident'>code</span>: <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='number'>1024</span>),
-            <span class='ident'>dent</span>: <span class='number'>0</span>,
-            <span class='ident'>spaces_per_indent</span>: <span class='ident'>spaces</span>
+<span class="kw">impl</span> <span class="ident">PrettyGenerator</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">spaces</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">PrettyGenerator</span> {
+            <span class="ident">code</span>: <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">1024</span>),
+            <span class="ident">dent</span>: <span class="number">0</span>,
+            <span class="ident">spaces_per_indent</span>: <span class="ident">spaces</span>
         }
     }
 
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>consume</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> {
-        <span class='kw'>unsafe</span> { <span class='ident'>String</span>::<span class='ident'>from_utf8_unchecked</span>(<span class='self'>self</span>.<span class='ident'>code</span>) }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">consume</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+        <span class="kw">unsafe</span> { <span class="ident">String</span>::<span class="ident">from_utf8_unchecked</span>(<span class="self">self</span>.<span class="ident">code</span>) }
     }
 }
 
-<span class='kw'>impl</span> <span class='ident'>Generator</span> <span class='kw'>for</span> <span class='ident'>PrettyGenerator</span> {
-    <span class='kw'>type</span> <span class='ident'>T</span> <span class='op'>=</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>;
+<span class="kw">impl</span> <span class="ident">Generator</span> <span class="kw">for</span> <span class="ident">PrettyGenerator</span> {
+    <span class="kw">type</span> <span class="ident">T</span> <span class="op">=</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>slice</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>code</span>, <span class='ident'>slice</span>);
-        <span class='prelude-val'>Ok</span>(())
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">code</span>, <span class="ident">slice</span>);
+        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_char</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>ch</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>code</span>.<span class='ident'>push</span>(<span class='ident'>ch</span>);
-        <span class='prelude-val'>Ok</span>(())
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_char</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">push</span>(<span class="ident">ch</span>);
+        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>get_writer</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>code</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">get_writer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">code</span>
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_min</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>slice</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], _: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='ident'>extend_from_slice</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>code</span>, <span class='ident'>slice</span>);
-        <span class='prelude-val'>Ok</span>(())
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_min</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], _: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">code</span>, <span class="ident">slice</span>);
+        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class='kw'>fn</span> <span class='ident'>new_line</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>code</span>.<span class='ident'>push</span>(<span class='string'>b&#39;\n&#39;</span>);
-        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..(<span class='self'>self</span>.<span class='ident'>dent</span> <span class='op'>*</span> <span class='self'>self</span>.<span class='ident'>spaces_per_indent</span>) {
-            <span class='self'>self</span>.<span class='ident'>code</span>.<span class='ident'>push</span>(<span class='string'>b&#39; &#39;</span>);
+    <span class="kw">fn</span> <span class="ident">new_line</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">push</span>(<span class="string">b&#39;\n&#39;</span>);
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="number">0</span>..(<span class="self">self</span>.<span class="ident">dent</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">spaces_per_indent</span>) {
+            <span class="self">self</span>.<span class="ident">code</span>.<span class="ident">push</span>(<span class="string">b&#39; &#39;</span>);
         }
-        <span class='prelude-val'>Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 
-    <span class='kw'>fn</span> <span class='ident'>indent</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='self'>self</span>.<span class='ident'>dent</span> <span class='op'>+=</span> <span class='number'>1</span>;
+    <span class="kw">fn</span> <span class="ident">indent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">dent</span> <span class="op">+=</span> <span class="number">1</span>;
     }
 
-    <span class='kw'>fn</span> <span class='ident'>dedent</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='self'>self</span>.<span class='ident'>dent</span> <span class='op'>-=</span> <span class='number'>1</span>;
-    }
-}
-
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>WriterGenerator</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Write</span><span class='op'>&gt;</span> {
-    <span class='ident'>writer</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>W</span>
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='ident'>WriterGenerator</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>W</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Write</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>writer</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>W</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>WriterGenerator</span> {
-            <span class='ident'>writer</span>: <span class='ident'>writer</span>
-        }
+    <span class="kw">fn</span> <span class="ident">dedent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">dent</span> <span class="op">-=</span> <span class="number">1</span>;
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='ident'>Generator</span> <span class='kw'>for</span> <span class='ident'>WriterGenerator</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>W</span>: <span class='ident'>Write</span> {
-    <span class='kw'>type</span> <span class='ident'>T</span> <span class='op'>=</span> <span class='ident'>W</span>;
-
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>get_writer</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>W</span> {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>writer</span>
-    }
-
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_min</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, _: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>min</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>writer</span>.<span class='ident'>write_all</span>(<span class='kw-2'>&amp;</span>[<span class='ident'>min</span>])
-    }
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WriterGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Write</span><span class="op">&gt;</span> {
+    <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">W</span>
 }
 
-
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PrettyWriterGenerator</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Write</span><span class='op'>&gt;</span> {
-    <span class='ident'>writer</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>W</span>,
-    <span class='ident'>dent</span>: <span class='ident'>u16</span>,
-    <span class='ident'>spaces_per_indent</span>: <span class='ident'>u16</span>,
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='ident'>PrettyWriterGenerator</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>W</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Write</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>writer</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>W</span>, <span class='ident'>spaces</span>: <span class='ident'>u16</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='ident'>PrettyWriterGenerator</span> {
-            <span class='ident'>writer</span>: <span class='ident'>writer</span>,
-            <span class='ident'>dent</span>: <span class='number'>0</span>,
-            <span class='ident'>spaces_per_indent</span>: <span class='ident'>spaces</span>,
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">WriterGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">W</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Write</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">W</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">WriterGenerator</span> {
+            <span class="ident">writer</span>: <span class="ident">writer</span>
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='ident'>Generator</span> <span class='kw'>for</span> <span class='ident'>PrettyWriterGenerator</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>W</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>W</span>: <span class='ident'>Write</span> {
-    <span class='kw'>type</span> <span class='ident'>T</span> <span class='op'>=</span> <span class='ident'>W</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">Generator</span> <span class="kw">for</span> <span class="ident">WriterGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">W</span>: <span class="ident">Write</span> {
+    <span class="kw">type</span> <span class="ident">T</span> <span class="op">=</span> <span class="ident">W</span>;
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>get_writer</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>W</span> {
-        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>writer</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">get_writer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span> {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">writer</span>
     }
 
-    <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
-    <span class='kw'>fn</span> <span class='ident'>write_min</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>slice</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], _: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>writer</span>.<span class='ident'>write_all</span>(<span class='ident'>slice</span>)
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>new_line</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>io</span>::<span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
-        <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39;\n&#39;</span>));
-        <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..(<span class='self'>self</span>.<span class='ident'>dent</span> <span class='op'>*</span> <span class='self'>self</span>.<span class='ident'>spaces_per_indent</span>) {
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>write_char</span>(<span class='string'>b&#39; &#39;</span>));
-        }
-        <span class='prelude-val'>Ok</span>(())
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>indent</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='self'>self</span>.<span class='ident'>dent</span> <span class='op'>+=</span> <span class='number'>1</span>;
-    }
-
-    <span class='kw'>fn</span> <span class='ident'>dedent</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='self'>self</span>.<span class='ident'>dent</span> <span class='op'>-=</span> <span class='number'>1</span>;
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_min</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, _: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">min</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span>[<span class="ident">min</span>])
     }
 }
 
-<span class='comment'>// From: https://github.com/dtolnay/fastwrite/blob/master/src/lib.rs#L68</span>
-<span class='comment'>//</span>
-<span class='comment'>// LLVM is not able to lower `Vec::extend_from_slice` into a memcpy, so this</span>
-<span class='comment'>// helps eke out that last bit of performance.</span>
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>fn</span> <span class='ident'>extend_from_slice</span>(<span class='ident'>dst</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>, <span class='ident'>src</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>]) {
-    <span class='kw'>let</span> <span class='ident'>dst_len</span> <span class='op'>=</span> <span class='ident'>dst</span>.<span class='ident'>len</span>();
-    <span class='kw'>let</span> <span class='ident'>src_len</span> <span class='op'>=</span> <span class='ident'>src</span>.<span class='ident'>len</span>();
 
-    <span class='ident'>dst</span>.<span class='ident'>reserve</span>(<span class='ident'>src_len</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrettyWriterGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Write</span><span class="op">&gt;</span> {
+    <span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">W</span>,
+    <span class="ident">dent</span>: <span class="ident">u16</span>,
+    <span class="ident">spaces_per_indent</span>: <span class="ident">u16</span>,
+}
 
-    <span class='kw'>unsafe</span> {
-        <span class='comment'>// We would have failed if `reserve` overflowed</span>
-        <span class='ident'>dst</span>.<span class='ident'>set_len</span>(<span class='ident'>dst_len</span> <span class='op'>+</span> <span class='ident'>src_len</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">PrettyWriterGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">W</span>: <span class="lifetime">&#39;a</span> <span class="op">+</span> <span class="ident">Write</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">writer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">W</span>, <span class="ident">spaces</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">PrettyWriterGenerator</span> {
+            <span class="ident">writer</span>: <span class="ident">writer</span>,
+            <span class="ident">dent</span>: <span class="number">0</span>,
+            <span class="ident">spaces_per_indent</span>: <span class="ident">spaces</span>,
+        }
+    }
+}
 
-        <span class='ident'>ptr</span>::<span class='ident'>copy_nonoverlapping</span>(
-            <span class='ident'>src</span>.<span class='ident'>as_ptr</span>(),
-            <span class='ident'>dst</span>.<span class='ident'>as_mut_ptr</span>().<span class='ident'>offset</span>(<span class='ident'>dst_len</span> <span class='kw'>as</span> <span class='ident'>isize</span>),
-            <span class='ident'>src_len</span>);
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">Generator</span> <span class="kw">for</span> <span class="ident">PrettyWriterGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">W</span>: <span class="ident">Write</span> {
+    <span class="kw">type</span> <span class="ident">T</span> <span class="op">=</span> <span class="ident">W</span>;
+
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">get_writer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">W</span> {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">writer</span>
+    }
+
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">write_min</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], _: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="ident">slice</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">new_line</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39;\n&#39;</span>));
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="number">0</span>..(<span class="self">self</span>.<span class="ident">dent</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">spaces_per_indent</span>) {
+            <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">write_char</span>(<span class="string">b&#39; &#39;</span>));
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">fn</span> <span class="ident">indent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">dent</span> <span class="op">+=</span> <span class="number">1</span>;
+    }
+
+    <span class="kw">fn</span> <span class="ident">dedent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">dent</span> <span class="op">-=</span> <span class="number">1</span>;
+    }
+}
+
+<span class="comment">// From: https://github.com/dtolnay/fastwrite/blob/master/src/lib.rs#L68</span>
+<span class="comment">//</span>
+<span class="comment">// LLVM is not able to lower `Vec::extend_from_slice` into a memcpy, so this</span>
+<span class="comment">// helps eke out that last bit of performance.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">fn</span> <span class="ident">extend_from_slice</span>(<span class="ident">dst</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">src</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
+    <span class="kw">let</span> <span class="ident">dst_len</span> <span class="op">=</span> <span class="ident">dst</span>.<span class="ident">len</span>();
+    <span class="kw">let</span> <span class="ident">src_len</span> <span class="op">=</span> <span class="ident">src</span>.<span class="ident">len</span>();
+
+    <span class="ident">dst</span>.<span class="ident">reserve</span>(<span class="ident">src_len</span>);
+
+    <span class="kw">unsafe</span> {
+        <span class="comment">// We would have failed if `reserve` overflowed</span>
+        <span class="ident">dst</span>.<span class="ident">set_len</span>(<span class="ident">dst_len</span> <span class="op">+</span> <span class="ident">src_len</span>);
+
+        <span class="ident">ptr</span>::<span class="ident">copy_nonoverlapping</span>(
+            <span class="ident">src</span>.<span class="ident">as_ptr</span>(),
+            <span class="ident">dst</span>.<span class="ident">as_mut_ptr</span>().<span class="ident">offset</span>(<span class="ident">dst_len</span> <span class="kw">as</span> <span class="ident">isize</span>),
+            <span class="ident">src_len</span>);
     }
 }
 </pre>
