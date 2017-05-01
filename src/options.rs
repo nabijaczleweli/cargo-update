@@ -33,7 +33,8 @@ pub struct Options {
     pub install: bool,
     /// Update all packages. Default: `false`
     pub force: bool,
-    /// The `cargo` home directory. Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    /// The `.crates.toml` file in the `cargo` home directory.
+    /// Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub crates_file: (String, PathBuf),
     /// The `cargo` home directory. Default: `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub cargo_dir: (String, PathBuf),
