@@ -20,6 +20,7 @@ Exit values and possible errors:
 
     -1 - cargo subprocess was terminated by a signal (Linux-only)
     1  - option parsing error
+    2  - registry repository error
     X  - bubbled-up cargo install exit value
 
 ## OPTIONS

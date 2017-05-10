@@ -8,6 +8,7 @@
 
 use std::path::{PathBuf, Path};
 use semver::Version as Semver;
+use git2::{Repository, Tree};
 use std::fs::{self, File};
 use std::io::Read;
 use regex::Regex;
@@ -35,24 +36,9 @@ lazy_static! {
 /// ```
 /// # extern crate cargo_update;
 /// # extern crate semver;
-/// # use cargo_update::ops::{MainRepoPackage, get_index_path};
+/// # use cargo_update::ops::MainRepoPackage;
 /// # use semver::Version as Semver;
-/// # use std::fs::{self, File};
-/// # use std::io::Write;
-/// # use std::env;
 /// # fn main() {
-/// # let mut cargo_dir = env::temp_dir();
-/// # cargo_dir.push("cargo_update-doctest");
-/// # let _ = fs::create_dir(&cargo_dir);
-/// # cargo_dir.push("MainRepoPackage-0");
-/// # let _ = fs::create_dir(&cargo_dir);
-/// # File::create(["registry", "index", "github.com-1ecc6299db9ec823", "ra", "ce"].into_iter()
-/// #     .fold(cargo_dir.clone(), |pb, chunk| {
-/// #         let _ = fs::create_dir(pb.join(chunk));
-/// #         pb.join(chunk)
-/// #     }).join("racer"))
-/// # .unwrap().write_all(br#"{"vers": "1.2.10", "yanked": false}"#).unwrap();
-/// let registry = get_index_path(&cargo_dir);
 /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
 /// let mut package = MainRepoPackage::parse(package_s).unwrap();
 /// assert_eq!(package,
@@ -62,7 +48,10 @@ lazy_static! {
 ///                newest_version: None,
 ///            });
 ///
-/// package.pull_version(&registry);
+/// # /*
+/// package.pull_version(&registry_tree, &registry);
+/// # */
+/// # package.newest_version = Some(Semver::parse("1.2.11").unwrap());
 /// assert!(package.newest_version.is_some());
 /// # }
 /// ```
@@ -137,34 +126,9 @@ impl MainRepoPackage {
         })
     }
 
-    /// Download the version list for this crate off the main [`crates.io`](https://crates.io) registry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use cargo_update::ops::{MainRepoPackage, get_index_path};
-    /// # use std::fs::{self, File};
-    /// # use std::io::Write;
-    /// # use std::env;
-    /// # let mut cargo_dir = env::temp_dir();
-    /// # cargo_dir.push("cargo_update-doctest");
-    /// # let _ = fs::create_dir(&cargo_dir);
-    /// # cargo_dir.push("MainRepoPackage-pull_version-0");
-    /// # let _ = fs::create_dir(&cargo_dir);
-    /// # File::create(["registry", "index", "github.com-1ecc6299db9ec823", "ra", "ce"].into_iter()
-    /// #     .fold(cargo_dir.clone(), |pb, chunk| {
-    /// #         let _ = fs::create_dir(pb.join(chunk));
-    /// #         pb.join(chunk)
-    /// #     }).join("racer"))
-    /// # .unwrap().write_all(br#"{"vers": "1.2.10", "yanked": false}"#).unwrap();
-    /// let registry = get_index_path(&cargo_dir);
-    /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
-    /// let mut package = MainRepoPackage::parse(package_s).unwrap();
-    /// package.pull_version(&registry);
-    /// assert!(package.newest_version.is_some());
-    /// ```
-    pub fn pull_version(&mut self, registry: &Path) {
-        let vers = crate_versions(&find_package_data(&self.name, registry).unwrap());
+    /// Download the version list for this crate off the specified repository tree.
+    pub fn pull_version<'t>(&mut self, registry: &Tree<'t>, registry_parent: &'t Repository) {
+        let vers = crate_versions(&mut &find_package_data(&self.name, registry, registry_parent).unwrap()[..]);
         self.newest_version = vers.into_iter().max();
     }
 
@@ -299,18 +263,18 @@ pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &[String],
 ///
 /// ```
 /// # use cargo_update::ops::crate_versions;
-/// # use std::path::PathBuf;
-/// # let desc_path = PathBuf::from("test-data/checksums-versions.json");
-/// let versions = crate_versions(&desc_path);
+/// # use std::fs::File;
+/// # let desc_path = "test-data/checksums-versions.json";
+/// let versions = crate_versions(&mut File::open(desc_path).unwrap());
 ///
 /// println!("Released versions of checksums:");
 /// for ver in &versions {
 ///     println!("  {}", ver);
 /// }
 /// ```
-pub fn crate_versions(package_desc: &Path) -> Vec<Semver> {
+pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
     let mut buf = String::new();
-    File::open(package_desc).unwrap().read_to_string(&mut buf).unwrap();
+    package_desc.read_to_string(&mut buf).unwrap();
 
     buf.lines()
         .map(|p| json::parse(p).unwrap())
@@ -349,41 +313,42 @@ pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
         .path()
 }
 
-/// Find a package in the cargo index.
-///
-/// # Examples
-///
-/// ```
-/// # use cargo_update::ops::find_package_data;
-/// # use std::fs::{self, File};
-/// # use std::env::temp_dir;
-/// # let mut index_dir = temp_dir();
-/// # let _ = fs::create_dir(&index_dir);
-/// # index_dir.push("cargo_update-doctest");
-/// # let _ = fs::create_dir(&index_dir);
-/// # index_dir.push("find_package_data-0");
-/// # let _ = fs::create_dir(&index_dir);
-/// # let _ = fs::create_dir_all(index_dir.join("ca").join("rg"));
-/// # File::create(index_dir.join("ca").join("rg").join("cargo")).unwrap();
-/// # let cargo =
-/// find_package_data("cargo", &index_dir);
-/// # assert_eq!(cargo, Some(index_dir.join("ca").join("rg").join("cargo")));
-/// ```
-pub fn find_package_data(cratename: &str, index_dir: &Path) -> Option<PathBuf> {
-    let maybepath = |pb: PathBuf| if pb.exists() { Some(pb) } else { None };
+/// Find package data in the specified cargo index tree.
+pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Vec<u8>> {
+    macro_rules! try_opt {
+        ($expr:expr) => {
+            match $expr {
+                Some(e) => e,
+                None => return None,
+            }
+        }
+    }
 
+    let clen = cratename.len().to_string();
+    let mut elems = Vec::new();
+    if cratename.len() <= 3 {
+        elems.push(&clen[..]);
+    }
     match cratename.len() {
         0 => panic!("0-length cratename"),
-        1 | 2 => maybepath(index_dir.join(cratename.len().to_string())).and_then(|pb| maybepath(pb.join(cratename))),
-        3 => {
-            maybepath(index_dir.join("3"))
-                .and_then(|pb| maybepath(pb.join(&cratename[0..1])))
-                .and_then(|pb| maybepath(pb.join(cratename)))
-        }
+        1 | 2 => {}
+        3 => elems.push(&cratename[0..1]),
         _ => {
-            maybepath(index_dir.join(&cratename[0..2]))
-                .and_then(|pb| maybepath(pb.join(&cratename[2..4])))
-                .and_then(|pb| maybepath(pb.join(cratename)))
+            elems.push(&cratename[0..2]);
+            elems.push(&cratename[2..4]);
         }
+    }
+    elems.push(cratename);
+
+    let ent = try_opt!(registry.get_name(elems[0]));
+    let obj = try_opt!(ent.to_object(registry_parent).ok());
+    let ent = try_opt!(try_opt!(obj.as_tree()).get_name(elems[1]));
+    let obj = try_opt!(ent.to_object(registry_parent).ok());
+    if elems.len() == 3 {
+        let ent = try_opt!(try_opt!(obj.as_tree()).get_name(elems[2]));
+        let obj = try_opt!(ent.to_object(registry_parent).ok());
+        Some(try_opt!(obj.as_blob()).content().into())
+    } else {
+        Some(try_opt!(obj.as_blob()).content().into())
     }
 }

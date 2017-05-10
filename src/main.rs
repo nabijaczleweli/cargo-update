@@ -2,12 +2,14 @@ extern crate cargo_update;
 extern crate tabwriter;
 extern crate lazysort;
 extern crate regex;
+extern crate git2;
 
 use std::process::{Command, exit};
 use std::io::{Write, stdout};
 use std::fs::{self, File};
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
+use git2::Repository;
 use regex::Regex;
 use std::env;
 
@@ -48,9 +50,17 @@ fn actual_main() -> Result<(), i32> {
     }
 
     let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
+    let registry_repo = try!(Repository::open(&registry).map_err(|_| {
+        println!("Failed to open registry repository at {}.", registry.display());
+        2
+    }));
+    let latest_registry = try!(registry_repo.revparse_single("master").map_err(|_| {
+        println!("Failed read master branch of registry repositry at {}.", registry.display());
+        2
+    }));
 
     for package in &mut packages {
-        package.pull_version(&registry);
+        package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(), &registry_repo);
     }
 
     {

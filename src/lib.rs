@@ -255,6 +255,7 @@ extern crate lazy_static;
 extern crate array_tool;
 extern crate semver;
 extern crate regex;
+extern crate git2;
 #[macro_use]
 extern crate clap;
 extern crate toml;
