@@ -54,7 +54,7 @@ fn actual_main() -> Result<(), i32> {
         println!("Failed to open registry repository at {}.", registry.display());
         2
     }));
-    let latest_registry = try!(registry_repo.revparse_single("master").map_err(|_| {
+    let latest_registry = try!(registry_repo.revparse_single("origin/master").map_err(|_| {
         println!("Failed read master branch of registry repositry at {}.", registry.display());
         2
     }));
