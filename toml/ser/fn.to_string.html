@@ -48,12 +48,45 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../src/toml/ser.rs.html#53-59' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../../src/toml/ser.rs.html#88-94' title='goto source code'>[src]</a></span></h1>
 <pre class='rust fn'>pub fn to_string&lt;T:&nbsp;?<a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>&gt;(value: &amp;T) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/collections/string/struct.String.html" title="struct collections::string::String">String</a>, <a class="enum" href="../../toml/ser/enum.Error.html" title="enum toml::ser::Error">Error</a>&gt; <span class="where fmt-newline">where T: <a class="trait" href="../../serde/ser/trait.Serialize.html" title="trait serde::ser::Serialize">Serialize</a></span></pre><div class='docblock'><p>Serialize the given data structure as a String of TOML.</p>
 
 <p>Serialization can fail if <code>T</code>&#39;s implementation of <code>Serialize</code> decides to
 fail, if <code>T</code> contains a map with non-string keys, or if <code>T</code> attempts to
 serialize an unsupported datatype such as an enum, tuple, or tuple struct.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_derive</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">toml</span>;
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Config</span> {
+    <span class="ident">database</span>: <span class="ident">Database</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>)]</span>
+<span class="kw">struct</span> <span class="ident">Database</span> {
+    <span class="ident">ip</span>: <span class="ident">String</span>,
+    <span class="ident">port</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>,
+    <span class="ident">connection_max</span>: <span class="ident">u32</span>,
+    <span class="ident">enabled</span>: <span class="ident">bool</span>,
+}
+
+<span class="kw">fn</span> <span class="ident">main</span>() {
+    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">Config</span> {
+        <span class="ident">database</span>: <span class="ident">Database</span> {
+            <span class="ident">ip</span>: <span class="string">&quot;192.168.1.1&quot;</span>.<span class="ident">to_string</span>(),
+            <span class="ident">port</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="number">8001</span>, <span class="number">8002</span>, <span class="number">8003</span>],
+            <span class="ident">connection_max</span>: <span class="number">5000</span>,
+            <span class="ident">enabled</span>: <span class="bool-val">false</span>,
+        },
+    };
+ 
+    <span class="kw">let</span> <span class="ident">toml</span> <span class="op">=</span> <span class="ident">toml</span>::<span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>).<span class="ident">unwrap</span>();
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">toml</span>)
+}</pre>
 </div></section>
     <section id='search' class="content hidden"></section>
 
