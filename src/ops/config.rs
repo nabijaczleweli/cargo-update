@@ -100,7 +100,7 @@ impl PackageConfig {
     /// ```
     pub fn cargo_args(&self) -> Vec<String> {
         let mut res = vec![];
-        if let Some(ref t) = self.toolchain.as_ref() {
+        if let Some(ref t) = self.toolchain {
             res.push(format!("+{}", t));
         }
         res.push("install".to_string());
@@ -150,15 +150,15 @@ impl PackageConfig {
     ///            });
     /// ```
     pub fn execute_operations<'o, O: IntoIterator<Item = &'o ConfigOperation>>(&mut self, ops: O) {
-        for op in ops.into_iter() {
-            match op {
-                &ConfigOperation::SetToolchain(ref tchn) => self.toolchain = Some(tchn.clone()),
-                &ConfigOperation::RemoveToolchain => self.toolchain = None,
-                &ConfigOperation::DefaultFeatures(f) => self.default_features = f,
-                &ConfigOperation::AddFeature(ref feat) => {
+        for op in ops {
+            match *op {
+                ConfigOperation::SetToolchain(ref tchn) => self.toolchain = Some(tchn.clone()),
+                ConfigOperation::RemoveToolchain => self.toolchain = None,
+                ConfigOperation::DefaultFeatures(f) => self.default_features = f,
+                ConfigOperation::AddFeature(ref feat) => {
                     self.features.insert(feat.clone());
                 }
-                &ConfigOperation::RemoveFeature(ref feat) => {
+                ConfigOperation::RemoveFeature(ref feat) => {
                     self.features.remove(feat);
                 }
             }

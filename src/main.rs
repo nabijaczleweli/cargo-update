@@ -42,7 +42,7 @@ fn actual_main() -> Result<(), i32> {
         // Searching for "" will just update the registry
         let search_res = Command::new("cargo").arg("search").arg("").status().unwrap();
         if !search_res.success() {
-            try!(Err(search_res.code().unwrap_or(-1)));
+            return Err(search_res.code().unwrap_or(-1));
         }
         println!("");
     }
@@ -58,7 +58,7 @@ fn actual_main() -> Result<(), i32> {
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
         for package in packages.iter().sorted_by(|lhs, rhs| (!lhs.needs_update()).cmp(&!rhs.needs_update())) {
             write!(out, "{}\t", package.name).unwrap();
-            if let Some(ref v) = package.version.as_ref() {
+            if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
             }
             writeln!(out,
@@ -94,7 +94,7 @@ fn actual_main() -> Result<(), i32> {
                         File::create(cur_exe).unwrap();
                     }
 
-                    let install_res = if let Some(ref cfg) = configuration.get(&package.name) {
+                    let install_res = if let Some(cfg) = configuration.get(&package.name) {
                         Command::new("cargo").args(cfg.cargo_args()).arg(&package.name).status().unwrap()
                     } else {
                         Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap()
@@ -125,7 +125,7 @@ fn actual_main() -> Result<(), i32> {
             println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
             if !errored.is_empty() && result.is_some() {
                 println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
-                try!(Err(result.unwrap()));
+                return Err(result.unwrap());
             }
         } else {
             println!("No packages need updating.");

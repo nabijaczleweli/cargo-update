@@ -29,9 +29,9 @@ fn actual_main() -> Result<(), i32> {
         try!(cargo_update::ops::PackageConfig::write(&configuration, &config_file));
     }
 
-    if let Some(ref cfg) = configuration.get(&opts.package) {
+    if let Some(cfg) = configuration.get(&opts.package) {
         let mut out = TabWriter::new(stdout());
-        if let Some(ref t) = cfg.toolchain.as_ref() {
+        if let Some(ref t) = cfg.toolchain {
             writeln!(out, "Toolchain\t{}", t).unwrap();
         }
         writeln!(out, "Default features\t{}", cfg.default_features).unwrap();
