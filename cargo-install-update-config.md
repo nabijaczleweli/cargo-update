@@ -68,7 +68,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            ven &lt;<vendethiel@hotmail.fr>&gt;,
            Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;,
            Liigo &lt;<liigo@qq.com>&gt;,
-       and azyobuzin &lt;<azyobuzin@users.sourceforge.jp>&gt;
+           azyobuzin &lt;<azyobuzin@users.sourceforge.jp>&gt;,
+       and Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;
 
 ## REPORTING BUGS
 
