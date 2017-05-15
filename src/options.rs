@@ -63,6 +63,7 @@ impl Options {
                 .author(crate_authors!("\n"))
                 .about("A cargo subcommand for checking and applying updates to installed executables")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
+                            .visible_alias("root")
                             .validator(cargo_dir_validator),
                         Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
