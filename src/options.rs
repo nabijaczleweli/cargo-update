@@ -84,7 +84,7 @@ impl Options {
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
             crates_file: match matches.value_of("cargo-dir") {
-                Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
+                Some(dir) => (format!("{}/.crates.toml", dir), fs::canonicalize(dir).unwrap().join(".crates.toml")),
                 None => {
                     match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
                         Ok(ch) => ("$CARGO_INSTALL_ROOT/.crates.toml".to_string(), ch.join(".crates.toml")),
@@ -122,7 +122,7 @@ impl ConfigOptions {
         let cdir = cargo_dir();
         ConfigOptions {
             crates_file: match matches.value_of("cargo-dir") {
-                Some(dirs) => (dirs.to_string(), fs::canonicalize(dirs).unwrap()),
+                Some(dir) => (format!("{}/.crates.toml", dir), fs::canonicalize(dir).unwrap().join(".crates.toml")),
                 None => {
                     match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
                         Ok(ch) => ("$CARGO_INSTALL_ROOT/.crates.toml".to_string(), ch.join(".crates.toml")),
