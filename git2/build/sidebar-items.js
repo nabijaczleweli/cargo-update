@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CheckoutBuilder","A builder struct for configuring checkouts of a repository."],["RepoBuilder","A builder struct which is used to build configuration for cloning a new git repository."]],"type":[["Notify","Checkout notifications callback."],["Progress","Checkout progress notification callback."]]});

@@ -1,4 +1,5 @@
 (function() {var implementors = {};
+implementors["cargo_update"] = [];
 implementors["libc"] = [];
 implementors["rand"] = [];
 implementors["regex_syntax"] = [];

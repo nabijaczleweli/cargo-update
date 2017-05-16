@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `git2` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, git2">
+
+    <title>git2 - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'git2', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>git2</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/git2/lib.rs.html#1-1091' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'>
+<h1 id='libgit2-bindings-for-rust' class='section-header'><a href='#libgit2-bindings-for-rust'>libgit2 bindings for Rust</a></h1>
+<p>This library contains bindings to the <a href="https://libgit2.github.com/">libgit2</a> C library which is used
+to manage git repositories. The library itself is a work in progress and is
+likely lacking some bindings here and there, so be warned.</p>
+
+<p>The git2-rs library strives to be as close to libgit2 as possible, but also
+strives to make using libgit2 as safe as possible. All resource management
+is automatic as well as adding strong types to all interfaces (including
+<code>Result</code>)</p>
+
+<h2 id='creating-a-repository' class='section-header'><a href='#creating-a-repository'>Creating a <code>Repository</code></a></h2>
+<p>The <code>Repository</code> is the source from which almost all other objects in git-rs
+are spawned. A repository can be created through opening, initializing, or
+cloning.</p>
+
+<h3 id='initializing-a-new-repository' class='section-header'><a href='#initializing-a-new-repository'>Initializing a new repository</a></h3>
+<p>The <code>init</code> method will create a new repository, assuming one does not
+already exist.</p>
+
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">git2</span>::<span class="ident">Repository</span>;
+
+<span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Repository</span>::<span class="ident">init</span>(<span class="string">&quot;/path/to/a/repo&quot;</span>) {
+    <span class="prelude-val">Ok</span>(<span class="ident">repo</span>) <span class="op">=&gt;</span> <span class="ident">repo</span>,
+    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;failed to init: {}&quot;</span>, <span class="ident">e</span>),
+};</pre>
+
+<h3 id='opening-an-existing-repository' class='section-header'><a href='#opening-an-existing-repository'>Opening an existing repository</a></h3>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">git2</span>::<span class="ident">Repository</span>;
+
+<span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Repository</span>::<span class="ident">open</span>(<span class="string">&quot;/path/to/a/repo&quot;</span>) {
+    <span class="prelude-val">Ok</span>(<span class="ident">repo</span>) <span class="op">=&gt;</span> <span class="ident">repo</span>,
+    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;failed to open: {}&quot;</span>, <span class="ident">e</span>),
+};</pre>
+
+<h3 id='cloning-an-existing-repository' class='section-header'><a href='#cloning-an-existing-repository'>Cloning an existing repository</a></h3>
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">git2</span>::<span class="ident">Repository</span>;
+
+<span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="string">&quot;https://github.com/alexcrichton/git2-rs&quot;</span>;
+<span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">Repository</span>::<span class="ident">clone</span>(<span class="ident">url</span>, <span class="string">&quot;/path/to/a/repo&quot;</span>) {
+    <span class="prelude-val">Ok</span>(<span class="ident">repo</span>) <span class="op">=&gt;</span> <span class="ident">repo</span>,
+    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;failed to clone: {}&quot;</span>, <span class="ident">e</span>),
+};</pre>
+
+<h2 id='working-with-a-repository' class='section-header'><a href='#working-with-a-repository'>Working with a <code>Repository</code></a></h2>
+<p>All deriviative objects, references, etc are attached to the lifetime of the
+source <code>Repository</code>, to ensure that they do not outlive the repository
+itself.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="build/index.html"
+                                  title='mod git2::build'>build</a></td>
+                           <td class='docblock-short'>
+                                <p>Builder-pattern objects for configuration various git operations.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="cert/index.html"
+                                  title='mod git2::cert'>cert</a></td>
+                           <td class='docblock-short'>
+                                <p>Certificate types which are passed to <code>CertificateCheck</code> in
+<code>RemoteCallbacks</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="oid_array/index.html"
+                                  title='mod git2::oid_array'>oid_array</a></td>
+                           <td class='docblock-short'>
+                                <p>Bindings to libgit2&#39;s raw git_strarray type</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="string_array/index.html"
+                                  title='mod git2::string_array'>string_array</a></td>
+                           <td class='docblock-short'>
+                                <p>Bindings to libgit2&#39;s raw git_strarray type</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="transport/index.html"
+                                  title='mod git2::transport'>transport</a></td>
+                           <td class='docblock-short'>
+                                <p>Interfaces for adding custom transports to libgit2</p>
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.AnnotatedCommit.html"
+                                  title='struct git2::AnnotatedCommit'>AnnotatedCommit</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent an annotated commit, the input to merge and rebase.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Blame.html"
+                                  title='struct git2::Blame'>Blame</a></td>
+                           <td class='docblock-short'>
+                                <p>Opaque structure to hold blame results.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BlameHunk.html"
+                                  title='struct git2::BlameHunk'>BlameHunk</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure that represents a blame hunk.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BlameIter.html"
+                                  title='struct git2::BlameIter'>BlameIter</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the hunks in a blame.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.BlameOptions.html"
+                                  title='struct git2::BlameOptions'>BlameOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Blame options</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Blob.html"
+                                  title='struct git2::Blob'>Blob</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-Git-Objects">blob</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Branch.html"
+                                  title='struct git2::Branch'>Branch</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Branching-What-a-Branch-Is">branch</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Branches.html"
+                                  title='struct git2::Branches'>Branches</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the branches inside of a repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Buf.html"
+                                  title='struct git2::Buf'>Buf</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to wrap an intermediate buffer used by libgit2.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CheckoutNotificationType.html"
+                                  title='struct git2::CheckoutNotificationType'>CheckoutNotificationType</a></td>
+                           <td class='docblock-short'>
+                                <p>Types of notifications emitted from checkouts.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Commit.html"
+                                  title='struct git2::Commit'>Commit</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-Git-Objects">commit</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Config.html"
+                                  title='struct git2::Config'>Config</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure representing a git configuration key/value store</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ConfigEntries.html"
+                                  title='struct git2::ConfigEntries'>ConfigEntries</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the <code>ConfigEntry</code> values of a <code>Config</code> structure.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ConfigEntry.html"
+                                  title='struct git2::ConfigEntry'>ConfigEntry</a></td>
+                           <td class='docblock-short'>
+                                <p>A struct representing a certain entry owned by a <code>Config</code> instance.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Cred.html"
+                                  title='struct git2::Cred'>Cred</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent git credentials in libgit2.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CredentialHelper.html"
+                                  title='struct git2::CredentialHelper'>CredentialHelper</a></td>
+                           <td class='docblock-short'>
+                                <p>Management of the gitcredentials(7) interface.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.CredentialType.html"
+                                  title='struct git2::CredentialType'>CredentialType</a></td>
+                           <td class='docblock-short'>
+                                <p>Types of credentials that can be requested by a credential callback.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Deltas.html"
+                                  title='struct git2::Deltas'>Deltas</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the diffs in a delta</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Describe.html"
+                                  title='struct git2::Describe'>Describe</a></td>
+                           <td class='docblock-short'>
+                                <p>The result of a <code>describe</code> operation on either an <code>Describe</code> or a
+<code>Repository</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DescribeFormatOptions.html"
+                                  title='struct git2::DescribeFormatOptions'>DescribeFormatOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options which can be used to customize how a description is formatted.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DescribeOptions.html"
+                                  title='struct git2::DescribeOptions'>DescribeOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options which indicate how a <code>Describe</code> is created.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Diff.html"
+                                  title='struct git2::Diff'>Diff</a></td>
+                           <td class='docblock-short'>
+                                <p>The diff object that contains all individual file deltas.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffBinary.html"
+                                  title='struct git2::DiffBinary'>DiffBinary</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure describing the binary contents of a diff.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffBinaryFile.html"
+                                  title='struct git2::DiffBinaryFile'>DiffBinaryFile</a></td>
+                           <td class='docblock-short'>
+                                <p>The contents of one of the files in a binary diff.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffDelta.html"
+                                  title='struct git2::DiffDelta'>DiffDelta</a></td>
+                           <td class='docblock-short'>
+                                <p>Description of changes to one entry.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffFile.html"
+                                  title='struct git2::DiffFile'>DiffFile</a></td>
+                           <td class='docblock-short'>
+                                <p>Description of one side of a delta.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffFindOptions.html"
+                                  title='struct git2::DiffFindOptions'>DiffFindOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Control behavior of rename and copy detection</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffHunk.html"
+                                  title='struct git2::DiffHunk'>DiffHunk</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure describing a hunk of a diff.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffLine.html"
+                                  title='struct git2::DiffLine'>DiffLine</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure describing a line (or data span) of a diff.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffOptions.html"
+                                  title='struct git2::DiffOptions'>DiffOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure describing options about how the diff should be executed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffStats.html"
+                                  title='struct git2::DiffStats'>DiffStats</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure describing a hunk of a diff.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DiffStatsFormat.html"
+                                  title='struct git2::DiffStatsFormat'>DiffStatsFormat</a></td>
+                           <td class='docblock-short'>
+                                <p>Formatting options for diff stats</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Error.html"
+                                  title='struct git2::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent errors coming out of libgit2.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.FetchOptions.html"
+                                  title='struct git2::FetchOptions'>FetchOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options which can be specified to various fetch operations.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Index.html"
+                                  title='struct git2::Index'>Index</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-Git-Objects">index</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IndexAddOption.html"
+                                  title='struct git2::IndexAddOption'>IndexAddOption</a></td>
+                           <td class='docblock-short'>
+                                <p>Flags for APIs that add files matching pathspec</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IndexEntries.html"
+                                  title='struct git2::IndexEntries'>IndexEntries</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the entries in an index</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IndexEntry.html"
+                                  title='struct git2::IndexEntry'>IndexEntry</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent an entry or a file inside of an index.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IndexEntryExtendedFlag.html"
+                                  title='struct git2::IndexEntryExtendedFlag'>IndexEntryExtendedFlag</a></td>
+                           <td class='docblock-short'>
+                                <p>Flags for the <code>extended_flags</code> field of an IndexEntry.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IndexEntryFlag.html"
+                                  title='struct git2::IndexEntryFlag'>IndexEntryFlag</a></td>
+                           <td class='docblock-short'>
+                                <p>Flags for the <code>flags</code> field of an IndexEntry.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.IndexTime.html"
+                                  title='struct git2::IndexTime'>IndexTime</a></td>
+                           <td class='docblock-short'>
+                                <p>Time structure used in a git index entry.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.MergeOptions.html"
+                                  title='struct git2::MergeOptions'>MergeOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options to specify when merging.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Note.html"
+                                  title='struct git2::Note'>Note</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure representing a <a href="http://git-scm.com/blog/2010/08/25/notes.html">note</a> in git.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Notes.html"
+                                  title='struct git2::Notes'>Notes</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over all of the notes within a repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Object.html"
+                                  title='struct git2::Object'>Object</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-Git-Objects">object</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Oid.html"
+                                  title='struct git2::Oid'>Oid</a></td>
+                           <td class='docblock-short'>
+                                <p>Unique identity of any object (commit, tree, blob, tag).</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PackBuilder.html"
+                                  title='struct git2::PackBuilder'>PackBuilder</a></td>
+                           <td class='docblock-short'>
+                                <p>A builder for creating a packfile</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Parents.html"
+                                  title='struct git2::Parents'>Parents</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the parent commits of a commit.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Patch.html"
+                                  title='struct git2::Patch'>Patch</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure representing the text changes in a single diff delta.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Pathspec.html"
+                                  title='struct git2::Pathspec'>Pathspec</a></td>
+                           <td class='docblock-short'>
+                                <p>Structure representing a compiled pathspec used for matching against various
+structures.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PathspecDiffEntries.html"
+                                  title='struct git2::PathspecDiffEntries'>PathspecDiffEntries</a></td>
+                           <td class='docblock-short'>
+                                <p>Iterator over the matching diff deltas.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PathspecEntries.html"
+                                  title='struct git2::PathspecEntries'>PathspecEntries</a></td>
+                           <td class='docblock-short'>
+                                <p>Iterator over the matched paths in a pathspec.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PathspecFailedEntries.html"
+                                  title='struct git2::PathspecFailedEntries'>PathspecFailedEntries</a></td>
+                           <td class='docblock-short'>
+                                <p>Iterator over the failed list of pathspec items that did not match.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PathspecFlags.html"
+                                  title='struct git2::PathspecFlags'>PathspecFlags</a></td>
+                           <td class='docblock-short'>
+                                <p>...</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PathspecMatchList.html"
+                                  title='struct git2::PathspecMatchList'>PathspecMatchList</a></td>
+                           <td class='docblock-short'>
+                                <p>List of filenames matching a pathspec.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Progress.html"
+                                  title='struct git2::Progress'>Progress</a></td>
+                           <td class='docblock-short'>
+                                <p>Struct representing the progress by an in-flight transfer.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ProxyOptions.html"
+                                  title='struct git2::ProxyOptions'>ProxyOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options which can be specified to various fetch operations.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PushOptions.html"
+                                  title='struct git2::PushOptions'>PushOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options to control the behavior of a git push.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Reference.html"
+                                  title='struct git2::Reference'>Reference</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-Git-References">reference</a>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ReferenceNames.html"
+                                  title='struct git2::ReferenceNames'>ReferenceNames</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the names of references in a repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.References.html"
+                                  title='struct git2::References'>References</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the references in a repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Reflog.html"
+                                  title='struct git2::Reflog'>Reflog</a></td>
+                           <td class='docblock-short'>
+                                <p>A reference log of a git repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ReflogEntry.html"
+                                  title='struct git2::ReflogEntry'>ReflogEntry</a></td>
+                           <td class='docblock-short'>
+                                <p>An entry inside the reflog of a repository</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ReflogIter.html"
+                                  title='struct git2::ReflogIter'>ReflogIter</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the entries inside of a reflog.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Refspec.html"
+                                  title='struct git2::Refspec'>Refspec</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-The-Refspec">refspec</a>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Refspecs.html"
+                                  title='struct git2::Refspecs'>Refspecs</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the refspecs that a remote contains.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Remote.html"
+                                  title='struct git2::Remote'>Remote</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure representing a <a href="http://git-scm.com/book/en/Git-Basics-Working-with-Remotes">remote</a> of a git repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RemoteCallbacks.html"
+                                  title='struct git2::RemoteCallbacks'>RemoteCallbacks</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to contain the callbacks which are invoked when a repository is
+being updated or downloaded.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RemoteConnection.html"
+                                  title='struct git2::RemoteConnection'>RemoteConnection</a></td>
+                           <td class='docblock-short'>
+                                <p>Holds callbacks for a connection to a <code>Remote</code>. Disconnects when dropped</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RemoteHead.html"
+                                  title='struct git2::RemoteHead'>RemoteHead</a></td>
+                           <td class='docblock-short'>
+                                <p>Description of a reference advertised bya remote server, given out on calls
+to <code>list</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Repository.html"
+                                  title='struct git2::Repository'>Repository</a></td>
+                           <td class='docblock-short'>
+                                <p>An owned git repository, representing all state associated with the
+underlying filesystem.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RepositoryInitMode.html"
+                                  title='struct git2::RepositoryInitMode'>RepositoryInitMode</a></td>
+                           <td class='docblock-short'>
+                                <p>Mode options for RepositoryInitOptions</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RepositoryInitOptions.html"
+                                  title='struct git2::RepositoryInitOptions'>RepositoryInitOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options which can be used to configure how a repository is initialized</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RepositoryOpenFlags.html"
+                                  title='struct git2::RepositoryOpenFlags'>RepositoryOpenFlags</a></td>
+                           <td class='docblock-short'>
+                                <p>Flags for <code>Repository::open_ext</code></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.RevparseMode.html"
+                                  title='struct git2::RevparseMode'>RevparseMode</a></td>
+                           <td class='docblock-short'>
+                                <p>Flags for the return value of <code>Repository::revparse</code></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Revspec.html"
+                                  title='struct git2::Revspec'>Revspec</a></td>
+                           <td class='docblock-short'>
+                                <p>A revspec represents a range of revisions within a repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Revwalk.html"
+                                  title='struct git2::Revwalk'>Revwalk</a></td>
+                           <td class='docblock-short'>
+                                <p>A revwalk allows traversal of the commit graph defined by including one or
+more leaves and excluding one or more roots.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Signature.html"
+                                  title='struct git2::Signature'>Signature</a></td>
+                           <td class='docblock-short'>
+                                <p>A Signature is used to indicate authorship of various actions throughout the
+library.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Sort.html"
+                                  title='struct git2::Sort'>Sort</a></td>
+                           <td class='docblock-short'>
+                                <p>Orderings that may be specified for Revwalk iteration.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StashApplyFlags.html"
+                                  title='struct git2::StashApplyFlags'>StashApplyFlags</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StashApplyOptions.html"
+                                  title='struct git2::StashApplyOptions'>StashApplyOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Stash application options structure</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StashFlags.html"
+                                  title='struct git2::StashFlags'>StashFlags</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Status.html"
+                                  title='struct git2::Status'>Status</a></td>
+                           <td class='docblock-short'>
+                                <p>Status flags for a single file</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StatusEntry.html"
+                                  title='struct git2::StatusEntry'>StatusEntry</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure representing an entry in the <code>Statuses</code> structure.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StatusIter.html"
+                                  title='struct git2::StatusIter'>StatusIter</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the statuses in a <code>Statuses</code> instance.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.StatusOptions.html"
+                                  title='struct git2::StatusOptions'>StatusOptions</a></td>
+                           <td class='docblock-short'>
+                                <p>Options that can be provided to <code>repo.statuses()</code> to control how the status
+information is gathered.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Statuses.html"
+                                  title='struct git2::Statuses'>Statuses</a></td>
+                           <td class='docblock-short'>
+                                <p>A container for a list of status information about a repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Submodule.html"
+                                  title='struct git2::Submodule'>Submodule</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Tools-Submodules">submodule</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SubmoduleStatus.html"
+                                  title='struct git2::SubmoduleStatus'>SubmoduleStatus</a></td>
+                           <td class='docblock-short'>
+                                <p>Return codes for submodule status.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Tag.html"
+                                  title='struct git2::Tag'>Tag</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Basics-Tagging">tag</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Time.html"
+                                  title='struct git2::Time'>Time</a></td>
+                           <td class='docblock-short'>
+                                <p>Time in a signature</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Tree.html"
+                                  title='struct git2::Tree'>Tree</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure to represent a git <a href="http://git-scm.com/book/en/Git-Internals-Git-Objects">tree</a></p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TreeBuilder.html"
+                                  title='struct git2::TreeBuilder'>TreeBuilder</a></td>
+                           <td class='docblock-short'>
+                                <p>Constructor for in-memory trees</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TreeEntry.html"
+                                  title='struct git2::TreeEntry'>TreeEntry</a></td>
+                           <td class='docblock-short'>
+                                <p>A structure representing an entry inside of a tree. An entry is borrowed
+from a tree.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.TreeIter.html"
+                                  title='struct git2::TreeIter'>TreeIter</a></td>
+                           <td class='docblock-short'>
+                                <p>An iterator over the entries in a tree.</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.AutotagOption.html"
+                                  title='enum git2::AutotagOption'>AutotagOption</a></td>
+                           <td class='docblock-short'>
+                                <p>Automatic tag following options.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.BranchType.html"
+                                  title='enum git2::BranchType'>BranchType</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration for the possible types of branches</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ConfigLevel.html"
+                                  title='enum git2::ConfigLevel'>ConfigLevel</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration of the possible priority levels of a config file.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Delta.html"
+                                  title='enum git2::Delta'>Delta</a></td>
+                           <td class='docblock-short'>
+                                <p>What type of change is described by a <code>DiffDelta</code>?</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.DiffBinaryKind.html"
+                                  title='enum git2::DiffBinaryKind'>DiffBinaryKind</a></td>
+                           <td class='docblock-short'>
+                                <p>When producing a binary diff, the binary data returned will be
+either the deflated full (&quot;literal&quot;) contents of the file, or
+the deflated binary delta between the two sides (whichever is
+smaller).</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.DiffFormat.html"
+                                  title='enum git2::DiffFormat'>DiffFormat</a></td>
+                           <td class='docblock-short'>
+                                <p>Possible output formats for diff data</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Direction.html"
+                                  title='enum git2::Direction'>Direction</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration of the possible directions for a remote.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ErrorClass.html"
+                                  title='enum git2::ErrorClass'>ErrorClass</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration of possible categories of things that can have
+errors when working with a git repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ErrorCode.html"
+                                  title='enum git2::ErrorCode'>ErrorCode</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration of possible errors that can happen when working with a git
+repository.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.FetchPrune.html"
+                                  title='enum git2::FetchPrune'>FetchPrune</a></td>
+                           <td class='docblock-short'>
+                                <p>Configuration for how pruning is done on a fetch</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.FileFavor.html"
+                                  title='enum git2::FileFavor'>FileFavor</a></td>
+                           <td class='docblock-short'>
+                                <p>Merge file favor options for <code>MergeOptions</code> instruct the file-level
+merging functionality how to deal with conflicting regions of the files.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ObjectType.html"
+                                  title='enum git2::ObjectType'>ObjectType</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration all possible kinds objects may have.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.PackBuilderStage.html"
+                                  title='enum git2::PackBuilderStage'>PackBuilderStage</a></td>
+                           <td class='docblock-short'>
+                                <p>Stages that are reported by the PackBuilder progress callback.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.RepositoryState.html"
+                                  title='enum git2::RepositoryState'>RepositoryState</a></td>
+                           <td class='docblock-short'>
+                                <p>A listing of the possible states that a repository can be in.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ResetType.html"
+                                  title='enum git2::ResetType'>ResetType</a></td>
+                           <td class='docblock-short'>
+                                <p>An enumeration of the operations that can be performed for the <code>reset</code>
+method on a <code>Repository</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.StashApplyProgress.html"
+                                  title='enum git2::StashApplyProgress'>StashApplyProgress</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.StatusShow.html"
+                                  title='enum git2::StatusShow'>StatusShow</a></td>
+                           <td class='docblock-short'>
+                                <p>Enumeration of possible methods of what can be shown through a status
+operation.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.SubmoduleIgnore.html"
+                                  title='enum git2::SubmoduleIgnore'>SubmoduleIgnore</a></td>
+                           <td class='docblock-short'>
+                                <p>Submodule ignore values</p>
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ADD_CHECK_PATHSPEC.html"
+                                  title='constant git2::ADD_CHECK_PATHSPEC'>ADD_CHECK_PATHSPEC</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ADD_DEFAULT.html"
+                                  title='constant git2::ADD_DEFAULT'>ADD_DEFAULT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ADD_DISABLE_PATHSPEC_MATCH.html"
+                                  title='constant git2::ADD_DISABLE_PATHSPEC_MATCH'>ADD_DISABLE_PATHSPEC_MATCH</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.ADD_FORCE.html"
+                                  title='constant git2::ADD_FORCE'>ADD_FORCE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CHECKOUT_NOTIFICATION_CONFLICT.html"
+                                  title='constant git2::CHECKOUT_NOTIFICATION_CONFLICT'>CHECKOUT_NOTIFICATION_CONFLICT</a></td>
+                           <td class='docblock-short'>
+                                <p>Notification about a conflict.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CHECKOUT_NOTIFICATION_DIRTY.html"
+                                  title='constant git2::CHECKOUT_NOTIFICATION_DIRTY'>CHECKOUT_NOTIFICATION_DIRTY</a></td>
+                           <td class='docblock-short'>
+                                <p>Notification about a dirty file.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CHECKOUT_NOTIFICATION_IGNORED.html"
+                                  title='constant git2::CHECKOUT_NOTIFICATION_IGNORED'>CHECKOUT_NOTIFICATION_IGNORED</a></td>
+                           <td class='docblock-short'>
+                                <p>Notification about an ignored file.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CHECKOUT_NOTIFICATION_UNTRACKED.html"
+                                  title='constant git2::CHECKOUT_NOTIFICATION_UNTRACKED'>CHECKOUT_NOTIFICATION_UNTRACKED</a></td>
+                           <td class='docblock-short'>
+                                <p>Notification about an untracked file.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.CHECKOUT_NOTIFICATION_UPDATED.html"
+                                  title='constant git2::CHECKOUT_NOTIFICATION_UPDATED'>CHECKOUT_NOTIFICATION_UPDATED</a></td>
+                           <td class='docblock-short'>
+                                <p>Notification about an updated file.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DEFAULT.html"
+                                  title='constant git2::DEFAULT'>DEFAULT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DEFAULT_COMMENT_CHAR.html"
+                                  title='constant git2::DEFAULT_COMMENT_CHAR'>DEFAULT_COMMENT_CHAR</a></td>
+                           <td class='docblock-short'>
+                                <p>The default comment character for message_prettify (&#39;#&#39;)</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DIFF_STATS_FULL.html"
+                                  title='constant git2::DIFF_STATS_FULL'>DIFF_STATS_FULL</a></td>
+                           <td class='docblock-short'>
+                                <p>Equivalent of <code>--stat</code> in git</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DIFF_STATS_INCLUDE_SUMMARY.html"
+                                  title='constant git2::DIFF_STATS_INCLUDE_SUMMARY'>DIFF_STATS_INCLUDE_SUMMARY</a></td>
+                           <td class='docblock-short'>
+                                <p>Extended header information such as creations, renames and mode
+changes, equivalent of <code>--summary</code> in git</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DIFF_STATS_NONE.html"
+                                  title='constant git2::DIFF_STATS_NONE'>DIFF_STATS_NONE</a></td>
+                           <td class='docblock-short'>
+                                <p>Don&#39;t generate any stats</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DIFF_STATS_NUMBER.html"
+                                  title='constant git2::DIFF_STATS_NUMBER'>DIFF_STATS_NUMBER</a></td>
+                           <td class='docblock-short'>
+                                <p>Equivalent of <code>--numstat</code> in git</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.DIFF_STATS_SHORT.html"
+                                  title='constant git2::DIFF_STATS_SHORT'>DIFF_STATS_SHORT</a></td>
+                           <td class='docblock-short'>
+                                <p>Equivalent of <code>--shortstat</code> in git</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_ADDED.html"
+                                  title='constant git2::IDXENTRY_ADDED'>IDXENTRY_ADDED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_CONFLICTED.html"
+                                  title='constant git2::IDXENTRY_CONFLICTED'>IDXENTRY_CONFLICTED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_EXTENDED.html"
+                                  title='constant git2::IDXENTRY_EXTENDED'>IDXENTRY_EXTENDED</a></td>
+                           <td class='docblock-short'>
+                                <p>Set when the <code>extended_flags</code> field is valid.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_EXTENDED2.html"
+                                  title='constant git2::IDXENTRY_EXTENDED2'>IDXENTRY_EXTENDED2</a></td>
+                           <td class='docblock-short'>
+                                <p>Reserved for a future on-disk extended flag</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_HASHED.html"
+                                  title='constant git2::IDXENTRY_HASHED'>IDXENTRY_HASHED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_INTENT_TO_ADD.html"
+                                  title='constant git2::IDXENTRY_INTENT_TO_ADD'>IDXENTRY_INTENT_TO_ADD</a></td>
+                           <td class='docblock-short'>
+                                <p>An &quot;intent to add&quot; entry from &quot;git add -N&quot;</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_NEW_SKIP_WORKTREE.html"
+                                  title='constant git2::IDXENTRY_NEW_SKIP_WORKTREE'>IDXENTRY_NEW_SKIP_WORKTREE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_REMOVE.html"
+                                  title='constant git2::IDXENTRY_REMOVE'>IDXENTRY_REMOVE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_SKIP_WORKTREE.html"
+                                  title='constant git2::IDXENTRY_SKIP_WORKTREE'>IDXENTRY_SKIP_WORKTREE</a></td>
+                           <td class='docblock-short'>
+                                <p>Skip the associated worktree file, for sparse checkouts</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_UNHASHED.html"
+                                  title='constant git2::IDXENTRY_UNHASHED'>IDXENTRY_UNHASHED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_UNPACKED.html"
+                                  title='constant git2::IDXENTRY_UNPACKED'>IDXENTRY_UNPACKED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_UPDATE.html"
+                                  title='constant git2::IDXENTRY_UPDATE'>IDXENTRY_UPDATE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_UPTODATE.html"
+                                  title='constant git2::IDXENTRY_UPTODATE'>IDXENTRY_UPTODATE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_VALID.html"
+                                  title='constant git2::IDXENTRY_VALID'>IDXENTRY_VALID</a></td>
+                           <td class='docblock-short'>
+                                <p>&quot;Assume valid&quot; flag</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.IDXENTRY_WT_REMOVE.html"
+                                  title='constant git2::IDXENTRY_WT_REMOVE'>IDXENTRY_WT_REMOVE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_DEFAULT.html"
+                                  title='constant git2::PATHSPEC_DEFAULT'>PATHSPEC_DEFAULT</a></td>
+                           <td class='docblock-short'>
+                                <p>Use the default pathspec matching configuration.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_FAILURES_ONLY.html"
+                                  title='constant git2::PATHSPEC_FAILURES_ONLY'>PATHSPEC_FAILURES_ONLY</a></td>
+                           <td class='docblock-short'>
+                                <p>Means that the list returned does not need to keep the actual
+matching filenames. Use this to just test if there were any matches
+at all or in combination with <code>PATHSPEC_FAILURES</code> to validate a
+pathspec.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_FIND_FAILURES.html"
+                                  title='constant git2::PATHSPEC_FIND_FAILURES'>PATHSPEC_FIND_FAILURES</a></td>
+                           <td class='docblock-short'>
+                                <p>Means that the list returned should track which patterns matched
+which files so that at the end of the match we can identify patterns
+that did not match any files.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_IGNORE_CASE.html"
+                                  title='constant git2::PATHSPEC_IGNORE_CASE'>PATHSPEC_IGNORE_CASE</a></td>
+                           <td class='docblock-short'>
+                                <p>Force matching to ignore case, otherwise matching will use native
+case sensitivity fo the platform filesystem.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_NO_GLOB.html"
+                                  title='constant git2::PATHSPEC_NO_GLOB'>PATHSPEC_NO_GLOB</a></td>
+                           <td class='docblock-short'>
+                                <p>Disable glob patterns and just use simple string comparison for
+matching.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_NO_MATCH_ERROR.html"
+                                  title='constant git2::PATHSPEC_NO_MATCH_ERROR'>PATHSPEC_NO_MATCH_ERROR</a></td>
+                           <td class='docblock-short'>
+                                <p>Means that match functions return the error code <code>NotFound</code> if no
+matches are found. By default no matches is a success.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.PATHSPEC_USE_CASE.html"
+                                  title='constant git2::PATHSPEC_USE_CASE'>PATHSPEC_USE_CASE</a></td>
+                           <td class='docblock-short'>
+                                <p>Force case sensitive matches, otherwise match will use the native
+case sensitivity of the platform filesystem.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_INIT_SHARED_ALL.html"
+                                  title='constant git2::REPOSITORY_INIT_SHARED_ALL'>REPOSITORY_INIT_SHARED_ALL</a></td>
+                           <td class='docblock-short'>
+                                <p>Use <code>--shared=all</code> behavior, adding world readability.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_INIT_SHARED_GROUP.html"
+                                  title='constant git2::REPOSITORY_INIT_SHARED_GROUP'>REPOSITORY_INIT_SHARED_GROUP</a></td>
+                           <td class='docblock-short'>
+                                <p>Use <code>--shared=group</code> behavior, chmod&#39;ing the new repo to be
+group writable and &quot;g+sx&quot; for sticky group assignment</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_INIT_SHARED_UMASK.html"
+                                  title='constant git2::REPOSITORY_INIT_SHARED_UMASK'>REPOSITORY_INIT_SHARED_UMASK</a></td>
+                           <td class='docblock-short'>
+                                <p>Use permissions configured by umask - the default</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_OPEN_BARE.html"
+                                  title='constant git2::REPOSITORY_OPEN_BARE'>REPOSITORY_OPEN_BARE</a></td>
+                           <td class='docblock-short'>
+                                <p>Force opening as bare repository, and defer loading its config.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_OPEN_CROSS_FS.html"
+                                  title='constant git2::REPOSITORY_OPEN_CROSS_FS'>REPOSITORY_OPEN_CROSS_FS</a></td>
+                           <td class='docblock-short'>
+                                <p>Search across filesystem boundaries.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_OPEN_FROM_ENV.html"
+                                  title='constant git2::REPOSITORY_OPEN_FROM_ENV'>REPOSITORY_OPEN_FROM_ENV</a></td>
+                           <td class='docblock-short'>
+                                <p>Respect environment variables like <code>$GIT_DIR</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_OPEN_NO_DOTGIT.html"
+                                  title='constant git2::REPOSITORY_OPEN_NO_DOTGIT'>REPOSITORY_OPEN_NO_DOTGIT</a></td>
+                           <td class='docblock-short'>
+                                <p>Don&#39;t try appending <code>/.git</code> to the specified repository path.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REPOSITORY_OPEN_NO_SEARCH.html"
+                                  title='constant git2::REPOSITORY_OPEN_NO_SEARCH'>REPOSITORY_OPEN_NO_SEARCH</a></td>
+                           <td class='docblock-short'>
+                                <p>Only open the specified path; don&#39;t walk upward searching.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REVPARSE_MERGE_BASE.html"
+                                  title='constant git2::REVPARSE_MERGE_BASE'>REVPARSE_MERGE_BASE</a></td>
+                           <td class='docblock-short'>
+                                <p>The spec used the <code>...</code> operator, which invokes special semantics.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REVPARSE_RANGE.html"
+                                  title='constant git2::REVPARSE_RANGE'>REVPARSE_RANGE</a></td>
+                           <td class='docblock-short'>
+                                <p>The spec targeted a range of commits</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.REVPARSE_SINGLE.html"
+                                  title='constant git2::REVPARSE_SINGLE'>REVPARSE_SINGLE</a></td>
+                           <td class='docblock-short'>
+                                <p>The spec targeted a single object</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SORT_NONE.html"
+                                  title='constant git2::SORT_NONE'>SORT_NONE</a></td>
+                           <td class='docblock-short'>
+                                <p>Sort the repository contents in no particular ordering.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SORT_REVERSE.html"
+                                  title='constant git2::SORT_REVERSE'>SORT_REVERSE</a></td>
+                           <td class='docblock-short'>
+                                <p>Iterate through the repository contents in reverse order.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SORT_TIME.html"
+                                  title='constant git2::SORT_TIME'>SORT_TIME</a></td>
+                           <td class='docblock-short'>
+                                <p>Sort the repository contents by commit time.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SORT_TOPOLOGICAL.html"
+                                  title='constant git2::SORT_TOPOLOGICAL'>SORT_TOPOLOGICAL</a></td>
+                           <td class='docblock-short'>
+                                <p>Sort the repository contents in topological order (parents before
+children).</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SSH_CUSTOM.html"
+                                  title='constant git2::SSH_CUSTOM'>SSH_CUSTOM</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SSH_INTERACTIVE.html"
+                                  title='constant git2::SSH_INTERACTIVE'>SSH_INTERACTIVE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SSH_KEY.html"
+                                  title='constant git2::SSH_KEY'>SSH_KEY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SSH_MEMORY.html"
+                                  title='constant git2::SSH_MEMORY'>SSH_MEMORY</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STASH_APPLY_DEFAULT.html"
+                                  title='constant git2::STASH_APPLY_DEFAULT'>STASH_APPLY_DEFAULT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STASH_APPLY_REINSTATE_INDEX.html"
+                                  title='constant git2::STASH_APPLY_REINSTATE_INDEX'>STASH_APPLY_REINSTATE_INDEX</a></td>
+                           <td class='docblock-short'>
+                                <p>Try to reinstate not only the working tree&#39;s changes,
+but also the index&#39;s changes.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STASH_DEFAULT.html"
+                                  title='constant git2::STASH_DEFAULT'>STASH_DEFAULT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STASH_INCLUDE_IGNORED.html"
+                                  title='constant git2::STASH_INCLUDE_IGNORED'>STASH_INCLUDE_IGNORED</a></td>
+                           <td class='docblock-short'>
+                                <p>All ignored files are also stashed and then cleaned up from
+the working directory</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STASH_INCLUDE_UNTRACKED.html"
+                                  title='constant git2::STASH_INCLUDE_UNTRACKED'>STASH_INCLUDE_UNTRACKED</a></td>
+                           <td class='docblock-short'>
+                                <p>All untracked files are also stashed and then cleaned up
+from the working directory</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STASH_KEEP_INDEX.html"
+                                  title='constant git2::STASH_KEEP_INDEX'>STASH_KEEP_INDEX</a></td>
+                           <td class='docblock-short'>
+                                <p>All changes already added to the index are left intact in
+the working directory</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_CONFLICTED.html"
+                                  title='constant git2::STATUS_CONFLICTED'>STATUS_CONFLICTED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_CURRENT.html"
+                                  title='constant git2::STATUS_CURRENT'>STATUS_CURRENT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_IGNORED.html"
+                                  title='constant git2::STATUS_IGNORED'>STATUS_IGNORED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_INDEX_DELETED.html"
+                                  title='constant git2::STATUS_INDEX_DELETED'>STATUS_INDEX_DELETED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_INDEX_MODIFIED.html"
+                                  title='constant git2::STATUS_INDEX_MODIFIED'>STATUS_INDEX_MODIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_INDEX_NEW.html"
+                                  title='constant git2::STATUS_INDEX_NEW'>STATUS_INDEX_NEW</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_INDEX_RENAMED.html"
+                                  title='constant git2::STATUS_INDEX_RENAMED'>STATUS_INDEX_RENAMED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_INDEX_TYPECHANGE.html"
+                                  title='constant git2::STATUS_INDEX_TYPECHANGE'>STATUS_INDEX_TYPECHANGE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_WT_DELETED.html"
+                                  title='constant git2::STATUS_WT_DELETED'>STATUS_WT_DELETED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_WT_MODIFIED.html"
+                                  title='constant git2::STATUS_WT_MODIFIED'>STATUS_WT_MODIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_WT_NEW.html"
+                                  title='constant git2::STATUS_WT_NEW'>STATUS_WT_NEW</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_WT_RENAMED.html"
+                                  title='constant git2::STATUS_WT_RENAMED'>STATUS_WT_RENAMED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.STATUS_WT_TYPECHANGE.html"
+                                  title='constant git2::STATUS_WT_TYPECHANGE'>STATUS_WT_TYPECHANGE</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_INDEX_ADDED.html"
+                                  title='constant git2::SUBMODULE_STATUS_INDEX_ADDED'>SUBMODULE_STATUS_INDEX_ADDED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_INDEX_DELETED.html"
+                                  title='constant git2::SUBMODULE_STATUS_INDEX_DELETED'>SUBMODULE_STATUS_INDEX_DELETED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_INDEX_MODIFIED.html"
+                                  title='constant git2::SUBMODULE_STATUS_INDEX_MODIFIED'>SUBMODULE_STATUS_INDEX_MODIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_IN_CONFIG.html"
+                                  title='constant git2::SUBMODULE_STATUS_IN_CONFIG'>SUBMODULE_STATUS_IN_CONFIG</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_IN_HEAD.html"
+                                  title='constant git2::SUBMODULE_STATUS_IN_HEAD'>SUBMODULE_STATUS_IN_HEAD</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_IN_INDEX.html"
+                                  title='constant git2::SUBMODULE_STATUS_IN_INDEX'>SUBMODULE_STATUS_IN_INDEX</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_IN_WD.html"
+                                  title='constant git2::SUBMODULE_STATUS_IN_WD'>SUBMODULE_STATUS_IN_WD</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_ADDED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_ADDED'>SUBMODULE_STATUS_WD_ADDED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_DELETED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_DELETED'>SUBMODULE_STATUS_WD_DELETED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_INDEX_MODIFIED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_INDEX_MODIFIED'>SUBMODULE_STATUS_WD_INDEX_MODIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_MODIFIED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_MODIFIED'>SUBMODULE_STATUS_WD_MODIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_UNINITIALIZED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_UNINITIALIZED'>SUBMODULE_STATUS_WD_UNINITIALIZED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_UNTRACKED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_UNTRACKED'>SUBMODULE_STATUS_WD_UNTRACKED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.SUBMODULE_STATUS_WD_WD_MODIFIED.html"
+                                  title='constant git2::SUBMODULE_STATUS_WD_WD_MODIFIED'>SUBMODULE_STATUS_WD_WD_MODIFIED</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.USERNAME.html"
+                                  title='constant git2::USERNAME'>USERNAME</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.USER_PASS_PLAINTEXT.html"
+                                  title='constant git2::USER_PASS_PLAINTEXT'>USER_PASS_PLAINTEXT</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.IntoCString.html"
+                                  title='trait git2::IntoCString'>IntoCString</a></td>
+                           <td class='docblock-short'>
+                                <p>A class of types that can be converted to C strings.</p>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.message_prettify.html"
+                                  title='fn git2::message_prettify'>message_prettify</a></td>
+                           <td class='docblock-short'>
+                                <p>Clean up a message, removing extraneous whitespace, and ensure that the
+message ends with a newline. If comment_char is Some, also remove comment
+lines starting with that character.</p>
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.Credentials.html"
+                                  title='type git2::Credentials'>Credentials</a></td>
+                           <td class='docblock-short'>
+                                <p>Callback used to acquire credentials for when a remote is fetched.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.IndexMatchedPath.html"
+                                  title='type git2::IndexMatchedPath'>IndexMatchedPath</a></td>
+                           <td class='docblock-short'>
+                                <p>A callback function to filter index matches.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.StashApplyProgressCb.html"
+                                  title='type git2::StashApplyProgressCb'>StashApplyProgressCb</a></td>
+                           <td class='docblock-short'>
+                                <p>Stash application progress notification function.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.StashCb.html"
+                                  title='type git2::StashCb'>StashCb</a></td>
+                           <td class='docblock-short'>
+                                <p>This is a callback function you can provide to iterate over all the
+stashed states that will be invoked per entry.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.TransferProgress.html"
+                                  title='type git2::TransferProgress'>TransferProgress</a></td>
+                           <td class='docblock-short'>
+                                <p>Callback to be invoked while a transfer is in progress.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.TransportMessage.html"
+                                  title='type git2::TransportMessage'>TransportMessage</a></td>
+                           <td class='docblock-short'>
+                                <p>Callback for receiving messages delivered by the transport.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.UpdateTips.html"
+                                  title='type git2::UpdateTips'>UpdateTips</a></td>
+                           <td class='docblock-short'>
+                                <p>Callback for whenever a reference is updated locally.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "git2";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

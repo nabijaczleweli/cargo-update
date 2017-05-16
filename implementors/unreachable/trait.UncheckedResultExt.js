@@ -1,4 +1,5 @@
 (function() {var implementors = {};
+implementors["cargo_update"] = [];
 implementors["unreachable"] = [];
 
             if (window.register_implementors) {
