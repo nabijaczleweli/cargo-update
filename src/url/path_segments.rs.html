@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.2.3/src/path_segments.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.4.0/src/path_segments.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>path_segments.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -16,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -42,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -222,199 +223,185 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-</pre><pre class='rust '>
-<span class='comment'>// Copyright 2016 The rust-url developers.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// Copyright 2016 The rust-url developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='kw'>use</span> <span class='ident'>parser</span>::{<span class='self'>self</span>, <span class='ident'>SchemeType</span>, <span class='ident'>to_u32</span>};
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>;
-<span class='kw'>use</span> <span class='ident'>Url</span>;
+<span class="kw">use</span> <span class="ident">parser</span>::{<span class="self">self</span>, <span class="ident">SchemeType</span>, <span class="ident">to_u32</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
+<span class="kw">use</span> <span class="ident">Url</span>;
 
-<span class='doccomment'>/// Exposes methods to manipulate the path of an URL that is not cannot-be-base.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The path always starts with a `/` slash, and is made of slash-separated segments.</span>
-<span class='doccomment'>/// There is always at least one segment (which may be the empty string).</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Examples:</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```rust</span>
-<span class='doccomment'>/// # use url::Url;</span>
-<span class='doccomment'>/// let mut url = Url::parse(&quot;mailto:me@example.com&quot;).unwrap();</span>
-<span class='doccomment'>/// assert!(url.path_segments_mut().is_err());</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// let mut url = Url::parse(&quot;http://example.net/foo/index.html&quot;).unwrap();</span>
-<span class='doccomment'>/// url.path_segments_mut().unwrap().pop().push(&quot;img&quot;).push(&quot;2/100%.png&quot;);</span>
-<span class='doccomment'>/// assert_eq!(url.as_str(), &quot;http://example.net/foo/img/2%2F100%25.png&quot;);</span>
-<span class='doccomment'>/// ```</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PathSegmentsMut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='ident'>url</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='kw-2'>mut</span> <span class='ident'>Url</span>,
-    <span class='ident'>after_first_slash</span>: <span class='ident'>usize</span>,
-    <span class='ident'>after_path</span>: <span class='ident'>String</span>,
-    <span class='ident'>old_after_path_position</span>: <span class='ident'>u32</span>,
+<span class="doccomment">/// Exposes methods to manipulate the path of an URL that is not cannot-be-base.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The path always starts with a `/` slash, and is made of slash-separated segments.</span>
+<span class="doccomment">/// There is always at least one segment (which may be the empty string).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Examples:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// # use url::Url;</span>
+<span class="doccomment">/// let mut url = Url::parse(&quot;mailto:me@example.com&quot;).unwrap();</span>
+<span class="doccomment">/// assert!(url.path_segments_mut().is_err());</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let mut url = Url::parse(&quot;http://example.net/foo/index.html&quot;).unwrap();</span>
+<span class="doccomment">/// url.path_segments_mut().unwrap().pop().push(&quot;img&quot;).push(&quot;2/100%.png&quot;);</span>
+<span class="doccomment">/// assert_eq!(url.as_str(), &quot;http://example.net/foo/img/2%2F100%25.png&quot;);</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PathSegmentsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Url</span>,
+    <span class="ident">after_first_slash</span>: <span class="ident">usize</span>,
+    <span class="ident">after_path</span>: <span class="ident">String</span>,
+    <span class="ident">old_after_path_position</span>: <span class="ident">u32</span>,
 }
 
-<span class='comment'>// Not re-exported outside the crate</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>url</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>Url</span>) <span class='op'>-&gt;</span> <span class='ident'>PathSegmentsMut</span> {
-    <span class='kw'>let</span> <span class='ident'>after_path</span> <span class='op'>=</span> <span class='ident'>url</span>.<span class='ident'>take_after_path</span>();
-    <span class='kw'>let</span> <span class='ident'>old_after_path_position</span> <span class='op'>=</span> <span class='ident'>to_u32</span>(<span class='ident'>url</span>.<span class='ident'>serialization</span>.<span class='ident'>len</span>()).<span class='ident'>unwrap</span>();
-    <span class='macro'>debug_assert</span><span class='macro'>!</span>(<span class='ident'>url</span>.<span class='ident'>byte_at</span>(<span class='ident'>url</span>.<span class='ident'>path_start</span>) <span class='op'>==</span> <span class='string'>b&#39;/&#39;</span>);
-    <span class='ident'>PathSegmentsMut</span> {
-        <span class='ident'>after_first_slash</span>: <span class='ident'>url</span>.<span class='ident'>path_start</span> <span class='kw'>as</span> <span class='ident'>usize</span> <span class='op'>+</span> <span class='string'>&quot;/&quot;</span>.<span class='ident'>len</span>(),
-        <span class='ident'>url</span>: <span class='ident'>url</span>,
-        <span class='ident'>old_after_path_position</span>: <span class='ident'>old_after_path_position</span>,
-        <span class='ident'>after_path</span>: <span class='ident'>after_path</span>,
+<span class="comment">// Not re-exported outside the crate</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Url</span>) <span class="op">-&gt;</span> <span class="ident">PathSegmentsMut</span> {
+    <span class="kw">let</span> <span class="ident">after_path</span> <span class="op">=</span> <span class="ident">url</span>.<span class="ident">take_after_path</span>();
+    <span class="kw">let</span> <span class="ident">old_after_path_position</span> <span class="op">=</span> <span class="ident">to_u32</span>(<span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">url</span>.<span class="ident">byte_at</span>(<span class="ident">url</span>.<span class="ident">path_start</span>) <span class="op">==</span> <span class="string">b&#39;/&#39;</span>);
+    <span class="ident">PathSegmentsMut</span> {
+        <span class="ident">after_first_slash</span>: <span class="ident">url</span>.<span class="ident">path_start</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="string">&quot;/&quot;</span>.<span class="ident">len</span>(),
+        <span class="ident">url</span>: <span class="ident">url</span>,
+        <span class="ident">old_after_path_position</span>: <span class="ident">old_after_path_position</span>,
+        <span class="ident">after_path</span>: <span class="ident">after_path</span>,
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Drop</span> <span class='kw'>for</span> <span class='ident'>PathSegmentsMut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>drop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
-        <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>restore_after_path</span>(<span class='self'>self</span>.<span class='ident'>old_after_path_position</span>, <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>after_path</span>)
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">PathSegmentsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">restore_after_path</span>(<span class="self">self</span>.<span class="ident">old_after_path_position</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">after_path</span>)
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>PathSegmentsMut</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// Remove all segments in the path, leaving the minimal `url.path() == &quot;/&quot;`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns `&amp;mut Self` so that method calls can be chained.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Example:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```rust</span>
-    <span class='doccomment'>/// # use url::Url;</span>
-    <span class='doccomment'>/// let mut url = Url::parse(&quot;https://github.com/servo/rust-url/&quot;).unwrap();</span>
-    <span class='doccomment'>/// url.path_segments_mut().unwrap().clear().push(&quot;logout&quot;);</span>
-    <span class='doccomment'>/// assert_eq!(url.as_str(), &quot;https://github.com/logout&quot;);</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>clear</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span> {
-        <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>serialization</span>.<span class='ident'>truncate</span>(<span class='self'>self</span>.<span class='ident'>after_first_slash</span>);
-        <span class='self'>self</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">PathSegmentsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Remove all segments in the path, leaving the minimal `url.path() == &quot;/&quot;`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns `&amp;mut Self` so that method calls can be chained.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Example:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use url::Url;</span>
+    <span class="doccomment">/// let mut url = Url::parse(&quot;https://github.com/servo/rust-url/&quot;).unwrap();</span>
+    <span class="doccomment">/// url.path_segments_mut().unwrap().clear().push(&quot;logout&quot;);</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://github.com/logout&quot;);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">truncate</span>(<span class="self">self</span>.<span class="ident">after_first_slash</span>);
+        <span class="self">self</span>
     }
 
-    <span class='doccomment'>/// Remove the last segment of this URL’s path if it is empty,</span>
-    <span class='doccomment'>/// except if these was only one segment to begin with.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// In other words, remove one path trailing slash, if any,</span>
-    <span class='doccomment'>/// unless it is also the initial slash (so this does nothing if `url.path() == &quot;/&quot;)`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns `&amp;mut Self` so that method calls can be chained.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Example:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```rust</span>
-    <span class='doccomment'>/// # use url::Url;</span>
-    <span class='doccomment'>/// let mut url = Url::parse(&quot;https://github.com/servo/rust-url/&quot;).unwrap();</span>
-    <span class='doccomment'>/// url.path_segments_mut().unwrap().push(&quot;pulls&quot;);</span>
-    <span class='doccomment'>/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url//pulls&quot;);</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// let mut url = Url::parse(&quot;https://github.com/servo/rust-url/&quot;).unwrap();</span>
-    <span class='doccomment'>/// url.path_segments_mut().unwrap().pop_if_empty().push(&quot;pulls&quot;);</span>
-    <span class='doccomment'>/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url/pulls&quot;);</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pop_if_empty</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span> {
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>serialization</span>[<span class='self'>self</span>.<span class='ident'>after_first_slash</span>..].<span class='ident'>ends_with</span>(<span class='string'>&#39;/&#39;</span>) {
-            <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>serialization</span>.<span class='ident'>pop</span>();
+    <span class="doccomment">/// Remove the last segment of this URL’s path if it is empty,</span>
+    <span class="doccomment">/// except if these was only one segment to begin with.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In other words, remove one path trailing slash, if any,</span>
+    <span class="doccomment">/// unless it is also the initial slash (so this does nothing if `url.path() == &quot;/&quot;)`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns `&amp;mut Self` so that method calls can be chained.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Example:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use url::Url;</span>
+    <span class="doccomment">/// let mut url = Url::parse(&quot;https://github.com/servo/rust-url/&quot;).unwrap();</span>
+    <span class="doccomment">/// url.path_segments_mut().unwrap().push(&quot;pulls&quot;);</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url//pulls&quot;);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut url = Url::parse(&quot;https://github.com/servo/rust-url/&quot;).unwrap();</span>
+    <span class="doccomment">/// url.path_segments_mut().unwrap().pop_if_empty().push(&quot;pulls&quot;);</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url/pulls&quot;);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pop_if_empty</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">serialization</span>[<span class="self">self</span>.<span class="ident">after_first_slash</span>..].<span class="ident">ends_with</span>(<span class="string">&#39;/&#39;</span>) {
+            <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">pop</span>();
         }
-        <span class='self'>self</span>
+        <span class="self">self</span>
     }
 
-    <span class='doccomment'>/// Remove the last segment of this URL’s path.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// If the path only has one segment, make it empty such that `url.path() == &quot;/&quot;`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns `&amp;mut Self` so that method calls can be chained.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pop</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span> {
-        <span class='kw'>let</span> <span class='ident'>last_slash</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>serialization</span>[<span class='self'>self</span>.<span class='ident'>after_first_slash</span>..].<span class='ident'>rfind</span>(<span class='string'>&#39;/&#39;</span>).<span class='ident'>unwrap_or</span>(<span class='number'>0</span>);
-        <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>serialization</span>.<span class='ident'>truncate</span>(<span class='self'>self</span>.<span class='ident'>after_first_slash</span> <span class='op'>+</span> <span class='ident'>last_slash</span>);
-        <span class='self'>self</span>
+    <span class="doccomment">/// Remove the last segment of this URL’s path.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the path only has one segment, make it empty such that `url.path() == &quot;/&quot;`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns `&amp;mut Self` so that method calls can be chained.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">last_slash</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">serialization</span>[<span class="self">self</span>.<span class="ident">after_first_slash</span>..].<span class="ident">rfind</span>(<span class="string">&#39;/&#39;</span>).<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+        <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">truncate</span>(<span class="self">self</span>.<span class="ident">after_first_slash</span> <span class="op">+</span> <span class="ident">last_slash</span>);
+        <span class="self">self</span>
     }
 
-    <span class='doccomment'>/// Append the given segment at the end of this URL’s path.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// See the documentation for `.extend()`.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns `&amp;mut Self` so that method calls can be chained.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>segment</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span> {
-        <span class='self'>self</span>.<span class='ident'>extend</span>(<span class='prelude-val'>Some</span>(<span class='ident'>segment</span>))
+    <span class="doccomment">/// Append the given segment at the end of this URL’s path.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See the documentation for `.extend()`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns `&amp;mut Self` so that method calls can be chained.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">segment</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">extend</span>(<span class="prelude-val">Some</span>(<span class="ident">segment</span>))
     }
 
-    <span class='doccomment'>/// Append each segment from the given iterator at the end of this URL’s path.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Each segment is percent-encoded like in `Url::parse` or `Url::join`,</span>
-    <span class='doccomment'>/// except that `%` and `/` characters are also encoded (to `%25` and `%2F`).</span>
-    <span class='doccomment'>/// This is unlike `Url::parse` where `%` is left as-is in case some of the input</span>
-    <span class='doccomment'>/// is already percent-encoded, and `/` denotes a path segment separator.)</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Note that, in addition to slashes between new segments,</span>
-    <span class='doccomment'>/// this always adds a slash between the existing path and the new segments</span>
-    <span class='doccomment'>/// *except* if the existing path is `&quot;/&quot;`.</span>
-    <span class='doccomment'>/// If the previous last segment was empty (if the path had a trailing slash)</span>
-    <span class='doccomment'>/// the path after `.extend()` will contain two consecutive slashes.</span>
-    <span class='doccomment'>/// If that is undesired, call `.pop_if_empty()` first.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// To obtain a behavior similar to `Url::join`, call `.pop()` unconditionally first.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Returns `&amp;mut Self` so that method calls can be chained.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Example:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```rust</span>
-    <span class='doccomment'>/// # use url::Url;</span>
-    <span class='doccomment'>/// let mut url = Url::parse(&quot;https://github.com/&quot;).unwrap();</span>
-    <span class='doccomment'>/// let org = &quot;servo&quot;;</span>
-    <span class='doccomment'>/// let repo = &quot;rust-url&quot;;</span>
-    <span class='doccomment'>/// let issue_number = &quot;188&quot;;</span>
-    <span class='doccomment'>/// url.path_segments_mut().unwrap().extend(&amp;[org, repo, &quot;issues&quot;, issue_number]);</span>
-    <span class='doccomment'>/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url/issues/188&quot;);</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// In order to make sure that parsing the serialization of an URL gives the same URL,</span>
-    <span class='doccomment'>/// a segment is ignored if it is `&quot;.&quot;` or `&quot;..&quot;`:</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// ```rust</span>
-    <span class='doccomment'>/// # use url::Url;</span>
-    <span class='doccomment'>/// let mut url = Url::parse(&quot;https://github.com/servo&quot;).unwrap();</span>
-    <span class='doccomment'>/// url.path_segments_mut().unwrap().extend(&amp;[&quot;..&quot;, &quot;rust-url&quot;, &quot;.&quot;, &quot;pulls&quot;]);</span>
-    <span class='doccomment'>/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url/pulls&quot;);</span>
-    <span class='doccomment'>/// ```</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>extend</span><span class='op'>&lt;</span><span class='ident'>I</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>segments</span>: <span class='ident'>I</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span>
-    <span class='kw'>where</span> <span class='ident'>I</span>: <span class='ident'>IntoIterator</span>, <span class='ident'>I</span>::<span class='ident'>Item</span>: <span class='ident'>AsRef</span><span class='op'>&lt;</span><span class='ident'>str</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>scheme_type</span> <span class='op'>=</span> <span class='ident'>SchemeType</span>::<span class='ident'>from</span>(<span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>scheme</span>());
-        <span class='kw'>let</span> <span class='ident'>path_start</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>path_start</span> <span class='kw'>as</span> <span class='ident'>usize</span>;
-        <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>mutate</span>(<span class='op'>|</span><span class='ident'>parser</span><span class='op'>|</span> {
-            <span class='ident'>parser</span>.<span class='ident'>context</span> <span class='op'>=</span> <span class='ident'>parser</span>::<span class='ident'>Context</span>::<span class='ident'>PathSegmentSetter</span>;
-            <span class='kw'>for</span> <span class='ident'>segment</span> <span class='kw'>in</span> <span class='ident'>segments</span> {
-                <span class='kw'>let</span> <span class='ident'>segment</span> <span class='op'>=</span> <span class='ident'>segment</span>.<span class='ident'>as_ref</span>();
-                <span class='kw'>if</span> <span class='macro'>matches</span><span class='macro'>!</span>(<span class='ident'>segment</span>, <span class='string'>&quot;.&quot;</span> <span class='op'>|</span> <span class='string'>&quot;..&quot;</span>) {
-                    <span class='kw'>continue</span>
+    <span class="doccomment">/// Append each segment from the given iterator at the end of this URL’s path.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Each segment is percent-encoded like in `Url::parse` or `Url::join`,</span>
+    <span class="doccomment">/// except that `%` and `/` characters are also encoded (to `%25` and `%2F`).</span>
+    <span class="doccomment">/// This is unlike `Url::parse` where `%` is left as-is in case some of the input</span>
+    <span class="doccomment">/// is already percent-encoded, and `/` denotes a path segment separator.)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note that, in addition to slashes between new segments,</span>
+    <span class="doccomment">/// this always adds a slash between the existing path and the new segments</span>
+    <span class="doccomment">/// *except* if the existing path is `&quot;/&quot;`.</span>
+    <span class="doccomment">/// If the previous last segment was empty (if the path had a trailing slash)</span>
+    <span class="doccomment">/// the path after `.extend()` will contain two consecutive slashes.</span>
+    <span class="doccomment">/// If that is undesired, call `.pop_if_empty()` first.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// To obtain a behavior similar to `Url::join`, call `.pop()` unconditionally first.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Returns `&amp;mut Self` so that method calls can be chained.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Example:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use url::Url;</span>
+    <span class="doccomment">/// let mut url = Url::parse(&quot;https://github.com/&quot;).unwrap();</span>
+    <span class="doccomment">/// let org = &quot;servo&quot;;</span>
+    <span class="doccomment">/// let repo = &quot;rust-url&quot;;</span>
+    <span class="doccomment">/// let issue_number = &quot;188&quot;;</span>
+    <span class="doccomment">/// url.path_segments_mut().unwrap().extend(&amp;[org, repo, &quot;issues&quot;, issue_number]);</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url/issues/188&quot;);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// In order to make sure that parsing the serialization of an URL gives the same URL,</span>
+    <span class="doccomment">/// a segment is ignored if it is `&quot;.&quot;` or `&quot;..&quot;`:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use url::Url;</span>
+    <span class="doccomment">/// let mut url = Url::parse(&quot;https://github.com/servo&quot;).unwrap();</span>
+    <span class="doccomment">/// url.path_segments_mut().unwrap().extend(&amp;[&quot;..&quot;, &quot;rust-url&quot;, &quot;.&quot;, &quot;pulls&quot;]);</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://github.com/servo/rust-url/pulls&quot;);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">extend</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">segments</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>
+    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span>, <span class="ident">I</span>::<span class="ident">Item</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">scheme_type</span> <span class="op">=</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">url</span>.<span class="ident">scheme</span>());
+        <span class="kw">let</span> <span class="ident">path_start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">path_start</span> <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">mutate</span>(<span class="op">|</span><span class="ident">parser</span><span class="op">|</span> {
+            <span class="ident">parser</span>.<span class="ident">context</span> <span class="op">=</span> <span class="ident">parser</span>::<span class="ident">Context</span>::<span class="ident">PathSegmentSetter</span>;
+            <span class="kw">for</span> <span class="ident">segment</span> <span class="kw">in</span> <span class="ident">segments</span> {
+                <span class="kw">let</span> <span class="ident">segment</span> <span class="op">=</span> <span class="ident">segment</span>.<span class="ident">as_ref</span>();
+                <span class="kw">if</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">segment</span>, <span class="string">&quot;.&quot;</span> <span class="op">|</span> <span class="string">&quot;..&quot;</span>) {
+                    <span class="kw">continue</span>
                 }
-                <span class='kw'>if</span> <span class='ident'>parser</span>.<span class='ident'>serialization</span>.<span class='ident'>len</span>() <span class='op'>&gt;</span> <span class='ident'>path_start</span> <span class='op'>+</span> <span class='number'>1</span> {
-                    <span class='ident'>parser</span>.<span class='ident'>serialization</span>.<span class='ident'>push</span>(<span class='string'>&#39;/&#39;</span>);
+                <span class="kw">if</span> <span class="ident">parser</span>.<span class="ident">serialization</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">path_start</span> <span class="op">+</span> <span class="number">1</span> {
+                    <span class="ident">parser</span>.<span class="ident">serialization</span>.<span class="ident">push</span>(<span class="string">&#39;/&#39;</span>);
                 }
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>has_host</span> <span class='op'>=</span> <span class='bool-val'>true</span>;  <span class='comment'>// FIXME account for this?</span>
-                <span class='ident'>parser</span>.<span class='ident'>parse_path</span>(<span class='ident'>scheme_type</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>has_host</span>, <span class='ident'>path_start</span>,
-                                  <span class='ident'>parser</span>::<span class='ident'>Input</span>::<span class='ident'>new</span>(<span class='ident'>segment</span>));
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">has_host</span> <span class="op">=</span> <span class="bool-val">true</span>;  <span class="comment">// FIXME account for this?</span>
+                <span class="ident">parser</span>.<span class="ident">parse_path</span>(<span class="ident">scheme_type</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">has_host</span>, <span class="ident">path_start</span>,
+                                  <span class="ident">parser</span>::<span class="ident">Input</span>::<span class="ident">new</span>(<span class="ident">segment</span>));
             }
         });
-        <span class='self'>self</span>
-    }
-
-    <span class='doccomment'>/// For internal testing, not part of the public API.</span>
-    <span class='attribute'>#[<span class='ident'>doc</span>(<span class='ident'>hidden</span>)]</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>assert_url_invariants</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>Self</span> {
-        <span class='self'>self</span>.<span class='ident'>url</span>.<span class='ident'>assert_invariants</span>();
-        <span class='self'>self</span>
+        <span class="self">self</span>
     }
 }
 </pre>
@@ -474,11 +461,9 @@
     <script>
         window.rootPath = "../../";
         window.currentCrate = "url";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>

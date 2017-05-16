@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.2.3/src/percent_encoding.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.4.0/src/percent_encoding.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>percent_encoding.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
     
@@ -16,7 +17,7 @@
     
     
 </head>
-<body class="rustdoc">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -42,7 +43,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content source"><pre class="line-numbers"><span id="1">  1</span>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -386,125 +387,125 @@
 <span id="342">342</span>
 <span id="343">343</span>
 <span id="344">344</span>
-</pre><pre class='rust '>
-<span class='comment'>// Copyright 2013-2016 The rust-url developers.</span>
-<span class='comment'>//</span>
-<span class='comment'>// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class='comment'>// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class='comment'>// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class='comment'>// option. This file may not be copied, modified, or distributed</span>
-<span class='comment'>// except according to those terms.</span>
+</pre><pre class="rust ">
+<span class="comment">// Copyright 2013-2016 The rust-url developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class='kw'>use</span> <span class='ident'>encoding</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ascii</span>::<span class='ident'>AsciiExt</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>borrow</span>::<span class='ident'>Cow</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>slice</span>;
-<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>str</span>;
+<span class="kw">use</span> <span class="ident">encoding</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ascii</span>::<span class="ident">AsciiExt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
 
-<span class='doccomment'>/// Represents a set of characters / bytes that should be percent-encoded.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// See [encode sets specification](http://url.spec.whatwg.org/#simple-encode-set).</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Different characters need to be encoded in different parts of an URL.</span>
-<span class='doccomment'>/// For example, a literal `?` question mark in an URL’s path would indicate</span>
-<span class='doccomment'>/// the start of the query string.</span>
-<span class='doccomment'>/// A question mark meant to be part of the path therefore needs to be percent-encoded.</span>
-<span class='doccomment'>/// In the query string however, a question mark does not have any special meaning</span>
-<span class='doccomment'>/// and does not need to be percent-encoded.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// A few sets are defined in this module.</span>
-<span class='doccomment'>/// Use the [`define_encode_set!`](../macro.define_encode_set!.html) macro to define different ones.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>EncodeSet</span>: <span class='ident'>Clone</span> {
-    <span class='doccomment'>/// Called with UTF-8 bytes rather than code points.</span>
-    <span class='doccomment'>/// Should return true for all non-ASCII bytes.</span>
-    <span class='kw'>fn</span> <span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>byte</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span>;
+<span class="doccomment">/// Represents a set of characters / bytes that should be percent-encoded.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [encode sets specification](http://url.spec.whatwg.org/#simple-encode-set).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Different characters need to be encoded in different parts of an URL.</span>
+<span class="doccomment">/// For example, a literal `?` question mark in an URL’s path would indicate</span>
+<span class="doccomment">/// the start of the query string.</span>
+<span class="doccomment">/// A question mark meant to be part of the path therefore needs to be percent-encoded.</span>
+<span class="doccomment">/// In the query string however, a question mark does not have any special meaning</span>
+<span class="doccomment">/// and does not need to be percent-encoded.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// A few sets are defined in this module.</span>
+<span class="doccomment">/// Use the [`define_encode_set!`](../macro.define_encode_set!.html) macro to define different ones.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">EncodeSet</span>: <span class="ident">Clone</span> {
+    <span class="doccomment">/// Called with UTF-8 bytes rather than code points.</span>
+    <span class="doccomment">/// Should return true for all non-ASCII bytes.</span>
+    <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
 }
 
-<span class='doccomment'>/// Define a new struct</span>
-<span class='doccomment'>/// that implements the [`EncodeSet`](percent_encoding/trait.EncodeSet.html) trait,</span>
-<span class='doccomment'>/// for use in [`percent_decode()`](percent_encoding/fn.percent_encode.html)</span>
-<span class='doccomment'>/// and related functions.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Parameters are characters to include in the set in addition to those of the base set.</span>
-<span class='doccomment'>/// See [encode sets specification](http://url.spec.whatwg.org/#simple-encode-set).</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// Example</span>
-<span class='doccomment'>/// =======</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// ```rust</span>
-<span class='doccomment'>/// #[macro_use] extern crate url;</span>
-<span class='doccomment'>/// use url::percent_encoding::{utf8_percent_encode, SIMPLE_ENCODE_SET};</span>
-<span class='doccomment'>/// define_encode_set! {</span>
-<span class='doccomment'>///     /// This encode set is used in the URL parser for query strings.</span>
-<span class='doccomment'>///     pub QUERY_ENCODE_SET = [SIMPLE_ENCODE_SET] | {&#39; &#39;, &#39;&quot;&#39;, &#39;#&#39;, &#39;&lt;&#39;, &#39;&gt;&#39;}</span>
-<span class='doccomment'>/// }</span>
-<span class='doccomment'>/// # fn main() {</span>
-<span class='doccomment'>/// assert_eq!(utf8_percent_encode(&quot;foo bar&quot;, QUERY_ENCODE_SET).collect::&lt;String&gt;(), &quot;foo%20bar&quot;);</span>
-<span class='doccomment'>/// # }</span>
-<span class='doccomment'>/// ```</span>
-<span class='attribute'>#[<span class='ident'>macro_export</span>]</span>
-<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>define_encode_set</span> {
-    ($(<span class='attribute'>#[<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>attr</span>: <span class='ident'>meta</span>]</span>)<span class='op'>*</span> <span class='kw'>pub</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>: <span class='ident'>ident</span> <span class='op'>=</span> [<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>base_set</span>: <span class='ident'>expr</span>] <span class='op'>|</span> {$(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ch</span>: <span class='ident'>pat</span>),<span class='op'>*</span>}) <span class='op'>=&gt;</span> {
-        $(<span class='attribute'>#[<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>attr</span>]</span>)<span class='op'>*</span>
-        <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
-        <span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>non_camel_case_types</span>)]</span>
-        <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span>;
+<span class="doccomment">/// Define a new struct</span>
+<span class="doccomment">/// that implements the [`EncodeSet`](percent_encoding/trait.EncodeSet.html) trait,</span>
+<span class="doccomment">/// for use in [`percent_decode()`](percent_encoding/fn.percent_encode.html)</span>
+<span class="doccomment">/// and related functions.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Parameters are characters to include in the set in addition to those of the base set.</span>
+<span class="doccomment">/// See [encode sets specification](http://url.spec.whatwg.org/#simple-encode-set).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Example</span>
+<span class="doccomment">/// =======</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// #[macro_use] extern crate url;</span>
+<span class="doccomment">/// use url::percent_encoding::{utf8_percent_encode, SIMPLE_ENCODE_SET};</span>
+<span class="doccomment">/// define_encode_set! {</span>
+<span class="doccomment">///     /// This encode set is used in the URL parser for query strings.</span>
+<span class="doccomment">///     pub QUERY_ENCODE_SET = [SIMPLE_ENCODE_SET] | {&#39; &#39;, &#39;&quot;&#39;, &#39;#&#39;, &#39;&lt;&#39;, &#39;&gt;&#39;}</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// assert_eq!(utf8_percent_encode(&quot;foo bar&quot;, QUERY_ENCODE_SET).collect::&lt;String&gt;(), &quot;foo%20bar&quot;);</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">define_encode_set</span> {
+    ($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>: <span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="kw">pub</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>: <span class="ident">ident</span> <span class="op">=</span> [<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base_set</span>: <span class="ident">expr</span>] <span class="op">|</span> {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ch</span>: <span class="ident">pat</span>),<span class="kw-2">*</span>}) <span class="op">=&gt;</span> {
+        $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>]</span>)<span class="op">*</span>
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
+        <span class="kw">pub</span> <span class="kw">struct</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>;
 
-        <span class='kw'>impl</span> <span class='macro-nonterminal'>$</span><span class='kw'>crate</span>::<span class='macro-nonterminal'>percent_encoding</span>::<span class='ident'>EncodeSet</span> <span class='kw'>for</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>name</span> {
-            <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-            <span class='kw'>fn</span> <span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>byte</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-                <span class='kw'>match</span> <span class='ident'>byte</span> <span class='kw'>as</span> <span class='ident'>char</span> {
+        <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">percent_encoding</span>::<span class="ident">EncodeSet</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span> {
+            <span class="attribute">#[<span class="ident">inline</span>]</span>
+            <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="kw">match</span> <span class="ident">byte</span> <span class="kw">as</span> <span class="ident">char</span> {
                     $(
-                        <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>ch</span> <span class='op'>=&gt;</span> <span class='bool-val'>true</span>,
-                    )<span class='op'>*</span>
-                    _ <span class='op'>=&gt;</span> <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>base_set</span>.<span class='ident'>contains</span>(<span class='ident'>byte</span>)
+                        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ch</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
+                    )<span class="op">*</span>
+                    _ <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base_set</span>.<span class="ident">contains</span>(<span class="ident">byte</span>)
                 }
             }
         }
     }
 }
 
-<span class='doccomment'>/// This encode set is used for the path of cannot-be-a-base URLs.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
-<span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>non_camel_case_types</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>SIMPLE_ENCODE_SET</span>;
+<span class="doccomment">/// This encode set is used for the path of cannot-be-a-base URLs.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SIMPLE_ENCODE_SET</span>;
 
-<span class='kw'>impl</span> <span class='ident'>EncodeSet</span> <span class='kw'>for</span> <span class='ident'>SIMPLE_ENCODE_SET</span> {
-    <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>byte</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='ident'>bool</span> {
-        <span class='ident'>byte</span> <span class='op'>&lt;</span> <span class='number'>0x20</span> <span class='op'>||</span> <span class='ident'>byte</span> <span class='op'>&gt;</span> <span class='number'>0x7E</span>
+<span class="kw">impl</span> <span class="ident">EncodeSet</span> <span class="kw">for</span> <span class="ident">SIMPLE_ENCODE_SET</span> {
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="ident">byte</span> <span class="op">&lt;</span> <span class="number">0x20</span> <span class="op">||</span> <span class="ident">byte</span> <span class="op">&gt;</span> <span class="number">0x7E</span>
     }
 }
 
-<span class='macro'>define_encode_set</span><span class='macro'>!</span> {
-    <span class='doccomment'>/// This encode set is used in the URL parser for query strings.</span>
-    <span class='kw'>pub</span> <span class='ident'>QUERY_ENCODE_SET</span> <span class='op'>=</span> [<span class='ident'>SIMPLE_ENCODE_SET</span>] <span class='op'>|</span> {<span class='string'>&#39; &#39;</span>, <span class='string'>&#39;&quot;&#39;</span>, <span class='string'>&#39;#&#39;</span>, <span class='string'>&#39;&lt;&#39;</span>, <span class='string'>&#39;&gt;&#39;</span>}
+<span class="macro">define_encode_set</span><span class="macro">!</span> {
+    <span class="doccomment">/// This encode set is used in the URL parser for query strings.</span>
+    <span class="kw">pub</span> <span class="ident">QUERY_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">SIMPLE_ENCODE_SET</span>] <span class="op">|</span> {<span class="string">&#39; &#39;</span>, <span class="string">&#39;&quot;&#39;</span>, <span class="string">&#39;#&#39;</span>, <span class="string">&#39;&lt;&#39;</span>, <span class="string">&#39;&gt;&#39;</span>}
 }
 
-<span class='macro'>define_encode_set</span><span class='macro'>!</span> {
-    <span class='doccomment'>/// This encode set is used for path components.</span>
-    <span class='kw'>pub</span> <span class='ident'>DEFAULT_ENCODE_SET</span> <span class='op'>=</span> [<span class='ident'>QUERY_ENCODE_SET</span>] <span class='op'>|</span> {<span class='string'>&#39;`&#39;</span>, <span class='string'>&#39;?&#39;</span>, <span class='string'>&#39;{&#39;</span>, <span class='string'>&#39;}&#39;</span>}
+<span class="macro">define_encode_set</span><span class="macro">!</span> {
+    <span class="doccomment">/// This encode set is used for path components.</span>
+    <span class="kw">pub</span> <span class="ident">DEFAULT_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">QUERY_ENCODE_SET</span>] <span class="op">|</span> {<span class="string">&#39;`&#39;</span>, <span class="string">&#39;?&#39;</span>, <span class="string">&#39;{&#39;</span>, <span class="string">&#39;}&#39;</span>}
 }
 
-<span class='macro'>define_encode_set</span><span class='macro'>!</span> {
-    <span class='doccomment'>/// This encode set is used for on &#39;/&#39;-separated path segment</span>
-    <span class='kw'>pub</span> <span class='ident'>PATH_SEGMENT_ENCODE_SET</span> <span class='op'>=</span> [<span class='ident'>DEFAULT_ENCODE_SET</span>] <span class='op'>|</span> {<span class='string'>&#39;%&#39;</span>, <span class='string'>&#39;/&#39;</span>}
+<span class="macro">define_encode_set</span><span class="macro">!</span> {
+    <span class="doccomment">/// This encode set is used for on &#39;/&#39;-separated path segment</span>
+    <span class="kw">pub</span> <span class="ident">PATH_SEGMENT_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">DEFAULT_ENCODE_SET</span>] <span class="op">|</span> {<span class="string">&#39;%&#39;</span>, <span class="string">&#39;/&#39;</span>}
 }
 
-<span class='macro'>define_encode_set</span><span class='macro'>!</span> {
-    <span class='doccomment'>/// This encode set is used for username and password.</span>
-    <span class='kw'>pub</span> <span class='ident'>USERINFO_ENCODE_SET</span> <span class='op'>=</span> [<span class='ident'>DEFAULT_ENCODE_SET</span>] <span class='op'>|</span> {
-        <span class='string'>&#39;/&#39;</span>, <span class='string'>&#39;:&#39;</span>, <span class='string'>&#39;;&#39;</span>, <span class='string'>&#39;=&#39;</span>, <span class='string'>&#39;@&#39;</span>, <span class='string'>&#39;[&#39;</span>, <span class='string'>&#39;\\&#39;</span>, <span class='string'>&#39;]&#39;</span>, <span class='string'>&#39;^&#39;</span>, <span class='string'>&#39;|&#39;</span>
+<span class="macro">define_encode_set</span><span class="macro">!</span> {
+    <span class="doccomment">/// This encode set is used for username and password.</span>
+    <span class="kw">pub</span> <span class="ident">USERINFO_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">DEFAULT_ENCODE_SET</span>] <span class="op">|</span> {
+        <span class="string">&#39;/&#39;</span>, <span class="string">&#39;:&#39;</span>, <span class="string">&#39;;&#39;</span>, <span class="string">&#39;=&#39;</span>, <span class="string">&#39;@&#39;</span>, <span class="string">&#39;[&#39;</span>, <span class="string">&#39;\\&#39;</span>, <span class="string">&#39;]&#39;</span>, <span class="string">&#39;^&#39;</span>, <span class="string">&#39;|&#39;</span>
     }
 }
 
-<span class='doccomment'>/// Return the percent-encoding of the given bytes.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// This is unconditional, unlike `percent_encode()` which uses an encode set.</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>percent_encode_byte</span>(<span class='ident'>byte</span>: <span class='ident'>u8</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span> {
-    <span class='kw'>let</span> <span class='ident'>index</span> <span class='op'>=</span> <span class='ident'>usize</span>::<span class='ident'>from</span>(<span class='ident'>byte</span>) <span class='op'>*</span> <span class='number'>3</span>;
-    <span class='kw-2'>&amp;</span><span class='string'>&quot;\
+<span class="doccomment">/// Return the percent-encoding of the given bytes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is unconditional, unlike `percent_encode()` which uses an encode set.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_encode_byte</span>(<span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">usize</span>::<span class="ident">from</span>(<span class="ident">byte</span>) <span class="op">*</span> <span class="number">3</span>;
+    <span class="kw-2">&amp;</span><span class="string">&quot;\
         %00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F\
         %10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F\
         %20%21%22%23%24%25%26%27%28%29%2A%2B%2C%2D%2E%2F\
@@ -521,102 +522,102 @@
         %D0%D1%D2%D3%D4%D5%D6%D7%D8%D9%DA%DB%DC%DD%DE%DF\
         %E0%E1%E2%E3%E4%E5%E6%E7%E8%E9%EA%EB%EC%ED%EE%EF\
         %F0%F1%F2%F3%F4%F5%F6%F7%F8%F9%FA%FB%FC%FD%FE%FF\
-    &quot;</span>[<span class='ident'>index</span>..<span class='ident'>index</span> <span class='op'>+</span> <span class='number'>3</span>]
+    &quot;</span>[<span class="ident">index</span>..<span class="ident">index</span> <span class="op">+</span> <span class="number">3</span>]
 }
 
-<span class='doccomment'>/// Percent-encode the given bytes with the given encode set.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The encode set define which bytes (in addition to non-ASCII and controls)</span>
-<span class='doccomment'>/// need to be percent-encoded.</span>
-<span class='doccomment'>/// The choice of this set depends on context.</span>
-<span class='doccomment'>/// For example, `?` needs to be encoded in an URL path but not in a query string.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The return value is an iterator of `&amp;str` slices (so it has a `.collect::&lt;String&gt;()` method)</span>
-<span class='doccomment'>/// that also implements `Display` and `Into&lt;Cow&lt;str&gt;&gt;`.</span>
-<span class='doccomment'>/// The latter returns `Cow::Borrowed` when none of the bytes in `input`</span>
-<span class='doccomment'>/// are in the given encode set.</span>
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>percent_encode</span><span class='op'>&lt;</span><span class='ident'>E</span>: <span class='ident'>EncodeSet</span><span class='op'>&gt;</span>(<span class='ident'>input</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>u8</span>], <span class='ident'>encode_set</span>: <span class='ident'>E</span>) <span class='op'>-&gt;</span> <span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> {
-    <span class='ident'>PercentEncode</span> {
-        <span class='ident'>bytes</span>: <span class='ident'>input</span>,
-        <span class='ident'>encode_set</span>: <span class='ident'>encode_set</span>,
+<span class="doccomment">/// Percent-encode the given bytes with the given encode set.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The encode set define which bytes (in addition to non-ASCII and controls)</span>
+<span class="doccomment">/// need to be percent-encoded.</span>
+<span class="doccomment">/// The choice of this set depends on context.</span>
+<span class="doccomment">/// For example, `?` needs to be encoded in an URL path but not in a query string.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The return value is an iterator of `&amp;str` slices (so it has a `.collect::&lt;String&gt;()` method)</span>
+<span class="doccomment">/// that also implements `Display` and `Into&lt;Cow&lt;str&gt;&gt;`.</span>
+<span class="doccomment">/// The latter returns `Cow::Borrowed` when none of the bytes in `input`</span>
+<span class="doccomment">/// are in the given encode set.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_encode</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">encode_set</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="ident">PercentEncode</span> {
+        <span class="ident">bytes</span>: <span class="ident">input</span>,
+        <span class="ident">encode_set</span>: <span class="ident">encode_set</span>,
     }
 }
 
-<span class='doccomment'>/// Percent-encode the UTF-8 encoding of the given string.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// See `percent_encode()` for how to use the return value.</span>
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>utf8_percent_encode</span><span class='op'>&lt;</span><span class='ident'>E</span>: <span class='ident'>EncodeSet</span><span class='op'>&gt;</span>(<span class='ident'>input</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>encode_set</span>: <span class='ident'>E</span>) <span class='op'>-&gt;</span> <span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='ident'>E</span><span class='op'>&gt;</span> {
-    <span class='ident'>percent_encode</span>(<span class='ident'>input</span>.<span class='ident'>as_bytes</span>(), <span class='ident'>encode_set</span>)
+<span class="doccomment">/// Percent-encode the UTF-8 encoding of the given string.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See `percent_encode()` for how to use the return value.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">utf8_percent_encode</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">encode_set</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="ident">percent_encode</span>(<span class="ident">input</span>.<span class="ident">as_bytes</span>(), <span class="ident">encode_set</span>)
 }
 
-<span class='doccomment'>/// The return type of `percent_encode()` and `utf8_percent_encode()`.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span>: <span class='ident'>EncodeSet</span><span class='op'>&gt;</span> {
-    <span class='ident'>bytes</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>],
-    <span class='ident'>encode_set</span>: <span class='ident'>E</span>,
+<span class="doccomment">/// The return type of `percent_encode()` and `utf8_percent_encode()`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> {
+    <span class="ident">bytes</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+    <span class="ident">encode_set</span>: <span class="ident">E</span>,
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span>: <span class='ident'>EncodeSet</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='kw-2'>&amp;</span><span class='ident'>first_byte</span>, <span class='ident'>remaining</span>)) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>split_first</span>() {
-            <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>encode_set</span>.<span class='ident'>contains</span>(<span class='ident'>first_byte</span>) {
-                <span class='self'>self</span>.<span class='ident'>bytes</span> <span class='op'>=</span> <span class='ident'>remaining</span>;
-                <span class='prelude-val'>Some</span>(<span class='ident'>percent_encode_byte</span>(<span class='ident'>first_byte</span>))
-            } <span class='kw'>else</span> {
-                <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>first_byte</span>.<span class='ident'>is_ascii</span>());
-                <span class='kw'>for</span> (<span class='ident'>i</span>, <span class='kw-2'>&amp;</span><span class='ident'>byte</span>) <span class='kw'>in</span> <span class='ident'>remaining</span>.<span class='ident'>iter</span>().<span class='ident'>enumerate</span>() {
-                    <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>encode_set</span>.<span class='ident'>contains</span>(<span class='ident'>byte</span>) {
-                        <span class='comment'>// 1 for first_byte + i for previous iterations of this loop</span>
-                        <span class='kw'>let</span> (<span class='ident'>unchanged_slice</span>, <span class='ident'>remaining</span>) <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>split_at</span>(<span class='number'>1</span> <span class='op'>+</span> <span class='ident'>i</span>);
-                        <span class='self'>self</span>.<span class='ident'>bytes</span> <span class='op'>=</span> <span class='ident'>remaining</span>;
-                        <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='kw'>unsafe</span> { <span class='ident'>str</span>::<span class='ident'>from_utf8_unchecked</span>(<span class='ident'>unchanged_slice</span>) })
-                    } <span class='kw'>else</span> {
-                        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>byte</span>.<span class='ident'>is_ascii</span>());
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span><span class="ident">first_byte</span>, <span class="ident">remaining</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">split_first</span>() {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">encode_set</span>.<span class="ident">contains</span>(<span class="ident">first_byte</span>) {
+                <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">=</span> <span class="ident">remaining</span>;
+                <span class="prelude-val">Some</span>(<span class="ident">percent_encode_byte</span>(<span class="ident">first_byte</span>))
+            } <span class="kw">else</span> {
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">first_byte</span>.<span class="ident">is_ascii</span>());
+                <span class="kw">for</span> (<span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">byte</span>) <span class="kw">in</span> <span class="ident">remaining</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">encode_set</span>.<span class="ident">contains</span>(<span class="ident">byte</span>) {
+                        <span class="comment">// 1 for first_byte + i for previous iterations of this loop</span>
+                        <span class="kw">let</span> (<span class="ident">unchanged_slice</span>, <span class="ident">remaining</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">split_at</span>(<span class="number">1</span> <span class="op">+</span> <span class="ident">i</span>);
+                        <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">=</span> <span class="ident">remaining</span>;
+                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">str</span>::<span class="ident">from_utf8_unchecked</span>(<span class="ident">unchanged_slice</span>) })
+                    } <span class="kw">else</span> {
+                        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">byte</span>.<span class="ident">is_ascii</span>());
                     }
                 }
-                <span class='kw'>let</span> <span class='ident'>unchanged_slice</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>bytes</span>;
-                <span class='self'>self</span>.<span class='ident'>bytes</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span>[][..];
-                <span class='prelude-val'>Some</span>(<span class='kw'>unsafe</span> { <span class='ident'>str</span>::<span class='ident'>from_utf8_unchecked</span>(<span class='ident'>unchanged_slice</span>) })
+                <span class="kw">let</span> <span class="ident">unchanged_slice</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>;
+                <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[][..];
+                <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">str</span>::<span class="ident">from_utf8_unchecked</span>(<span class="ident">unchanged_slice</span>) })
             }
-        } <span class='kw'>else</span> {
-            <span class='prelude-val'>None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">None</span>
         }
     }
 
-    <span class='kw'>fn</span> <span class='ident'>size_hint</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>usize</span>, <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>) {
-        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>is_empty</span>() {
-            (<span class='number'>0</span>, <span class='prelude-val'>Some</span>(<span class='number'>0</span>))
-        } <span class='kw'>else</span> {
-            (<span class='number'>1</span>, <span class='prelude-val'>Some</span>(<span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>len</span>()))
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">is_empty</span>() {
+            (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>))
+        } <span class="kw">else</span> {
+            (<span class="number">1</span>, <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">len</span>()))
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span>: <span class='ident'>EncodeSet</span><span class='op'>&gt;</span> <span class='ident'>fmt</span>::<span class='ident'>Display</span> <span class='kw'>for</span> <span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>formatter</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
-        <span class='kw'>for</span> <span class='ident'>c</span> <span class='kw'>in</span> (<span class='op'>*</span><span class='self'>self</span>).<span class='ident'>clone</span>() {
-            <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>formatter</span>.<span class='ident'>write_str</span>(<span class='ident'>c</span>))
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> (<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">clone</span>() {
+            <span class="macro">try</span><span class="macro">!</span>(<span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="ident">c</span>))
         }
-        <span class='prelude-val'>Ok</span>(())
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span>: <span class='ident'>EncodeSet</span><span class='op'>&gt;</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span><span class='op'>&gt;&gt;</span> <span class='kw'>for</span> <span class='ident'>Cow</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>str</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='kw-2'>mut</span> <span class='ident'>iter</span>: <span class='ident'>PercentEncode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>E</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>match</span> <span class='ident'>iter</span>.<span class='ident'>next</span>() {
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='string'>&quot;&quot;</span>.<span class='ident'>into</span>(),
-            <span class='prelude-val'>Some</span>(<span class='ident'>first</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>match</span> <span class='ident'>iter</span>.<span class='ident'>next</span>() {
-                    <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>first</span>.<span class='ident'>into</span>(),
-                    <span class='prelude-val'>Some</span>(<span class='ident'>second</span>) <span class='op'>=&gt;</span> {
-                        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>string</span> <span class='op'>=</span> <span class='ident'>first</span>.<span class='ident'>to_owned</span>();
-                        <span class='ident'>string</span>.<span class='ident'>push_str</span>(<span class='ident'>second</span>);
-                        <span class='ident'>string</span>.<span class='ident'>extend</span>(<span class='ident'>iter</span>);
-                        <span class='ident'>string</span>.<span class='ident'>into</span>()
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw-2">mut</span> <span class="ident">iter</span>: <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="string">&quot;&quot;</span>.<span class="ident">into</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">first</span>) <span class="op">=&gt;</span> {
+                <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">first</span>.<span class="ident">into</span>(),
+                    <span class="prelude-val">Some</span>(<span class="ident">second</span>) <span class="op">=&gt;</span> {
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">first</span>.<span class="ident">to_owned</span>();
+                        <span class="ident">string</span>.<span class="ident">push_str</span>(<span class="ident">second</span>);
+                        <span class="ident">string</span>.<span class="ident">extend</span>(<span class="ident">iter</span>);
+                        <span class="ident">string</span>.<span class="ident">into</span>()
                     }
                 }
             }
@@ -624,111 +625,111 @@
     }
 }
 
-<span class='doccomment'>/// Percent-decode the given bytes.</span>
-<span class='doccomment'>///</span>
-<span class='doccomment'>/// The return value is an iterator of decoded `u8` bytes</span>
-<span class='doccomment'>/// that also implements `Into&lt;Cow&lt;u8&gt;&gt;`</span>
-<span class='doccomment'>/// (which returns `Cow::Borrowed` when `input` contains no percent-encoded sequence)</span>
-<span class='doccomment'>/// and has `decode_utf8()` and `decode_utf8_lossy()` methods.</span>
-<span class='attribute'>#[<span class='ident'>inline</span>]</span>
-<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>percent_decode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='ident'>input</span>: <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> [<span class='ident'>u8</span>]) <span class='op'>-&gt;</span> <span class='ident'>PercentDecode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='ident'>PercentDecode</span> {
-        <span class='ident'>bytes</span>: <span class='ident'>input</span>.<span class='ident'>iter</span>()
+<span class="doccomment">/// Percent-decode the given bytes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The return value is an iterator of decoded `u8` bytes</span>
+<span class="doccomment">/// that also implements `Into&lt;Cow&lt;u8&gt;&gt;`</span>
+<span class="doccomment">/// (which returns `Cow::Borrowed` when `input` contains no percent-encoded sequence)</span>
+<span class="doccomment">/// and has `decode_utf8()` and `decode_utf8_lossy()` methods.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_decode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">PercentDecode</span> {
+        <span class="ident">bytes</span>: <span class="ident">input</span>.<span class="ident">iter</span>()
     }
 }
 
-<span class='doccomment'>/// The return type of `percent_decode()`.</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>PercentDecode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='ident'>bytes</span>: <span class='ident'>slice</span>::<span class='ident'>Iter</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>u8</span><span class='op'>&gt;</span>,
+<span class="doccomment">/// The return type of `percent_decode()`.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">bytes</span>: <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">u8</span><span class="op">&gt;</span>,
 }
 
-<span class='kw'>fn</span> <span class='ident'>after_percent_sign</span>(<span class='ident'>iter</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>slice</span>::<span class='ident'>Iter</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> {
-    <span class='kw'>let</span> <span class='ident'>initial_iter</span> <span class='op'>=</span> <span class='ident'>iter</span>.<span class='ident'>clone</span>();
-    <span class='kw'>let</span> <span class='ident'>h</span> <span class='op'>=</span> <span class='ident'>iter</span>.<span class='ident'>next</span>().<span class='ident'>and_then</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>b</span><span class='op'>|</span> (<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>char</span>).<span class='ident'>to_digit</span>(<span class='number'>16</span>));
-    <span class='kw'>let</span> <span class='ident'>l</span> <span class='op'>=</span> <span class='ident'>iter</span>.<span class='ident'>next</span>().<span class='ident'>and_then</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>b</span><span class='op'>|</span> (<span class='ident'>b</span> <span class='kw'>as</span> <span class='ident'>char</span>).<span class='ident'>to_digit</span>(<span class='number'>16</span>));
-    <span class='kw'>if</span> <span class='kw'>let</span> (<span class='prelude-val'>Some</span>(<span class='ident'>h</span>), <span class='prelude-val'>Some</span>(<span class='ident'>l</span>)) <span class='op'>=</span> (<span class='ident'>h</span>, <span class='ident'>l</span>) {
-        <span class='prelude-val'>Some</span>(<span class='ident'>h</span> <span class='kw'>as</span> <span class='ident'>u8</span> <span class='op'>*</span> <span class='number'>0x10</span> <span class='op'>+</span> <span class='ident'>l</span> <span class='kw'>as</span> <span class='ident'>u8</span>)
-    } <span class='kw'>else</span> {
-        <span class='op'>*</span><span class='ident'>iter</span> <span class='op'>=</span> <span class='ident'>initial_iter</span>;
-        <span class='prelude-val'>None</span>
+<span class="kw">fn</span> <span class="ident">after_percent_sign</span>(<span class="ident">iter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">initial_iter</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">to_digit</span>(<span class="number">16</span>));
+    <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">to_digit</span>(<span class="number">16</span>));
+    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">h</span>), <span class="prelude-val">Some</span>(<span class="ident">l</span>)) <span class="op">=</span> (<span class="ident">h</span>, <span class="ident">l</span>) {
+        <span class="prelude-val">Some</span>(<span class="ident">h</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">*</span> <span class="number">0x10</span> <span class="op">+</span> <span class="ident">l</span> <span class="kw">as</span> <span class="ident">u8</span>)
+    } <span class="kw">else</span> {
+        <span class="kw-2">*</span><span class="ident">iter</span> <span class="op">=</span> <span class="ident">initial_iter</span>;
+        <span class="prelude-val">None</span>
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Iterator</span> <span class='kw'>for</span> <span class='ident'>PercentDecode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> <span class='ident'>u8</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">u8</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>next</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span><span class='ident'>byte</span><span class='op'>|</span> {
-            <span class='kw'>if</span> <span class='ident'>byte</span> <span class='op'>==</span> <span class='string'>b&#39;%&#39;</span> {
-                <span class='ident'>after_percent_sign</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>bytes</span>).<span class='ident'>unwrap_or</span>(<span class='ident'>byte</span>)
-            } <span class='kw'>else</span> {
-                <span class='ident'>byte</span>
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">next</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">byte</span><span class="op">|</span> {
+            <span class="kw">if</span> <span class="ident">byte</span> <span class="op">==</span> <span class="string">b&#39;%&#39;</span> {
+                <span class="ident">after_percent_sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">bytes</span>).<span class="ident">unwrap_or</span>(<span class="ident">byte</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">byte</span>
             }
         })
     }
 
-    <span class='kw'>fn</span> <span class='ident'>size_hint</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> (<span class='ident'>usize</span>, <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>) {
-        <span class='kw'>let</span> <span class='ident'>bytes</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>len</span>();
-        (<span class='ident'>bytes</span> <span class='op'>/</span> <span class='number'>3</span>, <span class='prelude-val'>Some</span>(<span class='ident'>bytes</span>))
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">len</span>();
+        (<span class="ident">bytes</span> <span class="op">/</span> <span class="number">3</span>, <span class="prelude-val">Some</span>(<span class="ident">bytes</span>))
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>PercentDecode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;&gt;</span> <span class='kw'>for</span> <span class='ident'>Cow</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, [<span class='ident'>u8</span>]<span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>iter</span>: <span class='ident'>PercentDecode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='self'>Self</span> {
-        <span class='kw'>match</span> <span class='ident'>iter</span>.<span class='ident'>if_any</span>() {
-            <span class='prelude-val'>Some</span>(<span class='ident'>vec</span>) <span class='op'>=&gt;</span> <span class='ident'>Cow</span>::<span class='ident'>Owned</span>(<span class='ident'>vec</span>),
-            <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> <span class='ident'>Cow</span>::<span class='ident'>Borrowed</span>(<span class='ident'>iter</span>.<span class='ident'>bytes</span>.<span class='ident'>as_slice</span>()),
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, [<span class="ident">u8</span>]<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">iter</span>: <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">if_any</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">vec</span>) <span class="op">=&gt;</span> <span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">vec</span>),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">iter</span>.<span class="ident">bytes</span>.<span class="ident">as_slice</span>()),
         }
     }
 }
 
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>PercentDecode</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> {
-    <span class='doccomment'>/// If the percent-decoding is different from the input, return it as a new bytes vector.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>if_any</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>u8</span><span class='op'>&gt;&gt;</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bytes_iter</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>clone</span>();
-        <span class='kw'>while</span> <span class='ident'>bytes_iter</span>.<span class='ident'>find</span>(<span class='op'>|</span><span class='op'>&amp;&amp;</span><span class='ident'>b</span><span class='op'>|</span> <span class='ident'>b</span> <span class='op'>==</span> <span class='string'>b&#39;%&#39;</span>).<span class='ident'>is_some</span>() {
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='ident'>decoded_byte</span>) <span class='op'>=</span> <span class='ident'>after_percent_sign</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>bytes_iter</span>) {
-                <span class='kw'>let</span> <span class='ident'>initial_bytes</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>bytes</span>.<span class='ident'>as_slice</span>();
-                <span class='kw'>let</span> <span class='ident'>unchanged_bytes_len</span> <span class='op'>=</span> <span class='ident'>initial_bytes</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='ident'>bytes_iter</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='number'>3</span>;
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>decoded</span> <span class='op'>=</span> <span class='ident'>initial_bytes</span>[..<span class='ident'>unchanged_bytes_len</span>].<span class='ident'>to_owned</span>();
-                <span class='ident'>decoded</span>.<span class='ident'>push</span>(<span class='ident'>decoded_byte</span>);
-                <span class='ident'>decoded</span>.<span class='ident'>extend</span>(<span class='ident'>PercentDecode</span> {
-                    <span class='ident'>bytes</span>: <span class='ident'>bytes_iter</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// If the percent-decoding is different from the input, return it as a new bytes vector.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">if_any</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes_iter</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">clone</span>();
+        <span class="kw">while</span> <span class="ident">bytes_iter</span>.<span class="ident">find</span>(<span class="op">|</span><span class="op">&amp;&amp;</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span> <span class="op">==</span> <span class="string">b&#39;%&#39;</span>).<span class="ident">is_some</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">decoded_byte</span>) <span class="op">=</span> <span class="ident">after_percent_sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes_iter</span>) {
+                <span class="kw">let</span> <span class="ident">initial_bytes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">as_slice</span>();
+                <span class="kw">let</span> <span class="ident">unchanged_bytes_len</span> <span class="op">=</span> <span class="ident">initial_bytes</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">bytes_iter</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">3</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">decoded</span> <span class="op">=</span> <span class="ident">initial_bytes</span>[..<span class="ident">unchanged_bytes_len</span>].<span class="ident">to_owned</span>();
+                <span class="ident">decoded</span>.<span class="ident">push</span>(<span class="ident">decoded_byte</span>);
+                <span class="ident">decoded</span>.<span class="ident">extend</span>(<span class="ident">PercentDecode</span> {
+                    <span class="ident">bytes</span>: <span class="ident">bytes_iter</span>
                 });
-                <span class='kw'>return</span> <span class='prelude-val'>Some</span>(<span class='ident'>decoded</span>)
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">decoded</span>)
             }
         }
-        <span class='comment'>// Nothing to decode</span>
-        <span class='prelude-val'>None</span>
+        <span class="comment">// Nothing to decode</span>
+        <span class="prelude-val">None</span>
     }
 
-    <span class='doccomment'>/// Decode the result of percent-decoding as UTF-8.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// This is return `Err` when the percent-decoded bytes are not well-formed in UTF-8.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode_utf8</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Cow</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>str</span><span class='op'>&gt;</span>, <span class='ident'>str</span>::<span class='ident'>Utf8Error</span><span class='op'>&gt;</span> {
-        <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>clone</span>().<span class='ident'>into</span>() {
-            <span class='ident'>Cow</span>::<span class='ident'>Borrowed</span>(<span class='ident'>bytes</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>match</span> <span class='ident'>str</span>::<span class='ident'>from_utf8</span>(<span class='ident'>bytes</span>) {
-                    <span class='prelude-val'>Ok</span>(<span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>s</span>.<span class='ident'>into</span>()),
-                    <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>),
+    <span class="doccomment">/// Decode the result of percent-decoding as UTF-8.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is return `Err` when the percent-decoded bytes are not well-formed in UTF-8.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode_utf8</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">str</span>::<span class="ident">Utf8Error</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">into</span>() {
+            <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">bytes</span>) <span class="op">=&gt;</span> {
+                <span class="kw">match</span> <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">bytes</span>) {
+                    <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">into</span>()),
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
                 }
             }
-            <span class='ident'>Cow</span>::<span class='ident'>Owned</span>(<span class='ident'>bytes</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>match</span> <span class='ident'>String</span>::<span class='ident'>from_utf8</span>(<span class='ident'>bytes</span>) {
-                    <span class='prelude-val'>Ok</span>(<span class='ident'>s</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Ok</span>(<span class='ident'>s</span>.<span class='ident'>into</span>()),
-                    <span class='prelude-val'>Err</span>(<span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='prelude-val'>Err</span>(<span class='ident'>e</span>.<span class='ident'>utf8_error</span>()),
+            <span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">bytes</span>) <span class="op">=&gt;</span> {
+                <span class="kw">match</span> <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">bytes</span>) {
+                    <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">into</span>()),
+                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">utf8_error</span>()),
                 }
             }
         }
     }
 
-    <span class='doccomment'>/// Decode the result of percent-decoding as UTF-8, lossily.</span>
-    <span class='doccomment'>///</span>
-    <span class='doccomment'>/// Invalid UTF-8 percent-encoded byte sequences will be replaced � U+FFFD,</span>
-    <span class='doccomment'>/// the replacement character.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>decode_utf8_lossy</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Cow</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>str</span><span class='op'>&gt;</span> {
-        <span class='ident'>encoding</span>::<span class='ident'>decode_utf8_lossy</span>(<span class='self'>self</span>.<span class='ident'>clone</span>().<span class='ident'>into</span>())
+    <span class="doccomment">/// Decode the result of percent-decoding as UTF-8, lossily.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Invalid UTF-8 percent-encoded byte sequences will be replaced � U+FFFD,</span>
+    <span class="doccomment">/// the replacement character.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode_utf8_lossy</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="ident">encoding</span>::<span class="ident">decode_utf8_lossy</span>(<span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">into</span>())
     }
 }
 </pre>
@@ -788,11 +789,9 @@
     <script>
         window.rootPath = "../../";
         window.currentCrate = "url";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>
