@@ -259,7 +259,7 @@ extern crate git2;
 #[macro_use]
 extern crate clap;
 extern crate toml;
-extern crate json;
+extern crate serde_json;
 
 mod options;
 
