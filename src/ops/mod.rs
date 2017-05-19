@@ -13,7 +13,7 @@ use std::fs::{self, File};
 use std::io::Read;
 use regex::Regex;
 use toml;
-use json;
+use serde_json;
 
 mod config;
 
@@ -273,13 +273,17 @@ pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &[String],
 /// }
 /// ```
 pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
-    let mut buf = String::new();
-    package_desc.read_to_string(&mut buf).unwrap();
+    #[derive(Deserialize)]
+    struct PackageDesc {
+        yanked: bool,
+        vers: Semver,
+    }
 
-    buf.lines()
-        .map(|p| json::parse(p).unwrap())
-        .filter(|j| !j["yanked"].as_bool().unwrap())
-        .map(|j| Semver::parse(j["vers"].as_str().unwrap()).unwrap())
+    serde_json::Deserializer::from_reader(package_desc)
+        .into_iter::<PackageDesc>()
+        .map(Result::unwrap)
+        .filter(|pkg| !pkg.yanked)
+        .map(|pkg| pkg.vers)
         .collect()
 }
 
