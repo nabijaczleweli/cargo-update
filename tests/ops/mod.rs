@@ -12,7 +12,7 @@ fn intersect_packages() {
     assert_eq!(ops::intersect_packages(vec![MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
                                             MainRepoPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
                                             MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()],
-                                       &["cargo-count".to_string(), "racer".to_string(), "checksums".to_string()],
+                                       &[("cargo-count".to_string(), None), ("racer".to_string(), None), ("checksums".to_string(), None)],
                                        false),
                vec![MainRepoPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
                     MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);

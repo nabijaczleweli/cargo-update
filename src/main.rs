@@ -71,11 +71,7 @@ fn actual_main() -> Result<(), i32> {
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
             }
-            writeln!(out,
-                     "\tv{}\t{}",
-                     package.newest_version.as_ref().unwrap(),
-                     if package.needs_update() { "Yes" } else { "No" })
-                .unwrap();
+            writeln!(out, "\tv{}\t{}", package.update_to_version(), if package.needs_update() { "Yes" } else { "No" }).unwrap();
         }
         writeln!(out, "").unwrap();
         out.flush().unwrap();
@@ -105,10 +101,22 @@ fn actual_main() -> Result<(), i32> {
                     }
 
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                        Command::new("cargo").args(cfg.cargo_args()).arg(&package.name).status().unwrap()
-                    } else {
-                        Command::new("cargo").arg("install").arg("-f").arg(&package.name).status().unwrap()
-                    };
+                            Command::new("cargo")
+                                .args(cfg.cargo_args())
+                                .arg(&package.name)
+                                .arg("--vers")
+                                .arg(package.update_to_version().to_string())
+                                .status()
+                        } else {
+                            Command::new("cargo")
+                                .arg("install")
+                                .arg("-f")
+                                .arg(&package.name)
+                                .arg("--vers")
+                                .arg(package.update_to_version().to_string())
+                                .status()
+                        }
+                        .unwrap();
 
                     println!("");
                     if !install_res.success() {

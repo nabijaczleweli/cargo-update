@@ -15,6 +15,7 @@
 use clap::{self, AppSettings, SubCommand, App, Arg};
 use self::super::ops::ConfigOperation;
 use std::env::{self, home_dir};
+use semver::Version as Semver;
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
 use std::fs;
@@ -26,7 +27,7 @@ pub struct Options {
     /// Packages to update. Default: `None`
     ///
     /// If empty - update all.
-    pub to_update: Vec<String>,
+    pub to_update: Vec<(String, Option<Semver>)>,
     /// Whether to update packages or just list them. Default: `true`
     pub update: bool,
     /// Whether to allow for just installing packages. Default: `false`
@@ -70,7 +71,11 @@ impl Options {
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
-                        Arg::from_usage("<PACKAGE>... 'Packages to update'").conflicts_with("all").empty_values(false).min_values(1)]))
+                        Arg::from_usage("<PACKAGE>... 'Packages to update'")
+                            .conflicts_with("all")
+                            .empty_values(false)
+                            .min_values(1)
+                            .validator(|s| package_parse(s).map(|_| ()))]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
 
@@ -79,8 +84,8 @@ impl Options {
             to_update: if matches.is_present("all") {
                 vec![]
             } else {
-                let packages: Vec<_> = matches.values_of("PACKAGE").unwrap().map(String::from).collect();
-                packages.unique()
+                let packages: Vec<_> = matches.values_of("PACKAGE").unwrap().map(String::from).map(package_parse).map(Result::unwrap).collect();
+                packages.unique_via(|l, r| l.0 == r.0)
             },
             update: !matches.is_present("list"),
             install: matches.is_present("allow-no-update"),
@@ -173,4 +178,13 @@ fn cargo_dir() -> (String, PathBuf) {
 
 fn cargo_dir_validator(s: String) -> Result<(), String> {
     fs::canonicalize(&s).map(|_| ()).map_err(|_| format!("Cargo directory \"{}\" not found", s))
+}
+
+fn package_parse(s: String) -> Result<(String, Option<Semver>), String> {
+    if let Some(idx) = s.find('#') {
+        Ok((s[0..idx].to_string(),
+            Some(try!(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))))))
+    } else {
+        Ok((s, None))
+    }
 }
