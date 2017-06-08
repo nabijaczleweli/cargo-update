@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.5/src/proxy_options.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.6/src/proxy_options.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>proxy_options.rs.html -- source</title>
@@ -99,16 +99,16 @@
 <span id="54">54</span>
 <span id="55">55</span>
 <span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">CString</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 
 <span class="kw">use</span> <span class="ident">raw</span>;
 <span class="kw">use</span> <span class="ident">util</span>::<span class="ident">Binding</span>;
 
 <span class="doccomment">/// Options which can be specified to various fetch operations.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ProxyOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CString</span><span class="op">&gt;</span>,
     <span class="ident">proxy_kind</span>: <span class="ident">raw</span>::<span class="ident">git_proxy_t</span>,
@@ -118,11 +118,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ProxyOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new set of proxy options ready to be configured.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">ProxyOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="ident">ProxyOptions</span> {
-            <span class="ident">url</span>: <span class="prelude-val">None</span>,
-            <span class="ident">proxy_kind</span>: <span class="ident">raw</span>::<span class="ident">GIT_PROXY_NONE</span>,
-            <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
-        }
+        <span class="ident">Default</span>::<span class="ident">default</span>()
     }
 
     <span class="doccomment">/// Try to auto-detect the proxy from the git configuration.</span>
@@ -153,10 +149,10 @@
         <span class="ident">raw</span>::<span class="ident">git_proxy_options</span> {
             <span class="ident">version</span>: <span class="ident">raw</span>::<span class="ident">GIT_PROXY_OPTIONS_VERSION</span>,
             <span class="ident">kind</span>: <span class="self">self</span>.<span class="ident">proxy_kind</span>,
-            <span class="ident">url</span>: <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ptr</span>()).<span class="ident">unwrap_or</span>(<span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _),
+            <span class="ident">url</span>: <span class="self">self</span>.<span class="ident">url</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ptr</span>()).<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>()),
             <span class="ident">credentials</span>: <span class="prelude-val">None</span>,
             <span class="ident">certificate_check</span>: <span class="prelude-val">None</span>,
-            <span class="ident">payload</span>: <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _,
+            <span class="ident">payload</span>: <span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
         }
     }
 }

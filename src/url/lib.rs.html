@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.4.0/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.4.1/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -1926,22 +1926,6 @@
 <span id="1881">1881</span>
 <span id="1882">1882</span>
 <span id="1883">1883</span>
-<span id="1884">1884</span>
-<span id="1885">1885</span>
-<span id="1886">1886</span>
-<span id="1887">1887</span>
-<span id="1888">1888</span>
-<span id="1889">1889</span>
-<span id="1890">1890</span>
-<span id="1891">1891</span>
-<span id="1892">1892</span>
-<span id="1893">1893</span>
-<span id="1894">1894</span>
-<span id="1895">1895</span>
-<span id="1896">1896</span>
-<span id="1897">1897</span>
-<span id="1898">1898</span>
-<span id="1899">1899</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2013-2015 The rust-url developers.</span>
 <span class="comment">//</span>
@@ -1955,28 +1939,6 @@
 
 rust-url is an implementation of the [URL Standard](http://url.spec.whatwg.org/)
 for the [Rust](http://rust-lang.org/) programming language.
-
-It builds with [Cargo](http://crates.io/).
-To use it in your project, add this to your `Cargo.toml` file:
-
-```Cargo
-[dependencies.url]
-git = &quot;https://github.com/servo/rust-url&quot;
-```
-
-Supporting encodings other than UTF-8 in query strings is an optional feature
-that requires [rust-encoding](https://github.com/lifthrasiir/rust-encoding)
-and is off by default.
-You can enable it with
-[Cargo’s *features* mechanism](http://doc.crates.io/manifest.html#the-[features]-section):
-
-```Cargo
-[dependencies.url]
-git = &quot;https://github.com/servo/rust-url&quot;
-features = [&quot;query_encoding&quot;]
-```
-
-… or by passing `--cfg &#39;feature=&quot;query_encoding&quot;&#39;` to rustc.
 
 
 # URL parsing and data structures
@@ -2056,6 +2018,8 @@ let this_document = Url::parse(&quot;http://servo.github.io/rust-url/url/index.h
 let css_url = this_document.join(&quot;../main.css&quot;).unwrap();
 assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot;)
 */</span>
+
+<span class="attribute">#<span class="op">!</span>[<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/url/1.4.0&quot;</span>)]</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;rustc-serialize&quot;</span>)]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rustc_serialize</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">matches</span>;
@@ -2149,6 +2113,11 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 
     <span class="doccomment">/// Override the character encoding of query strings.</span>
     <span class="doccomment">/// This is a legacy concept only relevant for HTML.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `EncodingRef` is defined in [rust-encoding](https://github.com/lifthrasiir/rust-encoding).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is only available if the `query_encoding`</span>
+    <span class="doccomment">/// [feature](http://doc.crates.io/manifest.html#the-features-section]) is enabled.</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;query_encoding&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encoding_override</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">new</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">encoding</span>::<span class="ident">EncodingRef</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">encoding_override</span> <span class="op">=</span> <span class="ident">EncodingOverride</span>::<span class="ident">from_opt_encoding</span>(<span class="ident">new</span>).<span class="ident">to_output_encoding</span>();
@@ -2218,24 +2187,22 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 
     <span class="doccomment">/// Parse a string as an URL, with this URL as the base URL.</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// Note: a trailing slash is significant.</span>
+    <span class="doccomment">/// Without it, the last path component is considered to be a “file” name</span>
+    <span class="doccomment">/// to be removed to get at the “directory” that is used as the base:</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```rust</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// let url = Url::parse(&quot;https://example.net&quot;).unwrap();</span>
-    <span class="doccomment">/// let url = url.join(&quot;foo&quot;).unwrap();</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.net/foo&quot;);</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// let base = Url::parse(&quot;https://example.net/a/b.html&quot;).unwrap();</span>
+    <span class="doccomment">/// let url = base.join(&quot;c.png&quot;).unwrap();</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.net/a/c.png&quot;);  // Not /a/b.html/c.png</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Trailing slashes are not preserved:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use url::Url;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let url = Url::parse(&quot;https://example.net/foo/&quot;).unwrap();</span>
-    <span class="doccomment">/// let url = url.join(&quot;bar&quot;).unwrap();</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.net/foo/bar&quot;);</span>
+    <span class="doccomment">/// let base = Url::parse(&quot;https://example.net/a/b/&quot;).unwrap();</span>
+    <span class="doccomment">/// let url = base.join(&quot;c.png&quot;).unwrap();</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.net/a/b/c.png&quot;);</span>
     <span class="doccomment">/// ```</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, ::<span class="ident">ParseError</span><span class="op">&gt;</span> {
@@ -2745,7 +2712,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # use std::io;</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// fn connect(url: &amp;Url) -&gt; io::Result&lt;TcpStream&gt; {</span>
-    <span class="doccomment">///     TcpStream::connect(try!(url.with_default_port(default_port)))</span>
+    <span class="doccomment">///     TcpStream::connect(url.with_default_port(default_port)?)</span>
     <span class="doccomment">/// }</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// fn default_port(url: &amp;Url) -&gt; Result&lt;u16, ()&gt; {</span>
@@ -2761,13 +2728,13 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_default_port</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HostAndPort</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;&gt;</span>
     <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">Url</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u16</span>, ()<span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">HostAndPort</span> {
-            <span class="ident">host</span>: <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">host</span>()
-                           .<span class="ident">ok_or</span>(())
-                           .<span class="ident">or_else</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">io_error</span>(<span class="string">&quot;URL has no host&quot;</span>))),
-            <span class="ident">port</span>: <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">port_or_known_default</span>()
-                           .<span class="ident">ok_or</span>(())
-                           .<span class="ident">or_else</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">f</span>(<span class="self">self</span>))
-                           .<span class="ident">or_else</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">io_error</span>(<span class="string">&quot;URL has no port number&quot;</span>)))
+            <span class="ident">host</span>: <span class="self">self</span>.<span class="ident">host</span>()
+                      .<span class="ident">ok_or</span>(())
+                      .<span class="ident">or_else</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">io_error</span>(<span class="string">&quot;URL has no host&quot;</span>))<span class="question-mark">?</span>,
+            <span class="ident">port</span>: <span class="self">self</span>.<span class="ident">port_or_known_default</span>()
+                      .<span class="ident">ok_or</span>(())
+                      .<span class="ident">or_else</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">f</span>(<span class="self">self</span>))
+                      .<span class="ident">or_else</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">io_error</span>(<span class="string">&quot;URL has no port number&quot;</span>))<span class="question-mark">?</span>
         })
     }
 
@@ -3156,7 +3123,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
             <span class="kw">if</span> <span class="ident">host</span> <span class="op">==</span> <span class="string">&quot;&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">scheme</span>()).<span class="ident">is_special</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">EmptyHost</span>);
             }
-            <span class="self">self</span>.<span class="ident">set_host_internal</span>(<span class="macro">try</span><span class="macro">!</span>(<span class="ident">Host</span>::<span class="ident">parse</span>(<span class="ident">host</span>)), <span class="prelude-val">None</span>)
+            <span class="self">self</span>.<span class="ident">set_host_internal</span>(<span class="ident">Host</span>::<span class="ident">parse</span>(<span class="ident">host</span>)<span class="question-mark">?</span>, <span class="prelude-val">None</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_host</span>() {
             <span class="kw">if</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">scheme</span>()).<span class="ident">is_special</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">EmptyHost</span>)
@@ -3330,6 +3297,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// Change this URL’s scheme.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Do nothing and return `Err` if:</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// * The new scheme is not in `[a-zA-Z][a-zA-Z0-9+.-]+`</span>
     <span class="doccomment">/// * This URL is cannot-be-a-base and the new scheme is one of</span>
     <span class="doccomment">///   `http`, `https`, `ws`, `wss`, `ftp`, or `gopher`</span>
@@ -3371,7 +3339,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_scheme</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">scheme</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parser</span> <span class="op">=</span> <span class="ident">Parser</span>::<span class="ident">for_setter</span>(<span class="ident">String</span>::<span class="ident">new</span>());
-        <span class="kw">let</span> <span class="ident">remaining</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">parser</span>.<span class="ident">parse_scheme</span>(<span class="ident">parser</span>::<span class="ident">Input</span>::<span class="ident">new</span>(<span class="ident">scheme</span>)));
+        <span class="kw">let</span> <span class="ident">remaining</span> <span class="op">=</span> <span class="ident">parser</span>.<span class="ident">parse_scheme</span>(<span class="ident">parser</span>::<span class="ident">Input</span>::<span class="ident">new</span>(<span class="ident">scheme</span>))<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="op">!</span><span class="ident">remaining</span>.<span class="ident">is_empty</span>() <span class="op">||</span>
                 (<span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() <span class="op">&amp;&amp;</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="ident">parser</span>.<span class="ident">serialization</span>).<span class="ident">is_special</span>()) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(())
@@ -3422,7 +3390,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file_path</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, ()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">serialization</span> <span class="op">=</span> <span class="string">&quot;file://&quot;</span>.<span class="ident">to_owned</span>();
         <span class="kw">let</span> <span class="ident">path_start</span> <span class="op">=</span> <span class="ident">serialization</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>;
-        <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path_to_file_url_segments</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">serialization</span>));
+        <span class="ident">path_to_file_url_segments</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">serialization</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">Url</span> {
             <span class="ident">serialization</span>: <span class="ident">serialization</span>,
             <span class="ident">scheme_end</span>: <span class="string">&quot;file&quot;</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>,
@@ -3455,7 +3423,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// Note that `std::path` does not consider trailing slashes significant</span>
     <span class="doccomment">/// and usually does not include them (e.g. in `Path::parent()`).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_directory_path</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, ()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">Url</span>::<span class="ident">from_file_path</span>(<span class="ident">path</span>));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">Url</span>::<span class="ident">from_file_path</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="op">!</span><span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">ends_with</span>(<span class="string">&#39;/&#39;</span>) {
             <span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">push</span>(<span class="string">&#39;/&#39;</span>)
         }
@@ -3496,7 +3464,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
         <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Error</span>};
         <span class="kw">let</span> (<span class="ident">serialization</span>, <span class="ident">scheme_end</span>, <span class="ident">username_end</span>,
              <span class="ident">host_start</span>, <span class="ident">host_end</span>, <span class="ident">host</span>, <span class="ident">port</span>, <span class="ident">path_start</span>,
-             <span class="ident">query_start</span>, <span class="ident">fragment_start</span>) <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">Deserialize</span>::<span class="ident">deserialize</span>(<span class="ident">deserializer</span>));
+             <span class="ident">query_start</span>, <span class="ident">fragment_start</span>) <span class="op">=</span> <span class="ident">Deserialize</span>::<span class="ident">deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">Url</span> {
             <span class="ident">serialization</span>: <span class="ident">serialization</span>,
             <span class="ident">scheme_end</span>: <span class="ident">scheme_end</span>,
@@ -3510,7 +3478,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
             <span class="ident">fragment_start</span>: <span class="ident">fragment_start</span>
         };
         <span class="kw">if</span> <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">debug_assertions</span>) {
-            <span class="macro">try</span><span class="macro">!</span>(<span class="ident">url</span>.<span class="ident">check_invariants</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw-2">ref</span> <span class="ident">reason</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">invalid_value</span>(<span class="kw-2">&amp;</span><span class="ident">reason</span>)))
+            <span class="ident">url</span>.<span class="ident">check_invariants</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw-2">ref</span> <span class="ident">reason</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">invalid_value</span>(<span class="kw-2">&amp;</span><span class="ident">reason</span>))<span class="question-mark">?</span>
         }
         <span class="prelude-val">Ok</span>(<span class="ident">url</span>)
     }
@@ -3562,7 +3530,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="kw">type</span> <span class="ident">Iter</span> <span class="op">=</span> <span class="ident">SocketAddrs</span>;
 
     <span class="kw">fn</span> <span class="ident">to_socket_addrs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">io</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Iter</span><span class="op">&gt;</span> {
-        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">with_default_port</span>(<span class="op">|</span>_<span class="op">|</span> <span class="prelude-val">Err</span>(()))).<span class="ident">to_socket_addrs</span>()
+        <span class="self">self</span>.<span class="ident">with_default_port</span>(<span class="op">|</span>_<span class="op">|</span> <span class="prelude-val">Err</span>(()))<span class="question-mark">?</span>.<span class="ident">to_socket_addrs</span>()
     }
 }
 
@@ -3671,7 +3639,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;rustc-serialize&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">rustc_serialize</span>::<span class="ident">Decodable</span> <span class="kw">for</span> <span class="ident">Url</span> {
     <span class="kw">fn</span> <span class="ident">decode</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">rustc_serialize</span>::<span class="ident">Decoder</span><span class="op">&gt;</span>(<span class="ident">decoder</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">try</span><span class="macro">!</span>(<span class="ident">decoder</span>.<span class="ident">read_str</span>())).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">error</span><span class="op">|</span> {
+        <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">decoder</span>.<span class="ident">read_str</span>()<span class="question-mark">?</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">error</span><span class="op">|</span> {
             <span class="ident">decoder</span>.<span class="ident">error</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;URL parsing error: {}&quot;</span>, <span class="ident">error</span>))
         })
     }
@@ -3693,7 +3661,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;serde&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">serde</span>::<span class="ident">Deserialize</span> <span class="kw">for</span> <span class="ident">Url</span> {
     <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">serde</span>::<span class="ident">Deserializer</span> {
-        <span class="kw">let</span> <span class="ident">string_representation</span>: <span class="ident">String</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">serde</span>::<span class="ident">Deserialize</span>::<span class="ident">deserialize</span>(<span class="ident">deserializer</span>));
+        <span class="kw">let</span> <span class="ident">string_representation</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">serde</span>::<span class="ident">Deserialize</span>::<span class="ident">deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
         <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">string_representation</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
             <span class="ident">serde</span>::<span class="ident">Error</span>::<span class="ident">invalid_value</span>(<span class="ident">err</span>.<span class="ident">description</span>())
         })
@@ -3753,7 +3721,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="kw">for</span> <span class="ident">component</span> <span class="kw">in</span> <span class="ident">components</span> {
         <span class="kw">if</span> <span class="ident">component</span> <span class="op">==</span> <span class="ident">Component</span>::<span class="ident">RootDir</span> { <span class="kw">continue</span> }
         <span class="comment">// FIXME: somehow work with non-unicode?</span>
-        <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">component</span>.<span class="ident">as_os_str</span>().<span class="ident">to_str</span>().<span class="ident">ok_or</span>(()));
+        <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">as_os_str</span>().<span class="ident">to_str</span>().<span class="ident">ok_or</span>(())<span class="question-mark">?</span>;
         <span class="ident">serialization</span>.<span class="ident">push</span>(<span class="string">&#39;/&#39;</span>);
         <span class="ident">serialization</span>.<span class="ident">extend</span>(<span class="ident">percent_encode</span>(<span class="ident">component</span>.<span class="ident">as_bytes</span>(), <span class="ident">PATH_SEGMENT_ENCODE_SET</span>));
     }
@@ -3786,7 +3754,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 <span class="comment">// Build this unconditionally to alleviate https://github.com/servo/rust-url/issues/102</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">windows</span>), <span class="ident">allow</span>(<span class="ident">dead_code</span>))]</span>
 <span class="kw">fn</span> <span class="ident">file_url_segments_to_pathbuf_windows</span>(<span class="kw-2">mut</span> <span class="ident">segments</span>: <span class="ident">str</span>::<span class="ident">Split</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, ()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">first</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">segments</span>.<span class="ident">next</span>().<span class="ident">ok_or</span>(()));
+    <span class="kw">let</span> <span class="ident">first</span> <span class="op">=</span> <span class="ident">segments</span>.<span class="ident">next</span>().<span class="ident">ok_or</span>(())<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">first</span>.<span class="ident">len</span>() {
         <span class="number">2</span> <span class="op">=&gt;</span> {

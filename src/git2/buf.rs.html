@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.5/src/buf.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.6/src/buf.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>buf.rs.html -- source</title>
@@ -110,11 +110,17 @@
 <span id="65">65</span>
 <span id="66">66</span>
 <span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Deref</span>, <span class="ident">DerefMut</span>};
-<span class="kw">use</span> <span class="ident">libc</span>;
 
 <span class="kw">use</span> <span class="ident">raw</span>;
 <span class="kw">use</span> <span class="ident">util</span>::<span class="ident">Binding</span>;
@@ -127,13 +133,19 @@
     <span class="ident">raw</span>: <span class="ident">raw</span>::<span class="ident">git_buf</span>,
 }
 
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Buf</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">new</span>()
+    }
+}
+
 <span class="kw">impl</span> <span class="ident">Buf</span> {
     <span class="doccomment">/// Creates a new empty buffer.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">Buf</span> {
         ::<span class="ident">init</span>();
         <span class="kw">unsafe</span> {
             <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_buf</span> {
-                <span class="ident">ptr</span>: <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">libc</span>::<span class="ident">c_char</span>,
+                <span class="ident">ptr</span>: <span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
                 <span class="ident">size</span>: <span class="number">0</span>,
                 <span class="ident">asize</span>: <span class="number">0</span>,
             } <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _)

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/array_tool-0.3.5/src/string.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/array_tool-0.4.0/src/string.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>string.rs.html -- source</title>
@@ -246,6 +246,122 @@
 <span id="201">201</span>
 <span id="202">202</span>
 <span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2015-2017 Daniel P. Clark &amp; array_tool Developers</span>
 <span class="comment">// </span>
@@ -256,7 +372,110 @@
 
 <span class="doccomment">/// A string is a collection so we should have more methods for handling strings. </span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">string</span> {
-  <span class="doccomment">/// Justify - expand line to given width</span>
+  <span class="doccomment">/// A grapheme iterator that produces the bytes for each grapheme.</span>
+  <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+  <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+    <span class="ident">offset</span>: <span class="ident">usize</span>,
+    <span class="ident">grapheme_count</span>: <span class="ident">usize</span>,
+  }
+  <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Creates a new grapheme iterator from a string source.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+      <span class="ident">GraphemeBytesIter</span> {
+        <span class="ident">source</span>: <span class="ident">source</span>,
+        <span class="ident">offset</span>: <span class="number">0</span>,
+        <span class="ident">grapheme_count</span>: <span class="number">0</span>,
+      }
+    }
+  }
+  <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>];
+
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> {
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">offset</span>;
+      <span class="kw">for</span> _ <span class="kw">in</span> <span class="self">self</span>.<span class="ident">offset</span>..<span class="self">self</span>.<span class="ident">source</span>.<span class="ident">len</span>() {
+        <span class="ident">idx</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">offset</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">source</span>.<span class="ident">len</span>() {
+          <span class="kw">if</span> <span class="self">self</span>.<span class="ident">source</span>.<span class="ident">is_char_boundary</span>(<span class="ident">idx</span>) {
+            <span class="kw">let</span> <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">source</span>[<span class="self">self</span>.<span class="ident">offset</span>..<span class="ident">idx</span>].<span class="ident">as_bytes</span>();
+
+            <span class="self">self</span>.<span class="ident">grapheme_count</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="self">self</span>.<span class="ident">offset</span> <span class="op">=</span> <span class="ident">idx</span>;
+
+            <span class="ident">result</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">slice</span>);
+            <span class="kw">break</span>
+          }
+        }
+      }
+      <span class="ident">result</span>
+    }
+  }
+  <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+      <span class="self">self</span>.<span class="ident">source</span>.<span class="ident">chars</span>().<span class="ident">count</span>()
+    }
+  }
+  <span class="doccomment">/// ToGraphemeBytesIter - create an iterator to return bytes for each grapheme in a string.</span>
+  <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ToGraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Returns a GraphemeBytesIter which you may iterate over.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Example</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use array_tool::string::ToGraphemeBytesIter;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let string = &quot;a s—d féZ&quot;;</span>
+    <span class="doccomment">/// let mut graphemes = string.grapheme_bytes_iter();</span>
+    <span class="doccomment">/// graphemes.skip(3).next();</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Output</span>
+    <span class="doccomment">/// ```text</span>
+    <span class="doccomment">/// [226, 128, 148]</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">fn</span> <span class="ident">grapheme_bytes_iter</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
+  }
+  <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ToGraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">grapheme_bytes_iter</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">GraphemeBytesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+      <span class="ident">GraphemeBytesIter</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>)
+    }
+  }
+
+  <span class="doccomment">/// Squeeze - squeezes duplicate characters down to one each</span>
+  <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Squeeze</span> {
+    <span class="doccomment">/// # Example</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use array_tool::string::Squeeze;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// &quot;yellow moon&quot;.squeeze(&quot;&quot;);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Output</span>
+    <span class="doccomment">/// ```text</span>
+    <span class="doccomment">/// &quot;yelow mon&quot;</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">fn</span> <span class="ident">squeeze</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">targets</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span>;
+  }
+  <span class="kw">impl</span> <span class="ident">Squeeze</span> <span class="kw">for</span> <span class="ident">str</span> {
+    <span class="kw">fn</span> <span class="ident">squeeze</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">targets</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="self">self</span>.<span class="ident">len</span>());
+      <span class="kw">let</span> <span class="ident">everything</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="ident">targets</span>.<span class="ident">is_empty</span>();
+      <span class="kw">let</span> <span class="ident">chars</span> <span class="op">=</span> <span class="ident">targets</span>.<span class="ident">grapheme_bytes_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;&gt;</span>();
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="number">0</span>];
+      <span class="kw">for</span> <span class="ident">character</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">grapheme_bytes_iter</span>() {
+        <span class="kw">if</span> <span class="ident">last</span> <span class="op">!=</span> <span class="ident">character</span> {
+          <span class="ident">output</span>.<span class="ident">extend_from_slice</span>(<span class="ident">character</span>);
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span>(<span class="ident">everything</span> <span class="op">||</span> <span class="ident">chars</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">character</span>)) {
+          <span class="ident">output</span>.<span class="ident">extend_from_slice</span>(<span class="ident">character</span>);
+        }
+        <span class="ident">last</span> <span class="op">=</span> <span class="ident">character</span>;
+      }
+      <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">output</span>).<span class="ident">expect</span>(<span class="string">&quot;squeeze failed to render String!&quot;</span>)
+    }
+  }
+
+  <span class="doccomment">/// Justify - expand line to given width.</span>
   <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Justify</span> {
     <span class="doccomment">/// # Example</span>
     <span class="doccomment">/// ```</span>
@@ -272,21 +491,22 @@
     <span class="kw">fn</span> <span class="ident">justify_line</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">width</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">String</span>;
   }
 
-  <span class="kw">impl</span> <span class="ident">Justify</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+  <span class="kw">impl</span> <span class="ident">Justify</span> <span class="kw">for</span> <span class="ident">str</span> {
     <span class="kw">fn</span> <span class="ident">justify_line</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">width</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+      <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_empty</span>() { <span class="kw">return</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="self">self</span>) };
       <span class="kw">let</span> <span class="ident">trimmed</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">trim</span>() ;
-      <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">trimmed</span>.<span class="ident">len</span>();
+      <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">trimmed</span>.<span class="ident">chars</span>().<span class="ident">count</span>();
       <span class="kw">if</span> <span class="ident">len</span> <span class="op">&gt;=</span> <span class="ident">width</span> { <span class="kw">return</span> <span class="self">self</span>.<span class="ident">to_string</span>(); };
       <span class="kw">let</span> <span class="ident">difference</span> <span class="op">=</span> <span class="ident">width</span> <span class="op">-</span> <span class="ident">len</span>;
       <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">trimmed</span>.<span class="ident">split_whitespace</span>();
       <span class="kw">let</span> <span class="ident">spaces</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">count</span>() <span class="op">-</span> <span class="number">1</span>;
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">trimmed</span>.<span class="ident">split_whitespace</span>().<span class="ident">peekable</span>();
       <span class="kw">if</span> <span class="ident">spaces</span> <span class="op">==</span> <span class="number">0</span> { <span class="kw">return</span> <span class="self">self</span>.<span class="ident">to_string</span>(); }
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">with_capacity</span>(<span class="ident">width</span>);
-      
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">with_capacity</span>(<span class="ident">trimmed</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">spaces</span>);
+
       <span class="kw">let</span> <span class="ident">div</span> <span class="op">=</span> <span class="ident">difference</span> <span class="op">/</span> <span class="ident">spaces</span>;
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">remainder</span> <span class="op">=</span> <span class="ident">difference</span> <span class="op">%</span> <span class="ident">spaces</span>;
-      
+
       <span class="kw">loop</span> {
         <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
           <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> {
@@ -311,7 +531,7 @@
     }
   }
 
-  <span class="doccomment">/// Substitute string character for each index given</span>
+  <span class="doccomment">/// Substitute string character for each index given.</span>
   <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SubstMarks</span> {
     <span class="doccomment">/// # Example</span>
     <span class="doccomment">/// ```</span>
@@ -326,17 +546,29 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">subst_marks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">marks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">chr</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span>;
   }
-  <span class="kw">impl</span> <span class="ident">SubstMarks</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+  <span class="kw">impl</span> <span class="ident">SubstMarks</span> <span class="kw">for</span> <span class="ident">str</span> {
     <span class="kw">fn</span> <span class="ident">subst_marks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">marks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">chr</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
-      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">with_capacity</span>(<span class="self">self</span>.<span class="ident">len</span>());
-      <span class="kw">for</span> <span class="ident">x</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">len</span>() {
-        <span class="kw">if</span> <span class="ident">marks</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>) {
-          <span class="ident">output</span>.<span class="ident">push_str</span>(<span class="ident">chr</span>)
-        } <span class="kw">else</span> {
-          <span class="ident">output</span>.<span class="ident">push</span>(<span class="self">self</span>[<span class="ident">x</span>..<span class="ident">x</span><span class="op">+</span><span class="number">1</span>].<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>())
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">with_capacity</span>(<span class="self">self</span>.<span class="ident">len</span>());
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
+      <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last</span> <span class="op">=</span> <span class="number">0</span>;
+      <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>;
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_char_boundary</span>(<span class="ident">idx</span>) {
+          <span class="kw">if</span> <span class="ident">marks</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">count</span>) {
+            <span class="ident">count</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">last</span> <span class="op">=</span> <span class="ident">idx</span>;
+            <span class="ident">output</span>.<span class="ident">extend_from_slice</span>(<span class="ident">chr</span>.<span class="ident">as_bytes</span>());
+            <span class="kw">continue</span>
+          }
+
+          <span class="kw">let</span> <span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="self">self</span>[<span class="ident">last</span>..<span class="ident">idx</span>].<span class="ident">as_bytes</span>();
+          <span class="ident">output</span>.<span class="ident">extend_from_slice</span>(<span class="ident">slice</span>);
+
+          <span class="ident">count</span> <span class="op">+=</span> <span class="number">1</span>;
+          <span class="ident">last</span> <span class="op">=</span> <span class="ident">idx</span>
         }
       }
-      <span class="ident">output</span>
+      <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">output</span>).<span class="ident">expect</span>(<span class="string">&quot;subst_marks failed to render String!&quot;</span>)
     }
   }
 
@@ -356,7 +588,7 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">seek_end_of_whitespace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>;
   }
-  <span class="kw">impl</span> <span class="ident">AfterWhitespace</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+  <span class="kw">impl</span> <span class="ident">AfterWhitespace</span> <span class="kw">for</span> <span class="ident">str</span> {
     <span class="kw">fn</span> <span class="ident">seek_end_of_whitespace</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
       <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">offset</span> { <span class="kw">return</span> <span class="prelude-val">None</span>; };
       <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seeker</span> <span class="op">=</span> <span class="self">self</span>[<span class="ident">offset</span>..<span class="self">self</span>.<span class="ident">len</span>()].<span class="ident">chars</span>();
@@ -424,7 +656,7 @@
                 <span class="kw">if</span> <span class="ident">offset</span><span class="op">+</span><span class="ident">chunk</span> <span class="op">&lt;</span> <span class="ident">t</span>.<span class="ident">len</span>() { <span class="comment">// safe to seek ahead by 1 or not end of string</span>
                   <span class="kw">if</span> <span class="op">!</span>[<span class="string">&quot;\n&quot;</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>(), <span class="string">&quot; &quot;</span>.<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>()].<span class="ident">contains</span>(
                     <span class="kw-2">&amp;</span><span class="ident">t</span>[<span class="ident">offset</span><span class="op">+</span><span class="ident">eows</span><span class="op">+</span><span class="number">1</span>..<span class="ident">offset</span><span class="op">+</span><span class="ident">eows</span><span class="op">+</span><span class="number">2</span>].<span class="ident">chars</span>().<span class="ident">next</span>().<span class="ident">unwrap</span>()
-                  ) {
+                    ) {
                     <span class="ident">mrkrs</span>.<span class="ident">push</span>(<span class="ident">offset</span><span class="op">+</span><span class="ident">eows</span>)
                   }
                 };

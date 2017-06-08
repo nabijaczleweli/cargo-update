@@ -29,7 +29,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'></p><script>window.sidebarCurrent = {name: 'regex', ty: 'mod', relpath: '../'};</script>
+        <p class='location'>Crate regex</p><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'regex', ty: 'mod', relpath: '../'};</script>
     </nav>
 
     <nav class="sub">
@@ -48,7 +48,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/regex/lib.rs.html#11-628' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/regex/lib.rs.html#11-648' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>This crate provides a library for parsing, compiling, and executing regular
 expressions. Its syntax is similar to Perl-style regular expressions, but lacks
 a few features like look around and backreferences. In exchange, all searches
@@ -180,6 +180,10 @@ enable insigificant whitespace mode, which also lets you write comments:</p>
 <span class="kw">let</span> <span class="ident">after</span> <span class="op">=</span> <span class="ident">re</span>.<span class="ident">replace_all</span>(<span class="ident">before</span>, <span class="string">&quot;$m/$d/$y&quot;</span>);
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">after</span>, <span class="string">&quot;03/14/2012, 01/01/2013 and 07/05/2014&quot;</span>);</pre>
 
+<p>If you wish to match against whitespace in this mode, you can still use <code>\s</code>,
+<code>\n</code>, <code>\t</code>, etc. For escaping a single space character, you can use its hex
+character code <code>\x20</code> or temporarily disable the <code>x</code> flag, e.g., <code>(?-x: )</code>.</p>
+
 <h1 id='example-match-multiple-regular-expressions-simultaneously' class='section-header'><a href='#example-match-multiple-regular-expressions-simultaneously'>Example: match multiple regular expressions simultaneously</a></h1>
 <p>This demonstrates how to use a <code>RegexSet</code> to match multiple (possibly
 overlapping) regular expressions in a single scan of the search text:</p>
@@ -292,22 +296,39 @@ a separate crate, <a href="../regex_syntax/index.html"><code>regex-syntax</code>
 <h2 id='matching-one-character' class='section-header'><a href='#matching-one-character'>Matching one character</a></h2>
 <pre class="rust">
 .             any character except new line (includes new line with s flag)
-[xyz]         A character class matching either x, y or z.
-[^xyz]        A character class matching any character except x, y and z.
-[a-z]         A character class matching any character in range a-z.
 \d            digit (\p{Nd})
 \D            not digit
-[[:alpha:]]   ASCII character class ([A-Za-z])
-[[:^alpha:]]  Negated ASCII character class ([^A-Za-z])
 \pN           One-letter name Unicode character class
 \p{Greek}     Unicode character class (general category or script)
 \PN           Negated one-letter name Unicode character class
 \P{Greek}     negated Unicode character class (general category or script)
 </pre>
 
+<h3 id='character-classes' class='section-header'><a href='#character-classes'>Character classes</a></h3>
+<pre class="rust">
+[xyz]         A character class matching either x, y or z (union).
+[^xyz]        A character class matching any character except x, y and z.
+[a-z]         A character class matching any character in range a-z.
+[[:alpha:]]   ASCII character class ([A-Za-z])
+[[:^alpha:]]  Negated ASCII character class ([^A-Za-z])
+[x[^xyz]]     Nested/grouping character class (matching any character except y and z)
+[a-y&&xyz]    Intersection (matching x or y)
+[0-9&&[^4]]   Subtraction using intersection and negation (matching 0-9 except 4)
+[\[\]]        Escaping in character classes (matching [ or ])
+</pre>
+
 <p>Any named character class may appear inside a bracketed <code>[...]</code> character
 class. For example, <code>[\p{Greek}[:digit:]]</code> matches any Greek or ASCII
-digit.</p>
+digit. <code>[\p{Greek}&amp;&amp;\pL]</code> matches Greek letters.</p>
+
+<p>Precedence in character classes, from most binding to least:</p>
+
+<ol>
+<li>Ranges: <code>a-cd</code> == <code>[a-c]d</code></li>
+<li>Union: <code>ab&amp;&amp;bc</code> == <code>[ab]&amp;&amp;[bc]</code></li>
+<li>Intersection: <code>^a-z&amp;&amp;b</code> == <code>^[a-z&amp;&amp;b]</code></li>
+<li>Negation</li>
+</ol>
 
 <h2 id='composites' class='section-header'><a href='#composites'>Composites</a></h2>
 <pre class="rust">
@@ -423,7 +444,7 @@ word boundary:</p>
 [[:graph:]]    graphical ([!-~])
 [[:lower:]]    lower case ([a-z])
 [[:print:]]    printable ([ -~])
-[[:punct:]]    punctuation ([!-/:-@[-`{-~])
+[[:punct:]]    punctuation ([!-/:-@\[-`{-~])
 [[:space:]]    whitespace ([\t\n\v\f\r ])
 [[:upper:]]    upper case ([A-Z])
 [[:word:]]     word characters ([0-9A-Za-z_])

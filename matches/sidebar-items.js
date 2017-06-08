@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["_matches_tt_as_expr_hack","Work around \"error: unexpected token: `an interpolated tt`\", whatever that means."],["assert_matches",""],["debug_assert_matches",""],["matches",""]]});
+initSidebarItems({"macro":[["assert_matches","Assert that an expression matches a refutable pattern."],["debug_assert_matches","Assert that an expression matches a refutable pattern using debug assertions."],["matches","Check if an expression matches a refutable pattern."]]});

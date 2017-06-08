@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.5/src/build.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.6/src/build.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>build.rs.html -- source</title>
@@ -591,12 +591,21 @@
 <span id="546">546</span>
 <span id="547">547</span>
 <span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Builder-pattern objects for configuration various git operations.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">CString</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">size_t</span>, <span class="ident">c_void</span>, <span class="ident">c_uint</span>, <span class="ident">c_int</span>};
 
 <span class="kw">use</span> {<span class="ident">raw</span>, <span class="ident">panic</span>, <span class="ident">Error</span>, <span class="ident">Repository</span>, <span class="ident">FetchOptions</span>, <span class="ident">IntoCString</span>};
@@ -646,6 +655,13 @@
 <span class="doccomment">/// continue.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Notify</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FnMut</span>(<span class="ident">CheckoutNotificationType</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Path</span><span class="op">&gt;</span>, <span class="ident">DiffFile</span>,
                             <span class="ident">DiffFile</span>, <span class="ident">DiffFile</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
+
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">RepoBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">new</span>()
+    }
+}
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="ident">RepoBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a new repository builder with all of the default configuration.</span>
@@ -727,7 +743,7 @@
         <span class="ident">opts</span>.<span class="ident">bare</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bare</span> <span class="kw">as</span> <span class="ident">c_int</span>;
         <span class="ident">opts</span>.<span class="ident">checkout_branch</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">branch</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> {
             <span class="ident">s</span>.<span class="ident">as_ptr</span>()
-        }).<span class="ident">unwrap_or</span>(<span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _);
+        }).<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>());
 
         <span class="ident">opts</span>.<span class="ident">local</span> <span class="op">=</span> <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">local</span>, <span class="self">self</span>.<span class="ident">hardlinks</span>) {
             (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">raw</span>::<span class="ident">GIT_CLONE_LOCAL_NO_LINKS</span>,
@@ -737,25 +753,29 @@
         <span class="ident">opts</span>.<span class="ident">checkout_opts</span>.<span class="ident">checkout_strategy</span> <span class="op">=</span>
             <span class="ident">raw</span>::<span class="ident">GIT_CHECKOUT_SAFE</span> <span class="kw">as</span> <span class="ident">c_uint</span>;
 
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">fetch_opts</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cbs</span>) <span class="op">=&gt;</span> {
-                <span class="ident">opts</span>.<span class="ident">fetch_opts</span> <span class="op">=</span> <span class="ident">cbs</span>.<span class="ident">raw</span>();
-            },
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cbs</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">fetch_opts</span> {
+            <span class="ident">opts</span>.<span class="ident">fetch_opts</span> <span class="op">=</span> <span class="ident">cbs</span>.<span class="ident">raw</span>();
         }
 
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">checkout</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">c</span>) <span class="op">=&gt;</span> <span class="kw">unsafe</span> { <span class="ident">c</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>.<span class="ident">checkout_opts</span>) },
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">c</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">checkout</span> {
+            <span class="kw">unsafe</span> {
+                <span class="ident">c</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>.<span class="ident">checkout_opts</span>);
+            }
         }
 
         <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">url</span>));
         <span class="kw">let</span> <span class="ident">into</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">into</span>.<span class="ident">into_c_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_repository</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_clone</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="ident">url</span>, <span class="ident">into</span>, <span class="kw-2">&amp;</span><span class="ident">opts</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
         }
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">CheckoutBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">new</span>()
     }
 }
 
@@ -1018,26 +1038,22 @@
         <span class="ident">opts</span>.<span class="ident">dir_mode</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dir_perm</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">c_uint</span>;
         <span class="ident">opts</span>.<span class="ident">file_mode</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file_perm</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">c_uint</span>;
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">path_ptrs</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">path_ptrs</span>.<span class="ident">is_empty</span>() {
             <span class="ident">opts</span>.<span class="ident">paths</span>.<span class="ident">strings</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">path_ptrs</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _;
             <span class="ident">opts</span>.<span class="ident">paths</span>.<span class="ident">count</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">path_ptrs</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>;
         }
 
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">target_dir</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">opts</span>.<span class="ident">target_directory</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>(),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">target_dir</span> {
+            <span class="ident">opts</span>.<span class="ident">target_directory</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>();
         }
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ancestor_label</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">opts</span>.<span class="ident">ancestor_label</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>(),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">ancestor_label</span> {
+            <span class="ident">opts</span>.<span class="ident">ancestor_label</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>();
         }
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">our_label</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">opts</span>.<span class="ident">our_label</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>(),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">our_label</span> {
+            <span class="ident">opts</span>.<span class="ident">our_label</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>();
         }
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">their_label</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">opts</span>.<span class="ident">their_label</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>(),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">c</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">their_label</span> {
+            <span class="ident">opts</span>.<span class="ident">their_label</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_ptr</span>();
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">progress</span>.<span class="ident">is_some</span>() {
             <span class="kw">let</span> <span class="ident">f</span>: <span class="ident">raw</span>::<span class="ident">git_checkout_progress_cb</span> <span class="op">=</span> <span class="ident">progress_cb</span>;

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.5/src/repo.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.6/src/repo.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>repo.rs.html -- source</title>
@@ -2300,19 +2300,49 @@
 <span id="2255">2255</span>
 <span id="2256">2256</span>
 <span id="2257">2257</span>
+<span id="2258">2258</span>
+<span id="2259">2259</span>
+<span id="2260">2260</span>
+<span id="2261">2261</span>
+<span id="2262">2262</span>
+<span id="2263">2263</span>
+<span id="2264">2264</span>
+<span id="2265">2265</span>
+<span id="2266">2266</span>
+<span id="2267">2267</span>
+<span id="2268">2268</span>
+<span id="2269">2269</span>
+<span id="2270">2270</span>
+<span id="2271">2271</span>
+<span id="2272">2272</span>
+<span id="2273">2273</span>
+<span id="2274">2274</span>
+<span id="2275">2275</span>
+<span id="2276">2276</span>
+<span id="2277">2277</span>
+<span id="2278">2278</span>
+<span id="2279">2279</span>
+<span id="2280">2280</span>
+<span id="2281">2281</span>
+<span id="2282">2282</span>
+<span id="2283">2283</span>
+<span id="2284">2284</span>
+<span id="2285">2285</span>
+<span id="2286">2286</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">CString</span>, <span class="ident">OsStr</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">IntoIterator</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_int</span>, <span class="ident">c_char</span>, <span class="ident">size_t</span>, <span class="ident">c_void</span>, <span class="ident">c_uint</span>};
 
 <span class="kw">use</span> {<span class="ident">raw</span>, <span class="ident">Revspec</span>, <span class="ident">Error</span>, <span class="ident">init</span>, <span class="ident">Object</span>, <span class="ident">RepositoryOpenFlags</span>, <span class="ident">RepositoryState</span>, <span class="ident">Remote</span>, <span class="ident">Buf</span>, <span class="ident">StashFlags</span>};
 <span class="kw">use</span> {<span class="ident">ResetType</span>, <span class="ident">Signature</span>, <span class="ident">Reference</span>, <span class="ident">References</span>, <span class="ident">Submodule</span>, <span class="ident">Blame</span>, <span class="ident">BlameOptions</span>};
 <span class="kw">use</span> {<span class="ident">Branches</span>, <span class="ident">BranchType</span>, <span class="ident">Index</span>, <span class="ident">Config</span>, <span class="ident">Oid</span>, <span class="ident">Blob</span>, <span class="ident">Branch</span>, <span class="ident">Commit</span>, <span class="ident">Tree</span>};
-<span class="kw">use</span> {<span class="ident">AnnotatedCommit</span>, <span class="ident">MergeOptions</span>, <span class="ident">SubmoduleIgnore</span>, <span class="ident">SubmoduleStatus</span>};
+<span class="kw">use</span> {<span class="ident">AnnotatedCommit</span>, <span class="ident">MergeOptions</span>, <span class="ident">SubmoduleIgnore</span>, <span class="ident">SubmoduleStatus</span>, <span class="ident">MergeAnalysis</span>, <span class="ident">MergePreference</span>};
 <span class="kw">use</span> {<span class="ident">ObjectType</span>, <span class="ident">Tag</span>, <span class="ident">Note</span>, <span class="ident">Notes</span>, <span class="ident">StatusOptions</span>, <span class="ident">Statuses</span>, <span class="ident">Status</span>, <span class="ident">Revwalk</span>};
 <span class="kw">use</span> {<span class="ident">RevparseMode</span>, <span class="ident">RepositoryInitMode</span>, <span class="ident">Reflog</span>, <span class="ident">IntoCString</span>, <span class="ident">Describe</span>};
 <span class="kw">use</span> {<span class="ident">DescribeOptions</span>, <span class="ident">TreeBuilder</span>, <span class="ident">Diff</span>, <span class="ident">DiffOptions</span>, <span class="ident">PackBuilder</span>};
@@ -2357,7 +2387,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Repository</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="ident">init</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">into_c_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_repository</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_open</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="ident">path</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -2371,13 +2401,13 @@
     <span class="doccomment">/// the current directory.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">open_from_env</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Repository</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="ident">init</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_repository</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">GIT_REPOSITORY_OPEN_FROM_ENV</span>;
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_open_ext</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
-                                                   <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _,
+                                                   <span class="ident">ptr</span>::<span class="ident">null</span>(),
                                                    <span class="ident">flags</span> <span class="kw">as</span> <span class="ident">c_uint</span>,
-                                                   <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _));
+                                                   <span class="ident">ptr</span>::<span class="ident">null</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
         }
     }
@@ -2418,7 +2448,7 @@
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">into_c_string</span>());
         <span class="kw">let</span> <span class="ident">ceiling_dirs_os</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">env</span>::<span class="ident">join_paths</span>(<span class="ident">ceiling_dirs</span>));
         <span class="kw">let</span> <span class="ident">ceiling_dirs</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">ceiling_dirs_os</span>.<span class="ident">into_c_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_repository</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_open_ext</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                    <span class="ident">path</span>,
@@ -2439,7 +2469,7 @@
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">into_c_string</span>());
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_discover</span>(<span class="ident">buf</span>.<span class="ident">raw</span>(), <span class="ident">path</span>, <span class="number">1</span>,
-                                                   <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _));
+                                                   <span class="ident">ptr</span>::<span class="ident">null</span>()));
         }
         <span class="ident">Repository</span>::<span class="ident">open</span>(<span class="ident">util</span>::<span class="ident">bytes2path</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">buf</span>))
     }
@@ -2467,7 +2497,7 @@
                      <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Repository</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="ident">init</span>();
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path</span>.<span class="ident">as_ref</span>().<span class="ident">into_c_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_repository</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">raw</span>();
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_init_ext</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="ident">path</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>));
@@ -2491,8 +2521,8 @@
     <span class="doccomment">/// returned if one occurs.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">revparse</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Revspec</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_revspec</span> {
-            <span class="ident">from</span>: <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _,
-            <span class="ident">to</span>: <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _,
+            <span class="ident">from</span>: <span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
+            <span class="ident">to</span>: <span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
             <span class="ident">flags</span>: <span class="number">0</span>,
         };
         <span class="kw">let</span> <span class="ident">spec</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">spec</span>));
@@ -2508,7 +2538,7 @@
     <span class="doccomment">/// Find a single object, as specified by a revision string.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">revparse_single</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Object</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">spec</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">spec</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">obj</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_object</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">obj</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_revparse_single</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">obj</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">spec</span>));
             <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">obj</span>.<span class="ident">is_null</span>());
@@ -2528,8 +2558,8 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">revparse_ext</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">spec</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>)
                         <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Object</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Reference</span><span class="op">&gt;</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">spec</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">spec</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">git_obj</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_object</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">git_ref</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">git_obj</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">git_ref</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_revparse_ext</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">git_obj</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">git_ref</span>,
                                             <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">spec</span>));
@@ -2651,7 +2681,7 @@
 
     <span class="doccomment">/// Get the information for a particular remote</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_remote</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Remote</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">name</span>));
@@ -2662,7 +2692,7 @@
     <span class="doccomment">/// Add a remote with the default fetch refspec to the repository&#39;s</span>
     <span class="doccomment">/// configuration.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remote</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Remote</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
         <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">url</span>));
         <span class="kw">unsafe</span> {
@@ -2677,7 +2707,7 @@
     <span class="doccomment">/// this when you have a URL instead of a remote&#39;s name. Note that anonymous</span>
     <span class="doccomment">/// remotes cannot be converted to persisted remotes.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remote_anonymous</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Remote</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">url</span>));
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_create_anonymous</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">url</span>));
@@ -2836,7 +2866,7 @@
 
     <span class="doccomment">/// Retrieve and resolve the reference pointed at by HEAD.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">head</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_head</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -2883,7 +2913,7 @@
 
     <span class="doccomment">/// Create an iterator for the repo&#39;s references</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">references</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">References</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference_iterator</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_iterator_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -2893,7 +2923,7 @@
     <span class="doccomment">/// Create an iterator for the repo&#39;s references that match the specified</span>
     <span class="doccomment">/// glob</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">references_glob</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">glob</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">References</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference_iterator</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">let</span> <span class="ident">glob</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">glob</span>));
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_iterator_glob_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>,
@@ -2928,7 +2958,7 @@
                          <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
             <span class="kw">unsafe</span> {
                 <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span>(<span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Data</span>);
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_submodule</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
                 <span class="kw">let</span> <span class="ident">rc</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_submodule_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="ident">data</span>.<span class="ident">repo</span>.<span class="ident">raw</span>(),
                                                    <span class="ident">name</span>);
                 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">rc</span>, <span class="number">0</span>);
@@ -2946,11 +2976,11 @@
     <span class="doccomment">/// with no pathspec so that all files can be considered.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statuses</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StatusOptions</span><span class="op">&gt;</span>)
                     <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Statuses</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_status_list</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_status_list_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>,
                                                <span class="ident">options</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">raw</span>())
-                                                      .<span class="ident">unwrap_or</span>(<span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _)));
+                                                      .<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>())));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
         }
     }
@@ -3002,7 +3032,7 @@
     <span class="doccomment">/// Create an iterator which loops over the requested branches.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">branches</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">filter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BranchType</span><span class="op">&gt;</span>)
                     <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Branches</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_branch_iterator</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_branch_iterator_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">filter</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Branches</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3014,7 +3044,7 @@
     <span class="doccomment">/// If a custom index has not been set, the default index for the repository</span>
     <span class="doccomment">/// will be returned (the one located in .git/index).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Index</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_index</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3034,7 +3064,7 @@
     <span class="doccomment">/// repository will be returned, including global and system configurations</span>
     <span class="doccomment">/// (if they are available).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">config</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Config</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_config</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_config</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3073,7 +3103,7 @@
 
     <span class="doccomment">/// Lookup a reference to one of the objects in a repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_blob</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oid</span>: <span class="ident">Oid</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Blob</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_blob</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_blob_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">oid</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3090,7 +3120,7 @@
                   <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">Commit</span>,
                   <span class="ident">force</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Branch</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">branch_name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">branch_name</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_branch_create</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>,
                                              <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3105,7 +3135,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_branch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">branch_type</span>: <span class="ident">BranchType</span>)
                        <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Branch</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_branch_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">name</span>,
                                              <span class="ident">branch_type</span>));
@@ -3140,7 +3170,7 @@
                                              <span class="ident">update_ref</span>,
                                              <span class="ident">author</span>.<span class="ident">raw</span>(),
                                              <span class="ident">committer</span>.<span class="ident">raw</span>(),
-                                             <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
+                                             <span class="ident">ptr</span>::<span class="ident">null</span>(),
                                              <span class="ident">message</span>,
                                              <span class="ident">tree</span>.<span class="ident">raw</span>(),
                                              <span class="ident">parents</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>,
@@ -3152,9 +3182,18 @@
 
     <span class="doccomment">/// Lookup a reference to one of the commits in a repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_commit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oid</span>: <span class="ident">Oid</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Commit</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_commit</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_commit_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">oid</span>.<span class="ident">raw</span>()));
+            <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
+        }
+    }
+
+    <span class="doccomment">/// Creates a `AnnotatedCommit` from the given commit id.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_annotated_commit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">Oid</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AnnotatedCommit</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_annotated_commit</span>;
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_annotated_commit_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">id</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
         }
     }
@@ -3162,7 +3201,7 @@
     <span class="doccomment">/// Lookup a reference to one of the objects in a repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_object</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oid</span>: <span class="ident">Oid</span>,
                        <span class="ident">kind</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ObjectType</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Object</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_object</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_object_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">oid</span>.<span class="ident">raw</span>(),
                                              <span class="ident">kind</span>));
@@ -3179,7 +3218,7 @@
                      <span class="ident">log_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
         <span class="kw">let</span> <span class="ident">log_message</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">log_message</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_create</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">name</span>,
                                                 <span class="ident">id</span>.<span class="ident">raw</span>(), <span class="ident">force</span>,
@@ -3226,7 +3265,7 @@
                               <span class="ident">log_message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
         <span class="kw">let</span> <span class="ident">log_message</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">log_message</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_create_matching</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>,
                                                          <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3251,7 +3290,7 @@
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
         <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">target</span>));
         <span class="kw">let</span> <span class="ident">log_message</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">log_message</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_symbolic_create</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(),
                                                          <span class="ident">name</span>, <span class="ident">target</span>, <span class="ident">force</span>,
@@ -3280,7 +3319,7 @@
         <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">target</span>));
         <span class="kw">let</span> <span class="ident">current_value</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">current_value</span>));
         <span class="kw">let</span> <span class="ident">log_message</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">log_message</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_symbolic_create_matching</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>,
                                                                   <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3296,7 +3335,7 @@
     <span class="doccomment">/// Lookup a reference to one of the objects in a repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_reference</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reference</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reference_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">name</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3320,7 +3359,7 @@
     <span class="doccomment">/// Creates a git_annotated_commit from the given reference.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reference_to_annotated_commit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">reference</span>: <span class="kw-2">&amp;</span><span class="ident">Reference</span>)
                                          <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">AnnotatedCommit</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_annotated_commit</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_annotated_commit_from_ref</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                          <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3336,7 +3375,7 @@
     <span class="doccomment">/// based on that information. It will return `NotFound` if either the</span>
     <span class="doccomment">/// user.name or user.email are not set.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">signature</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Signature</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_signature</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_signature_default</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -3359,7 +3398,7 @@
                      <span class="ident">use_gitlink</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Submodule</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">url</span>));
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path</span>.<span class="ident">into_c_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_submodule</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_submodule_add_setup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(),
                                                    <span class="ident">url</span>, <span class="ident">path</span>, <span class="ident">use_gitlink</span>));
@@ -3373,7 +3412,7 @@
     <span class="doccomment">/// this returns a structure describing the submodule.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_submodule</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Submodule</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_submodule</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_submodule_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">name</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3397,7 +3436,7 @@
 
     <span class="doccomment">/// Lookup a reference to one of the objects in a repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_tree</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">oid</span>: <span class="ident">Oid</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tree</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_tree</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_tree_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">oid</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3411,10 +3450,10 @@
     <span class="doccomment">/// write them as tree objects to the database.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">treebuilder</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tree</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Tree</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TreeBuilder</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_treebuilder</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
             <span class="kw">let</span> <span class="ident">tree</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">tree</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">tree</span>) <span class="op">=&gt;</span> <span class="ident">tree</span>.<span class="ident">raw</span>(),
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_tree</span>,
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
             };
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_treebuilder_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">tree</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -3467,7 +3506,7 @@
 
     <span class="doccomment">/// Lookup a tag object from the repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_tag</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">Oid</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_tag</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_tag_lookup</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">id</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3533,9 +3572,8 @@
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_opts</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">zeroed</span>();
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_checkout_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_opts</span>,
                                 <span class="ident">raw</span>::<span class="ident">GIT_CHECKOUT_OPTIONS_VERSION</span>));
-            <span class="kw">match</span> <span class="ident">opts</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">c</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_opts</span>),
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">opts</span> {
+                <span class="ident">c</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_opts</span>);
             }
 
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_checkout_index</span>(<span class="self">self</span>.<span class="ident">raw</span>,
@@ -3554,9 +3592,8 @@
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_opts</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">zeroed</span>();
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_checkout_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_opts</span>,
                                 <span class="ident">raw</span>::<span class="ident">GIT_CHECKOUT_OPTIONS_VERSION</span>));
-            <span class="kw">match</span> <span class="ident">opts</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">c</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_opts</span>),
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span> <span class="ident">opts</span> {
+                <span class="ident">c</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_opts</span>);
             }
 
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_checkout_tree</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">treeish</span>.<span class="ident">raw</span>(),
@@ -3595,7 +3632,7 @@
                                      <span class="ident">commit_ptrs</span>.<span class="ident">as_mut_ptr</span>(),
                                      <span class="ident">annotated_commits</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>,
                                      <span class="ident">merge_opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">raw</span>())
-                                               .<span class="ident">unwrap_or</span>(<span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _),
+                                               .<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>()),
                                      <span class="kw-2">&amp;</span><span class="ident">raw_checkout_opts</span>));
         }
         <span class="prelude-val">Ok</span>(())
@@ -3607,7 +3644,7 @@
     <span class="doccomment">/// should resolve any conflicts that arose as part of the merge.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">merge_commits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">our_commit</span>: <span class="kw-2">&amp;</span><span class="ident">Commit</span>, <span class="ident">their_commit</span>: <span class="kw-2">&amp;</span><span class="ident">Commit</span>,
                          <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">MergeOptions</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Index</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_index</span>;
+         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_merge_commits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>,
                                              <span class="ident">our_commit</span>.<span class="ident">raw</span>(),
@@ -3624,6 +3661,27 @@
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_repository_state_cleanup</span>(<span class="self">self</span>.<span class="ident">raw</span>));
         }
         <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Analyzes the given branch(es) and determines the opportunities for</span>
+    <span class="doccomment">/// merging them into the HEAD of the repository.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">merge_analysis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>,
+                          <span class="ident">their_heads</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">AnnotatedCommit</span>])
+                          <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">MergeAnalysis</span>, <span class="ident">MergePreference</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_merge_analysis</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="ident">raw</span>::<span class="ident">git_merge_analysis_t</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_merge_preference</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="ident">raw</span>::<span class="ident">git_merge_preference_t</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">their_heads</span> <span class="op">=</span> <span class="ident">their_heads</span>
+                .<span class="ident">iter</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">raw</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> _)
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;&gt;</span>();
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_merge_analysis</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_merge_analysis</span>,
+                                              <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_merge_preference</span>,
+                                              <span class="self">self</span>.<span class="ident">raw</span>,
+                                              <span class="ident">their_heads</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _,
+                                              <span class="ident">their_heads</span>.<span class="ident">len</span>()));
+            <span class="prelude-val">Ok</span>((<span class="ident">MergeAnalysis</span>::<span class="ident">from_bits_truncate</span>(<span class="ident">raw_merge_analysis</span> <span class="kw">as</span> <span class="ident">u32</span>), <span class="ident">MergePreference</span>::<span class="ident">from_bits_truncate</span>(<span class="ident">raw_merge_preference</span> <span class="kw">as</span> <span class="ident">u32</span>)))
+        }
     }
 
     <span class="doccomment">/// Add a note for an object</span>
@@ -3673,7 +3731,7 @@
     <span class="doccomment">/// annotating.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">notes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">notes_ref</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Notes</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">notes_ref</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">opt_cstr</span>(<span class="ident">notes_ref</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_note_iterator</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_note_iterator_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">notes_ref</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -3689,7 +3747,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_note</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">notes_ref</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">id</span>: <span class="ident">Oid</span>)
                      <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Note</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">notes_ref</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">opt_cstr</span>(<span class="ident">notes_ref</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_note</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_note_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">notes_ref</span>,
                                          <span class="ident">id</span>.<span class="ident">raw</span>()));
@@ -3718,7 +3776,7 @@
 
     <span class="doccomment">/// Create a revwalk that can be used to traverse the commit graph.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">revwalk</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Revwalk</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_revwalk</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_revwalk_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>, <span class="self">self</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>))
@@ -3729,7 +3787,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">blame_file</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BlameOptions</span><span class="op">&gt;</span>)
                       <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Blame</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">path</span>.<span class="ident">into_c_string</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_blame</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
 
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_blame_file</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>,
@@ -3753,7 +3811,7 @@
     <span class="doccomment">/// Find all merge bases between two commits</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">merge_bases</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">one</span>: <span class="ident">Oid</span>, <span class="ident">two</span>: <span class="ident">Oid</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">OidArray</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arr</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_oidarray</span> {
-            <span class="ident">ids</span>: <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_oid</span>,
+            <span class="ident">ids</span>: <span class="ident">ptr</span>::<span class="ident">null_mut</span>(),
             <span class="ident">count</span>: <span class="number">0</span>,
         };
         <span class="kw">unsafe</span> {
@@ -3799,7 +3857,7 @@
     <span class="doccomment">/// object will be returned.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reflog</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Reflog</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">name</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_reflog</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_reflog_read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">name</span>));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -3850,7 +3908,7 @@
     <span class="doccomment">/// After performing a describe on HEAD, a status is run and description is</span>
     <span class="doccomment">/// considered to be dirty if there are.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">describe</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">opts</span>: <span class="kw-2">&amp;</span><span class="ident">DescribeOptions</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Describe</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> _;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_describe_workdir</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">opts</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -3870,7 +3928,7 @@
                              <span class="ident">new_tree</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Tree</span><span class="op">&gt;</span>,
                              <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span><span class="op">&gt;</span>)
                              <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Diff</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_tree_to_tree</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                  <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3899,7 +3957,7 @@
                               <span class="ident">index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Index</span><span class="op">&gt;</span>,
                               <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span><span class="op">&gt;</span>)
                               <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Diff</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_tree_to_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                   <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3919,7 +3977,7 @@
                                <span class="ident">new_index</span>: <span class="kw-2">&amp;</span><span class="ident">Index</span>,
                                <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span><span class="op">&gt;</span>)
                                <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Diff</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_index_to_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                    <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3947,7 +4005,7 @@
                                  <span class="ident">index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Index</span><span class="op">&gt;</span>,
                                  <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span><span class="op">&gt;</span>)
                                  <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Diff</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_index_to_workdir</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                      <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3979,7 +4037,7 @@
                                 <span class="ident">old_tree</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Tree</span><span class="op">&gt;</span>,
                                 <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span><span class="op">&gt;</span>)
                                 <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Diff</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_tree_to_workdir</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                                                     <span class="self">self</span>.<span class="ident">raw</span>(),
@@ -3999,7 +4057,7 @@
                                            <span class="ident">old_tree</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Tree</span><span class="op">&gt;</span>,
                                            <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span><span class="op">&gt;</span>)
                                            <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Diff</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_tree_to_workdir_with_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>,
                     <span class="self">self</span>.<span class="ident">raw</span>(), <span class="ident">old_tree</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">raw</span>()), <span class="ident">opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">raw</span>())));
@@ -4009,7 +4067,7 @@
 
     <span class="doccomment">/// Create a PackBuilder</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">packbuilder</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PackBuilder</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_packbuilder</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_packbuilder_new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>()));
             <span class="prelude-val">Ok</span>(<span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">ret</span>))
@@ -4025,7 +4083,7 @@
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_oid</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_oid</span> { <span class="ident">id</span>: [<span class="number">0</span>; <span class="ident">raw</span>::<span class="ident">GIT_OID_RAWSZ</span>] };
             <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">message</span>));
-            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">flags</span>.<span class="ident">unwrap_or</span>(<span class="ident">StashFlags</span>::<span class="ident">empty</span>());
+            <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">flags</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">StashFlags</span>::<span class="ident">empty</span>);
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_stash_save</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_oid</span>,
                                           <span class="self">self</span>.<span class="ident">raw</span>(),
                                           <span class="ident">stasher</span>.<span class="ident">raw</span>(),
@@ -4245,7 +4303,7 @@
         <span class="ident">opts</span>.<span class="ident">template_path</span> <span class="op">=</span> ::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">template_path</span>);
         <span class="ident">opts</span>.<span class="ident">initial_head</span> <span class="op">=</span> ::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">initial_head</span>);
         <span class="ident">opts</span>.<span class="ident">origin_url</span> <span class="op">=</span> ::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">origin_url</span>);
-        <span class="kw">return</span> <span class="ident">opts</span>;
+        <span class="ident">opts</span>
     }
 }
 

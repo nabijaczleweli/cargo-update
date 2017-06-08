@@ -29,7 +29,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='../index.html'>regex</a>::<wbr><a href='index.html'>bytes</a></p><script>window.sidebarCurrent = {name: 'Regex', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'>Struct Regex</p><div class="block items"><ul><li><a href="#methods">Methods</a></li><li><a href="#implementations">Trait Implementations</a></li></ul></div><p class='location'><a href='../index.html'>regex</a>::<wbr><a href='index.html'>bytes</a></p><script>window.sidebarCurrent = {name: 'Regex', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
     </nav>
 
     <nav class="sub">
@@ -60,7 +60,7 @@ use an anchor like <code>^</code> or <code>$</code> (or <code>\A</code> and <cod
 byte offsets into the search text. <strong>Unlike</strong> the parent <code>Regex</code> type,
 these byte offsets may not correspond to UTF-8 sequence boundaries since
 the regexes in this module can match arbitrary bytes.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/regex/re_bytes.rs.html#114-524' title='goto source code'>[src]</a></span></h3>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/regex/re_bytes.rs.html#114-535' title='goto source code'>[src]</a></span></h3>
 <div class='docblock'><p>Core regular expression methods.</p>
 </div><div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>(re: &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a>, <a class="enum" href="../../regex/enum.Error.html" title="enum regex::Error">Error</a>&gt;</code></span></h4>
 <div class='docblock'><p>Compiles a regular expression. Once compiled, it can be used repeatedly
@@ -161,7 +161,7 @@ capture group is indexed by the order of its opening <code>(</code>.</p>
 
 <p>Here we name the capture groups, which we can access with the <code>name</code>
 method or the <code>Index</code> notation with a <code>&amp;str</code>. Note that the named
-capture groups are still accessible with <code>at</code> or the <code>Index</code> notation
+capture groups are still accessible with <code>get</code> or the <code>Index</code> notation
 with a <code>usize</code>.</p>
 
 <p>The <code>0</code>th capture group is always unnamed, so it must always be
@@ -283,12 +283,19 @@ with named capture groups:</p>
 <p>Note that using <code>$2</code> instead of <code>$first</code> or <code>$1</code> instead of <code>$last</code>
 would produce the same result. To write a literal <code>$</code> use <code>$$</code>.</p>
 
-<p>If <code>$name</code> isn&#39;t a valid capture group (whether the name doesn&#39;t exist
-or isn&#39;t a valid index), then it is replaced with the empty string.</p>
+<p>Sometimes the replacement string requires use of curly braces to
+delineate a capture group replacement and surrounding literal text.
+For example, if we wanted to join two words together with an
+underscore:</p>
 
-<p>The longest possible name is used. e.g., <code>$1a</code> looks up the capture
-group named <code>1a</code> and not the capture group at index <code>1</code>. To exert more
-precise control over the name, use braces, e.g., <code>${1}a</code>.</p>
+<pre class="rust rust-example-rendered">
+<span class="kw">let</span> <span class="ident">re</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;(?P&lt;first&gt;\w+)\s+(?P&lt;second&gt;\w+)&quot;</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">re</span>.<span class="ident">replace</span>(<span class="string">b&quot;deep fried&quot;</span>, <span class="kw-2">&amp;</span><span class="string">b&quot;${first}_$second&quot;</span>[..]);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>, <span class="kw-2">&amp;</span><span class="string">b&quot;deep_fried&quot;</span>[..]);</pre>
+
+<p>Without the curly braces, the capture group name <code>first_</code> would be
+used, and since it doesn&#39;t exist, it would be replaced with the empty
+string.</p>
 
 <p>Finally, sometimes you just want to replace a literal string with no
 regard for capturing group expansion. This can be done by wrapping a
@@ -307,14 +314,14 @@ provided. This is the same as calling <code>replacen</code> with <code>limit</co
 
 <p>See the documentation for <code>replace</code> for details on how to access
 capturing group matches in the replacement text.</p>
-</div><h4 id='method.replacen' class="method"><span id='replacen.v' class='invisible'><code>fn <a href='#method.replacen' class='fnname'>replacen</a>&lt;'t, R:&nbsp;<a class="trait" href="../../regex/bytes/trait.Replacer.html" title="trait regex::bytes::Replacer">Replacer</a>&gt;(&amp;self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; text: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;'t [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; limit: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rep: R)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/collections/borrow/enum.Cow.html" title="enum collections::borrow::Cow">Cow</a>&lt;'t, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>&gt;</code></span></h4>
+</div><h4 id='method.replacen' class="method"><span id='replacen.v' class='invisible'><code>fn <a href='#method.replacen' class='fnname'>replacen</a>&lt;'t, R:&nbsp;<a class="trait" href="../../regex/bytes/trait.Replacer.html" title="trait regex::bytes::Replacer">Replacer</a>&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;text: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;'t [</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;limit: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;rep: R<br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/collections/borrow/enum.Cow.html" title="enum collections::borrow::Cow">Cow</a>&lt;'t, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>&gt;</code></span></h4>
 <div class='docblock'><p>Replaces at most <code>limit</code> non-overlapping matches in <code>text</code> with the
 replacement provided. If <code>limit</code> is 0, then all non-overlapping matches
 are replaced.</p>
 
 <p>See the documentation for <code>replace</code> for details on how to access
 capturing group matches in the replacement text.</p>
-</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/regex/re_bytes.rs.html#527-611' title='goto source code'>[src]</a></span></h3>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/regex/re_bytes.rs.html#538-622' title='goto source code'>[src]</a></span></h3>
 <div class='docblock'><p>Advanced or &quot;lower level&quot; search methods.</p>
 </div><div class='impl-items'><h4 id='method.shortest_match' class="method"><span id='shortest_match.v' class='invisible'><code>fn <a href='#method.shortest_match' class='fnname'>shortest_match</a>(&amp;self, text: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">&amp;[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.slice.html">]</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;</code></span></h4>
 <div class='docblock'><p>Returns the end location of a match in the text given.</p>
@@ -333,7 +340,7 @@ text, but <code>shortest_match</code> can give up as soon as it sees the first
 <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">b&quot;aaaaa&quot;</span>;
 <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;a+&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">shortest_match</span>(<span class="ident">text</span>);
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">pos</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>));</pre>
-</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/regex/re_bytes.rs.html#614-636' title='goto source code'>[src]</a></span></h3>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class="struct" href="../../regex/bytes/struct.Regex.html" title="struct regex::bytes::Regex">Regex</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/regex/re_bytes.rs.html#625-647' title='goto source code'>[src]</a></span></h3>
 <div class='docblock'><p>Auxiliary methods.</p>
 </div><div class='impl-items'><h4 id='method.as_str' class="method"><span id='as_str.v' class='invisible'><code>fn <a href='#method.as_str' class='fnname'>as_str</a>(&amp;self) -&gt; &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a></code></span></h4>
 <div class='docblock'><p>Returns the original string of this regex.</p>

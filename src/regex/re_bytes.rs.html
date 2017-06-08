@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.1/src/re_bytes.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.2/src/re_bytes.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>re_bytes.rs.html -- source</title>
@@ -1047,6 +1047,33 @@
 <span id="1002">1002</span>
 <span id="1003">1003</span>
 <span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
+<span id="1022">1022</span>
+<span id="1023">1023</span>
+<span id="1024">1024</span>
+<span id="1025">1025</span>
+<span id="1026">1026</span>
+<span id="1027">1027</span>
+<span id="1028">1028</span>
+<span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -1296,7 +1323,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Here we name the capture groups, which we can access with the `name`</span>
     <span class="doccomment">/// method or the `Index` notation with a `&amp;str`. Note that the named</span>
-    <span class="doccomment">/// capture groups are still accessible with `at` or the `Index` notation</span>
+    <span class="doccomment">/// capture groups are still accessible with `get` or the `Index` notation</span>
     <span class="doccomment">/// with a `usize`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The `0`th capture group is always unnamed, so it must always be</span>
@@ -1477,12 +1504,23 @@
     <span class="doccomment">/// Note that using `$2` instead of `$first` or `$1` instead of `$last`</span>
     <span class="doccomment">/// would produce the same result. To write a literal `$` use `$$`.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// If `$name` isn&#39;t a valid capture group (whether the name doesn&#39;t exist</span>
-    <span class="doccomment">/// or isn&#39;t a valid index), then it is replaced with the empty string.</span>
+    <span class="doccomment">/// Sometimes the replacement string requires use of curly braces to</span>
+    <span class="doccomment">/// delineate a capture group replacement and surrounding literal text.</span>
+    <span class="doccomment">/// For example, if we wanted to join two words together with an</span>
+    <span class="doccomment">/// underscore:</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// The longest possible name is used. e.g., `$1a` looks up the capture</span>
-    <span class="doccomment">/// group named `1a` and not the capture group at index `1`. To exert more</span>
-    <span class="doccomment">/// precise control over the name, use braces, e.g., `${1}a`.</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # extern crate regex; use regex::bytes::Regex;</span>
+    <span class="doccomment">/// # fn main() {</span>
+    <span class="doccomment">/// let re = Regex::new(r&quot;(?P&lt;first&gt;\w+)\s+(?P&lt;second&gt;\w+)&quot;).unwrap();</span>
+    <span class="doccomment">/// let result = re.replace(b&quot;deep fried&quot;, &amp;b&quot;${first}_$second&quot;[..]);</span>
+    <span class="doccomment">/// assert_eq!(result, &amp;b&quot;deep_fried&quot;[..]);</span>
+    <span class="doccomment">/// # }</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Without the curly braces, the capture group name `first_` would be</span>
+    <span class="doccomment">/// used, and since it doesn&#39;t exist, it would be replaced with the empty</span>
+    <span class="doccomment">/// string.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Finally, sometimes you just want to replace a literal string with no</span>
     <span class="doccomment">/// regard for capturing group expansion. This can be done by wrapping a</span>
@@ -1813,7 +1851,7 @@
 <span class="doccomment">/// index corresponds to the next capture group in the regex. If a capture</span>
 <span class="doccomment">/// group is named, then the matched byte string is *also* available via the</span>
 <span class="doccomment">/// `name` method. (Note that the 0th capture is always unnamed and so must be</span>
-<span class="doccomment">/// accessed with the `at` method.)</span>
+<span class="doccomment">/// accessed with the `get` method.)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Positions returned from a capture group are always byte indices.</span>
 <span class="doccomment">///</span>
@@ -1828,6 +1866,22 @@
     <span class="doccomment">/// Returns the match associated with the capture group at index `i`. If</span>
     <span class="doccomment">/// `i` does not correspond to a capture group, or if the capture group</span>
     <span class="doccomment">/// did not participate in the match, then `None` is returned.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Examples</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Get the text of the match with a default of an empty string if this</span>
+    <span class="doccomment">/// group didn&#39;t participate in the match:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use regex::bytes::Regex;</span>
+    <span class="doccomment">/// let re = Regex::new(r&quot;[a-z]+(?:([0-9]+)|([A-Z]+))&quot;).unwrap();</span>
+    <span class="doccomment">/// let caps = re.captures(b&quot;abc123&quot;).unwrap();</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let text1 = caps.get(1).map_or(&amp;b&quot;&quot;[..], |m| m.as_bytes());</span>
+    <span class="doccomment">/// let text2 = caps.get(2).map_or(&amp;b&quot;&quot;[..], |m| m.as_bytes());</span>
+    <span class="doccomment">/// assert_eq!(text1, &amp;b&quot;123&quot;[..]);</span>
+    <span class="doccomment">/// assert_eq!(text2, &amp;b&quot;&quot;[..]);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&lt;</span><span class="lifetime">&#39;t</span><span class="op">&gt;&gt;</span> {
         <span class="self">self</span>.<span class="ident">locs</span>.<span class="ident">pos</span>(<span class="ident">i</span>).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">s</span>, <span class="ident">e</span>)<span class="op">|</span> <span class="ident">Match</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">text</span>, <span class="ident">s</span>, <span class="ident">e</span>))
     }
@@ -1928,7 +1982,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// The text can&#39;t outlive the `Captures` object if this method is</span>
 <span class="doccomment">/// used, because of how `Index` is defined (normally `a[i]` is part</span>
-<span class="doccomment">/// of `a` and can&#39;t outlive it); to do that, use `at()` instead.</span>
+<span class="doccomment">/// of `a` and can&#39;t outlive it); to do that, use `get()` instead.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>

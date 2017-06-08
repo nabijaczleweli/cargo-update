@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.5/src/treebuilder.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.6/src/treebuilder.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>treebuilder.rs.html -- source</title>
@@ -236,8 +236,15 @@
 <span id="191">191</span>
 <span id="192">192</span>
 <span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 
 <span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_int</span>, <span class="ident">c_void</span>};
 
@@ -259,6 +266,11 @@
     <span class="doccomment">/// Get the number of entries</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_treebuilder_entrycount</span>(<span class="self">self</span>.<span class="ident">raw</span>) <span class="kw">as</span> <span class="ident">usize</span> }
+    }
+
+    <span class="doccomment">/// Return `true` if there is no entry</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>
     }
 
     <span class="doccomment">/// Get en entry from the builder from its filename</span>
@@ -288,7 +300,7 @@
         <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">filename</span>.<span class="ident">into_c_string</span>());
         <span class="kw">let</span> <span class="ident">filemode</span> <span class="op">=</span> <span class="ident">filemode</span> <span class="kw">as</span> <span class="ident">raw</span>::<span class="ident">git_filemode_t</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_tree_entry</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_treebuilder_insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>, <span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">filename</span>,
                                                   <span class="ident">oid</span>.<span class="ident">raw</span>(), <span class="ident">filemode</span>));
