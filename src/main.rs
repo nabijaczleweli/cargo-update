@@ -102,7 +102,7 @@ fn actual_main() -> Result<(), i32> {
 
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
                             Command::new("cargo")
-                                .args(cfg.cargo_args())
+                                .args(&cfg.cargo_args()[..])
                                 .arg(&package.name)
                                 .arg("--vers")
                                 .arg(package.update_to_version().to_string())
