@@ -217,7 +217,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;,
            Liigo &lt;<liigo@qq.com>&gt;,
            azyobuzin &lt;<azyobuzin@users.sourceforge.jp>&gt;,
-       and Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;
+           Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;,
+       and Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;
 
 ## REPORTING BUGS
 
