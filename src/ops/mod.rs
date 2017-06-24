@@ -272,14 +272,14 @@ pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> 
 /// #     vec![MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()];
-/// installed_packages = intersect_packages(installed_packages, &packages_to_update, false);
+/// installed_packages = intersect_packages(&installed_packages, &packages_to_update, false);
 /// # assert_eq!(&installed_packages,
 /// #   &[MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #     MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
 /// ```
-pub fn intersect_packages(installed: Vec<MainRepoPackage>, to_update: &[(String, Option<Semver>)], allow_installs: bool) -> Vec<MainRepoPackage> {
+pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, Option<Semver>)], allow_installs: bool) -> Vec<MainRepoPackage> {
     installed.iter()
-        .filter(|p| to_update.iter().find(|u| p.name == u.0).is_some())
+        .filter(|p| to_update.iter().any(|u| p.name == u.0))
         .cloned()
         .map(|p| {
             MainRepoPackage {

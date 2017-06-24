@@ -37,7 +37,7 @@ fn actual_main() -> Result<(), i32> {
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
 
     if !opts.to_update.is_empty() {
-        packages = cargo_update::ops::intersect_packages(packages, &opts.to_update, opts.install);
+        packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install);
     }
 
     {
@@ -135,7 +135,7 @@ fn actual_main() -> Result<(), i32> {
                     Ok(()) => (s + 1, e, r),
                     Err((pr, pn)) => {
                         e.push(pn);
-                        (s, e, r.or(Some(pr)))
+                        (s, e, r.or_else(|| Some(pr)))
                     }
                 });
 
