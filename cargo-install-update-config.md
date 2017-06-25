@@ -70,7 +70,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Liigo &lt;<liigo@qq.com>&gt;,
            azyobuzin &lt;<azyobuzin@users.sourceforge.jp>&gt;,
            Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;,
-       and Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;
+           Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;,
+       and Mateusz Mikuła &lt;<mati865@gmail.com>&gt;
 
 ## REPORTING BUGS
 
