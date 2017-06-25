@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.24.2/src/fmt.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.25.0/src/fmt.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>fmt.rs.html -- source</title>
@@ -208,6 +208,22 @@
 <span id="163">163</span>
 <span id="164">164</span>
 <span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
 </pre><pre class="rust ">
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;color&quot;</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)))]</span>
 <span class="kw">use</span> <span class="ident">ansi_term</span>::<span class="ident">ANSIString</span>;
@@ -218,6 +234,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;color&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">atty</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>;
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
@@ -244,20 +261,23 @@
     <span class="bool-val">false</span>
 }
 
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_term_dumb</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;TERM&quot;</span>).<span class="ident">ok</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;dumb&quot;</span>)) }
+
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Colorizer</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ColorizerOption</span> {
     <span class="kw">pub</span> <span class="ident">use_stderr</span>: <span class="ident">bool</span>,
     <span class="kw">pub</span> <span class="ident">when</span>: <span class="ident">ColorWhen</span>,
+}
+
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Colorizer</span> {
+    <span class="ident">when</span>: <span class="ident">ColorWhen</span>,
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">color</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">c</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">when</span> {
-            <span class="ident">ColorWhen</span>::<span class="ident">Auto</span> <span class="op">=&gt;</span> <span class="kw">if</span> <span class="ident">is_a_tty</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">use_stderr</span>) {
-                <span class="ident">Format</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">c</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)
-            } <span class="kw">else</span> {
-                <span class="ident">Format</span>::<span class="prelude-val">None</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)
-            },
+            <span class="ident">ColorWhen</span>::<span class="ident">Auto</span> <span class="op">=&gt;</span> <span class="ident">Format</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">c</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>),
             <span class="ident">ColorWhen</span>::<span class="ident">Always</span> <span class="op">=&gt;</span> <span class="ident">Format</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">c</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>),
             <span class="ident">ColorWhen</span>::<span class="ident">Never</span> <span class="op">=&gt;</span> <span class="ident">Format</span>::<span class="prelude-val">None</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>),
         }
@@ -265,6 +285,18 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Colorizer</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">option</span>: <span class="ident">ColorizerOption</span>) <span class="op">-&gt;</span> <span class="ident">Colorizer</span> {
+        <span class="kw">let</span> <span class="ident">is_a_tty</span> <span class="op">=</span> <span class="ident">is_a_tty</span>(<span class="ident">option</span>.<span class="ident">use_stderr</span>);
+        <span class="kw">let</span> <span class="ident">is_term_dumb</span> <span class="op">=</span> <span class="ident">is_term_dumb</span>();
+        <span class="ident">Colorizer</span> {
+            <span class="ident">when</span>: <span class="kw">if</span> <span class="ident">is_a_tty</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_term_dumb</span> {
+                <span class="ident">option</span>.<span class="ident">when</span>
+            } <span class="kw">else</span> {
+                <span class="ident">ColorWhen</span>::<span class="ident">Never</span>
+            },
+        }
+    }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">good</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">Format</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
         <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="op">+</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>
     {
@@ -296,10 +328,10 @@
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Colorizer</span> {
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="ident">Colorizer</span> {
+        <span class="ident">Colorizer</span>::<span class="ident">new</span>(<span class="ident">ColorizerOption</span> {
             <span class="ident">use_stderr</span>: <span class="bool-val">true</span>,
             <span class="ident">when</span>: <span class="ident">ColorWhen</span>::<span class="ident">Auto</span>,
-        }
+        })
     }
 }
 
