@@ -234,6 +234,10 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
 ///
 /// If the `.crates.toml` file doesn't exist an empty vector is returned.
 ///
+/// This also deduplicates packages and assumes the latest version as the correct one to work around
+/// [#44](https://github.com/nabijaczleweli/cargo-update/issues/44) a.k.a.
+/// [rust-lang/cargo#4321](https://github.com/rust-lang/cargo/issues/4321).
+///
 /// # Examples
 ///
 /// ```
@@ -250,7 +254,18 @@ pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> 
         let mut crates = String::new();
         File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
-        toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| MainRepoPackage::parse(s)).collect()
+        let mut res = Vec::<MainRepoPackage>::new();
+        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| MainRepoPackage::parse(s)) {
+            if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
+                if saved.version.is_none() || saved.version.as_ref().unwrap() < pkg.version.as_ref().unwrap() {
+                    saved.version = pkg.version;
+                }
+                continue;
+            }
+
+            res.push(pkg);
+        }
+        res
     } else {
         Vec::new()
     }
@@ -281,12 +296,7 @@ pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, O
     installed.iter()
         .filter(|p| to_update.iter().any(|u| p.name == u.0))
         .cloned()
-        .map(|p| {
-            MainRepoPackage {
-                max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()),
-                ..p
-            }
-        })
+        .map(|p| MainRepoPackage { max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()), ..p })
         .chain(to_update.iter().filter(|p| allow_installs && installed.iter().find(|i| i.name == p.0).is_none()).map(|p| {
             MainRepoPackage {
                 name: p.0.clone(),
