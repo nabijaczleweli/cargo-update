@@ -371,13 +371,13 @@ is empty.</p>
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]);
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec2</span>, []);</pre>
 </div><h4 id='method.drain' class="method"><span id='drain.v' class='invisible'><code>fn <a href='#method.drain' class='fnname'>drain</a>&lt;R&gt;(&amp;mut self, range: R) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/collections/vec/struct.Drain.html" title="struct collections::vec::Drain">Drain</a>&lt;T&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;R: <a class="trait" href="https://doc.rust-lang.org/nightly/collections/range/trait.RangeArgument.html" title="trait collections::range::RangeArgument">RangeArgument</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;,&nbsp;</span></code><div class='since' title='Stable since Rust version 1.6.0'>1.6.0</div></span></h4>
-<div class='docblock'><p>Create a draining iterator that removes the specified range in the vector
+<div class='docblock'><p>Creates a draining iterator that removes the specified range in the vector
 and yields the removed items.</p>
 
 <p>Note 1: The element range is removed even if the iterator is only
 partially consumed or not consumed at all.</p>
 
-<p>Note 2: It is unspecified how many elements are removed from the vector,
+<p>Note 2: It is unspecified how many elements are removed from the vector
 if the <code>Drain</code> value is leaked.</p>
 
 <h1 id='panics-7' class='section-header'><a href='#panics-7'>Panics</a></h1>
@@ -408,7 +408,8 @@ of the vector.</p>
 
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">v</span>.<span class="ident">is_empty</span>());</pre>
 </div><h4 id='method.len' class="method"><span id='len.v' class='invisible'><code>fn <a href='#method.len' class='fnname'>len</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a></code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
-<div class='docblock'><p>Returns the number of elements in the vector.</p>
+<div class='docblock'><p>Returns the number of elements in the vector, also referred to
+as its &#39;length&#39;.</p>
 
 <h1 id='examples-21' class='section-header'><a href='#examples-21'>Examples</a></h1>
 <pre class="rust rust-example-rendered">
@@ -442,11 +443,14 @@ and the returned <code>Self</code> contains elements <code>[at, len)</code>.</p>
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec</span>, [<span class="number">1</span>]);
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec2</span>, [<span class="number">2</span>, <span class="number">3</span>]);</pre>
 </div></div><div class='impl-items'><h4 id='method.resize' class="method"><span id='resize.v' class='invisible'><code>fn <a href='#method.resize' class='fnname'>resize</a>(&amp;mut self, new_len: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, value: T)</code><div class='since' title='Stable since Rust version 1.5.0'>1.5.0</div></span></h4>
-<div class='docblock'><p>Resizes the <code>Vec</code> in-place so that <code>len()</code> is equal to <code>new_len</code>.</p>
+<div class='docblock'><p>Resizes the <code>Vec</code> in-place so that <code>len</code> is equal to <code>new_len</code>.</p>
 
-<p>If <code>new_len</code> is greater than <code>len()</code>, the <code>Vec</code> is extended by the
+<p>If <code>new_len</code> is greater than <code>len</code>, the <code>Vec</code> is extended by the
 difference, with each additional slot filled with <code>value</code>.
-If <code>new_len</code> is less than <code>len()</code>, the <code>Vec</code> is simply truncated.</p>
+If <code>new_len</code> is less than <code>len</code>, the <code>Vec</code> is simply truncated.</p>
+
+<p>This method requires <code>Clone</code> to clone the passed value. If you&#39;d
+rather create a value with <code>Default</code> instead, see <a href="#method.resize_default"><code>resize_default</code></a>.</p>
 
 <h1 id='examples-24' class='section-header'><a href='#examples-24'>Examples</a></h1>
 <pre class="rust rust-example-rendered">
@@ -473,12 +477,33 @@ available).</p>
 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>];
 <span class="ident">vec</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span>[<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</pre>
+</div></div><div class='impl-items'><h4 id='method.resize_default' class="method"><span id='resize_default.v' class='invisible'><code>fn <a href='#method.resize_default' class='fnname'>resize_default</a>(&amp;mut self, new_len: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)</code></span></h4>
+<div class='stability'><div class='stab unstable'><span class=microscope>🔬</span> This is a nightly-only experimental API.  (<code>vec_resize_default</code>)</div></div><div class='docblock'><p>Resizes the <code>Vec</code> in-place so that <code>len</code> is equal to <code>new_len</code>.</p>
+
+<p>If <code>new_len</code> is greater than <code>len</code>, the <code>Vec</code> is extended by the
+difference, with each additional slot filled with <code>Default::default()</code>.
+If <code>new_len</code> is less than <code>len</code>, the <code>Vec</code> is simply truncated.</p>
+
+<p>This method uses <code>Default</code> to create new values on every push. If
+you&#39;d rather <code>Clone</code> a given value, use <a href="#method.resize"><code>resize</code></a>.</p>
+
+<h1 id='examples-26' class='section-header'><a href='#examples-26'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="attribute">#<span class="op">!</span>[<span class="ident">feature</span>(<span class="ident">vec_resize_default</span>)]</span>
+
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="ident">vec</span>.<span class="ident">resize_default</span>(<span class="number">5</span>);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">0</span>]);
+
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];
+<span class="ident">vec</span>.<span class="ident">resize_default</span>(<span class="number">2</span>);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec</span>, [<span class="number">1</span>, <span class="number">2</span>]);</pre>
 </div></div><div class='impl-items'><h4 id='method.dedup' class="method"><span id='dedup.v' class='invisible'><code>fn <a href='#method.dedup' class='fnname'>dedup</a>(&amp;mut self)</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></span></h4>
 <div class='docblock'><p>Removes consecutive repeated elements in the vector.</p>
 
 <p>If the vector is sorted, this removes all duplicates.</p>
 
-<h1 id='examples-26' class='section-header'><a href='#examples-26'>Examples</a></h1>
+<h1 id='examples-27' class='section-header'><a href='#examples-27'>Examples</a></h1>
 <pre class="rust rust-example-rendered">
 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">2</span>];
 
@@ -489,13 +514,50 @@ available).</p>
 <div class='stability'><div class='stab unstable'><details><summary><span class=microscope>🔬</span> This is a nightly-only experimental API.  (<code>vec_remove_item</code>)</summary><p>recently added</p>
 </details></div></div><div class='docblock'><p>Removes the first instance of <code>item</code> from the vector if the item exists.</p>
 
-<h1 id='examples-27' class='section-header'><a href='#examples-27'>Examples</a></h1>
+<h1 id='examples-28' class='section-header'><a href='#examples-28'>Examples</a></h1>
 <pre class="rust rust-example-rendered">
 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>];
 
 <span class="ident">vec</span>.<span class="ident">remove_item</span>(<span class="kw-2">&amp;</span><span class="number">1</span>);
 
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">vec</span>, <span class="macro">vec</span><span class="macro">!</span>[<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>]);</pre>
+</div></div><div class='impl-items'><h4 id='method.splice' class="method"><span id='splice.v' class='invisible'><code>fn <a href='#method.splice' class='fnname'>splice</a>&lt;R, I&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;range: R, <br>&nbsp;&nbsp;&nbsp;&nbsp;replace_with: I<br>) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/collections/vec/struct.Splice.html" title="struct collections::vec::Splice">Splice</a>&lt;&lt;I as <a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/trait.IntoIterator.html" title="trait core::iter::traits::IntoIterator">IntoIterator</a>&gt;::<a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/trait.IntoIterator.html" title="trait core::iter::traits::IntoIterator">IntoIter</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;I: <a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/trait.IntoIterator.html" title="trait core::iter::traits::IntoIterator">IntoIterator</a>&lt;Item = T&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;R: <a class="trait" href="https://doc.rust-lang.org/nightly/collections/range/trait.RangeArgument.html" title="trait collections::range::RangeArgument">RangeArgument</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;,&nbsp;</span></code></span></h4>
+<div class='stability'><div class='stab unstable'><details><summary><span class=microscope>🔬</span> This is a nightly-only experimental API.  (<code>splice</code>)</summary><p>recently added</p>
+</details></div></div><div class='docblock'><p>Creates a splicing iterator that replaces the specified range in the vector
+with the given <code>replace_with</code> iterator and yields the removed items.
+<code>replace_with</code> does not need to be the same length as <code>range</code>.</p>
+
+<p>Note 1: The element range is removed even if the iterator is not
+consumed until the end.</p>
+
+<p>Note 2: It is unspecified how many elements are removed from the vector,
+if the <code>Splice</code> value is leaked.</p>
+
+<p>Note 3: The input iterator <code>replace_with</code> is only consumed
+when the <code>Splice</code> value is dropped.</p>
+
+<p>Note 4: This is optimal if:</p>
+
+<ul>
+<li>The tail (elements in the vector after <code>range</code>) is empty,</li>
+<li>or <code>replace_with</code> yields fewer elements than <code>range</code>’s length</li>
+<li>or the lower bound of its <code>size_hint()</code> is exact.</li>
+</ul>
+
+<p>Otherwise, a temporary vector is allocated and the tail is moved twice.</p>
+
+<h1 id='panics-9' class='section-header'><a href='#panics-9'>Panics</a></h1>
+<p>Panics if the starting point is greater than the end point or if
+the end point is greater than the length of the vector.</p>
+
+<h1 id='examples-29' class='section-header'><a href='#examples-29'>Examples</a></h1>
+<pre class="rust rust-example-rendered">
+<span class="attribute">#<span class="op">!</span>[<span class="ident">feature</span>(<span class="ident">splice</span>)]</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="kw">let</span> <span class="ident">new</span> <span class="op">=</span> [<span class="number">7</span>, <span class="number">8</span>];
+<span class="kw">let</span> <span class="ident">u</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">splice</span>(..<span class="number">2</span>, <span class="ident">new</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>()).<span class="ident">collect</span>();
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">v</span>, <span class="kw-2">&amp;</span>[<span class="number">7</span>, <span class="number">8</span>, <span class="number">3</span>]);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">u</span>, <span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">2</span>]);</pre>
 </div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="struct" href="../regex_syntax/struct.Lit.html" title="struct regex_syntax::Lit">Lit</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/regex_syntax/literals.rs.html#44' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='method.clone' class="method"><span id='clone.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class="struct" href="../regex_syntax/struct.Lit.html" title="struct regex_syntax::Lit">Lit</a></code></span></h4>
 <div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
@@ -592,7 +654,6 @@ available).</p>
         window.rootPath = "../";
         window.currentCrate = "regex_syntax";
     </script>
-    <script src="../jquery.js"></script>
     <script src="../main.js"></script>
     <script defer src="../search-index.js"></script>
 </body>

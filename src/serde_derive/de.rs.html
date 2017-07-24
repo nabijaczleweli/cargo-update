@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-1.0.8/src/de.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-1.0.10/src/de.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>de.rs.html -- source</title>
@@ -1803,8 +1803,6 @@
 <span id="1758">1758</span>
 <span id="1759">1759</span>
 <span id="1760">1760</span>
-<span id="1761">1761</span>
-<span id="1762">1762</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -1831,15 +1829,14 @@
 
     <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
     <span class="kw">let</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">Parameters</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">cont</span>);
+    <span class="kw">let</span> (<span class="ident">de_impl_generics</span>, _, <span class="ident">ty_generics</span>, <span class="ident">where_clause</span>) <span class="op">=</span> <span class="ident">split_with_de_lifetime</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>);
     <span class="kw">let</span> <span class="ident">dummy_const</span> <span class="op">=</span> <span class="ident">Ident</span>::<span class="ident">new</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;_IMPL_DESERIALIZE_FOR_{}&quot;</span>, <span class="ident">ident</span>));
     <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="ident">Stmts</span>(<span class="ident">deserialize_body</span>(<span class="kw-2">&amp;</span><span class="ident">cont</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>));
 
     <span class="kw">let</span> <span class="ident">impl_block</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">remote</span>) <span class="op">=</span> <span class="ident">cont</span>.<span class="ident">attrs</span>.<span class="ident">remote</span>() {
-        <span class="kw">let</span> (<span class="ident">impl_generics</span>, <span class="ident">ty_generics</span>, <span class="ident">where_clause</span>) <span class="op">=</span> <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
-        <span class="kw">let</span> <span class="ident">de_lifetime</span> <span class="op">=</span> <span class="ident">params</span>.<span class="ident">de_lifetime_def</span>();
         <span class="macro">quote</span><span class="macro">!</span> {
-            <span class="kw">impl</span> <span class="attribute">#<span class="ident">impl_generics</span> <span class="attribute">#<span class="ident">ident</span> <span class="attribute">#<span class="ident">ty_generics</span> <span class="attribute">#<span class="ident">where_clause</span> {
-                <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="attribute">#<span class="ident">de_lifetime</span>, <span class="ident">__D</span><span class="op">&gt;</span>(<span class="ident">__deserializer</span>: <span class="ident">__D</span>) <span class="op">-&gt;</span> <span class="ident">_serde</span>::<span class="ident">export</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="attribute">#<span class="ident">remote</span> <span class="attribute">#<span class="ident">ty_generics</span>, <span class="ident">__D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+            <span class="kw">impl</span> <span class="attribute">#<span class="ident">de_impl_generics</span> <span class="attribute">#<span class="ident">ident</span> <span class="attribute">#<span class="ident">ty_generics</span> <span class="attribute">#<span class="ident">where_clause</span> {
+                <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">__D</span><span class="op">&gt;</span>(<span class="ident">__deserializer</span>: <span class="ident">__D</span>) <span class="op">-&gt;</span> <span class="ident">_serde</span>::<span class="ident">export</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="attribute">#<span class="ident">remote</span> <span class="attribute">#<span class="ident">ty_generics</span>, <span class="ident">__D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
                     <span class="kw">where</span> <span class="ident">__D</span>: <span class="ident">_serde</span>::<span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>
                 {
                     <span class="attribute">#<span class="ident">body</span>
@@ -1847,7 +1844,6 @@
             }
         }
     } <span class="kw">else</span> {
-        <span class="kw">let</span> (<span class="ident">de_impl_generics</span>, _, <span class="ident">ty_generics</span>, <span class="ident">where_clause</span>) <span class="op">=</span> <span class="ident">split_with_de_lifetime</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>);
         <span class="macro">quote</span><span class="macro">!</span> {
             <span class="attribute">#[<span class="ident">automatically_derived</span>]</span>
             <span class="kw">impl</span> <span class="attribute">#<span class="ident">de_impl_generics</span> <span class="ident">_serde</span>::<span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="attribute">#<span class="ident">ident</span> <span class="attribute">#<span class="ident">ty_generics</span> <span class="attribute">#<span class="ident">where_clause</span> {
@@ -3626,7 +3622,6 @@
         window.rootPath = "../../";
         window.currentCrate = "serde_derive";
     </script>
-    <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     <script defer src="../../search-index.js"></script>
 </body>

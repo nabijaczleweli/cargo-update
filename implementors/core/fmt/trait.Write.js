@@ -4,6 +4,7 @@ implementors["libc"] = ["impl <a class=\"trait\" href=\"https://doc.rust-lang.or
 implementors["regex_syntax"] = ["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Write.html\" title=\"trait core::fmt::Write\">Write</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/collections/string/struct.String.html\" title=\"struct collections::string::String\">String</a>",];
 implementors["serde"] = ["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Write.html\" title=\"trait core::fmt::Write\">Write</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/collections/string/struct.String.html\" title=\"struct collections::string::String\">String</a>",];
 implementors["syn"] = ["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Write.html\" title=\"trait core::fmt::Write\">Write</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/collections/string/struct.String.html\" title=\"struct collections::string::String\">String</a>",];
+implementors["thread_local"] = ["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Write.html\" title=\"trait core::fmt::Write\">Write</a> for <a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/collections/string/struct.String.html\" title=\"struct collections::string::String\">String</a>",];
 implementors["void"] = [];
 
             if (window.register_implementors) {
