@@ -6,6 +6,14 @@ A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo
 
 ### Installation
 
+Make sure that `cmake` is installed on your system. Example for installing it on Ubuntu:
+
+```shell
+sudo apt install cmake
+```
+
+Then install cargo-update with cargo:
+
 ```shell
 cargo install cargo-update
 ```
