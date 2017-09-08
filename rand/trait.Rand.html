@@ -48,10 +48,39 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/rand/lib.rs.html#280-284' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/rand/lib.rs.html#317-321' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait Rand: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a> {
     fn <a href='#tymethod.rand' class='fnname'>rand</a>&lt;R:&nbsp;<a class="trait" href="../rand/trait.Rng.html" title="trait rand::Rng">Rng</a>&gt;(rng: &amp;mut R) -&gt; Self;
 }</pre><div class='docblock'><p>A type that can be randomly generated using an <code>Rng</code>.</p>
+
+<h2 id='built-in-implementations' class='section-header'><a href='#built-in-implementations'>Built-in Implementations</a></h2>
+<p>This crate implements <code>Rand</code> for various primitive types.  Assuming the
+provided <code>Rng</code> is well-behaved, these implementations generate values with
+the following ranges and distributions:</p>
+
+<ul>
+<li>Integers (<code>i32</code>, <code>u32</code>, <code>isize</code>, <code>usize</code>, etc.): Uniformly distributed
+over all values of the type.</li>
+<li><code>char</code>: Uniformly distributed over all Unicode scalar values, i.e. all
+code points in the range <code>0...0x10_FFFF</code>, except for the range
+<code>0xD800...0xDFFF</code> (the surrogate code points).  This includes
+unassigned/reserved code points.</li>
+<li><code>bool</code>: Generates <code>false</code> or <code>true</code>, each with probability 0.5.</li>
+<li>Floating point types (<code>f32</code> and <code>f64</code>): Uniformly distributed in the
+half-open range <code>[0, 1)</code>.  (The <a href="struct.Open01.html"><code>Open01</code></a>, <a href="struct.Closed01.html"><code>Closed01</code></a>, <a href="struct.Exp1.html"><code>Exp1</code></a>, and
+<a href="struct.StandardNormal.html"><code>StandardNormal</code></a> wrapper types produce floating point numbers with
+alternative ranges or distributions.)</li>
+</ul>
+
+<p>The following aggregate types also implement <code>Rand</code> as long as their
+component types implement it:</p>
+
+<ul>
+<li>Tuples and arrays: Each element of the tuple or array is generated
+independently, using its own <code>Rand</code> implementation.</li>
+<li><code>Option&lt;T&gt;</code>: Returns <code>None</code> with probability 0.5; otherwise generates a
+random <code>T</code> and returns <code>Some(T)</code>.</li>
+</ul>
 </div>
             <h2 id='required-methods'>Required Methods</h2>
             <div class='methods'>

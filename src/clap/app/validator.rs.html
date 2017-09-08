@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.25.1/src/app/validator.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.26.0/src/app/validator.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>validator.rs.html -- source</title>
@@ -530,7 +530,7 @@
                     <span class="op">-&gt;</span> <span class="ident">ClapResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Validator::validate;&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reqs_validated</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">add_defaults</span>(<span class="ident">matcher</span>));
+        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">add_defaults</span>(<span class="ident">matcher</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ParseResult</span>::<span class="ident">Opt</span>(<span class="ident">a</span>) <span class="op">=</span> <span class="ident">needs_val_of</span> {
             <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Validator::validate: needs_val_of={:?}&quot;</span>, <span class="ident">a</span>);
             <span class="kw">let</span> <span class="ident">o</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>
@@ -538,7 +538,7 @@
                 .<span class="ident">iter</span>()
                 .<span class="ident">find</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">b</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">a</span>)
                 .<span class="ident">expect</span>(<span class="ident">INTERNAL_ERROR_MSG</span>);
-            <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_required</span>(<span class="ident">matcher</span>));
+            <span class="self">self</span>.<span class="ident">validate_required</span>(<span class="ident">matcher</span>)<span class="question-mark">?</span>;
             <span class="ident">reqs_validated</span> <span class="op">=</span> <span class="bool-val">true</span>;
             <span class="kw">let</span> <span class="ident">should_err</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="ident">matcher</span>.<span class="number">0</span>.<span class="ident">args</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">o</span>.<span class="ident">b</span>.<span class="ident">name</span>) {
                 <span class="ident">v</span>.<span class="ident">vals</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="op">!</span>(<span class="ident">o</span>.<span class="ident">v</span>.<span class="ident">min_vals</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">o</span>.<span class="ident">v</span>.<span class="ident">min_vals</span>.<span class="ident">unwrap</span>() <span class="op">==</span> <span class="number">0</span>)
@@ -555,18 +555,18 @@
         <span class="kw">if</span> <span class="ident">matcher</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="ident">matcher</span>.<span class="ident">subcommand_name</span>().<span class="ident">is_none</span>() <span class="op">&amp;&amp;</span>
            <span class="self">self</span>.<span class="number">0</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">ArgRequiredElseHelp</span>) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
-            <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">write_help_err</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">out</span>));
+            <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write_help_err</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">out</span>)<span class="question-mark">?</span>;
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span> {
                            <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from_utf8_lossy</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">out</span>).<span class="ident">into_owned</span>(),
                            <span class="ident">kind</span>: <span class="ident">ErrorKind</span>::<span class="ident">MissingArgumentOrSubcommand</span>,
                            <span class="ident">info</span>: <span class="prelude-val">None</span>,
                        });
         }
-        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_blacklist</span>(<span class="ident">matcher</span>));
+        <span class="self">self</span>.<span class="ident">validate_blacklist</span>(<span class="ident">matcher</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="op">!</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">SubcommandsNegateReqs</span>) <span class="op">&amp;&amp;</span> <span class="ident">subcmd_name</span>.<span class="ident">is_some</span>()) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">reqs_validated</span> {
-            <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_required</span>(<span class="ident">matcher</span>));
+            <span class="self">self</span>.<span class="ident">validate_required</span>(<span class="ident">matcher</span>)<span class="question-mark">?</span>;
         }
-        <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_matched_args</span>(<span class="ident">matcher</span>));
+        <span class="self">self</span>.<span class="ident">validate_matched_args</span>(<span class="ident">matcher</span>)<span class="question-mark">?</span>;
         <span class="ident">matcher</span>.<span class="ident">usage</span>(<span class="ident">usage</span>::<span class="ident">create_usage_with_title</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="kw-2">&amp;</span>[]));
 
         <span class="prelude-val">Ok</span>(())
@@ -694,18 +694,18 @@
                      <span class="ident">name</span>,
                      <span class="ident">ma</span>.<span class="ident">vals</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">opt</span>) <span class="op">=</span> <span class="macro">find_by_name</span><span class="macro">!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="kw-2">*</span><span class="ident">name</span>, <span class="ident">opts</span>, <span class="ident">iter</span>) {
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_num_vals</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_values</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_requires</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_num_occurs</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
+                <span class="self">self</span>.<span class="ident">validate_arg_num_vals</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_values</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_arg_requires</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_arg_num_occurs</span>(<span class="ident">opt</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>) <span class="op">=</span> <span class="macro">find_by_name</span><span class="macro">!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="kw-2">*</span><span class="ident">name</span>, <span class="ident">flags</span>, <span class="ident">iter</span>) {
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_requires</span>(<span class="ident">flag</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_num_occurs</span>(<span class="ident">flag</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
+                <span class="self">self</span>.<span class="ident">validate_arg_requires</span>(<span class="ident">flag</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_arg_num_occurs</span>(<span class="ident">flag</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pos</span>) <span class="op">=</span> <span class="macro">find_by_name</span><span class="macro">!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="kw-2">*</span><span class="ident">name</span>, <span class="ident">positionals</span>, <span class="ident">values</span>) {
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_num_vals</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_num_occurs</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_values</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
-                <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">validate_arg_requires</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>));
+                <span class="self">self</span>.<span class="ident">validate_arg_num_vals</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_arg_num_occurs</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_values</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+                <span class="self">self</span>.<span class="ident">validate_arg_requires</span>(<span class="ident">pos</span>, <span class="ident">ma</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> {
                 <span class="kw">let</span> <span class="ident">grp</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>
                     .<span class="ident">groups</span>

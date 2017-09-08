@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.8/src/parser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.9/src/parser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parser.rs.html -- source</title>
@@ -859,7 +859,7 @@
 
 
 <span class="comment">// The `Parser` struct keeps track of indexing over our buffer. All niceness</span>
-<span class="comment">// has been abandonned in favor of raw pointer magic. Does that make you feel</span>
+<span class="comment">// has been abandoned in favor of raw pointer magic. Does that make you feel</span>
 <span class="comment">// dirty? _Good._</span>
 <span class="kw">struct</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="comment">// Helper buffer for parsing strings that can&#39;t be just memcopied from</span>
@@ -875,7 +875,7 @@
     <span class="comment">// Current index</span>
     <span class="ident">index</span>: <span class="ident">usize</span>,
 
-    <span class="comment">// Lenght of the source</span>
+    <span class="comment">// Length of the source</span>
     <span class="ident">length</span>: <span class="ident">usize</span>,
 }
 
@@ -1010,7 +1010,7 @@
 ];
 
 
-<span class="comment">// Expect a string. This is called after encontering, and consuming, a</span>
+<span class="comment">// Expect a string. This is called after encountering, and consuming, a</span>
 <span class="comment">// double quote character. This macro has a happy path variant where it</span>
 <span class="comment">// does almost nothing as long as all characters are allowed (as described</span>
 <span class="comment">// in the look up table above). If it encounters a closing quote without</span>
@@ -1150,7 +1150,7 @@
 
         <span class="kw">loop</span> {
             <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">parser</span>.<span class="ident">is_eof</span>() {
-                <span class="ident">result</span> <span class="op">=</span> <span class="ident">Number</span>::<span class="ident">from_parts</span>(<span class="bool-val">true</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">num</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>);
+                <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Number</span>::<span class="ident">from_parts_unchecked</span>(<span class="bool-val">true</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">num</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>) };
                 <span class="kw">break</span>;
             }
             <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">parser</span>.<span class="ident">read_byte</span>();
@@ -1179,7 +1179,7 @@
                     <span class="kw">break</span>;
                 }
                 _ <span class="op">=&gt;</span> {
-                    <span class="ident">result</span> <span class="op">=</span> <span class="ident">Number</span>::<span class="ident">from_parts</span>(<span class="bool-val">true</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">num</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>);
+                    <span class="ident">result</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Number</span>::<span class="ident">from_parts_unchecked</span>(<span class="bool-val">true</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">num</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>) };
                     <span class="kw">break</span>;
                 }
             }
@@ -1395,7 +1395,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">e</span> <span class="op">=</span> <span class="number">0i16</span>;
         <span class="kw">loop</span> {
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_eof</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Number</span>::<span class="ident">from_parts</span>(<span class="bool-val">true</span>, <span class="ident">num</span>, <span class="ident">e</span>));
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="kw">unsafe</span> { <span class="ident">Number</span>::<span class="ident">from_parts_unchecked</span>(<span class="bool-val">true</span>, <span class="ident">num</span>, <span class="ident">e</span>) });
             }
             <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">read_byte</span>();
             <span class="kw">match</span> <span class="ident">ch</span> {
@@ -1420,7 +1420,7 @@
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Number</span>::<span class="ident">from_parts</span>(<span class="bool-val">true</span>, <span class="ident">num</span>, <span class="ident">e</span>))
+        <span class="prelude-val">Ok</span>(<span class="kw">unsafe</span> { <span class="ident">Number</span>::<span class="ident">from_parts_unchecked</span>(<span class="bool-val">true</span>, <span class="ident">num</span>, <span class="ident">e</span>) })
     }
 
     <span class="comment">// Called in the rare case that a number with `e` notation has been</span>
@@ -1458,7 +1458,7 @@
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Number</span>::<span class="ident">from_parts</span>(<span class="bool-val">true</span>, <span class="ident">num</span>, (<span class="ident">big_e</span>.<span class="ident">saturating_add</span>(<span class="ident">e</span> <span class="op">*</span> <span class="ident">sign</span>))))
+        <span class="prelude-val">Ok</span>(<span class="kw">unsafe</span> { <span class="ident">Number</span>::<span class="ident">from_parts_unchecked</span>(<span class="bool-val">true</span>, <span class="ident">num</span>, (<span class="ident">big_e</span>.<span class="ident">saturating_add</span>(<span class="ident">e</span> <span class="op">*</span> <span class="ident">sign</span>))) })
     }
 
     <span class="comment">// Parse away!</span>

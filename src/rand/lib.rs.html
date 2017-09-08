@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.3.15/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.3.16/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -1285,6 +1285,52 @@
 <span id="1240">1240</span>
 <span id="1241">1241</span>
 <span id="1242">1242</span>
+<span id="1243">1243</span>
+<span id="1244">1244</span>
+<span id="1245">1245</span>
+<span id="1246">1246</span>
+<span id="1247">1247</span>
+<span id="1248">1248</span>
+<span id="1249">1249</span>
+<span id="1250">1250</span>
+<span id="1251">1251</span>
+<span id="1252">1252</span>
+<span id="1253">1253</span>
+<span id="1254">1254</span>
+<span id="1255">1255</span>
+<span id="1256">1256</span>
+<span id="1257">1257</span>
+<span id="1258">1258</span>
+<span id="1259">1259</span>
+<span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
+<span id="1266">1266</span>
+<span id="1267">1267</span>
+<span id="1268">1268</span>
+<span id="1269">1269</span>
+<span id="1270">1270</span>
+<span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
+<span id="1277">1277</span>
+<span id="1278">1278</span>
+<span id="1279">1279</span>
+<span id="1280">1280</span>
+<span id="1281">1281</span>
+<span id="1282">1282</span>
+<span id="1283">1283</span>
+<span id="1284">1284</span>
+<span id="1285">1285</span>
+<span id="1286">1286</span>
+<span id="1287">1287</span>
+<span id="1288">1288</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2013-2014 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -1527,9 +1573,14 @@
 
 <span class="attribute">#<span class="op">!</span>[<span class="ident">doc</span>(<span class="ident">html_logo_url</span> <span class="op">=</span> <span class="string">&quot;https://www.rust-lang.org/logos/rust-logo-128x128-blk.png&quot;</span>,
        <span class="ident">html_favicon_url</span> <span class="op">=</span> <span class="string">&quot;https://www.rust-lang.org/favicon.ico&quot;</span>,
-       <span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://doc.rust-lang.org/rand/&quot;</span>)]</span>
+       <span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/rand/0.3&quot;</span>)]</span>
+
+<span class="attribute">#<span class="op">!</span>[<span class="ident">deny</span>(<span class="ident">missing_debug_implementations</span>)]</span>
+
+<span class="attribute">#<span class="op">!</span>[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;i128_support&quot;</span>, <span class="ident">feature</span>(<span class="ident">i128_type</span>))]</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span> <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">log</span>;
+
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">RefCell</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
@@ -1565,6 +1616,38 @@
 <span class="kw">type</span> <span class="ident">w32</span> <span class="op">=</span> <span class="ident">w</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// A type that can be randomly generated using an `Rng`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## Built-in Implementations</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This crate implements `Rand` for various primitive types.  Assuming the</span>
+<span class="doccomment">/// provided `Rng` is well-behaved, these implementations generate values with</span>
+<span class="doccomment">/// the following ranges and distributions:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * Integers (`i32`, `u32`, `isize`, `usize`, etc.): Uniformly distributed</span>
+<span class="doccomment">///   over all values of the type.</span>
+<span class="doccomment">/// * `char`: Uniformly distributed over all Unicode scalar values, i.e. all</span>
+<span class="doccomment">///   code points in the range `0...0x10_FFFF`, except for the range</span>
+<span class="doccomment">///   `0xD800...0xDFFF` (the surrogate code points).  This includes</span>
+<span class="doccomment">///   unassigned/reserved code points.</span>
+<span class="doccomment">/// * `bool`: Generates `false` or `true`, each with probability 0.5.</span>
+<span class="doccomment">/// * Floating point types (`f32` and `f64`): Uniformly distributed in the</span>
+<span class="doccomment">///   half-open range `[0, 1)`.  (The [`Open01`], [`Closed01`], [`Exp1`], and</span>
+<span class="doccomment">///   [`StandardNormal`] wrapper types produce floating point numbers with</span>
+<span class="doccomment">///   alternative ranges or distributions.)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`Open01`]: struct.Open01.html</span>
+<span class="doccomment">/// [`Closed01`]: struct.Closed01.html</span>
+<span class="doccomment">/// [`Exp1`]: struct.Exp1.html</span>
+<span class="doccomment">/// [`StandardNormal`]: struct.StandardNormal.html</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The following aggregate types also implement `Rand` as long as their</span>
+<span class="doccomment">/// component types implement it:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * Tuples and arrays: Each element of the tuple or array is generated</span>
+<span class="doccomment">///   independently, using its own `Rand` implementation.</span>
+<span class="doccomment">/// * `Option&lt;T&gt;`: Returns `None` with probability 0.5; otherwise generates a</span>
+<span class="doccomment">///   random `T` and returns `Some(T)`.</span>
+
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Rand</span> : <span class="ident">Sized</span> {
     <span class="doccomment">/// Generates a random instance of this type using the specified source of</span>
     <span class="doccomment">/// randomness.</span>
@@ -1577,7 +1660,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This rarely needs to be called directly, prefer `r.gen()` to</span>
     <span class="doccomment">/// `r.next_u32()`.</span>
-    <span class="comment">// FIXME #7771: Should be implemented in terms of next_u64</span>
+    <span class="comment">// FIXME #rust-lang/rfcs#628: Should be implemented in terms of next_u64</span>
     <span class="kw">fn</span> <span class="ident">next_u32</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
 
     <span class="doccomment">/// Return the next random u64.</span>
@@ -1819,6 +1902,9 @@
 
     <span class="doccomment">/// Shuffle a mutable slice in place.</span>
     <span class="doccomment">///</span>
+    <span class="doccomment">/// This applies Durstenfeld&#39;s algorithm for the [Fisher–Yates shuffle](https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_modern_algorithm)</span>
+    <span class="doccomment">/// which produces an unbiased permutation.</span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Example</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```rust</span>
@@ -1892,6 +1978,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`gen_iter`]: trait.Rng.html#method.gen_iter</span>
 <span class="doccomment">/// [`Rng`]: trait.Rng.html</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Generator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">R</span>:<span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">R</span>,
     <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw">fn</span>() <span class="op">-&gt;</span> <span class="ident">T</span><span class="op">&gt;</span>,
@@ -1911,6 +1998,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`gen_ascii_chars`]: trait.Rng.html#method.gen_ascii_chars</span>
 <span class="doccomment">/// [`Rng`]: trait.Rng.html</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsciiGenerator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">R</span>:<span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">R</span>,
 }
@@ -1970,7 +2058,7 @@
 <span class="doccomment">/// RNGs&quot;](http://www.jstatsoft.org/v08/i14/paper). *Journal of</span>
 <span class="doccomment">/// Statistical Software*. Vol. 8 (Issue 14).</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_copy_implementations</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">XorShiftRng</span> {
     <span class="ident">x</span>: <span class="ident">w32</span>,
     <span class="ident">y</span>: <span class="ident">w32</span>,
@@ -2060,6 +2148,7 @@
 <span class="doccomment">/// let Open01(val) = random::&lt;Open01&lt;f32&gt;&gt;();</span>
 <span class="doccomment">/// println!(&quot;f32 from (0,1): {}&quot;, val);</span>
 <span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Open01</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">F</span>);
 
 <span class="doccomment">/// A wrapper for generating floating point numbers uniformly in the</span>
@@ -2077,11 +2166,12 @@
 <span class="doccomment">/// let Closed01(val) = random::&lt;Closed01&lt;f32&gt;&gt;();</span>
 <span class="doccomment">/// println!(&quot;f32 from [0,1]: {}&quot;, val);</span>
 <span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Closed01</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">F</span>);
 
 <span class="doccomment">/// The standard RNG. This is designed to be efficient on the current</span>
 <span class="doccomment">/// platform.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StdRng</span> {
     <span class="ident">rng</span>: <span class="ident">IsaacWordRng</span>,
 }
@@ -2144,6 +2234,7 @@
 }
 
 <span class="doccomment">/// Controls how the thread-local RNG is reseeded.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">ThreadRngReseeder</span>;
 
 <span class="kw">impl</span> <span class="ident">reseeding</span>::<span class="ident">Reseeder</span><span class="op">&lt;</span><span class="ident">StdRng</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ThreadRngReseeder</span> {
@@ -2158,7 +2249,7 @@
 <span class="kw">type</span> <span class="ident">ThreadRngInner</span> <span class="op">=</span> <span class="ident">reseeding</span>::<span class="ident">ReseedingRng</span><span class="op">&lt;</span><span class="ident">StdRng</span>, <span class="ident">ThreadRngReseeder</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// The thread-local RNG.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThreadRng</span> {
     <span class="ident">rng</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">ThreadRngInner</span><span class="op">&gt;&gt;</span>,
 }
@@ -2252,7 +2343,8 @@
     <span class="ident">thread_rng</span>().<span class="ident">gen</span>()
 }
 
-<span class="doccomment">/// Randomly sample up to `amount` elements from an iterator.</span>
+<span class="doccomment">/// Randomly sample up to `amount` elements from a finite iterator.</span>
+<span class="doccomment">/// The order of elements in the sample is not random.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Example</span>
 <span class="doccomment">///</span>

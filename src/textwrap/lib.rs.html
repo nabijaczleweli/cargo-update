@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/textwrap-0.6.0/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/textwrap-0.7.0/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -925,15 +925,6 @@
 <span id="880">880</span>
 <span id="881">881</span>
 <span id="882">882</span>
-<span id="883">883</span>
-<span id="884">884</span>
-<span id="885">885</span>
-<span id="886">886</span>
-<span id="887">887</span>
-<span id="888">888</span>
-<span id="889">889</span>
-<span id="890">890</span>
-<span id="891">891</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `textwrap` provides functions for word wrapping and filling text.</span>
 <span class="doccomment">//!</span>
@@ -952,6 +943,7 @@
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! This will display the following output:</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//! ```text</span>
 <span class="doccomment">//! textwrap: a small</span>
 <span class="doccomment">//! library for</span>
@@ -977,16 +969,21 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! [unicode-width]: https://docs.rs/unicode-width/</span>
 
+<span class="attribute">#<span class="op">!</span>[<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">unicode_width</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">term_size</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;hyphenation&quot;</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">hyphenation</span>;
 
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">unicode_width</span>::<span class="ident">UnicodeWidthStr</span>;
 <span class="kw">use</span> <span class="ident">unicode_width</span>::<span class="ident">UnicodeWidthChar</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;hyphenation&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">hyphenation</span>::{<span class="ident">Hyphenation</span>, <span class="ident">Corpus</span>};
+
+<span class="doccomment">/// A non-breaking space.</span>
+<span class="kw">const</span> <span class="ident">NBSP</span>: <span class="ident">char</span> <span class="op">=</span> <span class="string">&#39;\u{a0}&#39;</span>;
 
 <span class="doccomment">/// An interface for splitting words.</span>
 <span class="doccomment">///</span>
@@ -1026,6 +1023,7 @@
 
 <span class="doccomment">/// Use this as a [`Wrapper.splitter`] to avoid any kind of</span>
 <span class="doccomment">/// hyphenation:</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use textwrap::{Wrapper, NoHyphenation};</span>
 <span class="doccomment">///</span>
@@ -1064,13 +1062,28 @@
         <span class="comment">// that are surrounded by alphanumeric characters. This is to</span>
         <span class="comment">// avoid splitting on repeated hyphens, such as those found in</span>
         <span class="comment">// --foo-bar.</span>
-        <span class="kw">let</span> <span class="ident">char_indices</span> <span class="op">=</span> <span class="ident">word</span>.<span class="ident">char_indices</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;&gt;</span>();
-        <span class="kw">for</span> <span class="ident">w</span> <span class="kw">in</span> <span class="ident">char_indices</span>.<span class="ident">windows</span>(<span class="number">3</span>) {
-            <span class="kw">let</span> ((_, <span class="ident">prev</span>), (<span class="ident">n</span>, <span class="ident">c</span>), (_, <span class="ident">next</span>)) <span class="op">=</span> (<span class="ident">w</span>[<span class="number">0</span>], <span class="ident">w</span>[<span class="number">1</span>], <span class="ident">w</span>[<span class="number">2</span>]);
-            <span class="kw">if</span> <span class="ident">prev</span>.<span class="ident">is_alphanumeric</span>() <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;-&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">next</span>.<span class="ident">is_alphanumeric</span>() {
-                <span class="kw">let</span> (<span class="ident">head</span>, <span class="ident">tail</span>) <span class="op">=</span> <span class="ident">word</span>.<span class="ident">split_at</span>(<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">char_indices</span> <span class="op">=</span> <span class="ident">word</span>.<span class="ident">char_indices</span>();
+        <span class="comment">// Early return if the word is empty.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">char_indices</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">word</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;&quot;</span>)],
+            <span class="prelude-val">Some</span>((_, <span class="ident">ch</span>)) <span class="op">=&gt;</span> <span class="ident">ch</span>,
+        };
+
+        <span class="comment">// Find current word, or return early if the word only has a</span>
+        <span class="comment">// single character.</span>
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">idx</span>, <span class="kw-2">mut</span> <span class="ident">cur</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">char_indices</span>.<span class="ident">next</span>() {
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">word</span>, <span class="string">&quot;&quot;</span>, <span class="string">&quot;&quot;</span>)],
+            <span class="prelude-val">Some</span>((<span class="ident">idx</span>, <span class="ident">cur</span>)) <span class="op">=&gt;</span> (<span class="ident">idx</span>, <span class="ident">cur</span>),
+        };
+
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">next</span>)) <span class="op">=</span> <span class="ident">char_indices</span>.<span class="ident">next</span>() {
+            <span class="kw">if</span> <span class="ident">prev</span>.<span class="ident">is_alphanumeric</span>() <span class="op">&amp;&amp;</span> <span class="ident">cur</span> <span class="op">==</span> <span class="string">&#39;-&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">next</span>.<span class="ident">is_alphanumeric</span>() {
+                <span class="kw">let</span> (<span class="ident">head</span>, <span class="ident">tail</span>) <span class="op">=</span> <span class="ident">word</span>.<span class="ident">split_at</span>(<span class="ident">idx</span> <span class="op">+</span> <span class="number">1</span>);
                 <span class="ident">triples</span>.<span class="ident">push</span>((<span class="ident">head</span>, <span class="string">&quot;&quot;</span>, <span class="ident">tail</span>));
             }
+            <span class="ident">prev</span> <span class="op">=</span> <span class="ident">cur</span>;
+            <span class="ident">idx</span> <span class="op">=</span> <span class="ident">i</span>;
+            <span class="ident">cur</span> <span class="op">=</span> <span class="ident">next</span>;
         }
 
         <span class="comment">// Finally option is no split at all.</span>
@@ -1099,48 +1112,22 @@
     }
 }
 
-<span class="kw">struct</span> <span class="ident">IndentedString</span> {
-    <span class="ident">value</span>: <span class="ident">String</span>,
-    <span class="ident">empty_len</span>: <span class="ident">usize</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">IndentedString</span> {
-    <span class="doccomment">/// Create a new indented string. The string will initially have</span>
-    <span class="doccomment">/// the content `indent` and the given capacity.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">indent</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">capacity</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">IndentedString</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">with_capacity</span>(<span class="ident">capacity</span>);
-        <span class="ident">value</span>.<span class="ident">push_str</span>(<span class="ident">indent</span>);
-        <span class="ident">IndentedString</span> {
-            <span class="ident">value</span>: <span class="ident">value</span>,
-            <span class="ident">empty_len</span>: <span class="ident">indent</span>.<span class="ident">len</span>(),
+<span class="doccomment">/// Backport of the AddAssign trait implementation from Rust 1.14.</span>
+<span class="kw">fn</span> <span class="ident">cow_add_assign</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">lhs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) {
+    <span class="kw">if</span> <span class="ident">lhs</span>.<span class="ident">is_empty</span>() {
+        <span class="kw-2">*</span><span class="ident">lhs</span> <span class="op">=</span> <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">rhs</span>)
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">rhs</span>.<span class="ident">is_empty</span>() {
+        <span class="kw">return</span>;
+    } <span class="kw">else</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">inner</span>) <span class="op">=</span> <span class="kw-2">*</span><span class="ident">lhs</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">with_capacity</span>(<span class="ident">lhs</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">rhs</span>.<span class="ident">len</span>());
+            <span class="ident">s</span>.<span class="ident">push_str</span>(<span class="ident">inner</span>);
+            <span class="kw-2">*</span><span class="ident">lhs</span> <span class="op">=</span> <span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">s</span>);
         }
-    }
-
-    <span class="doccomment">/// Returns `true` if the string has no other content apart from</span>
-    <span class="doccomment">/// the indentation.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="self">self</span>.<span class="ident">empty_len</span>
-    }
-
-    <span class="doccomment">/// Appends the given `char` to the end of this string.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">char</span>) {
-        <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">push</span>(<span class="ident">ch</span>);
-    }
-
-    <span class="doccomment">/// Appends the given string slice to the end of this string.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">push_str</span>(<span class="ident">s</span>);
-    }
-
-    <span class="doccomment">/// Return the inner `String`.</span>
-    <span class="kw">fn</span> <span class="ident">into_string</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">value</span>
+        <span class="ident">lhs</span>.<span class="ident">to_mut</span>().<span class="ident">push_str</span>(<span class="ident">rhs</span>);
     }
 }
+
 
 <span class="doccomment">/// A Wrapper holds settings for wrapping and filling text. Use it</span>
 <span class="doccomment">/// when the convenience [`wrap`] and [`fill`] functions are not</span>
@@ -1164,15 +1151,6 @@
     <span class="doccomment">/// When set to `false`, some lines be being longer than</span>
     <span class="doccomment">/// `self.width`.</span>
     <span class="kw">pub</span> <span class="ident">break_words</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// This crate treats every whitespace character (space, newline,</span>
-    <span class="doccomment">/// TAB, ...) as a space character. When this option is set to</span>
-    <span class="doccomment">/// `true`, the whitespace between words will be squeezed into a</span>
-    <span class="doccomment">/// single space character. Otherwise, the whitespace is</span>
-    <span class="doccomment">/// significant and will be kept in the output. Whitespace</span>
-    <span class="doccomment">/// characters such as TAB will still be turned into a single</span>
-    <span class="doccomment">/// space -- consider expanding TABs manually if this is a</span>
-    <span class="doccomment">/// concern.</span>
-    <span class="kw">pub</span> <span class="ident">squeeze_whitespace</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// The method for splitting words. If the `hyphenation` feature</span>
     <span class="doccomment">/// is enabled, you can use a `hyphenation::language::Corpus` here</span>
     <span class="doccomment">/// to get language-aware hyphenation.</span>
@@ -1193,7 +1171,6 @@
             <span class="ident">initial_indent</span>: <span class="string">&quot;&quot;</span>,
             <span class="ident">subsequent_indent</span>: <span class="string">&quot;&quot;</span>,
             <span class="ident">break_words</span>: <span class="bool-val">true</span>,
-            <span class="ident">squeeze_whitespace</span>: <span class="bool-val">false</span>,
             <span class="ident">splitter</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">HyphenSplitter</span>),
         }
     }
@@ -1235,16 +1212,6 @@
     <span class="doccomment">/// [`self.break_words`]: #structfield.break_words</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_words</span>(<span class="self">self</span>, <span class="ident">setting</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Wrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
         <span class="ident">Wrapper</span> { <span class="ident">break_words</span>: <span class="ident">setting</span>, ..<span class="self">self</span> }
-    }
-
-    <span class="doccomment">/// Change [`self.squeeze_whitespace`]. This controls if</span>
-    <span class="doccomment">/// whitespace betweee words is squeezed together to a single</span>
-    <span class="doccomment">/// space. Regardless of this setting, all whitespace characters</span>
-    <span class="doccomment">/// are converted to space (`&#39; &#39;`) characters.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`self.squeeze_whitespace`]: #structfield.squeeze_whitespace</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">squeeze_whitespace</span>(<span class="self">self</span>, <span class="ident">setting</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Wrapper</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-        <span class="ident">Wrapper</span> { <span class="ident">squeeze_whitespace</span>: <span class="ident">setting</span>, ..<span class="self">self</span> }
     }
 
     <span class="doccomment">/// Change [`self.splitter`]. The word splitter is consulted when</span>
@@ -1312,104 +1279,95 @@
     <span class="doccomment">/// [`self.splitter`]: #structfield.splitter</span>
     <span class="doccomment">/// [`WordSplitter`]: trait.WordSplitter.html</span>
     <span class="doccomment">///</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lines</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">s</span>.<span class="ident">len</span>() <span class="op">/</span> (<span class="self">self</span>.<span class="ident">width</span> <span class="op">+</span> <span class="number">1</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">IndentedString</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">initial_indent</span>, <span class="self">self</span>.<span class="ident">width</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">remaining</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">width</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">initial_indent</span>.<span class="ident">width</span>();
-        <span class="kw">const</span> <span class="ident">NBSP</span>: <span class="ident">char</span> <span class="op">=</span> <span class="string">&#39;\u{a0}&#39;</span>; <span class="comment">// non-breaking space</span>
+        <span class="comment">// Byte index where the current line starts.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="comment">// Byte index of the last place where the string can be split.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">split</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="comment">// Size in bytes of the character at s[split].</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">split_len</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="comment">// Width of s[start..idx].</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line_width</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">initial_indent</span>.<span class="ident">width</span>();
+        <span class="comment">// Width of s[start..split].</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line_width_at_split</span> <span class="op">=</span> <span class="ident">line_width</span>;
+        <span class="comment">// Tracking runs of whitespace characters.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">in_whitespace</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
-        <span class="kw">for</span> <span class="kw-2">mut</span> <span class="ident">word</span> <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">split</span>(<span class="op">|</span><span class="ident">c</span>: <span class="ident">char</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">is_whitespace</span>() <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">!=</span> <span class="ident">NBSP</span>) {
-            <span class="comment">// Skip over adjacent whitespace characters.</span>
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">squeeze_whitespace</span> <span class="op">&amp;&amp;</span> <span class="ident">word</span>.<span class="ident">is_empty</span>() {
-                <span class="kw">continue</span>;
-            }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">Cow</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">initial_indent</span>);
 
-            <span class="comment">// Attempt to fit the word without any splitting.</span>
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">fit_part</span>(<span class="ident">word</span>, <span class="string">&quot;&quot;</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">remaining</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">line</span>) {
-                <span class="kw">continue</span>;
-            }
-
-            <span class="comment">// If that failed, loop until nothing remains to be added.</span>
-            <span class="kw">while</span> <span class="op">!</span><span class="ident">word</span>.<span class="ident">is_empty</span>() {
-                <span class="kw">let</span> <span class="ident">splits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">splitter</span>.<span class="ident">split</span>(<span class="ident">word</span>);
-                <span class="kw">let</span> (<span class="ident">smallest</span>, <span class="ident">hyphen</span>, <span class="ident">longest</span>) <span class="op">=</span> <span class="ident">splits</span>[<span class="number">0</span>];
-                <span class="kw">let</span> <span class="ident">min_width</span> <span class="op">=</span> <span class="ident">smallest</span>.<span class="ident">width</span>() <span class="op">+</span> <span class="ident">hyphen</span>.<span class="ident">len</span>();
-
-                <span class="comment">// Add a new line if even the smallest split doesn&#39;t</span>
-                <span class="comment">// fit.</span>
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">line</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="number">1</span> <span class="op">+</span> <span class="ident">min_width</span> <span class="op">&gt;</span> <span class="ident">remaining</span> {
-                    <span class="ident">lines</span>.<span class="ident">push</span>(<span class="ident">line</span>.<span class="ident">into_string</span>());
-                    <span class="ident">line</span> <span class="op">=</span> <span class="ident">IndentedString</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">subsequent_indent</span>, <span class="self">self</span>.<span class="ident">width</span>);
-                    <span class="ident">remaining</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">width</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">subsequent_indent</span>.<span class="ident">width</span>();
+        <span class="kw">for</span> (<span class="ident">idx</span>, <span class="ident">ch</span>) <span class="kw">in</span> <span class="ident">s</span>.<span class="ident">char_indices</span>() {
+            <span class="kw">let</span> <span class="ident">char_width</span> <span class="op">=</span> <span class="ident">ch</span>.<span class="ident">width</span>().<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+            <span class="kw">let</span> <span class="ident">char_len</span> <span class="op">=</span> <span class="ident">ch</span>.<span class="ident">len_utf8</span>();
+            <span class="kw">if</span> <span class="ident">ch</span>.<span class="ident">is_whitespace</span>() <span class="op">&amp;&amp;</span> <span class="ident">ch</span> <span class="op">!=</span> <span class="ident">NBSP</span> {
+                <span class="comment">// Extend the previous split or create a new one.</span>
+                <span class="kw">if</span> <span class="ident">in_whitespace</span> {
+                    <span class="ident">split_len</span> <span class="op">+=</span> <span class="ident">char_len</span>;
+                } <span class="kw">else</span> {
+                    <span class="ident">split</span> <span class="op">=</span> <span class="ident">idx</span>;
+                    <span class="ident">split_len</span> <span class="op">=</span> <span class="ident">char_len</span>;
                 }
+                <span class="ident">line_width_at_split</span> <span class="op">=</span> <span class="ident">line_width</span> <span class="op">+</span> <span class="ident">char_width</span>;
+                <span class="ident">in_whitespace</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">line_width</span> <span class="op">+</span> <span class="ident">char_width</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">width</span> {
+                <span class="comment">// There is no room for this character on the current</span>
+                <span class="comment">// line. Try to split the final word.</span>
+                <span class="kw">let</span> <span class="ident">remaining_text</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">split</span> <span class="op">+</span> <span class="ident">split_len</span>..];
+                <span class="kw">let</span> <span class="ident">final_word</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">remaining_text</span>
+                          .<span class="ident">find</span>(<span class="op">|</span><span class="ident">ch</span>: <span class="ident">char</span><span class="op">|</span> <span class="ident">ch</span>.<span class="ident">is_whitespace</span>() <span class="op">&amp;&amp;</span> <span class="ident">ch</span> <span class="op">!=</span> <span class="ident">NBSP</span>) {
+                    <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="ident">remaining_text</span>[..<span class="ident">i</span>],
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">remaining_text</span>,
+                };
 
-                <span class="comment">// Find a split that fits on the current line.</span>
-                <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">head</span>, <span class="ident">hyphen</span>, <span class="ident">tail</span>) <span class="kw">in</span> <span class="ident">splits</span>.<span class="ident">iter</span>().<span class="ident">rev</span>() {
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">fit_part</span>(<span class="ident">head</span>, <span class="ident">hyphen</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">remaining</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">line</span>) {
-                        <span class="ident">word</span> <span class="op">=</span> <span class="ident">tail</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hyphen</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
+                <span class="kw">let</span> <span class="ident">splits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">splitter</span>.<span class="ident">split</span>(<span class="ident">final_word</span>);
+                <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">head</span>, <span class="ident">hyp</span>, _) <span class="kw">in</span> <span class="ident">splits</span>.<span class="ident">iter</span>().<span class="ident">rev</span>() {
+                    <span class="kw">if</span> <span class="ident">line_width_at_split</span> <span class="op">+</span> <span class="ident">head</span>.<span class="ident">width</span>() <span class="op">+</span> <span class="ident">hyp</span>.<span class="ident">width</span>() <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">width</span> {
+                        <span class="ident">split</span> <span class="op">+=</span> <span class="ident">head</span>.<span class="ident">len</span>();
+                        <span class="ident">split_len</span> <span class="op">=</span> <span class="number">0</span>;
+                        <span class="ident">hyphen</span> <span class="op">=</span> <span class="ident">hyp</span>;
                         <span class="kw">break</span>;
                     }
                 }
 
-                <span class="comment">// If even the smallest split doesn&#39;t fit on the line,</span>
-                <span class="comment">// we might have to break the word.</span>
-                <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">is_empty</span>() {
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">break_words</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">width</span> <span class="op">&gt;</span> <span class="number">1</span> {
-                        <span class="comment">// Break word on a character boundary as close</span>
-                        <span class="comment">// to self.width as possible. Characters are</span>
-                        <span class="comment">// at most 2 columns wide, so we will chop off</span>
-                        <span class="comment">// at least one character.</span>
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">head_width</span> <span class="op">=</span> <span class="number">0</span>;
-                        <span class="kw">for</span> (<span class="ident">idx</span>, <span class="ident">c</span>) <span class="kw">in</span> <span class="ident">word</span>.<span class="ident">char_indices</span>() {
-                            <span class="ident">head_width</span> <span class="op">+=</span> <span class="ident">c</span>.<span class="ident">width</span>().<span class="ident">unwrap_or</span>(<span class="number">0</span>);
-                            <span class="kw">if</span> <span class="ident">head_width</span> <span class="op">&gt;</span> <span class="ident">remaining</span> {
-                                <span class="kw">let</span> (<span class="ident">head</span>, <span class="ident">tail</span>) <span class="op">=</span> <span class="ident">word</span>.<span class="ident">split_at</span>(<span class="ident">idx</span>);
-                                <span class="ident">line</span>.<span class="ident">push_str</span>(<span class="ident">head</span>);
-                                <span class="ident">lines</span>.<span class="ident">push</span>(<span class="ident">line</span>.<span class="ident">into_string</span>());
-                                <span class="ident">line</span> <span class="op">=</span> <span class="ident">IndentedString</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">subsequent_indent</span>, <span class="self">self</span>.<span class="ident">width</span>);
-                                <span class="ident">word</span> <span class="op">=</span> <span class="ident">tail</span>;
-                                <span class="kw">break</span>;
-                            }
-                        }
+                <span class="kw">if</span> <span class="ident">start</span> <span class="op">&gt;=</span> <span class="ident">split</span> {
+                    <span class="comment">// The word is too big to fit on a single line, so we</span>
+                    <span class="comment">// need to split it at the current index.</span>
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">break_words</span> {
+                        <span class="comment">// Break work at current index.</span>
+                        <span class="ident">split</span> <span class="op">=</span> <span class="ident">idx</span>;
+                        <span class="ident">split_len</span> <span class="op">=</span> <span class="number">0</span>;
+                        <span class="ident">line_width_at_split</span> <span class="op">=</span> <span class="ident">line_width</span>;
                     } <span class="kw">else</span> {
-                        <span class="comment">// We forcibly add the smallest split and</span>
-                        <span class="comment">// continue with the longest tail. This will</span>
-                        <span class="comment">// result in a line longer than self.width.</span>
-                        <span class="ident">lines</span>.<span class="ident">push</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">smallest</span>) <span class="op">+</span> <span class="ident">hyphen</span>);
-                        <span class="ident">remaining</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">width</span>;
-                        <span class="ident">word</span> <span class="op">=</span> <span class="ident">longest</span>;
+                        <span class="comment">// Add smallest split.</span>
+                        <span class="ident">split</span> <span class="op">=</span> <span class="ident">start</span> <span class="op">+</span> <span class="ident">splits</span>[<span class="number">0</span>].<span class="number">0</span>.<span class="ident">len</span>();
+                        <span class="ident">split_len</span> <span class="op">=</span> <span class="number">0</span>;
+                        <span class="ident">line_width_at_split</span> <span class="op">=</span> <span class="ident">line_width</span>;
                     }
                 }
+
+                <span class="kw">if</span> <span class="ident">start</span> <span class="op">&lt;</span> <span class="ident">split</span> {
+                    <span class="ident">cow_add_assign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">line</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">start</span>..<span class="ident">split</span>]);
+                    <span class="ident">cow_add_assign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">line</span>, <span class="ident">hyphen</span>);
+                    <span class="ident">lines</span>.<span class="ident">push</span>(<span class="ident">line</span>);
+                    <span class="ident">line</span> <span class="op">=</span> <span class="ident">Cow</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">subsequent_indent</span>);
+                    <span class="ident">start</span> <span class="op">=</span> <span class="ident">split</span> <span class="op">+</span> <span class="ident">split_len</span>;
+                    <span class="ident">line_width</span> <span class="op">+=</span> <span class="self">self</span>.<span class="ident">subsequent_indent</span>.<span class="ident">width</span>();
+                    <span class="ident">line_width</span> <span class="op">-=</span> <span class="ident">line_width_at_split</span>;
+                }
+            } <span class="kw">else</span> {
+                <span class="ident">in_whitespace</span> <span class="op">=</span> <span class="bool-val">false</span>;
             }
+            <span class="ident">line_width</span> <span class="op">+=</span> <span class="ident">char_width</span>;
         }
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">line</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">lines</span>.<span class="ident">push</span>(<span class="ident">line</span>.<span class="ident">into_string</span>());
+
+        <span class="comment">// Add final line.</span>
+        <span class="kw">if</span> <span class="ident">start</span> <span class="op">&lt;</span> <span class="ident">s</span>.<span class="ident">len</span>() {
+            <span class="ident">cow_add_assign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">line</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="ident">start</span>..]);
+            <span class="ident">lines</span>.<span class="ident">push</span>(<span class="ident">line</span>);
         }
+
         <span class="ident">lines</span>
-    }
-
-    <span class="doccomment">/// Try to fit a word (or part of a word) onto a line. The line</span>
-    <span class="doccomment">/// and the remaining width is updated as appropriate if the word</span>
-    <span class="doccomment">/// or part fits.</span>
-    <span class="kw">fn</span> <span class="ident">fit_part</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>,
-                    <span class="ident">part</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span>,
-                    <span class="ident">hyphen</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span>,
-                    <span class="ident">remaining</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">usize</span>,
-                    <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">IndentedString</span>)
-                    <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="ident">space</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">is_empty</span>() { <span class="number">0</span> } <span class="kw">else</span> { <span class="number">1</span> };
-        <span class="kw">let</span> <span class="ident">space_needed</span> <span class="op">=</span> <span class="ident">space</span> <span class="op">+</span> <span class="ident">part</span>.<span class="ident">width</span>() <span class="op">+</span> <span class="ident">hyphen</span>.<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="ident">fits_in_line</span> <span class="op">=</span> <span class="ident">space_needed</span> <span class="op">&lt;=</span> <span class="kw-2">*</span><span class="ident">remaining</span>;
-        <span class="kw">if</span> <span class="ident">fits_in_line</span> {
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">line</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">line</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
-            }
-            <span class="ident">line</span>.<span class="ident">push_str</span>(<span class="ident">part</span>);
-            <span class="ident">line</span>.<span class="ident">push_str</span>(<span class="ident">hyphen</span>);
-            <span class="kw-2">*</span><span class="ident">remaining</span> <span class="op">-=</span> <span class="ident">space_needed</span>;
-        }
-
-        <span class="ident">fits_in_line</span>
     }
 }
 
@@ -1454,7 +1412,7 @@
 <span class="doccomment">/// If you need to set a language corpus for automatic hyphenation, or</span>
 <span class="doccomment">/// need to wrap many strings, then it is suggested to create Wrapper</span>
 <span class="doccomment">/// and call its [`wrap` method](struct.Wrapper.html#method.wrap).</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">width</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">width</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;&gt;</span> {
     <span class="ident">Wrapper</span>::<span class="ident">new</span>(<span class="ident">width</span>).<span class="ident">wrap</span>(<span class="ident">s</span>)
 }
 
@@ -1557,6 +1515,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;hyphenation&quot;</span>)]</span>
     <span class="kw">use</span> <span class="ident">hyphenation</span>::<span class="ident">Language</span>;
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 
     <span class="doccomment">/// Add newlines. Ensures that the final line in the vector also</span>
     <span class="doccomment">/// has a newline.</span>
@@ -1581,16 +1540,26 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">long_word</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">0</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo&quot;</span>]);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo&quot;</span>, <span class="number">0</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;f&quot;</span>, <span class="string">&quot;o&quot;</span>, <span class="string">&quot;o&quot;</span>]);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">long_words</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo bar&quot;</span>, <span class="number">0</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo&quot;</span>, <span class="string">&quot;bar&quot;</span>]);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo bar&quot;</span>, <span class="number">0</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;f&quot;</span>, <span class="string">&quot;o&quot;</span>, <span class="string">&quot;o&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;r&quot;</span>]);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">whitespace_is_significant</span>() {
+    <span class="kw">fn</span> <span class="ident">leading_whitespace</span>() {
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;  foo bar&quot;</span>, <span class="number">6</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;  foo&quot;</span>, <span class="string">&quot;bar&quot;</span>]);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">trailing_whitespace</span>() {
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo bar  &quot;</span>, <span class="number">6</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo&quot;</span>, <span class="string">&quot;bar  &quot;</span>]);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">interior_whitespace</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo:   bar baz&quot;</span>, <span class="number">10</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo:   bar&quot;</span>, <span class="string">&quot;baz&quot;</span>]);
     }
 
@@ -1600,13 +1569,7 @@
         <span class="comment">// gets too long and is broken, the first word starts in</span>
         <span class="comment">// column zero and is not indented. The line before might end</span>
         <span class="comment">// up with trailing whitespace.</span>
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo               bar&quot;</span>, <span class="number">5</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo  &quot;</span>, <span class="string">&quot;bar&quot;</span>]);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">whitespace_is_squeezed</span>() {
-        <span class="kw">let</span> <span class="ident">wrapper</span> <span class="op">=</span> <span class="ident">Wrapper</span>::<span class="ident">new</span>(<span class="number">10</span>).<span class="ident">squeeze_whitespace</span>(<span class="bool-val">true</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrapper</span>.<span class="ident">wrap</span>(<span class="string">&quot; foo \t  bar  &quot;</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo bar&quot;</span>]);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foo               bar&quot;</span>, <span class="number">5</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foo&quot;</span>, <span class="string">&quot;bar&quot;</span>]);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1712,6 +1675,25 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;hyphenation&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">borrowed_lines</span>() {
+        <span class="comment">// Lines that end with an extra hyphen are owned, the final</span>
+        <span class="comment">// line is borrowed.</span>
+        <span class="kw">let</span> <span class="ident">corpus</span> <span class="op">=</span> <span class="ident">hyphenation</span>::<span class="ident">load</span>(<span class="ident">Language</span>::<span class="ident">English_US</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">wrapper</span> <span class="op">=</span> <span class="ident">Wrapper</span>::<span class="ident">new</span>(<span class="number">10</span>).<span class="ident">word_splitter</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">corpus</span>));
+        <span class="kw">let</span> <span class="ident">lines</span> <span class="op">=</span> <span class="ident">wrapper</span>.<span class="ident">wrap</span>(<span class="string">&quot;Internationalization&quot;</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">lines</span>[<span class="number">0</span>] {
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;should not have been borrowed: {:?}&quot;</span>, <span class="ident">s</span>);
+        }
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">lines</span>[<span class="number">1</span>] {
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;should not have been borrowed: {:?}&quot;</span>, <span class="ident">s</span>);
+        }
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span> <span class="ident">lines</span>[<span class="number">2</span>] {
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;should not have been owned: {:?}&quot;</span>, <span class="ident">s</span>);
+        }
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;hyphenation&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">auto_hyphenation_with_hyphen</span>() {
         <span class="kw">let</span> <span class="ident">corpus</span> <span class="op">=</span> <span class="ident">hyphenation</span>::<span class="ident">load</span>(<span class="ident">Language</span>::<span class="ident">English_US</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">wrapper</span> <span class="op">=</span> <span class="ident">Wrapper</span>::<span class="ident">new</span>(<span class="number">8</span>).<span class="ident">break_words</span>(<span class="bool-val">false</span>);
@@ -1734,7 +1716,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">break_words_zero_width</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foobar&quot;</span>, <span class="number">0</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;foobar&quot;</span>]);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">wrap</span>(<span class="string">&quot;foobar&quot;</span>, <span class="number">0</span>), <span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;f&quot;</span>, <span class="string">&quot;o&quot;</span>, <span class="string">&quot;o&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;a&quot;</span>, <span class="string">&quot;r&quot;</span>]);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

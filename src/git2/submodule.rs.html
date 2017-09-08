@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.6/src/submodule.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.8/src/submodule.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>submodule.rs.html -- source</title>
@@ -277,13 +277,97 @@
 <span id="232">232</span>
 <span id="233">233</span>
 <span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_int</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
 
-<span class="kw">use</span> {<span class="ident">raw</span>, <span class="ident">Oid</span>, <span class="ident">Repository</span>, <span class="ident">Error</span>};
+<span class="kw">use</span> {<span class="ident">raw</span>, <span class="ident">Oid</span>, <span class="ident">Repository</span>, <span class="ident">Error</span>, <span class="ident">FetchOptions</span>};
+<span class="kw">use</span> <span class="ident">build</span>::<span class="ident">CheckoutBuilder</span>;
 <span class="kw">use</span> <span class="ident">util</span>::{<span class="self">self</span>, <span class="ident">Binding</span>};
 
 <span class="doccomment">/// A structure to represent a git [submodule][1]</span>
@@ -443,6 +527,26 @@
         <span class="kw">unsafe</span> { <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_submodule_add_finalize</span>(<span class="self">self</span>.<span class="ident">raw</span>)); }
         <span class="prelude-val">Ok</span>(())
     }
+
+    <span class="doccomment">/// Update submodule.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This will clone a missing submodule and check out the subrepository to</span>
+    <span class="doccomment">/// the commit specified in the index of the containing repository. If</span>
+    <span class="doccomment">/// the submodule repository doesn&#39;t contain the target commit, then the</span>
+    <span class="doccomment">/// submodule is fetched using the fetch options supplied in `opts`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `init` indicates if the submodule should be initialized first if it has</span>
+    <span class="doccomment">/// not been initialized yet.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">init</span>: <span class="ident">bool</span>,
+                  <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SubmoduleUpdateOptions</span><span class="op">&gt;</span>)
+                  <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_opts</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">raw</span>());
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_submodule_update</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">init</span> <span class="kw">as</span> <span class="ident">c_int</span>,
+                <span class="ident">raw_opts</span>.<span class="ident">as_mut</span>().<span class="ident">map_or</span>(<span class="ident">ptr</span>::<span class="ident">null_mut</span>(), <span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>)));
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">Binding</span> <span class="kw">for</span> <span class="ident">Submodule</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
@@ -456,6 +560,64 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Submodule</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_submodule_free</span>(<span class="self">self</span>.<span class="ident">raw</span>) }
+    }
+}
+
+<span class="doccomment">/// Options to update a submodule.</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SubmoduleUpdateOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
+    <span class="ident">checkout_builder</span>: <span class="ident">CheckoutBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>,
+    <span class="ident">fetch_opts</span>: <span class="ident">FetchOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>,
+    <span class="ident">allow_fetch</span>: <span class="ident">bool</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="ident">SubmoduleUpdateOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Return default options.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">SubmoduleUpdateOptions</span> {
+            <span class="ident">checkout_builder</span>: <span class="ident">CheckoutBuilder</span>::<span class="ident">new</span>(),
+            <span class="ident">fetch_opts</span>: <span class="ident">FetchOptions</span>::<span class="ident">new</span>(),
+            <span class="ident">allow_fetch</span>: <span class="bool-val">true</span>,
+        }
+    }
+
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">raw</span>::<span class="ident">git_submodule_update_options</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">checkout_opts</span>: <span class="ident">raw</span>::<span class="ident">git_checkout_options</span> <span class="op">=</span> <span class="ident">mem</span>::<span class="ident">zeroed</span>();
+        <span class="kw">let</span> <span class="ident">init_res</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_checkout_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">checkout_opts</span>,
+            <span class="ident">raw</span>::<span class="ident">GIT_CHECKOUT_OPTIONS_VERSION</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">init_res</span>);
+        <span class="self">self</span>.<span class="ident">checkout_builder</span>.<span class="ident">configure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">checkout_opts</span>);
+        <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_submodule_update_options</span> {
+            <span class="ident">version</span>: <span class="ident">raw</span>::<span class="ident">GIT_SUBMODULE_UPDATE_OPTIONS_VERSION</span>,
+            <span class="ident">checkout_opts</span>,
+            <span class="ident">fetch_opts</span>: <span class="self">self</span>.<span class="ident">fetch_opts</span>.<span class="ident">raw</span>(),
+            <span class="ident">allow_fetch</span>: <span class="self">self</span>.<span class="ident">allow_fetch</span> <span class="kw">as</span> <span class="ident">c_int</span>,
+        };
+        <span class="ident">opts</span>
+    }
+
+    <span class="doccomment">/// Set checkout options.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checkout</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">opts</span>: <span class="ident">CheckoutBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">checkout_builder</span> <span class="op">=</span> <span class="ident">opts</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Set fetch options and allow fetching.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fetch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">opts</span>: <span class="ident">FetchOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">fetch_opts</span> <span class="op">=</span> <span class="ident">opts</span>;
+        <span class="self">self</span>.<span class="ident">allow_fetch</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Allow or disallow fetching.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allow_fetch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">allow_fetch</span> <span class="op">=</span> <span class="ident">b</span>;
+        <span class="self">self</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SubmoduleUpdateOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span>::<span class="ident">new</span>()
     }
 }
 
