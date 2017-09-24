@@ -42,6 +42,14 @@ See cargo-install-update(1) for general information.
     The argument can have the value "yes", "true", "1" to enable,
     or "no", "false", "0" to disable.
 
+  --debug
+
+    Compile in debug mode.
+
+  --release
+
+    Compile in release mode (default).
+
   -c --cargo-dir <CARGO_DIR>
 
     Set the directory containing cargo metadata.
