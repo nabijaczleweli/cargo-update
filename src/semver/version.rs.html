@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/semver-0.6.0/src/version.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/semver-0.8.0/src/version.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>version.rs.html -- source</title>
@@ -693,6 +693,115 @@
 <span id="648">648</span>
 <span id="649">649</span>
 <span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+<span id="718">718</span>
+<span id="719">719</span>
+<span id="720">720</span>
+<span id="721">721</span>
+<span id="722">722</span>
+<span id="723">723</span>
+<span id="724">724</span>
+<span id="725">725</span>
+<span id="726">726</span>
+<span id="727">727</span>
+<span id="728">728</span>
+<span id="729">729</span>
+<span id="730">730</span>
+<span id="731">731</span>
+<span id="732">732</span>
+<span id="733">733</span>
+<span id="734">734</span>
+<span id="735">735</span>
+<span id="736">736</span>
+<span id="737">737</span>
+<span id="738">738</span>
+<span id="739">739</span>
+<span id="740">740</span>
+<span id="741">741</span>
+<span id="742">742</span>
+<span id="743">743</span>
+<span id="744">744</span>
+<span id="745">745</span>
+<span id="746">746</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2012-2013 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -716,6 +825,11 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
 
 <span class="kw">use</span> <span class="ident">semver_parser</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">ser</span>::{<span class="ident">Serialize</span>, <span class="ident">Serializer</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">de</span>::{<span class="self">self</span>, <span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>, <span class="ident">Visitor</span>};
 
 <span class="doccomment">/// An identifier in the pre-release or build metadata.</span>
 <span class="doccomment">///</span>
@@ -748,6 +862,51 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">Identifier</span> {
+    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">Serializer</span>
+    {
+        <span class="comment">// Serialize Identifier as a number or string.</span>
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="ident">n</span>) <span class="op">=&gt;</span> <span class="ident">serializer</span>.<span class="ident">serialize_u64</span>(<span class="ident">n</span>),
+            <span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">serializer</span>.<span class="ident">serialize_str</span>(<span class="ident">s</span>),
+        }
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Identifier</span> {
+    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>
+    {
+        <span class="kw">struct</span> <span class="ident">IdentifierVisitor</span>;
+
+        <span class="comment">// Deserialize Identifier from a number or string.</span>
+        <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">IdentifierVisitor</span> {
+            <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">Identifier</span>;
+
+            <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a SemVer pre-release or build identifier&quot;</span>)
+            }
+
+            <span class="kw">fn</span> <span class="ident">visit_u64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">numeric</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
+                <span class="kw">where</span> <span class="ident">E</span>: <span class="ident">de</span>::<span class="ident">Error</span>
+            {
+                <span class="prelude-val">Ok</span>(<span class="ident">Identifier</span>::<span class="ident">Numeric</span>(<span class="ident">numeric</span>))
+            }
+
+            <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">alphanumeric</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
+                <span class="kw">where</span> <span class="ident">E</span>: <span class="ident">de</span>::<span class="ident">Error</span>
+            {
+                <span class="prelude-val">Ok</span>(<span class="ident">Identifier</span>::<span class="ident">AlphaNumeric</span>(<span class="ident">alphanumeric</span>.<span class="ident">to_owned</span>()))
+            }
+        }
+
+        <span class="ident">deserializer</span>.<span class="ident">deserialize_any</span>(<span class="ident">IdentifierVisitor</span>)
+    }
+}
+
 <span class="doccomment">/// Represents a version number conforming to the semantic versioning scheme.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Version</span> {
@@ -774,6 +933,42 @@
             <span class="ident">pre</span>: <span class="ident">other</span>.<span class="ident">pre</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">From</span>::<span class="ident">from</span>).<span class="ident">collect</span>(),
             <span class="ident">build</span>: <span class="ident">other</span>.<span class="ident">build</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">From</span>::<span class="ident">from</span>).<span class="ident">collect</span>(),
         }
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">Version</span> {
+    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">Serializer</span>
+    {
+        <span class="comment">// Serialize Version as a string.</span>
+        <span class="ident">serializer</span>.<span class="ident">collect_str</span>(<span class="self">self</span>)
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>)]</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Version</span> {
+    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>
+    {
+        <span class="kw">struct</span> <span class="ident">VersionVisitor</span>;
+
+        <span class="comment">// Deserialize Version from a string.</span>
+        <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">VersionVisitor</span> {
+            <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">Version</span>;
+
+            <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a SemVer version as a string&quot;</span>)
+            }
+
+            <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">E</span><span class="op">&gt;</span>
+                <span class="kw">where</span> <span class="ident">E</span>: <span class="ident">de</span>::<span class="ident">Error</span>
+            {
+                <span class="ident">Version</span>::<span class="ident">parse</span>(<span class="ident">v</span>).<span class="ident">map_err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">custom</span>)
+            }
+        }
+
+        <span class="ident">deserializer</span>.<span class="ident">deserialize_str</span>(<span class="ident">VersionVisitor</span>)
     }
 }
 
@@ -806,6 +1001,18 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">SemVerError</span><span class="op">&gt;</span>;
 
 <span class="kw">impl</span> <span class="ident">Version</span> {
+
+    <span class="doccomment">/// Contructs the simple case without pre or build.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">major</span>: <span class="ident">u64</span>, <span class="ident">minor</span>: <span class="ident">u64</span>, <span class="ident">patch</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">Version</span> {
+        <span class="ident">Version</span> {
+            <span class="ident">major</span>: <span class="ident">major</span>,
+            <span class="ident">minor</span>: <span class="ident">minor</span>,
+            <span class="ident">patch</span>: <span class="ident">patch</span>,
+            <span class="ident">pre</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+            <span class="ident">build</span>: <span class="ident">Vec</span>::<span class="ident">new</span>()
+        }
+    }
+
     <span class="doccomment">/// Parse a string into a semver object.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">version</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Version</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">semver_parser</span>::<span class="ident">version</span>::<span class="ident">parse</span>(<span class="ident">version</span>);
@@ -944,6 +1151,13 @@
     }
 }
 
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span>(<span class="ident">u64</span>,<span class="ident">u64</span>,<span class="ident">u64</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Version</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">tuple</span>: (<span class="ident">u64</span>,<span class="ident">u64</span>,<span class="ident">u64</span>)) <span class="op">-&gt;</span> <span class="ident">Version</span> {
+        <span class="kw">let</span> (<span class="ident">major</span>, <span class="ident">minor</span>, <span class="ident">patch</span>) <span class="op">=</span> <span class="ident">tuple</span>;
+        <span class="ident">Version</span>::<span class="ident">new</span>(<span class="ident">major</span>, <span class="ident">minor</span>, <span class="ident">patch</span>)
+    }
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">result</span>;
@@ -980,6 +1194,10 @@
                        <span class="ident">pre</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
                        <span class="ident">build</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
                    }));
+
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Version</span>::<span class="ident">parse</span>(<span class="string">&quot;1.2.3&quot;</span>),
+                   <span class="prelude-val">Ok</span>(<span class="ident">Version</span>::<span class="ident">new</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>)));
+
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Version</span>::<span class="ident">parse</span>(<span class="string">&quot;  1.2.3  &quot;</span>),
                    <span class="prelude-val">Ok</span>(<span class="ident">Version</span> {
                        <span class="ident">major</span>: <span class="number">1</span>,
