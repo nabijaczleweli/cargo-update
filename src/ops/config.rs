@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as FWrite;
 use std::io::{Read, Write};
+use std::default::Default;
 use std::path::Path;
 use std::fs::File;
 use toml;
@@ -19,6 +20,8 @@ pub enum ConfigOperation {
     AddFeature(String),
     /// Remove the feature from the list of features to compile with.
     RemoveFeature(String),
+    /// Set debug mode being enabled to the specified value.
+    SetDebugMode(bool),
 }
 
 
@@ -48,6 +51,8 @@ pub struct PackageConfig {
     pub default_features: bool,
     /// Features to compile the package with.
     pub features: BTreeSet<String>,
+    /// Whether to compile in debug mode.
+    pub debug: Option<bool>,
 }
 
 
@@ -61,7 +66,8 @@ impl PackageConfig {
     /// # use std::collections::BTreeSet;
     /// assert_eq!(PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string()),
     ///                                  ConfigOperation::DefaultFeatures(false),
-    ///                                  ConfigOperation::AddFeature("rustc-serialize".to_string())]),
+    ///                                  ConfigOperation::AddFeature("rustc-serialize".to_string()),
+    ///                                  ConfigOperation::SetDebugMode(true)]),
     ///            PackageConfig {
     ///                toolchain: Some("nightly".to_string()),
     ///                default_features: false,
@@ -70,14 +76,11 @@ impl PackageConfig {
     ///                    feats.insert("rustc-serialize".to_string());
     ///                    feats
     ///                },
+    ///                debug: Some(true),
     ///            });
     /// ```
     pub fn from<'o, O: IntoIterator<Item = &'o ConfigOperation>>(ops: O) -> PackageConfig {
-        let mut def = PackageConfig {
-            toolchain: None,
-            default_features: true,
-            features: BTreeSet::new(),
-        };
+        let mut def = PackageConfig::default();
         def.execute_operations(ops);
         def
     }
@@ -116,6 +119,9 @@ impl PackageConfig {
             }
             res.push(a);
         }
+        if let Some(true) = self.debug {
+            res.push("--debug".to_string());
+        }
         res
     }
 
@@ -134,10 +140,12 @@ impl PackageConfig {
     ///         feats.insert("rustc-serialize".to_string());
     ///         feats
     ///     },
+    ///     debug: None,
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
     ///                          ConfigOperation::AddFeature("serde".to_string()),
-    ///                          ConfigOperation::RemoveFeature("rustc-serialize".to_string())]);
+    ///                          ConfigOperation::RemoveFeature("rustc-serialize".to_string()),
+    ///                          ConfigOperation::SetDebugMode(true)]);
     /// assert_eq!(cfg,
     ///            PackageConfig {
     ///                toolchain: None,
@@ -147,6 +155,7 @@ impl PackageConfig {
     ///                    feats.insert("serde".to_string());
     ///                    feats
     ///                },
+    ///                debug: Some(true)
     ///            });
     /// ```
     pub fn execute_operations<'o, O: IntoIterator<Item = &'o ConfigOperation>>(&mut self, ops: O) {
@@ -161,6 +170,7 @@ impl PackageConfig {
                 ConfigOperation::RemoveFeature(ref feat) => {
                     self.features.remove(feat);
                 }
+                ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
             }
         }
     }
@@ -194,6 +204,7 @@ impl PackageConfig {
     ///             feats.insert("serde".to_string());
     ///             feats
     ///         },
+    ///         debug: None,
     ///     });
     ///     pkgs
     /// }));
@@ -234,6 +245,7 @@ impl PackageConfig {
     ///             feats.insert("serde".to_string());
     ///             feats
     ///         },
+    ///         debug: None,
     ///     });
     ///     pkgs
     /// }, &config_file).unwrap();
@@ -248,5 +260,16 @@ impl PackageConfig {
         try!(File::create(p).map_err(|_| 3))
             .write_all(&try!(toml::to_vec(configuration).map_err(|_| 2)))
             .map_err(|_| 3)
+    }
+}
+
+impl Default for PackageConfig {
+    fn default() -> PackageConfig {
+        PackageConfig {
+            toolchain: None,
+            default_features: true,
+            features: BTreeSet::new(),
+            debug: None,
+        }
     }
 }

@@ -34,6 +34,9 @@ fn actual_main() -> Result<(), i32> {
         if let Some(ref t) = cfg.toolchain {
             writeln!(out, "Toolchain\t{}", t).unwrap();
         }
+        if let Some(d) = cfg.debug {
+            writeln!(out, "Debug mode\t{}", d).unwrap();
+        }
         writeln!(out, "Default features\t{}", cfg.default_features).unwrap();
         if !cfg.features.is_empty() {
             write!(out, "Features").unwrap();

@@ -122,6 +122,8 @@ impl ConfigOptions {
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
+                        Arg::from_usage("--debug 'Compile the packed in debug mode'").conflicts_with("release"),
+                        Arg::from_usage("--release 'Compile the packed in release mode'").conflicts_with("debug"),
                         Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
@@ -148,6 +150,11 @@ impl ConfigOptions {
                 .chain(matches.values_of("feature").into_iter().flat_map(|f| f).map(str::to_string).map(ConfigOperation::AddFeature))
                 .chain(matches.values_of("no-feature").into_iter().flat_map(|f| f).map(str::to_string).map(ConfigOperation::RemoveFeature))
                 .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
+                .chain(match (matches.is_present("debug"), matches.is_present("release")) {
+                    (true, _) => Some(ConfigOperation::SetDebugMode(true)),
+                    (_, true) => Some(ConfigOperation::SetDebugMode(false)),
+                    _ => None,
+                }.into_iter())
                 .collect(),
         }
     }
