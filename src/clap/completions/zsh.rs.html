@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.26.0/src/completions/zsh.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.26.2/src/completions/zsh.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>zsh.rs.html -- source</title>
@@ -430,6 +430,14 @@
 <span id="385">385</span>
 <span id="386">386</span>
 <span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
 </pre><pre class="rust ">
 
 <span class="comment">// Std</span>
@@ -725,12 +733,20 @@ esac&quot;</span>,
     <span class="ident">ret</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
 }
 
+<span class="comment">// Escape string inside single quotes and brackets</span>
+<span class="kw">fn</span> <span class="ident">escape_string</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+    <span class="ident">string</span>.<span class="ident">replace</span>(<span class="string">&quot;\\&quot;</span>, <span class="string">&quot;\\\\&quot;</span>)
+        .<span class="ident">replace</span>(<span class="string">&quot;&#39;&quot;</span>, <span class="string">&quot;&#39;\\&#39;&#39;&quot;</span>)
+        .<span class="ident">replace</span>(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;\\[&quot;</span>)
+        .<span class="ident">replace</span>(<span class="string">&quot;]&quot;</span>, <span class="string">&quot;\\]&quot;</span>)
+}
+
 <span class="kw">fn</span> <span class="ident">write_opts_of</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
     <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;write_opts_of;&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
     <span class="kw">for</span> <span class="ident">o</span> <span class="kw">in</span> <span class="ident">p</span>.<span class="ident">opts</span>() {
         <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;write_opts_of:iter: o={}&quot;</span>, <span class="ident">o</span>.<span class="ident">name</span>());
-        <span class="kw">let</span> <span class="ident">help</span> <span class="op">=</span> <span class="ident">o</span>.<span class="ident">help</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>).<span class="ident">replace</span>(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;\\[&quot;</span>).<span class="ident">replace</span>(<span class="string">&quot;]&quot;</span>, <span class="string">&quot;\\]&quot;</span>);
+        <span class="kw">let</span> <span class="ident">help</span> <span class="op">=</span> <span class="ident">o</span>.<span class="ident">help</span>().<span class="ident">map_or</span>(<span class="ident">String</span>::<span class="ident">new</span>(), <span class="ident">escape_string</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conflicts</span> <span class="op">=</span> <span class="macro">get_zsh_arg_conflicts</span><span class="macro">!</span>(<span class="ident">p</span>, <span class="ident">o</span>, <span class="ident">INTERNAL_ERROR_MSG</span>);
         <span class="ident">conflicts</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">conflicts</span>.<span class="ident">is_empty</span>() {
             <span class="ident">String</span>::<span class="ident">new</span>()
@@ -749,7 +765,7 @@ esac&quot;</span>,
             <span class="ident">String</span>::<span class="ident">new</span>()
         };
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">short</span>) <span class="op">=</span> <span class="ident">o</span>.<span class="ident">short</span>() {
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\&quot;{conflicts}{multiple}-{arg}+[{help}]{possible_values}\&quot; \\&quot;</span>,
+            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{conflicts}{multiple}-{arg}+[{help}]{possible_values}&#39; \\&quot;</span>,
                 <span class="ident">conflicts</span> <span class="op">=</span> <span class="ident">conflicts</span>,
                 <span class="ident">multiple</span> <span class="op">=</span> <span class="ident">multiple</span>,
                 <span class="ident">arg</span> <span class="op">=</span> <span class="ident">short</span>,
@@ -760,7 +776,7 @@ esac&quot;</span>,
             <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">s</span>);
         }
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">long</span>) <span class="op">=</span> <span class="ident">o</span>.<span class="ident">long</span>() {
-            <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\&quot;{conflicts}{multiple}--{arg}+[{help}]{possible_values}\&quot; \\&quot;</span>,
+            <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{conflicts}{multiple}--{arg}+[{help}]{possible_values}&#39; \\&quot;</span>,
                 <span class="ident">conflicts</span> <span class="op">=</span> <span class="ident">conflicts</span>,
                 <span class="ident">multiple</span> <span class="op">=</span> <span class="ident">multiple</span>,
                 <span class="ident">arg</span> <span class="op">=</span> <span class="ident">long</span>,
@@ -780,7 +796,7 @@ esac&quot;</span>,
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
     <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="ident">p</span>.<span class="ident">flags</span>() {
         <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;write_flags_of:iter: f={}&quot;</span>, <span class="ident">f</span>.<span class="ident">name</span>());
-        <span class="kw">let</span> <span class="ident">help</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">help</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>).<span class="ident">replace</span>(<span class="string">&quot;[&quot;</span>, <span class="string">&quot;\\[&quot;</span>).<span class="ident">replace</span>(<span class="string">&quot;]&quot;</span>, <span class="string">&quot;\\]&quot;</span>);
+        <span class="kw">let</span> <span class="ident">help</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">help</span>().<span class="ident">map_or</span>(<span class="ident">String</span>::<span class="ident">new</span>(), <span class="ident">escape_string</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conflicts</span> <span class="op">=</span> <span class="macro">get_zsh_arg_conflicts</span><span class="macro">!</span>(<span class="ident">p</span>, <span class="ident">f</span>, <span class="ident">INTERNAL_ERROR_MSG</span>);
         <span class="ident">conflicts</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">conflicts</span>.<span class="ident">is_empty</span>() {
             <span class="ident">String</span>::<span class="ident">new</span>()
@@ -794,7 +810,7 @@ esac&quot;</span>,
             <span class="string">&quot;&quot;</span>
         };
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">short</span>) <span class="op">=</span> <span class="ident">f</span>.<span class="ident">short</span>() {
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\&quot;{conflicts}{multiple}-{arg}[{help}]\&quot; \\&quot;</span>,
+            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{conflicts}{multiple}-{arg}[{help}]&#39; \\&quot;</span>,
                 <span class="ident">multiple</span> <span class="op">=</span> <span class="ident">multiple</span>,
                 <span class="ident">conflicts</span> <span class="op">=</span> <span class="ident">conflicts</span>,
                 <span class="ident">arg</span> <span class="op">=</span> <span class="ident">short</span>,
@@ -805,7 +821,7 @@ esac&quot;</span>,
         }
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">long</span>) <span class="op">=</span> <span class="ident">f</span>.<span class="ident">long</span>() {
-            <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;\&quot;{conflicts}{multiple}--{arg}[{help}]\&quot; \\&quot;</span>,
+            <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;&#39;{conflicts}{multiple}--{arg}[{help}]&#39; \\&quot;</span>,
                 <span class="ident">conflicts</span> <span class="op">=</span> <span class="ident">conflicts</span>,
                 <span class="ident">multiple</span> <span class="op">=</span> <span class="ident">multiple</span>,
                 <span class="ident">arg</span> <span class="op">=</span> <span class="ident">long</span>,

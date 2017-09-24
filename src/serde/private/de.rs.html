@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.12/src/private/de.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.15/src/private/de.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>de.rs.html -- source</title>
@@ -1995,6 +1995,30 @@
 <span id="1950">1950</span>
 <span id="1951">1951</span>
 <span id="1952">1952</span>
+<span id="1953">1953</span>
+<span id="1954">1954</span>
+<span id="1955">1955</span>
+<span id="1956">1956</span>
+<span id="1957">1957</span>
+<span id="1958">1958</span>
+<span id="1959">1959</span>
+<span id="1960">1960</span>
+<span id="1961">1961</span>
+<span id="1962">1962</span>
+<span id="1963">1963</span>
+<span id="1964">1964</span>
+<span id="1965">1965</span>
+<span id="1966">1966</span>
+<span id="1967">1967</span>
+<span id="1968">1968</span>
+<span id="1969">1969</span>
+<span id="1970">1970</span>
+<span id="1971">1971</span>
+<span id="1972">1972</span>
+<span id="1973">1973</span>
+<span id="1974">1974</span>
+<span id="1975">1975</span>
+<span id="1976">1976</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -2832,26 +2856,43 @@
         <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">TaggedContent</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span><span class="op">&gt;</span>;
 
         <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-            <span class="ident">fmt</span>.<span class="ident">write_str</span>(<span class="string">&quot;any value&quot;</span>)
+            <span class="ident">fmt</span>.<span class="ident">write_str</span>(<span class="string">&quot;internally tagged enum&quot;</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">visitor</span>: <span class="ident">V</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">V</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_seq</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">seq</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
         <span class="kw">where</span>
-            <span class="ident">V</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+            <span class="ident">S</span>: <span class="ident">SeqAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+        {
+            <span class="kw">let</span> <span class="ident">tag</span> <span class="op">=</span> <span class="kw">match</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">seq</span>.<span class="ident">next_element</span>()) {
+                <span class="prelude-val">Some</span>(<span class="ident">tag</span>) <span class="op">=&gt;</span> <span class="ident">tag</span>,
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">missing_field</span>(<span class="self">self</span>.<span class="ident">tag_name</span>));
+                }
+            };
+            <span class="kw">let</span> <span class="ident">rest</span> <span class="op">=</span> <span class="ident">de</span>::<span class="ident">value</span>::<span class="ident">SeqAccessDeserializer</span>::<span class="ident">new</span>(<span class="ident">seq</span>);
+            <span class="prelude-val">Ok</span>(<span class="ident">TaggedContent</span> {
+                <span class="ident">tag</span>: <span class="ident">tag</span>,
+                <span class="ident">content</span>: <span class="macro">try</span><span class="macro">!</span>(<span class="ident">Content</span>::<span class="ident">deserialize</span>(<span class="ident">rest</span>)),
+            })
+        }
+
+        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">M</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span>, <span class="ident">M</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span>
+            <span class="ident">M</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tag</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">size_hint</span>::<span class="ident">cautious</span>(<span class="ident">visitor</span>.<span class="ident">size_hint</span>()));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">size_hint</span>::<span class="ident">cautious</span>(<span class="ident">map</span>.<span class="ident">size_hint</span>()));
             <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">k</span>) <span class="op">=</span>
-                <span class="macro">try</span><span class="macro">!</span>(<span class="ident">visitor</span>.<span class="ident">next_key_seed</span>(<span class="ident">TagOrContentVisitor</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">tag_name</span>))) {
+                <span class="macro">try</span><span class="macro">!</span>(<span class="ident">map</span>.<span class="ident">next_key_seed</span>(<span class="ident">TagOrContentVisitor</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">tag_name</span>))) {
                 <span class="kw">match</span> <span class="ident">k</span> {
                     <span class="ident">TagOrContent</span>::<span class="ident">Tag</span> <span class="op">=&gt;</span> {
                         <span class="kw">if</span> <span class="ident">tag</span>.<span class="ident">is_some</span>() {
                             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">duplicate_field</span>(<span class="self">self</span>.<span class="ident">tag_name</span>));
                         }
-                        <span class="ident">tag</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">try</span><span class="macro">!</span>(<span class="ident">visitor</span>.<span class="ident">next_value</span>()));
+                        <span class="ident">tag</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">try</span><span class="macro">!</span>(<span class="ident">map</span>.<span class="ident">next_value</span>()));
                     }
                     <span class="ident">TagOrContent</span>::<span class="ident">Content</span>(<span class="ident">k</span>) <span class="op">=&gt;</span> {
-                        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">visitor</span>.<span class="ident">next_value</span>());
+                        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">map</span>.<span class="ident">next_value</span>());
                         <span class="ident">vec</span>.<span class="ident">push</span>((<span class="ident">k</span>, <span class="ident">v</span>));
                     }
                 }
@@ -3800,9 +3841,16 @@
             <span class="macro">write</span><span class="macro">!</span>(<span class="ident">formatter</span>, <span class="string">&quot;unit variant {}::{}&quot;</span>, <span class="self">self</span>.<span class="ident">type_name</span>, <span class="self">self</span>.<span class="ident">variant_name</span>)
         }
 
-        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, _: <span class="ident">V</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">V</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">fn</span> <span class="ident">visit_seq</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="self">self</span>, _: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
         <span class="kw">where</span>
-            <span class="ident">V</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+            <span class="ident">S</span>: <span class="ident">SeqAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+        {
+            <span class="prelude-val">Ok</span>(())
+        }
+
+        <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="self">self</span>, _: <span class="ident">M</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">M</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span>
+            <span class="ident">M</span>: <span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
             <span class="prelude-val">Ok</span>(())
         }
