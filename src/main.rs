@@ -6,13 +6,15 @@ extern crate git2;
 
 use std::process::{Command, exit};
 use std::io::{Write, stdout};
-use std::fs::{self, File};
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
 use git2::Repository;
+#[cfg(target_os="windows")]
+use std::fs::File;
 use regex::Regex;
 use std::env;
+use std::fs;
 
 
 fn main() {
