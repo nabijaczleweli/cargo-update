@@ -82,12 +82,30 @@
 //! Off by default.
 //! ```
 //!
+//! -g --git
+//!
+//! ```text
+//! Also update git-originating packages.
+//!
+//! Off by default, because it's expensive.
+//! ```
+//!
 //! -c --cargo-dir &lt;CARGO_DIR&gt;
 //!
 //! ```text
 //! Set the directory containing cargo metadata.
 //!
-//! Required. Default: "$CARGO_HOME", then $HOME/.cargo", otherwise manual.
+//! Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
+//! ```
+//!
+//! -t --TEMP-dir &lt;TEMP_DIR&gt;
+//!
+//! ```text
+//! Set the directory in which to clone git repositories.
+//!
+//! Adjoined with "cargo-update" as last segment.
+//!
+//! Required. Default: system temp, otherwise manual.
 //! ```
 //!
 //! ## EXAMPLES
@@ -101,14 +119,14 @@
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
 //!
 //!   Package         Installed  Latest   Needs update
+//!   checksums       v0.5.0     v0.5.2   Yes
+//!   treesize        v0.2.0     v0.2.1   Yes
 //!   cargo-count     v0.2.2     v0.2.2   No
 //!   cargo-graph     v0.3.0     v0.3.0   No
 //!   cargo-outdated  v0.2.0     v0.2.0   No
-//!   checksums       v0.5.0     v0.5.2   Yes
 //!   identicon       v0.1.1     v0.1.1   No
 //!   racer           v1.2.10    v1.2.10  No
 //!   rustfmt         v0.6.2     v0.6.2   No
-//!   treesize        v0.2.0     v0.2.1   Yes
 //!
 //!   Updating checksums
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -139,8 +157,8 @@
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
 //!
 //!   Package   Installed  Latest   Needs update
-//!   racer     v1.2.10    v1.2.10  No
 //!   treesize  v0.2.0     v0.2.1   Yes
+//!   racer     v1.2.10    v1.2.10  No
 //!
 //!   Updating treesize
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -162,14 +180,14 @@
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
 //!
 //!   Package         Installed  Latest   Needs update
+//!   checksums       v0.5.0     v0.5.2   Yes
+//!   treesize        v0.2.0     v0.2.1   Yes
 //!   cargo-count     v0.2.2     v0.2.2   No
 //!   cargo-graph     v0.3.0     v0.3.0   No
 //!   cargo-outdated  v0.2.0     v0.2.0   No
-//!   checksums       v0.5.0     v0.5.2   Yes
 //!   identicon       v0.1.1     v0.1.1   No
 //!   racer           v1.2.10    v1.2.10  No
 //!   rustfmt         v0.6.2     v0.6.2   No
-//!   treesize        v0.2.0     v0.2.1   Yes
 //! ```
 //!
 //! `cargo install-update -af`
@@ -180,8 +198,8 @@
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
 //!
 //!   Package   Installed  Latest   Needs update
-//!   racer     v1.2.10    v1.2.10  No
 //!   treesize  v0.2.0     v0.2.1   Yes
+//!   racer     v1.2.10    v1.2.10  No
 //!
 //!   Updating racer
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -225,8 +243,8 @@
 //!
 //!   Package    Installed  Latest   Needs update
 //!   checksums             v0.5.2   Yes
-//!   rustfmt    v0.6.2     v0.6.2   No
 //!   treesize   v0.2.0     v0.2.1   Yes
+//!   rustfmt    v0.6.2     v0.6.2   No
 //!
 //!   Installing checksums
 //!       Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -245,6 +263,43 @@
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
 //!
 //!   Updated 2 packages.
+//! ```
+//!
+//! `cargo install-update -ag`
+//!
+//! ```text
+//! Update all installed packages, including ones from git.
+//!
+//! Example output:
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!
+//!   Package         Installed  Latest   Needs update
+//!   checksums       v0.5.0     v0.5.2   Yes
+//!   cargo-count     v0.2.2     v0.2.2   No
+//!
+//!   Updating checksums
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading checksums v0.5.2
+//!      [...]
+//!      Compiling checksums v0.5.2
+//!       Finished release [optimized] target(s) in 95.2 secs
+//!      Replacing D:\Users\nabijaczleweli\.cargo\bin\checksums.exe
+//!
+//!   Updated 1 package.
+//!
+//!   Package                Installed  Latest   Needs update
+//!   alacritty              eb231b3    5f78857  Yes
+//!   chattium-oxide-client  108a7b9    108a7b9  No
+//!
+//!   Updating alacritty from https://github.com/jwilm/alacritty
+//!       Updating git repository `https://github.com/jwilm/alacritty`
+//!      Installing alacritty v0.1.0 (https://github.com/jwilm/alacritty#5f788574)
+//!      [...]
+//!      Compiling alacritty v0.1.0
+//!       Finished release [optimized] target(s) in 127.6 secs
+//!      Replacing D:\Users\nabijaczleweli\.cargo\bin\alacritty.exe
+//!
+//!   Updated 1 package.
 //! ```
 
 

@@ -183,7 +183,7 @@ fn actual_main() -> Result<(), i32> {
             if !packages.is_empty() {
                 let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
                     .map(|package| -> Result<(), (i32, String)> {
-                        println!("Installing {} from {}", package.name, package.url);
+                        println!("Updating {} from {}", package.name, package.url);
 
                         if cfg!(target_os = "windows") && package.name == "cargo-update" {
                             save_cargo_update_exec(&package.id.to_string());

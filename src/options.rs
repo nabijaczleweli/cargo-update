@@ -77,7 +77,7 @@ impl Options {
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
-                        Arg::from_usage("-g --git 'Also update git packages as well'"),
+                        Arg::from_usage("-g --git 'Also update git packages'"),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'")
                             .conflicts_with("all")
                             .empty_values(false)
