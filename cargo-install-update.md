@@ -12,7 +12,7 @@ Cargo subcommand for checking and applying updates to installed executables.
 This was mostly built out of a frustration with periodically checking for
 updates for my cargo-installed executables, which was long and boring.
 
-Only updates packages from the main repository.
+Updates packages from the main repository and git repositories.
 
 See cargo-install-update-config(1) for further configuring updates.
 
@@ -53,11 +53,25 @@ Exit values and possible errors:
 
     Off by default.
 
+  -g --git
+
+    Also update git-originating packages.
+
+    Off by default, because it's expensive.
+
   -c --cargo-dir <CARGO_DIR>
 
     Set the directory containing cargo metadata.
 
-    Required. Default: "$CARGO_HOME", then $HOME/.cargo", otherwise manual.
+    Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
+
+  -t --temp-dir <TEMP_DIR>
+
+    Set the directory in which to clone git repositories.
+
+    Adjoined with "cargo-update" as last segment.
+
+    Required. Default: system temp, otherwise manual.
 
 ## EXAMPLES
 
@@ -69,14 +83,14 @@ Exit values and possible errors:
           Updating registry `https://github.com/rust-lang/crates.io-index`
 
       Package         Installed  Latest   Needs update
+      checksums       v0.5.0     v0.5.2   Yes
+      treesize        v0.2.0     v0.2.1   Yes
       cargo-count     v0.2.2     v0.2.2   No
       cargo-graph     v0.3.0     v0.3.0   No
       cargo-outdated  v0.2.0     v0.2.0   No
-      checksums       v0.5.0     v0.5.2   Yes
       identicon       v0.1.1     v0.1.1   No
       racer           v1.2.10    v1.2.10  No
       rustfmt         v0.6.2     v0.6.2   No
-      treesize        v0.2.0     v0.2.1   Yes
 
       Updating checksums
           Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -126,14 +140,14 @@ Exit values and possible errors:
           Updating registry `https://github.com/rust-lang/crates.io-index`
 
       Package         Installed  Latest   Needs update
+      checksums       v0.5.0     v0.5.2   Yes
+      treesize        v0.2.0     v0.2.1   Yes
       cargo-count     v0.2.2     v0.2.2   No
       cargo-graph     v0.3.0     v0.3.0   No
       cargo-outdated  v0.2.0     v0.2.0   No
-      checksums       v0.5.0     v0.5.2   Yes
       identicon       v0.1.1     v0.1.1   No
       racer           v1.2.10    v1.2.10  No
       rustfmt         v0.6.2     v0.6.2   No
-      treesize        v0.2.0     v0.2.1   Yes
 
   `cargo install-update -af`
 
@@ -143,10 +157,10 @@ Exit values and possible errors:
           Updating registry `https://github.com/rust-lang/crates.io-index`
 
       Package       Installed  Latest   Needs update
-      racer         v1.2.10    v1.2.10  No
       treesize      v0.2.0     v0.2.1   Yes
       clippy        v0.0.1     v0.0.99  Yes
       clippy_lints  v0.0.1     v0.0.99  Yes
+      racer         v1.2.10    v1.2.10  No
 
       Updating racer
           Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -188,8 +202,8 @@ Exit values and possible errors:
 
       Package    Installed  Latest   Needs update
       checksums             v0.5.2   Yes
-      rustfmt    v0.6.2     v0.6.2   No
       treesize   v0.2.0     v0.2.1   Yes
+      rustfmt    v0.6.2     v0.6.2   No
 
       Installing checksums
           Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -208,6 +222,41 @@ Exit values and possible errors:
          Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
 
       Updated 2 packages.
+
+  `cargo install-update -ag`
+
+    Update all installed packages, including ones from git.
+
+    Example output:
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+
+      Package         Installed  Latest   Needs update
+      checksums       v0.5.0     v0.5.2   Yes
+      cargo-count     v0.2.2     v0.2.2   No
+
+      Updating checksums
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+         Downloading checksums v0.5.2
+         [...]
+         Compiling checksums v0.5.2
+          Finished release [optimized] target(s) in 95.2 secs
+         Replacing D:\Users\nabijaczleweli\.cargo\bin\checksums.exe
+
+      Updated 1 package.
+
+      Package                Installed  Latest   Needs update
+      alacritty              eb231b3    5f78857  Yes
+      chattium-oxide-client  108a7b9    108a7b9  No
+
+      Updating alacritty from https://github.com/jwilm/alacritty
+          Updating git repository `https://github.com/jwilm/alacritty`
+         Installing alacritty v0.1.0 (https://github.com/jwilm/alacritty#5f788574)
+         [...]
+         Compiling alacritty v0.1.0
+          Finished release [optimized] target(s) in 127.6 secs
+         Replacing D:\Users\nabijaczleweli\.cargo\bin\alacritty.exe
+
+      Updated 1 package.
 
 ## AUTHOR
 
