@@ -9,6 +9,7 @@ use std::io::{Write, stdout};
 use std::fs::{self, File};
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
+use std::fmt::Display;
 use git2::Repository;
 use regex::Regex;
 use std::env;
@@ -32,7 +33,7 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
-    let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1);
+    let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
     let configuration = try!(cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")));
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
 
@@ -79,7 +80,7 @@ fn actual_main() -> Result<(), i32> {
 
     if opts.update {
         if !opts.force {
-            packages = packages.into_iter().filter(cargo_update::ops::MainRepoPackage::needs_update).collect();
+            packages.retain(cargo_update::ops::MainRepoPackage::needs_update);
         }
 
         if !packages.is_empty() {
@@ -94,10 +95,7 @@ fn actual_main() -> Result<(), i32> {
                              package.name);
 
                     if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
-                        let cur_exe = env::current_exe().unwrap();
-                        fs::rename(&cur_exe, cur_exe.with_extension(format!("exe-v{}", package.version.as_ref().unwrap()))).unwrap();
-                        // This way the past-current exec will be "replaced" we'll get no dupes in .cargo.toml
-                        File::create(cur_exe).unwrap();
+                        save_cargo_update_exec(package.version.as_ref().unwrap());
                     }
 
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
@@ -121,9 +119,7 @@ fn actual_main() -> Result<(), i32> {
                     println!("");
                     if !install_res.success() {
                         if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
-                            let cur_exe = env::current_exe().unwrap();
-                            fs::remove_file(&cur_exe).unwrap();
-                            fs::rename(cur_exe.with_extension(format!("exe-v{}", package.version.as_ref().unwrap())), cur_exe).unwrap();
+                            restore_cargo_update_exec(package.version.as_ref().unwrap());
                         }
 
                         Err((install_res.code().unwrap_or(-1), package.name))
@@ -150,5 +146,116 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
+    if opts.update_git {
+        let mut packages = cargo_update::ops::installed_git_repo_packages(&crates_file);
+
+        if !opts.to_update.is_empty() {
+            packages.retain(|p| opts.to_update.iter().any(|u| p.name == u.0));
+        }
+
+        for package in &mut packages {
+            package.pull_version(&opts.temp_dir.1);
+        }
+
+        {
+            let mut out = TabWriter::new(stdout());
+            writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
+            for package in packages.iter().sorted_by(|lhs, rhs| (!lhs.needs_update()).cmp(&!rhs.needs_update())) {
+                writeln!(out,
+                         "{}\t{}\t{}\t{}",
+                         package.name,
+                         package.id,
+                         package.newest_id.as_ref().unwrap(),
+                         if package.needs_update() { "Yes" } else { "No" })
+                    .unwrap();
+            }
+            writeln!(out, "").unwrap();
+            out.flush().unwrap();
+        }
+
+        if opts.update {
+            if !opts.force {
+                packages.retain(cargo_update::ops::GitRepoPackage::needs_update);
+            }
+
+            if !packages.is_empty() {
+                let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
+                    .map(|package| -> Result<(), (i32, String)> {
+                        println!("Installing {} from {}", package.name, package.url);
+
+                        if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                            save_cargo_update_exec(&package.id.to_string());
+                        }
+
+                        let install_res = if let Some(cfg) = configuration.get(&package.name) {
+                                Command::new("cargo")
+                                    .args(&cfg.cargo_args()[..])
+                                    .arg("--git")
+                                    .arg(&package.url)
+                                    .status()
+                            } else {
+                                Command::new("cargo")
+                                    .arg("install")
+                                    .arg("-f")
+                                    .arg("--git")
+                                    .arg(&package.url)
+                                    .status()
+                            }
+                            .unwrap();
+
+                        println!("");
+                        if !install_res.success() {
+                            if cfg!(target_os = "windows") && package.name == "cargo-update" {
+                                restore_cargo_update_exec(&package.id.to_string());
+                            }
+
+                            Err((install_res.code().unwrap_or(-1), package.name))
+                        } else {
+                            Ok(())
+                        }
+                    })
+                    .fold((0, vec![], None), |(s, mut e, r), p| match p {
+                        Ok(()) => (s + 1, e, r),
+                        Err((pr, pn)) => {
+                            e.push(pn);
+                            (s, e, r.or_else(|| Some(pr)))
+                        }
+                    });
+
+                println!("");
+                println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
+                if !errored.is_empty() && result.is_some() {
+                    println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
+                    return Err(result.unwrap());
+                }
+            } else {
+                println!("No git packages need updating.");
+            }
+        }
+    }
+
     Ok(())
 }
+
+
+/// This way the past-current exec will be "replaced" and we'll get no dupes in .cargo.toml
+#[cfg(target_os="windows")]
+fn save_cargo_update_exec<D: Display>(version: &D) {
+    let cur_exe = env::current_exe().unwrap();
+    fs::rename(&cur_exe, cur_exe.with_extension(format!("exe-v{}", version))).unwrap();
+    File::create(cur_exe).unwrap();
+}
+
+#[cfg(target_os="windows")]
+fn restore_cargo_update_exec<D: Display>(version: &D) {
+    let cur_exe = env::current_exe().unwrap();
+    fs::remove_file(&cur_exe).unwrap();
+    fs::rename(cur_exe.with_extension(format!("exe-v{}", version)), cur_exe).unwrap();
+}
+
+
+#[cfg(not(target_os="windows"))]
+fn save_cargo_update_exec<D: Display>(_: &D) {}
+
+#[cfg(not(target_os="windows"))]
+fn restore_cargo_update_exec<D: Display>(_: &D) {}

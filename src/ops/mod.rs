@@ -6,9 +6,9 @@
 //! continue with doing whatever you wish.
 
 
+use git2::{self, Error as GitError, Repository, Tree, Oid};
 use std::path::{PathBuf, Path};
 use semver::Version as Semver;
-use git2::{Repository, Tree};
 use std::fs::{self, File};
 use std::io::Read;
 use regex::Regex;
@@ -22,7 +22,8 @@ pub use self::config::*;
 
 
 lazy_static! {
-    static ref PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(([^+\s]+)+\+([^\s]+)\)").unwrap();
+    static ref MAIN_PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)").unwrap();
+    static ref GIT_PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)").unwrap();
 }
 
 
@@ -73,6 +74,51 @@ pub struct MainRepoPackage {
     pub max_version: Option<Semver>,
 }
 
+/// A representation of a package a remote git repository.
+///
+/// The newest commit is pulled from that repo via `pull_version()`.
+///
+/// The `parse()` function parses the format used in `$HOME/.cargo/.crates.toml`.
+///
+/// # Examples
+///
+/// ```
+/// # extern crate cargo_update;
+/// # extern crate git2;
+/// # use cargo_update::ops::GitRepoPackage;
+/// # fn main() {
+/// let package_s = "alacritty 0.1.0 (git+https://github.com/jwilm/alacritty#eb231b3e70b87875df4bdd1974d5e94704024d70)";
+/// let mut package = GitRepoPackage::parse(package_s).unwrap();
+/// assert_eq!(package,
+///            GitRepoPackage {
+///                name: "alacritty".to_string(),
+///                url: "https://github.com/jwilm/alacritty".to_string(),
+///                id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
+///                newest_id: None,
+///            });
+///
+/// # /*
+/// package.pull_version(&registry_tree, &registry);
+/// # */
+/// # package.newest_id = Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap());
+/// assert!(package.newest_id.is_some());
+/// # }
+/// ```
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct GitRepoPackage {
+    /// The package's name.
+    pub name: String,
+    /// The remote git repo URL.
+    pub url: String,
+    /// The package's locally installed version's object hash.
+    pub id: Oid,
+    /// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.
+    ///
+    /// `None` by default, acquire via `MainRepoPackage::pull_version()`.
+    pub newest_id: Option<Oid>,
+}
+
+
 impl MainRepoPackage {
     /// Try to decypher a package descriptor into a `MainRepoPackage`.
     ///
@@ -121,15 +167,13 @@ impl MainRepoPackage {
     /// assert!(MainRepoPackage::parse(package_s).is_none());
     /// ```
     pub fn parse(what: &str) -> Option<MainRepoPackage> {
-        PACKAGE_RGX.captures(what).and_then(|c| if c.get(3).unwrap().as_str() == "registry" {
-            Some(MainRepoPackage {
+        MAIN_PACKAGE_RGX.captures(what).map(|c| {
+            MainRepoPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
                 version: Some(Semver::parse(c.get(2).unwrap().as_str()).unwrap()),
                 newest_version: None,
                 max_version: None,
-            })
-        } else {
-            None
+            }
         })
     }
 
@@ -198,6 +242,112 @@ impl MainRepoPackage {
     }
 }
 
+impl GitRepoPackage {
+    /// Try to decypher a package descriptor into a `GitRepoPackage`.
+    ///
+    /// Will return `None` if:
+    ///
+    ///   * the given package descriptor is invalid, or
+    ///   * the package descriptor is not from a .
+    ///
+    /// In the returned instance, `newest_version` is always `None`, get it via `GitRepoPackage::pull_version()`.
+    ///
+    /// # Examples
+    ///
+    /// Remote git repo packages:
+    ///
+    /// ```
+    /// # extern crate cargo_update;
+    /// # extern crate git2;
+    /// # use cargo_update::ops::GitRepoPackage;
+    /// # fn main() {
+    /// let package_s = "alacritty 0.1.0 (git+https://github.com/jwilm/alacritty#eb231b3e70b87875df4bdd1974d5e94704024d70)";
+    /// assert_eq!(GitRepoPackage::parse(package_s).unwrap(),
+    ///            GitRepoPackage {
+    ///                name: "alacritty".to_string(),
+    ///                url: "https://github.com/jwilm/alacritty".to_string(),
+    ///                id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
+    ///                newest_id: None,
+    ///            });
+    ///
+    /// let package_s = "chattium-oxide-client 0.1.0 \
+    ///                  (git+https://github.com/nabijaczleweli/chattium-oxide-client\
+    ///                       #108a7b94f0e0dcb2a875f70fc0459d5a682df14c)";
+    /// assert_eq!(GitRepoPackage::parse(package_s).unwrap(),
+    ///            GitRepoPackage {
+    ///                name: "chattium-oxide-client".to_string(),
+    ///                url: "https://github.com/nabijaczleweli/chattium-oxide-client".to_string(),
+    ///                id: git2::Oid::from_str("108a7b94f0e0dcb2a875f70fc0459d5a682df14c").unwrap(),
+    ///                newest_id: None,
+    ///            });
+    /// # }
+    /// ```
+    ///
+    /// Main repository package:
+    ///
+    /// ```
+    /// # use cargo_update::ops::GitRepoPackage;
+    /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
+    /// assert!(GitRepoPackage::parse(package_s).is_none());
+    /// ```
+    pub fn parse(what: &str) -> Option<GitRepoPackage> {
+        GIT_PACKAGE_RGX.captures(what).map(|c| {
+            GitRepoPackage {
+                name: c.get(1).unwrap().as_str().to_string(),
+                url: c.get(3).unwrap().as_str().to_string(),
+                id: Oid::from_str(c.get(4).unwrap().as_str()).unwrap(),
+                newest_id: None,
+            }
+        })
+    }
+
+    /// Clone the repo and check what the latest commit's hash is.
+    pub fn pull_version<P: AsRef<Path>>(&mut self, temp_dir: P) {
+        fs::create_dir_all(temp_dir.as_ref()).unwrap();
+        let clone_dir = temp_dir.as_ref().join(&self.name);
+        let repo = if clone_dir.exists() {
+            let mut r = git2::Repository::open(clone_dir);
+            if let Ok(ref mut r) = r.as_mut() {
+                r.find_remote("origin").and_then(|mut rm| rm.fetch(&["master"], None, None)).unwrap();
+            }
+            r
+        } else {
+            git2::build::RepoBuilder::new()
+                .bare(true)
+                .clone(&self.url, &clone_dir)
+        };
+
+        self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
+    }
+
+    /// Check whether this package needs to be installed
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate cargo_update;
+    /// # extern crate git2;
+    /// # use cargo_update::ops::GitRepoPackage;
+    /// # fn main() {
+    /// assert!(GitRepoPackage {
+    ///             name: "alacritty".to_string(),
+    ///             url: "https://github.com/jwilm/alacritty".to_string(),
+    ///             id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
+    ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
+    ///         }.needs_update());
+    /// assert!(!GitRepoPackage {
+    ///             name: "alacritty".to_string(),
+    ///             url: "https://github.com/jwilm/alacritty".to_string(),
+    ///             id: git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap(),
+    ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
+    ///         }.needs_update());
+    /// # }
+    /// ```
+    pub fn needs_update(&self) -> bool {
+        self.newest_id.is_some() && self.id != *self.newest_id.as_ref().unwrap()
+    }
+}
+
 
 /// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file
 /// parallel to the specified crates file up to the final one.
@@ -260,6 +410,44 @@ pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> 
                 if saved.version.is_none() || saved.version.as_ref().unwrap() < pkg.version.as_ref().unwrap() {
                     saved.version = pkg.version;
                 }
+                continue;
+            }
+
+            res.push(pkg);
+        }
+        res
+    } else {
+        Vec::new()
+    }
+}
+
+/// List the installed packages at the specified location that originate
+/// from a  remote git repository.
+///
+/// If the `.crates.toml` file doesn't exist an empty vector is returned.
+///
+/// This also deduplicates packages and assumes the latest-mentioned version as the most correct.
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::installed_git_repo_packages;
+/// # use std::env::temp_dir;
+/// # let cargo_dir = temp_dir().join(".crates.toml");
+/// let packages = installed_git_repo_packages(&cargo_dir);
+/// for package in &packages {
+///     println!("{} v{}", package.name, package.id);
+/// }
+/// ```
+pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
+    if crates_file.exists() {
+        let mut crates = String::new();
+        File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
+
+        let mut res = Vec::<GitRepoPackage>::new();
+        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| GitRepoPackage::parse(s)) {
+            if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
+                saved.id = pkg.id;
                 continue;
             }
 

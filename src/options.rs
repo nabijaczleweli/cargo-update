@@ -34,11 +34,15 @@ pub struct Options {
     pub install: bool,
     /// Update all packages. Default: `false`
     pub force: bool,
+    /// Update git packages too (it's expensive). Default: `false`
+    pub update_git: bool,
     /// The `.crates.toml` file in the `cargo` home directory.
     /// Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub crates_file: (String, PathBuf),
     /// The `cargo` home directory. Default: `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub cargo_dir: (String, PathBuf),
+    /// The temporary directory to clone git repositories to. Default: `"$TEMP/cargo-update"`
+    pub temp_dir: (String, PathBuf),
 }
 
 /// Representation of the config application's all configurable values.
@@ -66,11 +70,14 @@ impl Options {
                 .about("A cargo subcommand for checking and applying updates to installed executables")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .visible_alias("root")
-                            .validator(cargo_dir_validator),
+                            .validator(|s| existing_dir_validator("Cargo", s)),
+                        Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
+                            .validator(|s| existing_dir_validator("Temporary", s)),
                         Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
+                        Arg::from_usage("-g --git 'Also update git packages as well'"),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'")
                             .conflicts_with("all")
                             .empty_values(false)
@@ -90,6 +97,7 @@ impl Options {
             update: !matches.is_present("list"),
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
+            update_git: matches.is_present("git"),
             crates_file: match matches.value_of("cargo-dir") {
                 Some(dir) => (format!("{}/.crates.toml", dir), fs::canonicalize(dir).unwrap().join(".crates.toml")),
                 None => {
@@ -100,6 +108,22 @@ impl Options {
                 }
             },
             cargo_dir: cdir,
+            temp_dir: {
+                let (temp_s, temp_pb) = if let Some(tmpdir) = matches.value_of("temp-dir") {
+                    (tmpdir.to_string(), fs::canonicalize(tmpdir).unwrap())
+                } else {
+                    ("$TEMP".to_string(), env::temp_dir())
+                };
+
+                (format!("{}{}cargo-update",
+                         temp_s,
+                         if temp_s.ends_with('/') || temp_s.ends_with('\\') {
+                             ""
+                         } else {
+                             "/"
+                         }),
+                 temp_pb.join("cargo-update"))
+            },
         }
     }
 }
@@ -115,7 +139,7 @@ impl ConfigOptions {
                 .author(crate_authors!("\n"))
                 .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
-                            .validator(cargo_dir_validator),
+                            .validator(|s| existing_dir_validator("Cargo", s)),
                         Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
                         Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'"),
                         Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'"),
@@ -151,10 +175,11 @@ impl ConfigOptions {
                 .chain(matches.values_of("no-feature").into_iter().flat_map(|f| f).map(str::to_string).map(ConfigOperation::RemoveFeature))
                 .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
                 .chain(match (matches.is_present("debug"), matches.is_present("release")) {
-                    (true, _) => Some(ConfigOperation::SetDebugMode(true)),
-                    (_, true) => Some(ConfigOperation::SetDebugMode(false)),
-                    _ => None,
-                }.into_iter())
+                        (true, _) => Some(ConfigOperation::SetDebugMode(true)),
+                        (_, true) => Some(ConfigOperation::SetDebugMode(false)),
+                        _ => None,
+                    }
+                    .into_iter())
                 .collect(),
         }
     }
@@ -183,8 +208,8 @@ fn cargo_dir() -> (String, PathBuf) {
     }
 }
 
-fn cargo_dir_validator(s: String) -> Result<(), String> {
-    fs::canonicalize(&s).map(|_| ()).map_err(|_| format!("Cargo directory \"{}\" not found", s))
+fn existing_dir_validator(label: &str, s: String) -> Result<(), String> {
+    fs::canonicalize(&s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
 }
 
 fn package_parse(s: String) -> Result<(String, Option<Semver>), String> {
