@@ -14,6 +14,8 @@ Then proceed as usual:
 cargo install cargo-update
 ```
 
+If that doesn't work and you're on Mac, [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/alexcrichton/git2-rs/issues/257). If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
+
 ### Usage
 
 `cargo install-update -a` - check for newer versions and update all installed packages.
