@@ -69,7 +69,9 @@ fn actual_main() -> Result<(), i32> {
     {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-        for package in packages.iter().sorted_by(|lhs, rhs| (!lhs.needs_update()).cmp(&!rhs.needs_update())) {
+        for package in packages.iter()
+            .sorted_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name)))
+        {
             write!(out, "{}\t", package.name).unwrap();
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
@@ -162,7 +164,9 @@ fn actual_main() -> Result<(), i32> {
         {
             let mut out = TabWriter::new(stdout());
             writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-            for package in packages.iter().sorted_by(|lhs, rhs| (!lhs.needs_update()).cmp(&!rhs.needs_update())) {
+            for package in packages.iter()
+                .sorted_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name)))
+            {
                 writeln!(out,
                          "{}\t{}\t{}\t{}",
                          package.name,
