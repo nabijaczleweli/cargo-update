@@ -268,7 +268,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            azyobuzin &lt;<azyobuzin@users.sourceforge.jp>&gt;,
            Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;,
            Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;,
-       and Mateusz Mikuła &lt;<mati865@gmail.com>&gt;
+           Mateusz Mikuła &lt;<mati865@gmail.com>&gt;,
+       and sinkuu &lt;<sinkuupump@gmail.com>&gt;
 
 ## REPORTING BUGS
 
