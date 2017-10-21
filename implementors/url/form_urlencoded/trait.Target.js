@@ -1,5 +1,4 @@
 (function() {var implementors = {};
-implementors["cargo_update"] = [];
 implementors["url"] = [];
 
             if (window.register_implementors) {

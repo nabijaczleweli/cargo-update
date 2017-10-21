@@ -1,6 +1,4 @@
 (function() {var implementors = {};
-implementors["cargo_update"] = [];
-implementors["thread_local"] = [];
 implementors["unreachable"] = [];
 
             if (window.register_implementors) {

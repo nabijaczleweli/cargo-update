@@ -1,5 +1,4 @@
 (function() {var implementors = {};
-implementors["cargo_update"] = [];
 implementors["git2"] = [];
 
             if (window.register_implementors) {
