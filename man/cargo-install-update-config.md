@@ -80,7 +80,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;,
            Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;,
            Mateusz Mikuła &lt;<mati865@gmail.com>&gt;,
-       and sinkuu &lt;<sinkuupump@gmail.com>&gt;
+           sinkuu &lt;<sinkuupump@gmail.com>&gt;
+       and Alex Burka &lt;<aburka@seas.upenn.edu>&gt;
 
 ## REPORTING BUGS
 
