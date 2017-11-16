@@ -270,7 +270,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;,
            Mateusz Mikuła &lt;<mati865@gmail.com>&gt;,
            sinkuu &lt;<sinkuupump@gmail.com>&gt;
-       and Alex Burka &lt;<aburka@seas.upenn.edu>&gt;
+           Alex Burka &lt;<aburka@seas.upenn.edu>&gt;
+       and Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;
 
 ## REPORTING BUGS
 
