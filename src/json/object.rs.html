@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.10/src/object.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.12/src/object.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>object.rs.html -- source</title>
@@ -733,6 +733,21 @@
 <span id="688">688</span>
 <span id="689">689</span>
 <span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::{ <span class="ident">ptr</span>, <span class="ident">mem</span>, <span class="ident">str</span>, <span class="ident">slice</span>, <span class="ident">fmt</span> };
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{ <span class="ident">Index</span>, <span class="ident">IndexMut</span>, <span class="ident">Deref</span> };
@@ -1034,14 +1049,19 @@
     <span class="doccomment">/// to be a `&amp;str` slice and not an owned `String`. The internals of</span>
     <span class="doccomment">/// `Object` will handle the heap allocation of the key if needed for</span>
     <span class="doccomment">/// better performance.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="ident">JsonValue</span>) {
+        <span class="self">self</span>.<span class="ident">insert_index</span>(<span class="ident">key</span>, <span class="ident">value</span>);
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">insert_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="ident">JsonValue</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">key</span>.<span class="ident">as_bytes</span>();
         <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">hash_key</span>(<span class="ident">key</span>);
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
             <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">push</span>(<span class="ident">Node</span>::<span class="ident">new</span>(<span class="ident">value</span>, <span class="ident">hash</span>, <span class="ident">key</span>.<span class="ident">len</span>()));
             <span class="self">self</span>.<span class="ident">store</span>[<span class="number">0</span>].<span class="ident">key</span>.<span class="ident">attach</span>(<span class="ident">key</span>);
-            <span class="kw">return</span>;
+            <span class="kw">return</span> <span class="number">0</span>;
         }
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">node</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">node_at_index_mut</span>(<span class="number">0</span>) };
@@ -1050,28 +1070,38 @@
         <span class="kw">loop</span> {
             <span class="kw">if</span> <span class="ident">hash</span> <span class="op">==</span> <span class="ident">node</span>.<span class="ident">key</span>.<span class="ident">hash</span> <span class="op">&amp;&amp;</span> <span class="ident">key</span> <span class="op">==</span> <span class="ident">node</span>.<span class="ident">key</span>.<span class="ident">as_bytes</span>() {
                 <span class="ident">node</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span>;
-                <span class="kw">return</span>;
+                <span class="kw">return</span> <span class="ident">parent</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">hash</span> <span class="op">&lt;</span> <span class="ident">node</span>.<span class="ident">key</span>.<span class="ident">hash</span> {
                 <span class="kw">if</span> <span class="ident">node</span>.<span class="ident">left</span> <span class="op">!=</span> <span class="number">0</span> {
                     <span class="ident">parent</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">left</span>;
                     <span class="ident">node</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">node_at_index_mut</span>(<span class="ident">node</span>.<span class="ident">left</span>) };
                     <span class="kw">continue</span>;
                 }
-                <span class="self">self</span>.<span class="ident">store</span>[<span class="ident">parent</span>].<span class="ident">left</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_node</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">hash</span>);
-                <span class="kw">return</span>;
+                <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_node</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">hash</span>);
+                <span class="self">self</span>.<span class="ident">store</span>[<span class="ident">parent</span>].<span class="ident">left</span> <span class="op">=</span> <span class="ident">index</span>;
+
+                <span class="kw">return</span> <span class="ident">index</span>;
             } <span class="kw">else</span> {
                 <span class="kw">if</span> <span class="ident">node</span>.<span class="ident">right</span> <span class="op">!=</span> <span class="number">0</span> {
                     <span class="ident">parent</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">right</span>;
                     <span class="ident">node</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">node_at_index_mut</span>(<span class="ident">node</span>.<span class="ident">right</span>) };
                     <span class="kw">continue</span>;
                 }
-                <span class="self">self</span>.<span class="ident">store</span>[<span class="ident">parent</span>].<span class="ident">right</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_node</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">hash</span>);
-                <span class="kw">return</span>;
+                <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_node</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">hash</span>);
+                <span class="self">self</span>.<span class="ident">store</span>[<span class="ident">parent</span>].<span class="ident">right</span> <span class="op">=</span> <span class="ident">index</span>;
+
+                <span class="kw">return</span> <span class="ident">index</span>;
             }
         }
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">override_at</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">JsonValue</span>) {
+        <span class="self">self</span>.<span class="ident">store</span>[<span class="ident">index</span>].<span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span>;
+    }
+
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">since</span><span class="op">=</span><span class="string">&quot;0.11.11&quot;</span>, <span class="ident">note</span><span class="op">=</span><span class="string">&quot;Was only meant for internal use&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">override_last</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">JsonValue</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">node</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">store</span>.<span class="ident">last_mut</span>() {
             <span class="ident">node</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span>;

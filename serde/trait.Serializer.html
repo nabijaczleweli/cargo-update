@@ -48,7 +48,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/serde/ser/mod.rs.html#311-1366' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/serde/ser/mod.rs.html#311-1416' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait Serializer: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a> {
     type <a href='#associatedtype.Ok' class="type">Ok</a>;
     type <a href='#associatedtype.Error' class="type">Error</a>: <a class="trait" href="../serde/ser/trait.Error.html" title="trait serde::ser::Error">Error</a>;
@@ -94,6 +94,7 @@
     { ... }
 <div class='item-spacer'></div>    fn <a href='#method.collect_str' class='fnname'>collect_str</a>&lt;T:&nbsp;?<a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>&gt;(self, value: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>T) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;Self::<a class="type" href="../serde/trait.Serializer.html#associatedtype.Ok" title="type serde::Serializer::Ok">Ok</a>, Self::<a class="type" href="../serde/trait.Serializer.html#associatedtype.Error" title="type serde::Serializer::Error">Error</a>&gt;<br>&nbsp;&nbsp;&nbsp; <span class="where">where<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html" title="trait core::fmt::Display">Display</a></span>,
     { ... }
+<div class='item-spacer'></div>    fn <a href='#method.is_human_readable' class='fnname'>is_human_readable</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> { ... }
 }</pre><div class='docblock'><p>A <strong>data format</strong> that can serialize any data structure supported by Serde.</p>
 
 <p>The role of this trait is to define the serialization half of the Serde data
@@ -810,6 +811,38 @@ more efficient implementation if possible.</p>
                                              <span class="self">self</span>.<span class="ident">offset</span>()))
     }
 }</pre>
+</div><h3 id='method.is_human_readable' class='method'><span id='is_human_readable.v' class='invisible'><code>fn <a href='#method.is_human_readable' class='fnname'>is_human_readable</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></h3><div class='docblock'><p>Determine whether <code>Serialize</code> implementations should serialize in
+human-readable form.</p>
+
+<p>Some types have a human-readable form that may be somewhat expensive to
+construct, as well as a binary form that is compact and efficient.
+Generally text-based formats like JSON and YAML will prefer to use the
+human-readable one and binary formats like Bincode will prefer the
+compact one.</p>
+
+<pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Serialize</span>, <span class="ident">Serializer</span>};
+
+<span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">Timestamp</span> {
+    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">Serializer</span>
+    {
+        <span class="kw">if</span> <span class="ident">serializer</span>.<span class="ident">is_human_readable</span>() {
+            <span class="comment">// Serialize to a human-readable string &quot;2015-05-15T17:01:00Z&quot;.</span>
+            <span class="self">self</span>.<span class="ident">to_string</span>().<span class="ident">serialize</span>(<span class="ident">serializer</span>)
+        } <span class="kw">else</span> {
+            <span class="comment">// Serialize to a compact binary representation.</span>
+            <span class="self">self</span>.<span class="ident">seconds_since_epoch</span>().<span class="ident">serialize</span>(<span class="ident">serializer</span>)
+        }
+    }
+}</pre>
+
+<p>The default implementation of this method returns <code>true</code>. Data formats
+may override this to <code>false</code> to request a compact form for types that
+support one. Note that modifying this method to change a format from
+human-readable to compact or vice versa should be regarded as a breaking
+change, as a value serialized in human-readable mode is not required to
+deserialize from the same data in compact mode.</p>
 </div></div>
         <h2 id='implementors' class='small-section-header'>
           Implementors<a href='#implementors' class='anchor'></a>

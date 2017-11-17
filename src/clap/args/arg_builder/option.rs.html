@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.26.2/src/args/arg_builder/option.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.27.1/src/args/arg_builder/option.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>option.rs.html -- source</title>
@@ -266,6 +266,27 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
 </pre><pre class="rust ">
 <span class="comment">// Std</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="ident">Display</span>, <span class="ident">Formatter</span>, <span class="prelude-ty">Result</span>};
@@ -274,17 +295,17 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::{<span class="ident">OsStr</span>, <span class="ident">OsString</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
 
-<span class="comment">// Third Party</span>
-<span class="kw">use</span> <span class="ident">vec_map</span>::{<span class="self">self</span>, <span class="ident">VecMap</span>};
-
 <span class="comment">// Internal</span>
-<span class="kw">use</span> <span class="ident">args</span>::{<span class="ident">ArgSettings</span>, <span class="ident">AnyArg</span>, <span class="ident">Base</span>, <span class="ident">Switched</span>, <span class="ident">Valued</span>, <span class="ident">Arg</span>, <span class="ident">DispOrder</span>};
+<span class="kw">use</span> <span class="ident">args</span>::{<span class="ident">AnyArg</span>, <span class="ident">Arg</span>, <span class="ident">ArgSettings</span>, <span class="ident">Base</span>, <span class="ident">DispOrder</span>, <span class="ident">Switched</span>, <span class="ident">Valued</span>};
+<span class="kw">use</span> <span class="ident">map</span>::{<span class="self">self</span>, <span class="ident">VecMap</span>};
+<span class="kw">use</span> <span class="ident">INTERNAL_ERROR_MSG</span>;
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_debug_implementations</span>)]</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OptBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="lifetime">&#39;n</span>: <span class="lifetime">&#39;e</span>
+<span class="kw">where</span>
+    <span class="lifetime">&#39;n</span>: <span class="lifetime">&#39;e</span>,
 {
     <span class="kw">pub</span> <span class="ident">b</span>: <span class="ident">Base</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">s</span>: <span class="ident">Switched</span><span class="op">&lt;</span><span class="lifetime">&#39;e</span><span class="op">&gt;</span>,
@@ -292,7 +313,12 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span> <span class="ident">OptBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;n</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="ident">OptBuilder</span> { <span class="ident">b</span>: <span class="ident">Base</span>::<span class="ident">new</span>(<span class="ident">name</span>), ..<span class="ident">Default</span>::<span class="ident">default</span>() } }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;n</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">OptBuilder</span> {
+            <span class="ident">b</span>: <span class="ident">Base</span>::<span class="ident">new</span>(<span class="ident">name</span>),
+            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+        }
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span>, <span class="lifetime">&#39;z</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;z</span> <span class="ident">Arg</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">OptBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span> {
@@ -330,6 +356,11 @@
         } <span class="kw">else</span> {
             <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;-{}{}&quot;</span>, <span class="self">self</span>.<span class="ident">s</span>.<span class="ident">short</span>.<span class="ident">unwrap</span>(), <span class="ident">sep</span>)<span class="question-mark">?</span>;
         }
+        <span class="kw">let</span> <span class="ident">delim</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">RequireDelimiter</span>) {
+            <span class="self">self</span>.<span class="ident">v</span>.<span class="ident">val_delim</span>.<span class="ident">expect</span>(<span class="ident">INTERNAL_ERROR_MSG</span>)
+        } <span class="kw">else</span> {
+            <span class="string">&#39; &#39;</span>
+        };
 
         <span class="comment">// Write the values such as &lt;name1&gt; &lt;name2&gt;</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">vec</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">v</span>.<span class="ident">val_names</span> {
@@ -337,7 +368,7 @@
             <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((_, <span class="ident">val</span>)) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="ident">val</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">it</span>.<span class="ident">peek</span>().<span class="ident">is_some</span>() {
-                    <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
+                    <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">delim</span>)<span class="question-mark">?</span>;
                 }
             }
             <span class="kw">let</span> <span class="ident">num</span> <span class="op">=</span> <span class="ident">vec</span>.<span class="ident">len</span>();
@@ -349,21 +380,23 @@
             <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(_) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">name</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">it</span>.<span class="ident">peek</span>().<span class="ident">is_some</span>() {
-                    <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
+                    <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">delim</span>)<span class="question-mark">?</span>;
                 }
             }
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">Multiple</span>) <span class="op">&amp;&amp;</span> <span class="ident">num</span> <span class="op">==</span> <span class="number">1</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;...&quot;</span>)<span class="question-mark">?</span>;
             }
         } <span class="kw">else</span> {
-            <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>,
+            <span class="macro">write</span><span class="macro">!</span>(
+                <span class="ident">f</span>,
                 <span class="string">&quot;&lt;{}&gt;{}&quot;</span>,
                 <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">name</span>,
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">Multiple</span>) {
                     <span class="string">&quot;...&quot;</span>
                 } <span class="kw">else</span> {
                     <span class="string">&quot;&quot;</span>
-                })<span class="question-mark">?</span>;
+                }
+            )<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -400,13 +433,20 @@
     <span class="kw">fn</span> <span class="ident">help</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">str</span><span class="op">&gt;</span> { <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">help</span> }
     <span class="kw">fn</span> <span class="ident">long_help</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">str</span><span class="op">&gt;</span> { <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">long_help</span> }
     <span class="kw">fn</span> <span class="ident">default_val</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">OsStr</span><span class="op">&gt;</span> { <span class="self">self</span>.<span class="ident">v</span>.<span class="ident">default_val</span> }
-    <span class="kw">fn</span> <span class="ident">default_vals_ifs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">vec_map</span>::<span class="ident">Values</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;n</span> <span class="ident">str</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">OsStr</span><span class="op">&gt;</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">OsStr</span>)<span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">default_vals_ifs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">map</span>::<span class="ident">Values</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;n</span> <span class="ident">str</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">OsStr</span><span class="op">&gt;</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">OsStr</span>)<span class="op">&gt;&gt;</span> {
         <span class="self">self</span>.<span class="ident">v</span>.<span class="ident">default_vals_ifs</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">vm</span><span class="op">|</span> <span class="ident">vm</span>.<span class="ident">values</span>())
+    }
+    <span class="kw">fn</span> <span class="ident">env</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;n</span> <span class="ident">OsStr</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">OsString</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">v</span>
+            .<span class="ident">env</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">key</span>, <span class="kw-2">ref</span> <span class="ident">value</span>)<span class="op">|</span> (<span class="ident">key</span>, <span class="ident">value</span>.<span class="ident">as_ref</span>()))
     }
     <span class="kw">fn</span> <span class="ident">longest_filter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="bool-val">true</span> }
     <span class="kw">fn</span> <span class="ident">aliases</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="ident">str</span><span class="op">&gt;&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">aliases</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">s</span>.<span class="ident">aliases</span> {
-            <span class="kw">let</span> <span class="ident">vis_aliases</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">aliases</span>.<span class="ident">iter</span>()
+            <span class="kw">let</span> <span class="ident">vis_aliases</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">aliases</span>
+                .<span class="ident">iter</span>()
                 .<span class="ident">filter_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">n</span>, <span class="ident">v</span>)<span class="op">|</span> <span class="kw">if</span> <span class="ident">v</span> { <span class="prelude-val">Some</span>(<span class="ident">n</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> })
                 .<span class="ident">collect</span>();
             <span class="kw">if</span> <span class="ident">vis_aliases</span>.<span class="ident">is_empty</span>() {
@@ -425,16 +465,14 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">OptBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">OptBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">b</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">b</span>
-    }
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">OptBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;n</span>, <span class="lifetime">&#39;e</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="self">self</span>.<span class="ident">b</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">b</span> }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="ident">args</span>::<span class="ident">settings</span>::<span class="ident">ArgSettings</span>;
     <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">OptBuilder</span>;
-    <span class="kw">use</span> <span class="ident">vec_map</span>::<span class="ident">VecMap</span>;
+    <span class="kw">use</span> <span class="ident">map</span>::<span class="ident">VecMap</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">optbuilder_display1</span>() {
@@ -485,8 +523,12 @@
     <span class="kw">fn</span> <span class="ident">optbuilder_display_multiple_aliases</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">o</span> <span class="op">=</span> <span class="ident">OptBuilder</span>::<span class="ident">new</span>(<span class="string">&quot;opt&quot;</span>);
         <span class="ident">o</span>.<span class="ident">s</span>.<span class="ident">long</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="string">&quot;option&quot;</span>);
-        <span class="ident">o</span>.<span class="ident">s</span>.<span class="ident">aliases</span> <span class="op">=</span>
-            <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[(<span class="string">&quot;als_not_visible&quot;</span>, <span class="bool-val">false</span>), (<span class="string">&quot;als2&quot;</span>, <span class="bool-val">true</span>), (<span class="string">&quot;als3&quot;</span>, <span class="bool-val">true</span>), (<span class="string">&quot;als4&quot;</span>, <span class="bool-val">true</span>)]);
+        <span class="ident">o</span>.<span class="ident">s</span>.<span class="ident">aliases</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[
+            (<span class="string">&quot;als_not_visible&quot;</span>, <span class="bool-val">false</span>),
+            (<span class="string">&quot;als2&quot;</span>, <span class="bool-val">true</span>),
+            (<span class="string">&quot;als3&quot;</span>, <span class="bool-val">true</span>),
+            (<span class="string">&quot;als4&quot;</span>, <span class="bool-val">true</span>),
+        ]);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">o</span>), <span class="string">&quot;--option &lt;opt&gt;&quot;</span>);
     }
 }

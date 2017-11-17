@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive_internals-0.16.0/src/attr.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive_internals-0.17.0/src/attr.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>attr.rs.html -- source</title>
@@ -1298,6 +1298,27 @@
 <span id="1253">1253</span>
 <span id="1254">1254</span>
 <span id="1255">1255</span>
+<span id="1256">1256</span>
+<span id="1257">1257</span>
+<span id="1258">1258</span>
+<span id="1259">1259</span>
+<span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
+<span id="1266">1266</span>
+<span id="1267">1267</span>
+<span id="1268">1268</span>
+<span id="1269">1269</span>
+<span id="1270">1270</span>
+<span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -1813,6 +1834,7 @@
     <span class="ident">other</span>: <span class="ident">bool</span>,
     <span class="ident">serialize_with</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">syn</span>::<span class="ident">Path</span><span class="op">&gt;</span>,
     <span class="ident">deserialize_with</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">syn</span>::<span class="ident">Path</span><span class="op">&gt;</span>,
+    <span class="ident">borrow</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">syn</span>::<span class="ident">MetaItem</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Variant</span> {
@@ -1825,6 +1847,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">other</span> <span class="op">=</span> <span class="ident">BoolAttr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;other&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">serialize_with</span> <span class="op">=</span> <span class="ident">Attr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;serialize_with&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="ident">Attr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;deserialize_with&quot;</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">borrow</span> <span class="op">=</span> <span class="ident">Attr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;borrow&quot;</span>);
 
         <span class="kw">for</span> <span class="ident">meta_items</span> <span class="kw">in</span> <span class="ident">variant</span>.<span class="ident">attrs</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="ident">get_serde_meta_items</span>) {
             <span class="kw">for</span> <span class="ident">meta_item</span> <span class="kw">in</span> <span class="ident">meta_items</span> {
@@ -1900,6 +1923,18 @@
                         }
                     }
 
+                    <span class="comment">// Defer `#[serde(borrow)]` and `#[serde(borrow = &quot;&#39;a + &#39;b&quot;)]`</span>
+                    <span class="ident">MetaItem</span>(<span class="kw-2">ref</span> <span class="ident">mi</span>) <span class="kw">if</span> <span class="ident">mi</span>.<span class="ident">name</span>() <span class="op">==</span> <span class="string">&quot;borrow&quot;</span> <span class="op">=&gt;</span> {
+                        <span class="kw">match</span> <span class="ident">variant</span>.<span class="ident">data</span> {
+                            <span class="ident">syn</span>::<span class="ident">VariantData</span>::<span class="ident">Tuple</span>(<span class="kw-2">ref</span> <span class="ident">fields</span>) <span class="kw">if</span> <span class="ident">fields</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> <span class="op">=&gt;</span> {
+                                <span class="ident">borrow</span>.<span class="ident">set</span>(<span class="ident">mi</span>.<span class="ident">clone</span>());
+                            }
+                            _ <span class="op">=&gt;</span> {
+                                <span class="ident">cx</span>.<span class="ident">error</span>(<span class="string">&quot;#[serde(borrow)] may only be used on newtype variants&quot;</span>);
+                            }
+                        }
+                    }
+
                     <span class="ident">MetaItem</span>(<span class="kw-2">ref</span> <span class="ident">meta_item</span>) <span class="op">=&gt;</span> {
                         <span class="ident">cx</span>.<span class="ident">error</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;unknown serde variant attribute `{}`&quot;</span>, <span class="ident">meta_item</span>.<span class="ident">name</span>()));
                     }
@@ -1928,6 +1963,7 @@
             <span class="ident">other</span>: <span class="ident">other</span>.<span class="ident">get</span>(),
             <span class="ident">serialize_with</span>: <span class="ident">serialize_with</span>.<span class="ident">get</span>(),
             <span class="ident">deserialize_with</span>: <span class="ident">deserialize_with</span>.<span class="ident">get</span>(),
+            <span class="ident">borrow</span>: <span class="ident">borrow</span>.<span class="ident">get</span>(),
         }
     }
 
@@ -2000,7 +2036,7 @@
 
 <span class="kw">impl</span> <span class="ident">Field</span> {
     <span class="doccomment">/// Extract out the `#[serde(...)]` attributes from a struct field.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_ast</span>(<span class="ident">cx</span>: <span class="kw-2">&amp;</span><span class="ident">Ctxt</span>, <span class="ident">index</span>: <span class="ident">usize</span>, <span class="ident">field</span>: <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Field</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_ast</span>(<span class="ident">cx</span>: <span class="kw-2">&amp;</span><span class="ident">Ctxt</span>, <span class="ident">index</span>: <span class="ident">usize</span>, <span class="ident">field</span>: <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Field</span>, <span class="ident">attrs</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Variant</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ser_name</span> <span class="op">=</span> <span class="ident">Attr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;rename&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">de_name</span> <span class="op">=</span> <span class="ident">Attr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;rename&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">skip_serializing</span> <span class="op">=</span> <span class="ident">BoolAttr</span>::<span class="ident">none</span>(<span class="ident">cx</span>, <span class="string">&quot;skip_serializing&quot;</span>);
@@ -2019,7 +2055,13 @@
             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">index</span>.<span class="ident">to_string</span>(),
         };
 
-        <span class="kw">for</span> <span class="ident">meta_items</span> <span class="kw">in</span> <span class="ident">field</span>.<span class="ident">attrs</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="ident">get_serde_meta_items</span>) {
+        <span class="kw">let</span> <span class="ident">variant_borrow</span> <span class="op">=</span> <span class="ident">attrs</span>
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">variant</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">variant</span>.<span class="ident">borrow</span>)
+            .<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="prelude-val">None</span>)
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">borrow</span><span class="op">|</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">MetaItem</span>(<span class="ident">borrow</span>.<span class="ident">clone</span>())]);
+
+        <span class="kw">for</span> <span class="ident">meta_items</span> <span class="kw">in</span> <span class="ident">field</span>.<span class="ident">attrs</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="ident">get_serde_meta_items</span>).<span class="ident">chain</span>(<span class="ident">variant_borrow</span>) {
             <span class="kw">for</span> <span class="ident">meta_item</span> <span class="kw">in</span> <span class="ident">meta_items</span> {
                 <span class="kw">match</span> <span class="ident">meta_item</span> {
                     <span class="comment">// Parse `#[serde(rename = &quot;foo&quot;)]`</span>

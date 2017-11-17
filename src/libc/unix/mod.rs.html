@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.32/src/unix/mod.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.33/src/unix/mod.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mod.rs.html -- source</title>
@@ -934,6 +934,56 @@
 <span id="889">889</span>
 <span id="890">890</span>
 <span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
+<span id="932">932</span>
+<span id="933">933</span>
+<span id="934">934</span>
+<span id="935">935</span>
+<span id="936">936</span>
+<span id="937">937</span>
+<span id="938">938</span>
+<span id="939">939</span>
+<span id="940">940</span>
+<span id="941">941</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Definitions found commonly among almost all Unix derivatives</span>
 <span class="doccomment">//!</span>
@@ -971,9 +1021,14 @@
         <span class="kw">pub</span> <span class="ident">tv_usec</span>: <span class="ident">suseconds_t</span>,
     }
 
+    <span class="comment">// linux x32 compatibility</span>
+    <span class="comment">// See https://sourceware.org/bugzilla/show_bug.cgi?id=16437</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">timespec</span> {
         <span class="kw">pub</span> <span class="ident">tv_sec</span>: <span class="ident">time_t</span>,
-        <span class="kw">pub</span> <span class="ident">tv_nsec</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="kw">pub</span> <span class="ident">tv_nsec</span>: <span class="ident">i64</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
+        <span class="kw">pub</span> <span class="ident">tv_nsec</span>: ::<span class="ident">c_long</span>,
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">rlimit</span> {
@@ -985,19 +1040,47 @@
         <span class="kw">pub</span> <span class="ident">ru_utime</span>: <span class="ident">timeval</span>,
         <span class="kw">pub</span> <span class="ident">ru_stime</span>: <span class="ident">timeval</span>,
         <span class="kw">pub</span> <span class="ident">ru_maxrss</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad1</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_ixrss</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad2</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_idrss</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad3</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_isrss</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad4</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_minflt</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad5</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_majflt</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad6</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_nswap</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad7</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_inblock</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad8</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_oublock</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad9</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_msgsnd</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad10</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_msgrcv</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad11</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_nsignals</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad12</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_nvcsw</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad13</span>: <span class="ident">u32</span>,
         <span class="kw">pub</span> <span class="ident">ru_nivcsw</span>: <span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">__pad14</span>: <span class="ident">u32</span>,
 
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;emscripten&quot;</span>))]</span>
         <span class="ident">__reserved</span>: [<span class="ident">c_long</span>; <span class="number">16</span>],
@@ -1074,6 +1157,19 @@
         <span class="kw">pub</span> <span class="ident">tms_stime</span>: ::<span class="ident">clock_t</span>,
         <span class="kw">pub</span> <span class="ident">tms_cutime</span>: ::<span class="ident">clock_t</span>,
         <span class="kw">pub</span> <span class="ident">tms_cstime</span>: ::<span class="ident">clock_t</span>,
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">servent</span> {
+        <span class="kw">pub</span> <span class="ident">s_name</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>,
+        <span class="kw">pub</span> <span class="ident">s_aliases</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>,
+        <span class="kw">pub</span> <span class="ident">s_port</span>: ::<span class="ident">c_int</span>,
+        <span class="kw">pub</span> <span class="ident">s_proto</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>,
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">protoent</span> {
+        <span class="kw">pub</span> <span class="ident">p_name</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>,
+        <span class="kw">pub</span> <span class="ident">p_aliases</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>,
+        <span class="kw">pub</span> <span class="ident">p_proto</span>: ::<span class="ident">c_int</span>,
     }
 }
 
@@ -1663,6 +1759,10 @@
                  <span class="ident">dev</span>: ::<span class="ident">dev_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uname</span>(<span class="ident">buf</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">utsname</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gethostname</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>, <span class="ident">len</span>: ::<span class="ident">size_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getservbyname</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>,
+                         <span class="ident">proto</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">servent</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getprotobyname</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">protoent</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getprotobynumber</span>(<span class="ident">proto</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">protoent</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chroot</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>),
                <span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;usleep$UNIX2003&quot;</span>)]</span>

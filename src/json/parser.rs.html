@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.10/src/parser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/json-0.11.12/src/parser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parser.rs.html -- source</title>
@@ -817,13 +817,6 @@
 <span id="772">772</span>
 <span id="773">773</span>
 <span id="774">774</span>
-<span id="775">775</span>
-<span id="776">776</span>
-<span id="777">777</span>
-<span id="778">778</span>
-<span id="779">779</span>
-<span id="780">780</span>
-<span id="781">781</span>
 </pre><pre class="rust ">
 <span class="comment">// HERE BE DRAGONS!</span>
 <span class="comment">// ================</span>
@@ -1476,7 +1469,7 @@
                             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">ExceededDepthLimit</span>);
                         }
 
-                        <span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StackBlock</span>::<span class="ident">Array</span>(<span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">2</span>)));
+                        <span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StackBlock</span>(<span class="ident">JsonValue</span>::<span class="ident">Array</span>(<span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">2</span>)), <span class="number">0</span>));
                         <span class="kw">continue</span> <span class="lifetime">&#39;parsing</span>;
                     }
 
@@ -1496,10 +1489,10 @@
                             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">unexpected_character</span>()
                         }
 
-                        <span class="ident">object</span>.<span class="ident">insert</span>(<span class="macro">expect_string</span><span class="macro">!</span>(<span class="self">self</span>), <span class="ident">JsonValue</span>::<span class="ident">Null</span>);
+                        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">object</span>.<span class="ident">insert_index</span>(<span class="macro">expect_string</span><span class="macro">!</span>(<span class="self">self</span>), <span class="ident">JsonValue</span>::<span class="ident">Null</span>);
                         <span class="macro">expect</span><span class="macro">!</span>(<span class="self">self</span>, <span class="string">b&#39;:&#39;</span>);
 
-                        <span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StackBlock</span>::<span class="ident">Object</span>(<span class="ident">object</span>));
+                        <span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StackBlock</span>(<span class="ident">JsonValue</span>::<span class="ident">Object</span>(<span class="ident">object</span>), <span class="ident">index</span>));
 
                         <span class="ident">ch</span> <span class="op">=</span> <span class="macro">expect_byte_ignore_whitespace</span><span class="macro">!</span>(<span class="self">self</span>);
 
@@ -1537,69 +1530,62 @@
             };
 
             <span class="lifetime">&#39;popping</span>: <span class="kw">loop</span> {
-                <span class="kw">match</span> <span class="ident">stack</span>.<span class="ident">pop</span>() {
+                <span class="kw">match</span> <span class="ident">stack</span>.<span class="ident">last_mut</span>() {
                     <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                         <span class="macro">expect_eof</span><span class="macro">!</span>(<span class="self">self</span>);
 
                         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">value</span>);
                     },
 
-                    <span class="prelude-val">Some</span>(<span class="ident">StackBlock</span>::<span class="ident">Array</span>(<span class="kw-2">mut</span> <span class="ident">array</span>)) <span class="op">=&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StackBlock</span>(<span class="ident">JsonValue</span>::<span class="ident">Array</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">array</span>), _)) <span class="op">=&gt;</span> {
                         <span class="ident">array</span>.<span class="ident">push</span>(<span class="ident">value</span>);
 
                         <span class="ident">ch</span> <span class="op">=</span> <span class="macro">expect_byte_ignore_whitespace</span><span class="macro">!</span>(<span class="self">self</span>);
 
                         <span class="kw">match</span> <span class="ident">ch</span> {
                             <span class="string">b&#39;,&#39;</span> <span class="op">=&gt;</span> {
-                                <span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StackBlock</span>::<span class="ident">Array</span>(<span class="ident">array</span>));
-
                                 <span class="ident">ch</span> <span class="op">=</span> <span class="macro">expect_byte_ignore_whitespace</span><span class="macro">!</span>(<span class="self">self</span>);
 
                                 <span class="kw">continue</span> <span class="lifetime">&#39;parsing</span>;
                             },
-                            <span class="string">b&#39;]&#39;</span> <span class="op">=&gt;</span> {
-                                <span class="ident">value</span> <span class="op">=</span> <span class="ident">JsonValue</span>::<span class="ident">Array</span>(<span class="ident">array</span>);
-                                <span class="kw">continue</span> <span class="lifetime">&#39;popping</span>;
-                            },
-                            _ <span class="op">=&gt;</span> <span class="kw">return</span> <span class="self">self</span>.<span class="ident">unexpected_character</span>()
+                            <span class="string">b&#39;]&#39;</span> <span class="op">=&gt;</span> {},
+                            _    <span class="op">=&gt;</span> <span class="kw">return</span> <span class="self">self</span>.<span class="ident">unexpected_character</span>()
                         }
                     },
 
-                    <span class="prelude-val">Some</span>(<span class="ident">StackBlock</span>::<span class="ident">Object</span>(<span class="kw-2">mut</span> <span class="ident">object</span>)) <span class="op">=&gt;</span> {
-                        <span class="ident">object</span>.<span class="ident">override_last</span>(<span class="ident">value</span>);
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StackBlock</span>(<span class="ident">JsonValue</span>::<span class="ident">Object</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">object</span>), <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">index</span> )) <span class="op">=&gt;</span> {
+                        <span class="ident">object</span>.<span class="ident">override_at</span>(<span class="kw-2">*</span><span class="ident">index</span>, <span class="ident">value</span>);
 
                         <span class="ident">ch</span> <span class="op">=</span> <span class="macro">expect_byte_ignore_whitespace</span><span class="macro">!</span>(<span class="self">self</span>);
 
                         <span class="kw">match</span> <span class="ident">ch</span> {
                             <span class="string">b&#39;,&#39;</span> <span class="op">=&gt;</span> {
                                 <span class="macro">expect</span><span class="macro">!</span>(<span class="self">self</span>, <span class="string">b&#39;&quot;&#39;</span>);
-                                <span class="ident">object</span>.<span class="ident">insert</span>(<span class="macro">expect_string</span><span class="macro">!</span>(<span class="self">self</span>), <span class="ident">JsonValue</span>::<span class="ident">Null</span>);
+                                <span class="kw-2">*</span><span class="ident">index</span> <span class="op">=</span> <span class="ident">object</span>.<span class="ident">insert_index</span>(<span class="macro">expect_string</span><span class="macro">!</span>(<span class="self">self</span>), <span class="ident">JsonValue</span>::<span class="ident">Null</span>);
                                 <span class="macro">expect</span><span class="macro">!</span>(<span class="self">self</span>, <span class="string">b&#39;:&#39;</span>);
-
-                                <span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">StackBlock</span>::<span class="ident">Object</span>(<span class="ident">object</span>));
 
                                 <span class="ident">ch</span> <span class="op">=</span> <span class="macro">expect_byte_ignore_whitespace</span><span class="macro">!</span>(<span class="self">self</span>);
 
                                 <span class="kw">continue</span> <span class="lifetime">&#39;parsing</span>;
                             },
-                            <span class="string">b&#39;}&#39;</span> <span class="op">=&gt;</span> {
-                                <span class="ident">value</span> <span class="op">=</span> <span class="ident">JsonValue</span>::<span class="ident">Object</span>(<span class="ident">object</span>);
-
-                                <span class="kw">continue</span> <span class="lifetime">&#39;popping</span>;
-                            },
-                            _ <span class="op">=&gt;</span> <span class="kw">return</span> <span class="self">self</span>.<span class="ident">unexpected_character</span>()
+                            <span class="string">b&#39;}&#39;</span> <span class="op">=&gt;</span> {},
+                            _    <span class="op">=&gt;</span> <span class="kw">return</span> <span class="self">self</span>.<span class="ident">unexpected_character</span>()
                         }
                     },
+
+                    _ <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+                }
+
+                <span class="ident">value</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">stack</span>.<span class="ident">pop</span>() {
+                    <span class="prelude-val">Some</span>(<span class="ident">StackBlock</span>(<span class="ident">value</span>, _)) <span class="op">=&gt;</span> <span class="ident">value</span>,
+                    <span class="prelude-val">None</span>                       <span class="op">=&gt;</span> <span class="kw">break</span> <span class="lifetime">&#39;popping</span>
                 }
             }
         }
     }
 }
 
-<span class="kw">enum</span> <span class="ident">StackBlock</span> {
-    <span class="ident">Array</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JsonValue</span><span class="op">&gt;</span>),
-    <span class="ident">Object</span>(<span class="ident">Object</span>),
-}
+<span class="kw">struct</span> <span class="ident">StackBlock</span>(<span class="ident">JsonValue</span>, <span class="ident">usize</span>);
 
 <span class="comment">// All that hard work, and in the end it&#39;s just a single function in the API.</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>

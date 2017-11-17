@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.15/src/private/ser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.21/src/private/ser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>ser.rs.html -- source</title>
@@ -1125,7 +1125,6 @@
     <span class="ident">ByteArray</span>,
     <span class="ident">Optional</span>,
     <span class="ident">Unit</span>,
-    <span class="ident">UnitStruct</span>,
     <span class="ident">Sequence</span>,
     <span class="ident">Tuple</span>,
     <span class="ident">TupleStruct</span>,
@@ -1144,7 +1143,6 @@
             <span class="ident">Unsupported</span>::<span class="ident">ByteArray</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a byte array&quot;</span>),
             <span class="ident">Unsupported</span>::<span class="ident">Optional</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;an optional&quot;</span>),
             <span class="ident">Unsupported</span>::<span class="ident">Unit</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;unit&quot;</span>),
-            <span class="ident">Unsupported</span>::<span class="ident">UnitStruct</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a unit struct&quot;</span>),
             <span class="ident">Unsupported</span>::<span class="ident">Sequence</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a sequence&quot;</span>),
             <span class="ident">Unsupported</span>::<span class="ident">Tuple</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a tuple&quot;</span>),
             <span class="ident">Unsupported</span>::<span class="ident">TupleStruct</span> <span class="op">=&gt;</span> <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a tuple struct&quot;</span>),
@@ -1264,7 +1262,9 @@
     }
 
     <span class="kw">fn</span> <span class="ident">serialize_unit_struct</span>(<span class="self">self</span>, _: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="prelude-val">Ok</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">bad_type</span>(<span class="ident">Unsupported</span>::<span class="ident">UnitStruct</span>))
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">delegate</span>.<span class="ident">serialize_map</span>(<span class="prelude-val">Some</span>(<span class="number">1</span>)));
+        <span class="macro">try</span><span class="macro">!</span>(<span class="ident">map</span>.<span class="ident">serialize_entry</span>(<span class="self">self</span>.<span class="ident">tag</span>, <span class="self">self</span>.<span class="ident">variant_name</span>));
+        <span class="ident">map</span>.<span class="ident">end</span>()
     }
 
     <span class="kw">fn</span> <span class="ident">serialize_unit_variant</span>(

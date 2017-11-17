@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.15/src/private/de.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.21/src/private/de.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>de.rs.html -- source</title>
@@ -2019,6 +2019,40 @@
 <span id="1974">1974</span>
 <span id="1975">1975</span>
 <span id="1976">1976</span>
+<span id="1977">1977</span>
+<span id="1978">1978</span>
+<span id="1979">1979</span>
+<span id="1980">1980</span>
+<span id="1981">1981</span>
+<span id="1982">1982</span>
+<span id="1983">1983</span>
+<span id="1984">1984</span>
+<span id="1985">1985</span>
+<span id="1986">1986</span>
+<span id="1987">1987</span>
+<span id="1988">1988</span>
+<span id="1989">1989</span>
+<span id="1990">1990</span>
+<span id="1991">1991</span>
+<span id="1992">1992</span>
+<span id="1993">1993</span>
+<span id="1994">1994</span>
+<span id="1995">1995</span>
+<span id="1996">1996</span>
+<span id="1997">1997</span>
+<span id="1998">1998</span>
+<span id="1999">1999</span>
+<span id="2000">2000</span>
+<span id="2001">2001</span>
+<span id="2002">2002</span>
+<span id="2003">2003</span>
+<span id="2004">2004</span>
+<span id="2005">2005</span>
+<span id="2006">2006</span>
+<span id="2007">2007</span>
+<span id="2008">2008</span>
+<span id="2009">2009</span>
+<span id="2010">2010</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -3136,10 +3170,38 @@
             )
         }
 
+        <span class="kw">fn</span> <span class="ident">deserialize_unit_struct</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(
+            <span class="self">self</span>,
+            <span class="ident">_name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
+            <span class="ident">visitor</span>: <span class="ident">V</span>
+        ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">V</span>::<span class="ident">Value</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+        <span class="kw">where</span>
+            <span class="ident">V</span>: <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+        {
+            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">content</span> {
+                <span class="comment">// As a special case, allow deserializing untagged newtype</span>
+                <span class="comment">// variant containing unit struct.</span>
+                <span class="comment">//</span>
+                <span class="comment">//     #[derive(Deserialize)]</span>
+                <span class="comment">//     struct Info;</span>
+                <span class="comment">//</span>
+                <span class="comment">//     #[derive(Deserialize)]</span>
+                <span class="comment">//     #[serde(tag = &quot;topic&quot;)]</span>
+                <span class="comment">//     enum Message {</span>
+                <span class="comment">//         Info(Info),</span>
+                <span class="comment">//     }</span>
+                <span class="comment">//</span>
+                <span class="comment">// We want {&quot;topic&quot;:&quot;Info&quot;} to deserialize even though</span>
+                <span class="comment">// ordinarily unit structs do not deserialize from empty map.</span>
+                <span class="ident">Content</span>::<span class="ident">Map</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="kw">if</span> <span class="ident">v</span>.<span class="ident">is_empty</span>() <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_unit</span>(),
+                _ <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">deserialize_any</span>(<span class="ident">visitor</span>),
+            }
+        }
+
         <span class="macro">forward_to_deserialize_any</span><span class="macro">!</span> {
             <span class="ident">bool</span> <span class="ident">i8</span> <span class="ident">i16</span> <span class="ident">i32</span> <span class="ident">i64</span> <span class="ident">u8</span> <span class="ident">u16</span> <span class="ident">u32</span> <span class="ident">u64</span> <span class="ident">f32</span> <span class="ident">f64</span> <span class="ident">char</span> <span class="ident">str</span> <span class="ident">string</span> <span class="ident">bytes</span>
-            <span class="ident">byte_buf</span> <span class="ident">unit</span> <span class="ident">unit_struct</span> <span class="ident">seq</span> <span class="ident">tuple</span> <span class="ident">tuple_struct</span> <span class="ident">map</span> <span class="kw">struct</span>
-            <span class="ident">identifier</span> <span class="ident">ignored_any</span>
+            <span class="ident">byte_buf</span> <span class="ident">unit</span> <span class="ident">seq</span> <span class="ident">tuple</span> <span class="ident">tuple_struct</span> <span class="ident">map</span> <span class="kw">struct</span> <span class="ident">identifier</span>
+            <span class="ident">ignored_any</span>
         }
     }
 
@@ -3239,6 +3301,9 @@
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">Content</span>::<span class="ident">Map</span>(<span class="ident">v</span>)) <span class="op">=&gt;</span> {
                     <span class="ident">de</span>::<span class="ident">Deserializer</span>::<span class="ident">deserialize_any</span>(<span class="ident">MapDeserializer</span>::<span class="ident">new</span>(<span class="ident">v</span>), <span class="ident">visitor</span>)
+                }
+                <span class="prelude-val">Some</span>(<span class="ident">Content</span>::<span class="ident">Seq</span>(<span class="ident">v</span>)) <span class="op">=&gt;</span> {
+                    <span class="ident">de</span>::<span class="ident">Deserializer</span>::<span class="ident">deserialize_any</span>(<span class="ident">SeqDeserializer</span>::<span class="ident">new</span>(<span class="ident">v</span>), <span class="ident">visitor</span>)
                 }
                 <span class="prelude-val">Some</span>(<span class="ident">other</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">invalid_type</span>(<span class="ident">other</span>.<span class="ident">unexpected</span>(), <span class="kw-2">&amp;</span><span class="string">&quot;struct variant&quot;</span>),),
                 _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">invalid_type</span>(<span class="ident">de</span>::<span class="ident">Unexpected</span>::<span class="ident">UnitVariant</span>, <span class="kw-2">&amp;</span><span class="string">&quot;struct variant&quot;</span>),),
@@ -3633,6 +3698,9 @@
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span> {
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">Content</span>::<span class="ident">Map</span>(<span class="kw-2">ref</span> <span class="ident">v</span>)) <span class="op">=&gt;</span> {
                     <span class="ident">de</span>::<span class="ident">Deserializer</span>::<span class="ident">deserialize_any</span>(<span class="ident">MapRefDeserializer</span>::<span class="ident">new</span>(<span class="ident">v</span>), <span class="ident">visitor</span>)
+                }
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">Content</span>::<span class="ident">Seq</span>(<span class="kw-2">ref</span> <span class="ident">v</span>)) <span class="op">=&gt;</span> {
+                    <span class="ident">de</span>::<span class="ident">Deserializer</span>::<span class="ident">deserialize_any</span>(<span class="ident">SeqRefDeserializer</span>::<span class="ident">new</span>(<span class="ident">v</span>), <span class="ident">visitor</span>)
                 }
                 <span class="prelude-val">Some</span>(<span class="ident">other</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">invalid_type</span>(<span class="ident">other</span>.<span class="ident">unexpected</span>(), <span class="kw-2">&amp;</span><span class="string">&quot;struct variant&quot;</span>),),
                 _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">de</span>::<span class="ident">Error</span>::<span class="ident">invalid_type</span>(<span class="ident">de</span>::<span class="ident">Unexpected</span>::<span class="ident">UnitVariant</span>, <span class="kw-2">&amp;</span><span class="string">&quot;struct variant&quot;</span>),),

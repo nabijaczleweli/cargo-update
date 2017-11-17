@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.3.17/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/rand-0.3.18/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -1331,6 +1331,23 @@
 <span id="1286">1286</span>
 <span id="1287">1287</span>
 <span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2013-2014 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -1588,6 +1605,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">num</span>::<span class="ident">Wrapping</span> <span class="kw">as</span> <span class="ident">w</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">os</span>::<span class="ident">OsRng</span>;
 
@@ -1688,8 +1706,9 @@
     <span class="doccomment">/// See:</span>
     <span class="doccomment">/// A PRNG specialized in double precision floating point numbers using</span>
     <span class="doccomment">/// an affine transition</span>
-    <span class="doccomment">/// http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/ARTICLES/dSFMT.pdf</span>
-    <span class="doccomment">/// http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/dSFMT-slide-e.pdf</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * &lt;http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/ARTICLES/dSFMT.pdf&gt;</span>
+    <span class="doccomment">/// * &lt;http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/dSFMT-slide-e.pdf&gt;</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// By default this is implemented in terms of `next_u32`, but a</span>
     <span class="doccomment">/// random number generator which can generate numbers satisfying</span>
@@ -2224,13 +2243,9 @@
 <span class="doccomment">/// seeded `Rng` for consistency over time you should pick one algorithm and</span>
 <span class="doccomment">/// create the `Rng` yourself.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This will read randomness from the operating system to seed the</span>
-<span class="doccomment">/// generator.</span>
+<span class="doccomment">/// This will seed the generator with randomness from thread_rng.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">weak_rng</span>() <span class="op">-&gt;</span> <span class="ident">XorShiftRng</span> {
-    <span class="kw">match</span> <span class="ident">OsRng</span>::<span class="ident">new</span>() {
-        <span class="prelude-val">Ok</span>(<span class="kw-2">mut</span> <span class="ident">r</span>) <span class="op">=&gt;</span> <span class="ident">r</span>.<span class="ident">gen</span>(),
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;weak_rng: failed to create seeded RNG: {:?}&quot;</span>, <span class="ident">e</span>)
-    }
+    <span class="ident">thread_rng</span>().<span class="ident">gen</span>()
 }
 
 <span class="doccomment">/// Controls how the thread-local RNG is reseeded.</span>
@@ -2239,9 +2254,9 @@
 
 <span class="kw">impl</span> <span class="ident">reseeding</span>::<span class="ident">Reseeder</span><span class="op">&lt;</span><span class="ident">StdRng</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ThreadRngReseeder</span> {
     <span class="kw">fn</span> <span class="ident">reseed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rng</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">StdRng</span>) {
-        <span class="kw-2">*</span><span class="ident">rng</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">StdRng</span>::<span class="ident">new</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=&gt;</span> <span class="ident">r</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;could not reseed thread_rng: {}&quot;</span>, <span class="ident">e</span>)
+        <span class="kw">match</span> <span class="ident">StdRng</span>::<span class="ident">new</span>() {
+            <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=&gt;</span> <span class="kw-2">*</span><span class="ident">rng</span> <span class="op">=</span> <span class="ident">r</span>,
+            <span class="prelude-val">Err</span>(_) <span class="op">=&gt;</span> <span class="ident">rng</span>.<span class="ident">reseed</span>(<span class="kw-2">&amp;</span><span class="ident">weak_seed</span>())
         }
     }
 }
@@ -2258,8 +2273,9 @@
 <span class="doccomment">/// generator, seeded by the system. Intended to be used in method</span>
 <span class="doccomment">/// chaining style, e.g. `thread_rng().gen::&lt;i32&gt;()`.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The RNG provided will reseed itself from the operating system</span>
-<span class="doccomment">/// after generating a certain amount of randomness.</span>
+<span class="doccomment">/// After generating a certain amount of randomness, the RNG will reseed itself</span>
+<span class="doccomment">/// from the operating system or, if the operating system RNG returns an error,</span>
+<span class="doccomment">/// a seed based on the current system time.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The internal RNG used is platform and architecture dependent, even</span>
 <span class="doccomment">/// if the operating system random number generator is rigged to give</span>
@@ -2270,7 +2286,7 @@
     <span class="macro">thread_local</span><span class="macro">!</span>(<span class="kw">static</span> <span class="ident">THREAD_RNG_KEY</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">ThreadRngInner</span><span class="op">&gt;&gt;</span> <span class="op">=</span> {
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">StdRng</span>::<span class="ident">new</span>() {
             <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=&gt;</span> <span class="ident">r</span>,
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;could not initialize thread_rng: {}&quot;</span>, <span class="ident">e</span>)
+            <span class="prelude-val">Err</span>(_) <span class="op">=&gt;</span> <span class="ident">StdRng</span>::<span class="ident">from_seed</span>(<span class="kw-2">&amp;</span><span class="ident">weak_seed</span>())
         };
         <span class="kw">let</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">reseeding</span>::<span class="ident">ReseedingRng</span>::<span class="ident">new</span>(<span class="ident">r</span>,
                                                <span class="ident">THREAD_RNG_RESEED_THRESHOLD</span>,
@@ -2279,6 +2295,14 @@
     });
 
     <span class="ident">ThreadRng</span> { <span class="ident">rng</span>: <span class="ident">THREAD_RNG_KEY</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">clone</span>()) }
+}
+
+<span class="kw">fn</span> <span class="ident">weak_seed</span>() <span class="op">-&gt;</span> [<span class="ident">usize</span>; <span class="number">2</span>] {
+    <span class="kw">let</span> <span class="ident">now</span> <span class="op">=</span> <span class="ident">time</span>::<span class="ident">SystemTime</span>::<span class="ident">now</span>();
+    <span class="kw">let</span> <span class="ident">unix_time</span> <span class="op">=</span> <span class="ident">now</span>.<span class="ident">duration_since</span>(<span class="ident">time</span>::<span class="ident">UNIX_EPOCH</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">seconds</span> <span class="op">=</span> <span class="ident">unix_time</span>.<span class="ident">as_secs</span>() <span class="kw">as</span> <span class="ident">usize</span>;
+    <span class="kw">let</span> <span class="ident">nanoseconds</span> <span class="op">=</span> <span class="ident">unix_time</span>.<span class="ident">subsec_nanos</span>() <span class="kw">as</span> <span class="ident">usize</span>;
+    [<span class="ident">seconds</span>, <span class="ident">nanoseconds</span>]
 }
 
 <span class="kw">impl</span> <span class="ident">Rng</span> <span class="kw">for</span> <span class="ident">ThreadRng</span> {
@@ -2375,7 +2399,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Rng</span>, <span class="ident">thread_rng</span>, <span class="ident">random</span>, <span class="ident">SeedableRng</span>, <span class="ident">StdRng</span>, <span class="ident">sample</span>};
+    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Rng</span>, <span class="ident">thread_rng</span>, <span class="ident">random</span>, <span class="ident">SeedableRng</span>, <span class="ident">StdRng</span>, <span class="ident">sample</span>,
+                <span class="ident">weak_rng</span>};
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">repeat</span>;
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MyRng</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> { <span class="ident">inner</span>: <span class="ident">R</span> }
@@ -2618,6 +2643,15 @@
 
         <span class="kw">let</span> <span class="ident">string2</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">gen_ascii_chars</span>().<span class="ident">take</span>(<span class="number">100</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">string1</span>, <span class="ident">string2</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_weak_rng</span>() {
+        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">weak_rng</span>().<span class="ident">gen_iter</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">take</span>(<span class="number">256</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ra</span>: <span class="ident">StdRng</span> <span class="op">=</span> <span class="ident">SeedableRng</span>::<span class="ident">from_seed</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[..]);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rb</span>: <span class="ident">StdRng</span> <span class="op">=</span> <span class="ident">SeedableRng</span>::<span class="ident">from_seed</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[..]);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">iter_eq</span>(<span class="ident">ra</span>.<span class="ident">gen_ascii_chars</span>().<span class="ident">take</span>(<span class="number">100</span>),
+                        <span class="ident">rb</span>.<span class="ident">gen_ascii_chars</span>().<span class="ident">take</span>(<span class="number">100</span>)));
     }
 }
 </pre>
