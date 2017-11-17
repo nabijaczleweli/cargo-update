@@ -9,8 +9,9 @@
 use git2::{self, Error as GitError, Repository, Tree, Oid};
 use std::path::{PathBuf, Path};
 use semver::Version as Semver;
-use std::fs::{self, File};
+use std::fs::{self, DirEntry, File};
 use std::io::Read;
+use std::time::SystemTime;
 use regex::Regex;
 use std::cmp;
 use toml;
@@ -547,9 +548,20 @@ pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
         .unwrap()
         .map(Result::unwrap)
         .filter(|i| i.file_type().unwrap().is_dir())
-        .max_by_key(|i| i.metadata().unwrap().modified().unwrap())
+        .max_by_key(|i| latest_modified(i))
         .unwrap()
         .path()
+}
+
+fn latest_modified(ent: &DirEntry) -> SystemTime {
+    let meta = ent.metadata().unwrap();
+    let mut latest = meta.modified().unwrap();
+    if meta.is_dir() {
+        for ent in fs::read_dir(ent.path()).unwrap() {
+            latest = cmp::max(latest, latest_modified(&ent.unwrap()));
+        }
+    }
+    latest
 }
 
 /// Find package data in the specified cargo index tree.
