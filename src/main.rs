@@ -58,7 +58,7 @@ fn actual_main() -> Result<(), i32> {
         2
     }));
     let latest_registry = try!(registry_repo.revparse_single("origin/master").map_err(|_| {
-        println!("Failed read master branch of registry repositry at {}.", registry.display());
+        println!("Failed to read master branch of registry repository at {}.", registry.display());
         2
     }));
 
