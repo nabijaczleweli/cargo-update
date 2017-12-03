@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.2/src/dfa.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.3/src/dfa.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>dfa.rs.html -- source</title>
@@ -1922,6 +1922,11 @@
 <span id="1877">1877</span>
 <span id="1878">1878</span>
 <span id="1879">1879</span>
+<span id="1880">1880</span>
+<span id="1881">1881</span>
+<span id="1882">1882</span>
+<span id="1883">1883</span>
+<span id="1884">1884</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2014-2016 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -1983,7 +1988,7 @@ implementation.)
 <span class="doccomment">/// Return true if and only if the given program can be executed by a DFA.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Generally, a DFA is always possible. A pathological case where it is not</span>
-<span class="doccomment">/// possible is if the number of NFA states exceeds u32::MAX, in which case,</span>
+<span class="doccomment">/// possible is if the number of NFA states exceeds `u32::MAX`, in which case,</span>
 <span class="doccomment">/// this function will return false.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This function will also return false if the given program has any Unicode</span>
@@ -2029,7 +2034,7 @@ implementation.)
     <span class="ident">qnext</span>: <span class="ident">SparseSet</span>,
 }
 
-<span class="doccomment">/// CacheInner is logically just a part of Cache, but groups together fields</span>
+<span class="doccomment">/// `CacheInner` is logically just a part of Cache, but groups together fields</span>
 <span class="doccomment">/// that aren&#39;t passed as function parameters throughout search. (This split</span>
 <span class="doccomment">/// is mostly an artifact of the borrow checker. It is happily paid.)</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
@@ -2087,8 +2092,8 @@ implementation.)
 <span class="doccomment">/// It is laid out in row-major order, with states as rows and byte class</span>
 <span class="doccomment">/// transitions as columns.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The transition table is responsible for producing valid StatePtrs. A</span>
-<span class="doccomment">/// StatePtr points to the start of a particular row in this table. When</span>
+<span class="doccomment">/// The transition table is responsible for producing valid `StatePtrs`. A</span>
+<span class="doccomment">/// `StatePtr` points to the start of a particular row in this table. When</span>
 <span class="doccomment">/// indexing to find the next state this allows us to avoid a multiplication</span>
 <span class="doccomment">/// when computing an index into the table.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
@@ -2177,7 +2182,7 @@ implementation.)
     }
 }
 
-<span class="doccomment">/// State is a DFA state. It contains an ordered set of NFA states (not</span>
+<span class="doccomment">/// `State` is a DFA state. It contains an ordered set of NFA states (not</span>
 <span class="doccomment">/// necessarily complete) and a smattering of flags.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The flags are packed into the first byte of data.</span>
@@ -2196,7 +2201,7 @@ implementation.)
     <span class="ident">data</span>: <span class="ident">Box</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// InstPtr is a 32 bit pointer into a sequence of opcodes (i.e., it indexes</span>
+<span class="doccomment">/// `InstPtr` is a 32 bit pointer into a sequence of opcodes (i.e., it indexes</span>
 <span class="doccomment">/// an NFA state).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Throughout this library, this is usually set to `usize`, but we force a</span>
@@ -2247,7 +2252,8 @@ implementation.)
     }
 }
 
-<span class="doccomment">/// StatePtr is a 32 bit pointer to the start of a row in the transition table.</span>
+<span class="doccomment">/// `StatePtr` is a 32 bit pointer to the start of a row in the transition</span>
+<span class="doccomment">/// table.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// It has many special values. There are two types of special values:</span>
 <span class="doccomment">/// sentinels and flags.</span>
@@ -2270,7 +2276,8 @@ implementation.)
 <span class="doccomment">///</span>
 <span class="doccomment">/// The other type of state pointer is a state pointer with special flag bits.</span>
 <span class="doccomment">/// There are two flags: a start flag and a match flag. The lower bits of both</span>
-<span class="doccomment">/// kinds always contain a &quot;valid&quot; StatePtr (indicated by the STATE_MAX mask).</span>
+<span class="doccomment">/// kinds always contain a &quot;valid&quot; `StatePtr` (indicated by the `STATE_MAX`</span>
+<span class="doccomment">/// mask).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// The start flag means that the state is a start state, and therefore may be</span>
 <span class="doccomment">/// subject to special prefix scanning optimizations.</span>
@@ -2387,7 +2394,7 @@ implementation.)
         <span class="ident">at</span>: <span class="ident">usize</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="ident">cache</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cache</span>.<span class="ident">dfa</span>;
+        <span class="kw">let</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cache</span>.<span class="ident">dfa</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dfa</span> <span class="op">=</span> <span class="ident">Fsm</span> {
             <span class="ident">prog</span>: <span class="ident">prog</span>,
             <span class="ident">start</span>: <span class="number">0</span>, <span class="comment">// filled in below</span>
@@ -2420,7 +2427,7 @@ implementation.)
         <span class="ident">at</span>: <span class="ident">usize</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="ident">cache</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cache</span>.<span class="ident">dfa_reverse</span>;
+        <span class="kw">let</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cache</span>.<span class="ident">dfa_reverse</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dfa</span> <span class="op">=</span> <span class="ident">Fsm</span> {
             <span class="ident">prog</span>: <span class="ident">prog</span>,
             <span class="ident">start</span>: <span class="number">0</span>, <span class="comment">// filled in below</span>
@@ -2454,7 +2461,7 @@ implementation.)
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">prog</span>.<span class="ident">matches</span>.<span class="ident">len</span>());
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="ident">cache</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cache</span>.<span class="ident">dfa</span>;
+        <span class="kw">let</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cache</span>.<span class="ident">dfa</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dfa</span> <span class="op">=</span> <span class="ident">Fsm</span> {
             <span class="ident">prog</span>: <span class="ident">prog</span>,
             <span class="ident">start</span>: <span class="number">0</span>, <span class="comment">// filled in below</span>
@@ -2923,16 +2930,20 @@ implementation.)
                 }
             }
         }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">if</span> <span class="ident">b</span>.<span class="ident">is_eof</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
-            <span class="comment">// If we&#39;re processing the last byte of the input and we&#39;re</span>
-            <span class="comment">// matching a regex set, then make the next state contain the</span>
-            <span class="comment">// previous states transitions. We do this so that the main</span>
-            <span class="comment">// matching loop can extract all of the match instructions.</span>
-            <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="ident">qcur</span>, <span class="ident">qnext</span>);
-            <span class="comment">// And don&#39;t cache this state because it&#39;s totally bunk.</span>
-            <span class="ident">cache</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        }
+
+        <span class="kw">let</span> <span class="ident">cache</span> <span class="op">=</span>
+            <span class="kw">if</span> <span class="ident">b</span>.<span class="ident">is_eof</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
+                <span class="comment">// If we&#39;re processing the last byte of the input and we&#39;re</span>
+                <span class="comment">// matching a regex set, then make the next state contain the</span>
+                <span class="comment">// previous states transitions. We do this so that the main</span>
+                <span class="comment">// matching loop can extract all of the match instructions.</span>
+                <span class="ident">mem</span>::<span class="ident">swap</span>(<span class="ident">qcur</span>, <span class="ident">qnext</span>);
+                <span class="comment">// And don&#39;t cache this state because it&#39;s totally bunk.</span>
+                <span class="bool-val">false</span>
+            } <span class="kw">else</span> {
+                <span class="bool-val">true</span>
+            };
+
         <span class="comment">// We&#39;ve now built up the set of NFA states that ought to comprise the</span>
         <span class="comment">// next DFA state, so try to find it in the cache, and if it doesn&#39;t</span>
         <span class="comment">// exist, cache it.</span>
@@ -2955,7 +2966,7 @@ implementation.)
             <span class="ident">next</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start_ptr</span>(<span class="ident">next</span>);
         }
         <span class="kw">if</span> <span class="ident">next</span> <span class="op">&lt;=</span> <span class="ident">STATE_MAX</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span>(<span class="ident">next</span>).<span class="ident">flags</span>().<span class="ident">is_match</span>() {
-            <span class="ident">next</span> <span class="op">=</span> <span class="ident">STATE_MATCH</span> <span class="op">|</span> <span class="ident">next</span>;
+            <span class="ident">next</span> <span class="op">|=</span> <span class="ident">STATE_MATCH</span>;
         }
         <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">next</span> <span class="op">!=</span> <span class="ident">STATE_UNKNOWN</span>);
         <span class="comment">// And now store our state in the current state&#39;s next list.</span>
@@ -3038,9 +3049,9 @@ implementation.)
                         <span class="ident">NotWordBoundary</span> <span class="kw">if</span> <span class="ident">flags</span>.<span class="ident">not_word_boundary</span> <span class="op">=&gt;</span> {
                             <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">inst</span>.<span class="ident">goto</span> <span class="kw">as</span> <span class="ident">InstPtr</span>);
                         }
-                        <span class="ident">StartLine</span> <span class="op">|</span> <span class="ident">EndLine</span> <span class="op">|</span> <span class="ident">StartText</span> <span class="op">|</span> <span class="ident">EndText</span> <span class="op">=&gt;</span> {}
-                        <span class="ident">WordBoundaryAscii</span> <span class="op">|</span> <span class="ident">NotWordBoundaryAscii</span> <span class="op">=&gt;</span> {}
-                        <span class="ident">WordBoundary</span> <span class="op">|</span> <span class="ident">NotWordBoundary</span> <span class="op">=&gt;</span> {}
+                        <span class="ident">StartLine</span> <span class="op">|</span> <span class="ident">EndLine</span> <span class="op">|</span> <span class="ident">StartText</span> <span class="op">|</span> <span class="ident">EndText</span>
+                        <span class="op">|</span> <span class="ident">WordBoundaryAscii</span> <span class="op">|</span> <span class="ident">NotWordBoundaryAscii</span>
+                        <span class="op">|</span> <span class="ident">WordBoundary</span> <span class="op">|</span> <span class="ident">NotWordBoundary</span> <span class="op">=&gt;</span> {}
                     }
                 }
                 <span class="ident">Save</span>(<span class="kw-2">ref</span> <span class="ident">inst</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">inst</span>.<span class="ident">goto</span> <span class="kw">as</span> <span class="ident">InstPtr</span>),
@@ -3092,12 +3103,12 @@ implementation.)
             <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">si</span>);
         }
         <span class="comment">// If the cache has gotten too big, wipe it.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">approximate_size</span>() <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">dfa_size_limit</span> {
-            <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">clear_cache_and_save</span>(<span class="ident">current_state</span>) {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">approximate_size</span>() <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">dfa_size_limit</span>
+            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">clear_cache_and_save</span>(<span class="ident">current_state</span>)
+            {
                 <span class="comment">// Ooops. DFA is giving up.</span>
                 <span class="kw">return</span> <span class="prelude-val">None</span>;
             }
-        }
         <span class="comment">// Allocate room for our state and add it.</span>
         <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">key</span>)
     }
@@ -3135,8 +3146,7 @@ implementation.)
             <span class="kw">let</span> <span class="ident">ip</span> <span class="op">=</span> <span class="ident">usize_to_u32</span>(<span class="ident">ip</span>);
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">prog</span>[<span class="ident">ip</span> <span class="kw">as</span> <span class="ident">usize</span>] {
                 <span class="ident">Char</span>(_) <span class="op">|</span> <span class="ident">Ranges</span>(_) <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
-                <span class="ident">Save</span>(_) <span class="op">=&gt;</span> {}
-                <span class="ident">Split</span>(_) <span class="op">=&gt;</span> {}
+                <span class="ident">Save</span>(_) <span class="op">|</span> <span class="ident">Split</span>(_) <span class="op">=&gt;</span> {}
                 <span class="ident">Bytes</span>(_) <span class="op">=&gt;</span> <span class="ident">push_inst_ptr</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">insts</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">prev</span>, <span class="ident">ip</span>),
                 <span class="ident">EmptyLook</span>(_) <span class="op">=&gt;</span> {
                     <span class="ident">state_flags</span>.<span class="ident">set_empty</span>();
@@ -3226,7 +3236,7 @@ implementation.)
         <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">trans</span>.<span class="ident">clear</span>();
         <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">states</span>.<span class="ident">clear</span>();
         <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">compiled</span>.<span class="ident">clear</span>();
-        <span class="kw">for</span> <span class="ident">s</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">start_states</span>.<span class="ident">iter_mut</span>() {
+        <span class="kw">for</span> <span class="ident">s</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">start_states</span> {
             <span class="kw-2">*</span><span class="ident">s</span> <span class="op">=</span> <span class="ident">STATE_UNKNOWN</span>;
         }
         <span class="comment">// The unwraps are OK because we just cleared the cache and therefore</span>
@@ -3336,9 +3346,9 @@ implementation.)
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">empty_flags</span> <span class="op">=</span> <span class="ident">EmptyFlags</span>::<span class="ident">default</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_flags</span> <span class="op">=</span> <span class="ident">StateFlags</span>::<span class="ident">default</span>();
         <span class="ident">empty_flags</span>.<span class="ident">start</span> <span class="op">=</span> <span class="ident">at</span> <span class="op">==</span> <span class="number">0</span>;
-        <span class="ident">empty_flags</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>;
+        <span class="ident">empty_flags</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">is_empty</span>();
         <span class="ident">empty_flags</span>.<span class="ident">start_line</span> <span class="op">=</span> <span class="ident">at</span> <span class="op">==</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">text</span>[<span class="ident">at</span> <span class="op">-</span> <span class="number">1</span>] <span class="op">==</span> <span class="string">b&#39;\n&#39;</span>;
-        <span class="ident">empty_flags</span>.<span class="ident">end_line</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>;
+        <span class="ident">empty_flags</span>.<span class="ident">end_line</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">is_empty</span>();
 
         <span class="kw">let</span> <span class="ident">is_word_last</span> <span class="op">=</span> <span class="ident">at</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">Byte</span>::<span class="ident">byte</span>(<span class="ident">text</span>[<span class="ident">at</span> <span class="op">-</span> <span class="number">1</span>]).<span class="ident">is_ascii_word</span>();
         <span class="kw">let</span> <span class="ident">is_word</span> <span class="op">=</span> <span class="ident">at</span> <span class="op">&lt;</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span> <span class="ident">Byte</span>::<span class="ident">byte</span>(<span class="ident">text</span>[<span class="ident">at</span>]).<span class="ident">is_ascii_word</span>();
@@ -3365,9 +3375,9 @@ implementation.)
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">empty_flags</span> <span class="op">=</span> <span class="ident">EmptyFlags</span>::<span class="ident">default</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_flags</span> <span class="op">=</span> <span class="ident">StateFlags</span>::<span class="ident">default</span>();
         <span class="ident">empty_flags</span>.<span class="ident">start</span> <span class="op">=</span> <span class="ident">at</span> <span class="op">==</span> <span class="ident">text</span>.<span class="ident">len</span>();
-        <span class="ident">empty_flags</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>;
+        <span class="ident">empty_flags</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">is_empty</span>();
         <span class="ident">empty_flags</span>.<span class="ident">start_line</span> <span class="op">=</span> <span class="ident">at</span> <span class="op">==</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">||</span> <span class="ident">text</span>[<span class="ident">at</span>] <span class="op">==</span> <span class="string">b&#39;\n&#39;</span>;
-        <span class="ident">empty_flags</span>.<span class="ident">end_line</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>;
+        <span class="ident">empty_flags</span>.<span class="ident">end_line</span> <span class="op">=</span> <span class="ident">text</span>.<span class="ident">is_empty</span>();
 
         <span class="kw">let</span> <span class="ident">is_word_last</span> <span class="op">=</span>
             <span class="ident">at</span> <span class="op">&lt;</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span> <span class="ident">Byte</span>::<span class="ident">byte</span>(<span class="ident">text</span>[<span class="ident">at</span>]).<span class="ident">is_ascii_word</span>();

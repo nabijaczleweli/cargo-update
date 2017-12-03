@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.2/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.3/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -691,6 +691,25 @@
 <span id="646">646</span>
 <span id="647">647</span>
 <span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -1068,7 +1087,7 @@ the `x` flag and clears the `y` flag.
 All flags are by default disabled unless stated otherwise. They are:
 
 &lt;pre class=&quot;rust&quot;&gt;
-i     case-insensitive
+i     case-insensitive: letters match both upper and lower case
 m     multi-line mode: ^ and $ match begin/end of line
 s     allow . to match \n
 U     swap the meaning of x* and x*?
@@ -1076,8 +1095,8 @@ u     Unicode support (enabled by default)
 x     ignore whitespace and allow line comments (starting with `#`)
 &lt;/pre&gt;
 
-Here&#39;s an example that matches case-insensitively for only part of the
-expression:
+Flags can be toggled within a pattern. Here&#39;s an example that matches
+case-insensitively for the first part but case-sensitively for the second part:
 
 ```rust
 # extern crate regex; use regex::Regex;
@@ -1090,6 +1109,25 @@ assert_eq!(&amp;cap[0], &quot;AaAaAbb&quot;);
 
 Notice that the `a+` matches either `a` or `A`, but the `b+` only matches
 `b`.
+
+Multi-line mode means `^` and `$` no longer match just at the beginning/end of
+the input, but at the beginning/end of lines:
+
+```
+# use regex::Regex;
+let re = Regex::new(r&quot;(?m)^line \d+&quot;).unwrap();
+let m = re.find(&quot;line one\nline 2\n&quot;).unwrap();
+assert_eq!(m.as_str(), &quot;line 2&quot;);
+```
+
+Note that `^` matches after new lines, even at the end of input:
+
+```
+# use regex::Regex;
+let re = Regex::new(r&quot;(?m)^&quot;).unwrap();
+let m = re.find_iter(&quot;test\n&quot;).last().unwrap();
+assert_eq!((m.start(), m.end()), (5, 5));
+```
 
 Here is an example that uses an ASCII word boundary instead of a Unicode
 word boundary:
@@ -1181,10 +1219,10 @@ another matching engine with fixed memory requirements.
 [`RegexBuilder::dfa_size_limit`](struct.RegexBuilder.html#method.dfa_size_limit).)
 */</span>
 
-<span class="attribute">#<span class="op">!</span>[<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="attribute">#<span class="op">!</span>[<span class="ident">cfg_attr</span>(<span class="ident">test</span>, <span class="ident">deny</span>(<span class="ident">warnings</span>))]</span>
-<span class="attribute">#<span class="op">!</span>[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;pattern&quot;</span>, <span class="ident">feature</span>(<span class="ident">pattern</span>))]</span>
-<span class="attribute">#<span class="op">!</span>[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;simd-accel&quot;</span>, <span class="ident">feature</span>(<span class="ident">cfg_target_feature</span>))]</span>
+<span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">test</span>, <span class="ident">deny</span>(<span class="ident">warnings</span>))]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;pattern&quot;</span>, <span class="ident">feature</span>(<span class="ident">pattern</span>))]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;simd-accel&quot;</span>, <span class="ident">feature</span>(<span class="ident">cfg_target_feature</span>))]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">aho_corasick</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">memchr</span>;

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.2/src/re_builder.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.3/src/re_builder.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>re_builder.rs.html -- source</title>
@@ -306,6 +306,26 @@
 <span id="261">261</span>
 <span id="262">262</span>
 <span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -368,7 +388,7 @@
     <span class="doccomment">/// Create a new regular expression builder with the given pattern.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If the pattern is invalid, then an error will be returned when</span>
-    <span class="doccomment">/// `compile` is called.</span>
+    <span class="doccomment">/// `build` is called.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pattern</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">RegexBuilder</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">RegexBuilder</span>(<span class="ident">RegexOptions</span>::<span class="ident">default</span>());
         <span class="ident">builder</span>.<span class="number">0</span>.<span class="ident">pats</span>.<span class="ident">push</span>(<span class="ident">pattern</span>.<span class="ident">to_owned</span>());
@@ -388,12 +408,20 @@
     }
 
     <span class="doccomment">/// Set the value for the case insensitive (`i`) flag.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// When enabled, letters in the pattern will match both upper case and</span>
+    <span class="doccomment">/// lower case variants.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">case_insensitive</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RegexBuilder</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">case_insensitive</span> <span class="op">=</span> <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Set the value for the multi-line matching (`m`) flag.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// When enabled, `^` matches the beginning of lines and `$` matches the</span>
+    <span class="doccomment">/// end of lines.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// By default, they match beginning/end of the input.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">multi_line</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RegexBuilder</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">multi_line</span> <span class="op">=</span> <span class="ident">yes</span>;
         <span class="self">self</span>
@@ -412,18 +440,30 @@
     }
 
     <span class="doccomment">/// Set the value for the greedy swap (`U`) flag.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// When enabled, a pattern like `a*` is lazy (tries to find shortest</span>
+    <span class="doccomment">/// match) and `a*?` is greedy (tries to find longest match).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// By default, `a*` is greedy and `a*?` is lazy.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">swap_greed</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RegexBuilder</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">swap_greed</span> <span class="op">=</span> <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Set the value for the ignore whitespace (`x`) flag.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// When enabled, whitespace such as new lines and spaces will be ignored</span>
+    <span class="doccomment">/// between expressions of the pattern, and `#` can be used to start a</span>
+    <span class="doccomment">/// comment until the next new line.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ignore_whitespace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RegexBuilder</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">ignore_whitespace</span> <span class="op">=</span> <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Set the value for the Unicode (`u`) flag.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Enabled by default. When disabled, character classes such as `\w` only</span>
+    <span class="doccomment">/// match ASCII word characters instead of all Unicode word characters.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unicode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RegexBuilder</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">unicode</span> <span class="op">=</span> <span class="ident">yes</span>;
         <span class="self">self</span>
@@ -446,7 +486,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note that this is a *per thread* limit. There is no way to set a global</span>
     <span class="doccomment">/// limit. In particular, if a regex is used from multiple threads</span>
-    <span class="doccomment">/// simulanteously, then each thread may use up to the number of bytes</span>
+    <span class="doccomment">/// simultaneously, then each thread may use up to the number of bytes</span>
     <span class="doccomment">/// specified here.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dfa_size_limit</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">limit</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RegexBuilder</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">dfa_size_limit</span> <span class="op">=</span> <span class="ident">limit</span>;
@@ -480,7 +520,7 @@
     <span class="doccomment">/// Create a new regular expression builder with the given pattern.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If the pattern is invalid, then an error will be returned when</span>
-    <span class="doccomment">/// `compile` is called.</span>
+    <span class="doccomment">/// `build` is called.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">patterns</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">RegexSetBuilder</span>
             <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span><span class="op">=</span><span class="ident">S</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">RegexSetBuilder</span>(<span class="ident">RegexOptions</span>::<span class="ident">default</span>());

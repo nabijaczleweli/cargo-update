@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.27.1/src/args/settings.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.28.0/src/args/settings.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>settings.rs.html -- source</title>
@@ -208,13 +208,51 @@
 <span id="163">163</span>
 <span id="164">164</span>
 <span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
 </pre><pre class="rust ">
 <span class="comment">// Std</span>
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ascii</span>::<span class="ident">AsciiExt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
 
 <span class="macro">bitflags</span><span class="macro">!</span> {
-    <span class="kw">struct</span> <span class="ident">Flags</span>: <span class="ident">u16</span> {
+    <span class="kw">struct</span> <span class="ident">Flags</span>: <span class="ident">u32</span> {
         <span class="kw">const</span> <span class="ident">REQUIRED</span>         <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">const</span> <span class="ident">MULTIPLE</span>         <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>;
         <span class="kw">const</span> <span class="ident">EMPTY_VALS</span>       <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>;
@@ -231,6 +269,7 @@
         <span class="kw">const</span> <span class="ident">REQUIRE_EQUALS</span>   <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">13</span>;
         <span class="kw">const</span> <span class="ident">LAST</span>             <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">14</span>;
         <span class="kw">const</span> <span class="ident">HIDE_DEFAULT_VAL</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">15</span>;
+        <span class="kw">const</span> <span class="ident">CASE_INSENSITIVE</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">16</span>;
     }
 }
 
@@ -242,27 +281,28 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="ident">ArgFlags</span>::<span class="ident">default</span>() }
 
     <span class="macro">impl_settings</span><span class="macro">!</span>{<span class="ident">ArgSettings</span>,
-        <span class="ident">Required</span> <span class="op">=&gt;</span> <span class="ident">REQUIRED</span>,
-        <span class="ident">Multiple</span> <span class="op">=&gt;</span> <span class="ident">MULTIPLE</span>,
-        <span class="ident">EmptyValues</span> <span class="op">=&gt;</span> <span class="ident">EMPTY_VALS</span>,
-        <span class="ident">Global</span> <span class="op">=&gt;</span> <span class="ident">GLOBAL</span>,
-        <span class="ident">Hidden</span> <span class="op">=&gt;</span> <span class="ident">HIDDEN</span>,
-        <span class="ident">TakesValue</span> <span class="op">=&gt;</span> <span class="ident">TAKES_VAL</span>,
-        <span class="ident">UseValueDelimiter</span> <span class="op">=&gt;</span> <span class="ident">USE_DELIM</span>,
-        <span class="ident">NextLineHelp</span> <span class="op">=&gt;</span> <span class="ident">NEXT_LINE_HELP</span>,
-        <span class="ident">RequiredUnlessAll</span> <span class="op">=&gt;</span> <span class="ident">R_UNLESS_ALL</span>,
-        <span class="ident">RequireDelimiter</span> <span class="op">=&gt;</span> <span class="ident">REQ_DELIM</span>,
-        <span class="ident">ValueDelimiterNotSet</span> <span class="op">=&gt;</span> <span class="ident">DELIM_NOT_SET</span>,
-        <span class="ident">HidePossibleValues</span> <span class="op">=&gt;</span> <span class="ident">HIDE_POS_VALS</span>,
-        <span class="ident">AllowLeadingHyphen</span> <span class="op">=&gt;</span> <span class="ident">ALLOW_TAC_VALS</span>,
-        <span class="ident">RequireEquals</span> <span class="op">=&gt;</span> <span class="ident">REQUIRE_EQUALS</span>,
-        <span class="ident">Last</span> <span class="op">=&gt;</span> <span class="ident">LAST</span>,
-        <span class="ident">HideDefaultValue</span> <span class="op">=&gt;</span> <span class="ident">HIDE_DEFAULT_VAL</span>
+        <span class="ident">Required</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">REQUIRED</span>,
+        <span class="ident">Multiple</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">MULTIPLE</span>,
+        <span class="ident">EmptyValues</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">EMPTY_VALS</span>,
+        <span class="ident">Global</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">GLOBAL</span>,
+        <span class="ident">Hidden</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">HIDDEN</span>,
+        <span class="ident">TakesValue</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">TAKES_VAL</span>,
+        <span class="ident">UseValueDelimiter</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">USE_DELIM</span>,
+        <span class="ident">NextLineHelp</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">NEXT_LINE_HELP</span>,
+        <span class="ident">RequiredUnlessAll</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">R_UNLESS_ALL</span>,
+        <span class="ident">RequireDelimiter</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">REQ_DELIM</span>,
+        <span class="ident">ValueDelimiterNotSet</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">DELIM_NOT_SET</span>,
+        <span class="ident">HidePossibleValues</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">HIDE_POS_VALS</span>,
+        <span class="ident">AllowLeadingHyphen</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">ALLOW_TAC_VALS</span>,
+        <span class="ident">RequireEquals</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">REQUIRE_EQUALS</span>,
+        <span class="ident">Last</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">LAST</span>,
+        <span class="ident">CaseInsensitive</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">CASE_INSENSITIVE</span>,
+        <span class="ident">HideDefaultValue</span> <span class="op">=&gt;</span> <span class="ident">Flags</span>::<span class="ident">HIDE_DEFAULT_VAL</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ArgFlags</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="ident">ArgFlags</span>(<span class="ident">EMPTY_VALS</span> <span class="op">|</span> <span class="ident">DELIM_NOT_SET</span>) }
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="ident">ArgFlags</span>(<span class="ident">Flags</span>::<span class="ident">EMPTY_VALS</span> <span class="op">|</span> <span class="ident">Flags</span>::<span class="ident">DELIM_NOT_SET</span>) }
 }
 
 <span class="doccomment">/// Various settings that apply to arguments and may be set, unset, and checked via getter/setter</span>
@@ -302,10 +342,10 @@
     <span class="ident">Last</span>,
     <span class="doccomment">/// Hides the default value from the help string</span>
     <span class="ident">HideDefaultValue</span>,
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="ident">RequiredUnlessAll</span>,
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="ident">ValueDelimiterNotSet</span>,
+    <span class="doccomment">/// Makes `Arg::possible_values` case insensitive</span>
+    <span class="ident">CaseInsensitive</span>,
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span> <span class="ident">RequiredUnlessAll</span>,
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span> <span class="ident">ValueDelimiterNotSet</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">ArgSettings</span> {
@@ -328,6 +368,7 @@
             <span class="string">&quot;requireequals&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ArgSettings</span>::<span class="ident">RequireEquals</span>),
             <span class="string">&quot;last&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ArgSettings</span>::<span class="ident">Last</span>),
             <span class="string">&quot;hidedefaultvalue&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ArgSettings</span>::<span class="ident">HideDefaultValue</span>),
+            <span class="string">&quot;caseinsensitive&quot;</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">ArgSettings</span>::<span class="ident">CaseInsensitive</span>),
             _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;unknown ArgSetting, cannot convert from str&quot;</span>.<span class="ident">to_owned</span>()),
         }
     }
@@ -339,38 +380,71 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">arg_settings_fromstr</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;allowleadinghyphen&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">AllowLeadingHyphen</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;emptyvalues&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">EmptyValues</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;global&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">Global</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;hidepossiblevalues&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">HidePossibleValues</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;hidden&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">Hidden</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;multiple&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">Multiple</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;nextlinehelp&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">NextLineHelp</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;requiredunlessall&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">RequiredUnlessAll</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;requiredelimiter&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">RequireDelimiter</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;required&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">Required</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;takesvalue&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">TakesValue</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;usevaluedelimiter&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">UseValueDelimiter</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;valuedelimiternotset&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">ValueDelimiterNotSet</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;requireequals&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">RequireEquals</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;last&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">Last</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;hidedefaultvalue&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                   <span class="ident">ArgSettings</span>::<span class="ident">HideDefaultValue</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;allowleadinghyphen&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">AllowLeadingHyphen</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;emptyvalues&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">EmptyValues</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;global&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">Global</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;hidepossiblevalues&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">HidePossibleValues</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;hidden&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">Hidden</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;multiple&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">Multiple</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;nextlinehelp&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">NextLineHelp</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;requiredunlessall&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">RequiredUnlessAll</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;requiredelimiter&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">RequireDelimiter</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;required&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">Required</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;takesvalue&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">TakesValue</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;usevaluedelimiter&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">UseValueDelimiter</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;valuedelimiternotset&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">ValueDelimiterNotSet</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;requireequals&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">RequireEquals</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;last&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(), <span class="ident">ArgSettings</span>::<span class="ident">Last</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;hidedefaultvalue&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">HideDefaultValue</span>
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="string">&quot;caseinsensitive&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">ArgSettings</span>::<span class="ident">CaseInsensitive</span>
+        );
         <span class="macro">assert</span><span class="macro">!</span>(<span class="string">&quot;hahahaha&quot;</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">ArgSettings</span><span class="op">&gt;</span>().<span class="ident">is_err</span>());
     }
 }

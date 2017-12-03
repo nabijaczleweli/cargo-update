@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.27.1/src/completions/mod.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.28.0/src/completions/mod.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mod.rs.html -- source</title>
@@ -196,6 +196,34 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
 </pre><pre class="rust ">
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">mod</span> <span class="ident">macros</span>;
@@ -217,7 +245,8 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">shell</span>::<span class="ident">Shell</span>;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ComplGen</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="lifetime">&#39;a</span>: <span class="lifetime">&#39;b</span>
+<span class="kw">where</span>
+    <span class="lifetime">&#39;a</span>: <span class="lifetime">&#39;b</span>,
 {
     <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span><span class="op">&gt;</span>,
 }
@@ -243,7 +272,10 @@
 <span class="comment">// aliasing.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">all_subcommand_names</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;all_subcommand_names;&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">subcmds</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">subcommands_of</span>(<span class="ident">p</span>).<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">n</span>, _)<span class="op">|</span> <span class="ident">n</span>.<span class="ident">clone</span>()).<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">subcmds</span>: <span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">subcommands_of</span>(<span class="ident">p</span>)
+        .<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">n</span>, _)<span class="op">|</span> <span class="ident">n</span>.<span class="ident">clone</span>())
+        .<span class="ident">collect</span>();
     <span class="kw">for</span> <span class="ident">sc_v</span> <span class="kw">in</span> <span class="ident">p</span>.<span class="ident">subcommands</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">all_subcommand_names</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">p</span>)) {
         <span class="ident">subcmds</span>.<span class="ident">extend</span>(<span class="ident">sc_v</span>);
     }
@@ -274,14 +306,24 @@
 <span class="comment">// Also note, aliases are treated as their own subcommands but duplicates of whatever they&#39;re</span>
 <span class="comment">// aliasing.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">subcommands_of</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Parser</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span> {
-    <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;subcommands_of: name={}, bin_name={}&quot;</span>,
-             <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>,
-             <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
+    <span class="macro">debugln</span><span class="macro">!</span>(
+        <span class="string">&quot;subcommands_of: name={}, bin_name={}&quot;</span>,
+        <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>,
+        <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
+    );
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">subcmds</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
 
-    <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;subcommands_of: Has subcommands...{:?}&quot;</span>, <span class="ident">p</span>.<span class="ident">has_subcommands</span>());
+    <span class="macro">debugln</span><span class="macro">!</span>(
+        <span class="string">&quot;subcommands_of: Has subcommands...{:?}&quot;</span>,
+        <span class="ident">p</span>.<span class="ident">has_subcommands</span>()
+    );
     <span class="kw">if</span> <span class="op">!</span><span class="ident">p</span>.<span class="ident">has_subcommands</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[(<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>())];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
+            (
+                <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
+                <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>(),
+            ),
+        ];
         <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;subcommands_of: Looking for aliases...&quot;</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">aliases</span>) <span class="op">=</span> <span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">aliases</span> {
             <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">n</span>, _) <span class="kw">in</span> <span class="ident">aliases</span> {
@@ -297,9 +339,11 @@
         <span class="kw">return</span> <span class="ident">ret</span>;
     }
     <span class="kw">for</span> <span class="ident">sc</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">subcommands</span> {
-        <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;subcommands_of:iter: name={}, bin_name={}&quot;</span>,
-                 <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>,
-                 <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
+        <span class="macro">debugln</span><span class="macro">!</span>(
+            <span class="string">&quot;subcommands_of:iter: name={}, bin_name={}&quot;</span>,
+            <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>,
+            <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()
+        );
 
         <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;subcommands_of:iter: Looking for aliases...&quot;</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">aliases</span>) <span class="op">=</span> <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">aliases</span> {
@@ -313,7 +357,10 @@
                 <span class="ident">subcmds</span>.<span class="ident">push</span>((<span class="ident">n</span>.<span class="ident">to_owned</span>(), <span class="ident">als_bin_name</span>.<span class="ident">join</span>(<span class="string">&quot; &quot;</span>)));
             }
         }
-        <span class="ident">subcmds</span>.<span class="ident">push</span>((<span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>()));
+        <span class="ident">subcmds</span>.<span class="ident">push</span>((
+            <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
+            <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>(),
+        ));
     }
     <span class="ident">subcmds</span>
 }
@@ -337,7 +384,13 @@
     }
     <span class="kw">for</span> <span class="ident">sc</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">subcommands</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">name</span>;
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>().<span class="ident">replace</span>(<span class="string">&quot; &quot;</span>, <span class="string">&quot;__&quot;</span>);
+        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">sc</span>.<span class="ident">p</span>
+            .<span class="ident">meta</span>
+            .<span class="ident">bin_name</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">clone</span>()
+            .<span class="ident">replace</span>(<span class="string">&quot; &quot;</span>, <span class="string">&quot;__&quot;</span>);
         <span class="ident">subcmds</span>.<span class="ident">push</span>(<span class="ident">path</span>.<span class="ident">clone</span>());
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">aliases</span>) <span class="op">=</span> <span class="ident">sc</span>.<span class="ident">p</span>.<span class="ident">meta</span>.<span class="ident">aliases</span> {
             <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">n</span>, _) <span class="kw">in</span> <span class="ident">aliases</span> {
@@ -345,7 +398,10 @@
             }
         }
     }
-    <span class="kw">for</span> <span class="ident">sc_v</span> <span class="kw">in</span> <span class="ident">p</span>.<span class="ident">subcommands</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">get_all_subcommand_paths</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">p</span>, <span class="bool-val">false</span>)) {
+    <span class="kw">for</span> <span class="ident">sc_v</span> <span class="kw">in</span> <span class="ident">p</span>.<span class="ident">subcommands</span>
+        .<span class="ident">iter</span>()
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">get_all_subcommand_paths</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">p</span>, <span class="bool-val">false</span>))
+    {
         <span class="ident">subcmds</span>.<span class="ident">extend</span>(<span class="ident">sc_v</span>);
     }
     <span class="ident">subcmds</span>

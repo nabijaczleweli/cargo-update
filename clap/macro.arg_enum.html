@@ -48,7 +48,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/clap/macros.rs.html#301-371' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/clap/macros.rs.html#307-378' title='goto source code'>[src]</a></span></h1>
 <pre class="rust macro">
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">arg_enum</span> {
     (@<span class="ident">as_item</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">item</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { ... };
@@ -63,7 +63,8 @@ parsing arguments. This enum also provides a <code>variants()</code> function wh
 retrieve a <code>Vec&lt;&amp;&#39;static str&gt;</code> of the variant names, as well as implementing <a href="https://doc.rust-lang.org/std/str/trait.FromStr.html"><code>FromStr</code></a> and
 <a href="https://doc.rust-lang.org/std/fmt/trait.Display.html"><code>Display</code></a> automatically.</p>
 
-<p><strong>NOTE:</strong> Case insensitivity is supported for ASCII characters only</p>
+<p><strong>NOTE:</strong> Case insensitivity is supported for ASCII characters only. It&#39;s highly recommended to
+use <a href="./struct.Arg.html#method.case_insensitive"><code>Arg::case_insensitive(true)</code></a> for args that will be used with these enums</p>
 
 <p><strong>NOTE:</strong> This macro automatically implements <a href="https://doc.rust-lang.org/std/str/trait.FromStr.html"><code>std::str::FromStr</code></a> and <a href="https://doc.rust-lang.org/std/fmt/trait.Display.html"><code>std::fmt::Display</code></a></p>
 
@@ -72,7 +73,7 @@ retrieve a <code>Vec&lt;&amp;&#39;static str&gt;</code> of the variant names, as
 <h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
 <pre class="rust rust-example-rendered">
 <span class="macro">arg_enum</span><span class="macro">!</span>{
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
     <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Foo</span> {
         <span class="ident">Bar</span>,
         <span class="ident">Baz</span>,
@@ -83,11 +84,15 @@ retrieve a <code>Vec&lt;&amp;&#39;static str&gt;</code> of the variant names, as
 <span class="comment">// and implements std::str::FromStr to use with the value_t! macros</span>
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;app&quot;</span>)
-                .<span class="ident">arg_from_usage</span>(<span class="string">&quot;&lt;foo&gt; &#39;the foo&#39;&quot;</span>)
-                .<span class="ident">get_matches</span>();
+                .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;&lt;foo&gt; &#39;the foo&#39;&quot;</span>)
+                    .<span class="ident">possible_values</span>(<span class="kw-2">&amp;</span><span class="ident">Foo</span>::<span class="ident">variants</span>())
+                    .<span class="ident">case_insensitive</span>(<span class="bool-val">true</span>))
+                .<span class="ident">get_matches_from</span>(<span class="macro">vec</span><span class="macro">!</span>[
+                    <span class="string">&quot;app&quot;</span>, <span class="string">&quot;baz&quot;</span>
+                ]);
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="macro">value_t</span><span class="macro">!</span>(<span class="ident">m</span>, <span class="string">&quot;foo&quot;</span>, <span class="ident">Foo</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">exit</span>());
 
-    <span class="comment">// Use f like any other Foo variant...</span>
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">Foo</span>::<span class="ident">Baz</span>);
 }</pre>
 </div></section>
     <section id='search' class="content hidden"></section>

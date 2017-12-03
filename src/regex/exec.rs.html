@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.2/src/exec.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-0.2.3/src/exec.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>exec.rs.html -- source</title>
@@ -1352,7 +1352,7 @@
 <span class="kw">use</span> <span class="ident">re_unicode</span>;
 <span class="kw">use</span> <span class="ident">utf8</span>::<span class="ident">next_utf8</span>;
 
-<span class="doccomment">/// Exec manages the execution of a regular expression.</span>
+<span class="doccomment">/// `Exec` manages the execution of a regular expression.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// In particular, this manages the various compiled forms of a single regular</span>
 <span class="doccomment">/// expression and the choice of which matching engine to use to execute a</span>
@@ -1364,7 +1364,7 @@
     <span class="ident">cache</span>: <span class="ident">CachedThreadLocal</span><span class="op">&lt;</span><span class="ident">ProgramCache</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// ExecNoSync is like Exec, except it embeds a reference to a cache. This</span>
+<span class="doccomment">/// `ExecNoSync` is like `Exec`, except it embeds a reference to a cache. This</span>
 <span class="doccomment">/// means it is no longer Sync, but we can now avoid the overhead of</span>
 <span class="doccomment">/// synchronization to fetch the cache.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -1375,10 +1375,10 @@
     <span class="ident">cache</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c</span> <span class="ident">ProgramCache</span>,
 }
 
-<span class="doccomment">/// ExecNoSyncStr is like ExecNoSync, but matches on &amp;str instead of &amp;[u8].</span>
+<span class="doccomment">/// `ExecNoSyncStr` is like `ExecNoSync`, but matches on &amp;str instead of &amp;[u8].</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExecNoSyncStr</span><span class="op">&lt;</span><span class="lifetime">&#39;c</span><span class="op">&gt;</span>(<span class="ident">ExecNoSync</span><span class="op">&lt;</span><span class="lifetime">&#39;c</span><span class="op">&gt;</span>);
 
-<span class="doccomment">/// ExecReadOnly comprises all read only state for a regex. Namely, all such</span>
+<span class="doccomment">/// `ExecReadOnly` comprises all read only state for a regex. Namely, all such</span>
 <span class="doccomment">/// state is determined at compile time and never changes during search.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">struct</span> <span class="ident">ExecReadOnly</span> {
@@ -1584,8 +1584,8 @@
         }
         <span class="prelude-val">Ok</span>(<span class="ident">Parsed</span> {
             <span class="ident">exprs</span>: <span class="ident">exprs</span>,
-            <span class="ident">prefixes</span>: <span class="ident">prefixes</span>.<span class="ident">unwrap_or</span>(<span class="ident">Literals</span>::<span class="ident">empty</span>()),
-            <span class="ident">suffixes</span>: <span class="ident">suffixes</span>.<span class="ident">unwrap_or</span>(<span class="ident">Literals</span>::<span class="ident">empty</span>()),
+            <span class="ident">prefixes</span>: <span class="ident">prefixes</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">Literals</span>::<span class="ident">empty</span>),
+            <span class="ident">suffixes</span>: <span class="ident">suffixes</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">Literals</span>::<span class="ident">empty</span>),
             <span class="ident">bytes</span>: <span class="ident">bytes</span>,
         })
     }
@@ -1718,7 +1718,7 @@
             <span class="ident">MatchType</span>::<span class="ident">DfaAnchoredReverse</span> <span class="op">=&gt;</span> {
                 <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">reverse</span>(
                     <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa_reverse</span>,
-                    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                    <span class="self">self</span>.<span class="ident">cache</span>,
                     <span class="bool-val">true</span>,
                     <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">start</span>..],
                     <span class="ident">text</span>.<span class="ident">len</span>(),
@@ -1766,7 +1766,7 @@
             <span class="ident">MatchType</span>::<span class="ident">DfaAnchoredReverse</span> <span class="op">=&gt;</span> {
                 <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">reverse</span>(
                     <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa_reverse</span>,
-                    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                    <span class="self">self</span>.<span class="ident">cache</span>,
                     <span class="bool-val">true</span>,
                     <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">start</span>..],
                     <span class="ident">text</span>.<span class="ident">len</span>(),
@@ -1954,7 +1954,7 @@
         <span class="kw">use</span> <span class="ident">dfa</span>::<span class="prelude-ty">Result</span>::<span class="kw-2">*</span>;
         <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">forward</span>(
             <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+            <span class="self">self</span>.<span class="ident">cache</span>,
             <span class="bool-val">false</span>,
             <span class="ident">text</span>,
             <span class="ident">start</span>,
@@ -1967,7 +1967,7 @@
         <span class="comment">// Now run the DFA in reverse to find the start of the match.</span>
         <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">reverse</span>(
             <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa_reverse</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+            <span class="self">self</span>.<span class="ident">cache</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">start</span>..],
             <span class="ident">end</span> <span class="op">-</span> <span class="ident">start</span>,
@@ -1993,7 +1993,7 @@
         <span class="kw">use</span> <span class="ident">dfa</span>::<span class="prelude-ty">Result</span>::<span class="kw-2">*</span>;
         <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">reverse</span>(
             <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa_reverse</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+            <span class="self">self</span>.<span class="ident">cache</span>,
             <span class="bool-val">false</span>,
             <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">start</span>..],
             <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">start</span>,
@@ -2007,7 +2007,7 @@
     <span class="doccomment">/// Finds the end of the shortest match using only the DFA.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span> <span class="comment">// reduces constant overhead</span>
     <span class="kw">fn</span> <span class="ident">shortest_dfa</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">text</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">start</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">dfa</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">forward</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>, <span class="bool-val">true</span>, <span class="ident">text</span>, <span class="ident">start</span>)
+        <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">forward</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa</span>, <span class="self">self</span>.<span class="ident">cache</span>, <span class="bool-val">true</span>, <span class="ident">text</span>, <span class="ident">start</span>)
     }
 
     <span class="doccomment">/// Finds the end of the shortest match using only the DFA by scanning for</span>
@@ -2052,13 +2052,13 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">start</span>;
         <span class="kw">while</span> <span class="ident">end</span> <span class="op">&lt;=</span> <span class="ident">text</span>.<span class="ident">len</span>() {
             <span class="ident">start</span> <span class="op">=</span> <span class="ident">end</span>;
-            <span class="ident">end</span> <span class="op">=</span> <span class="ident">end</span> <span class="op">+</span> <span class="kw">match</span> <span class="ident">lcs</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">end</span>..]) {
+            <span class="ident">end</span> <span class="op">+=</span> <span class="kw">match</span> <span class="ident">lcs</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">end</span>..]) {
                 <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">NoMatch</span>(<span class="ident">text</span>.<span class="ident">len</span>())),
                 <span class="prelude-val">Some</span>(<span class="ident">start</span>) <span class="op">=&gt;</span> <span class="ident">start</span> <span class="op">+</span> <span class="ident">lcs</span>.<span class="ident">len</span>(),
             };
             <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">reverse</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa_reverse</span>,
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                <span class="self">self</span>.<span class="ident">cache</span>,
                 <span class="bool-val">false</span>,
                 <span class="kw-2">&amp;</span><span class="ident">text</span>[<span class="ident">start</span>..<span class="ident">end</span>],
                 <span class="ident">end</span> <span class="op">-</span> <span class="ident">start</span>,
@@ -2099,7 +2099,7 @@
         <span class="comment">// leftmost-first match.)</span>
         <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">forward</span>(
             <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+            <span class="self">self</span>.<span class="ident">cache</span>,
             <span class="bool-val">false</span>,
             <span class="ident">text</span>,
             <span class="ident">match_start</span>,
@@ -2260,7 +2260,7 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>.<span class="ident">uses_bytes</span>() {
             <span class="ident">pikevm</span>::<span class="ident">Fsm</span>::<span class="ident">exec</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>,
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                <span class="self">self</span>.<span class="ident">cache</span>,
                 <span class="ident">matches</span>,
                 <span class="ident">slots</span>,
                 <span class="ident">quit_after_match</span>,
@@ -2269,7 +2269,7 @@
         } <span class="kw">else</span> {
             <span class="ident">pikevm</span>::<span class="ident">Fsm</span>::<span class="ident">exec</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>,
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                <span class="self">self</span>.<span class="ident">cache</span>,
                 <span class="ident">matches</span>,
                 <span class="ident">slots</span>,
                 <span class="ident">quit_after_match</span>,
@@ -2289,7 +2289,7 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>.<span class="ident">uses_bytes</span>() {
             <span class="ident">backtrack</span>::<span class="ident">Bounded</span>::<span class="ident">exec</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>,
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                <span class="self">self</span>.<span class="ident">cache</span>,
                 <span class="ident">matches</span>,
                 <span class="ident">slots</span>,
                 <span class="ident">ByteInput</span>::<span class="ident">new</span>(<span class="ident">text</span>, <span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>.<span class="ident">only_utf8</span>),
@@ -2297,7 +2297,7 @@
         } <span class="kw">else</span> {
             <span class="ident">backtrack</span>::<span class="ident">Bounded</span>::<span class="ident">exec</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">nfa</span>,
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                <span class="self">self</span>.<span class="ident">cache</span>,
                 <span class="ident">matches</span>,
                 <span class="ident">slots</span>,
                 <span class="ident">CharInput</span>::<span class="ident">new</span>(<span class="ident">text</span>),
@@ -2324,14 +2324,14 @@
         }
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">match_type</span> {
             <span class="ident">Literal</span>(<span class="ident">ty</span>) <span class="op">=&gt;</span> {
-                <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>);
+                <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="ident">matches</span>.<span class="ident">len</span>(), <span class="number">1</span>);
                 <span class="ident">matches</span>[<span class="number">0</span>] <span class="op">=</span> <span class="self">self</span>.<span class="ident">find_literals</span>(<span class="ident">ty</span>, <span class="ident">text</span>, <span class="ident">start</span>).<span class="ident">is_some</span>();
                 <span class="ident">matches</span>[<span class="number">0</span>]
             }
             <span class="ident">Dfa</span> <span class="op">|</span> <span class="ident">DfaAnchoredReverse</span> <span class="op">|</span> <span class="ident">DfaSuffix</span> <span class="op">|</span> <span class="ident">DfaMany</span> <span class="op">=&gt;</span> {
                 <span class="kw">match</span> <span class="ident">dfa</span>::<span class="ident">Fsm</span>::<span class="ident">forward_many</span>(
                     <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ro</span>.<span class="ident">dfa</span>,
-                    <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cache</span>,
+                    <span class="self">self</span>.<span class="ident">cache</span>,
                     <span class="ident">matches</span>,
                     <span class="ident">text</span>,
                     <span class="ident">start</span>,
@@ -2572,7 +2572,7 @@
     <span class="ident">PikeVM</span>,
 }
 
-<span class="doccomment">/// ProgramCache maintains reusable allocations for each matching engine</span>
+<span class="doccomment">/// `ProgramCache` maintains reusable allocations for each matching engine</span>
 <span class="doccomment">/// available to a particular program.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ProgramCache</span> <span class="op">=</span> <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">ProgramCacheInner</span><span class="op">&gt;</span>;
 

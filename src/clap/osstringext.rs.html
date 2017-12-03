@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.27.1/src/osstringext.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.28.0/src/osstringext.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>osstringext.rs.html -- source</title>
@@ -178,6 +178,20 @@
 <span id="133">133</span>
 <span id="134">134</span>
 <span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
 </pre><pre class="rust ">
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">INVALID_UTF8</span>;
@@ -229,24 +243,38 @@
     <span class="kw">fn</span> <span class="ident">split_at_byte</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> (<span class="kw-2">&amp;</span><span class="ident">OsStr</span>, <span class="kw-2">&amp;</span><span class="ident">OsStr</span>) {
         <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">b</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">if</span> <span class="ident">b</span> <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">byte</span> {
-                <span class="kw">return</span> (<span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[..<span class="ident">i</span>]),
-                        <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>..]));
+                <span class="kw">return</span> (
+                    <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[..<span class="ident">i</span>]),
+                    <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>..]),
+                );
             }
         }
-        (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>, <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="self">self</span>.<span class="ident">len_</span>()..<span class="self">self</span>.<span class="ident">len_</span>()]))
+        (
+            <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>,
+            <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="self">self</span>.<span class="ident">len_</span>()..<span class="self">self</span>.<span class="ident">len_</span>()]),
+        )
     }
 
     <span class="kw">fn</span> <span class="ident">trim_left_matches</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">OsStr</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">found</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">b</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">if</span> <span class="ident">b</span> <span class="op">!=</span> <span class="kw-2">&amp;</span><span class="ident">byte</span> {
                 <span class="kw">return</span> <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="ident">i</span>..]);
+            } <span class="kw">else</span> {
+                <span class="ident">found</span> <span class="op">=</span> <span class="bool-val">true</span>;
             }
+        }
+        <span class="kw">if</span> <span class="ident">found</span> {
+            <span class="kw">return</span> <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="self">self</span>.<span class="ident">len_</span>()..]);
         }
         <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>
     }
 
     <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> (<span class="kw-2">&amp;</span><span class="ident">OsStr</span>, <span class="kw-2">&amp;</span><span class="ident">OsStr</span>) {
-        (<span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[..<span class="ident">i</span>]), <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="ident">i</span>..]))
+        (
+            <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[..<span class="ident">i</span>]),
+            <span class="ident">OsStr</span>::<span class="ident">from_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_bytes</span>()[<span class="ident">i</span>..]),
+        )
     }
 
     <span class="kw">fn</span> <span class="ident">len_</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() }
