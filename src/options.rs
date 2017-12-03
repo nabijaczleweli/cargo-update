@@ -146,8 +146,8 @@ impl ConfigOptions {
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
-                        Arg::from_usage("--debug 'Compile the packed in debug mode'").conflicts_with("release"),
-                        Arg::from_usage("--release 'Compile the packed in release mode'").conflicts_with("debug"),
+                        Arg::from_usage("--debug 'Compile the package in debug mode'").conflicts_with("release"),
+                        Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug"),
                         Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
