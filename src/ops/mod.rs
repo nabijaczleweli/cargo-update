@@ -212,6 +212,12 @@ impl MainRepoPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
     ///         }.needs_update());
+    /// assert!(!MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             newest_version: None,
+    ///             max_version: None,
+    ///         }.needs_update());
     /// # }
     /// ```
     pub fn needs_update(&self) -> bool {
