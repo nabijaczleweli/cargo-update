@@ -75,7 +75,12 @@ fn actual_main() -> Result<(), i32> {
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
             }
-            writeln!(out, "\tv{}\t{}", package.update_to_version(), if package.needs_update() { "Yes" } else { "No" }).unwrap();
+            if let Some(upd_v) = package.update_to_version() {
+                write!(out, "\tv{}", upd_v).unwrap();
+            } else {
+                write!(out, "\tN/A").unwrap();
+            }
+            writeln!(out, "\t{}", if package.needs_update() { "Yes" } else { "No" }).unwrap();
         }
         writeln!(out, "").unwrap();
         out.flush().unwrap();
@@ -85,6 +90,8 @@ fn actual_main() -> Result<(), i32> {
         if !opts.force {
             packages.retain(cargo_update::ops::MainRepoPackage::needs_update);
         }
+
+        packages.retain(|pkg| pkg.update_to_version().is_some());
 
         if !packages.is_empty() {
             let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
@@ -106,7 +113,7 @@ fn actual_main() -> Result<(), i32> {
                                 .args(&cfg.cargo_args()[..])
                                 .arg(&package.name)
                                 .arg("--vers")
-                                .arg(package.update_to_version().to_string())
+                                .arg(package.update_to_version().unwrap().to_string())
                                 .status()
                         } else {
                             Command::new("cargo")
@@ -114,7 +121,7 @@ fn actual_main() -> Result<(), i32> {
                                 .arg("-f")
                                 .arg(&package.name)
                                 .arg("--vers")
-                                .arg(package.update_to_version().to_string())
+                                .arg(package.update_to_version().unwrap().to_string())
                                 .status()
                         }
                         .unwrap();

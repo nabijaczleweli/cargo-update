@@ -215,10 +215,10 @@ impl MainRepoPackage {
     /// # }
     /// ```
     pub fn needs_update(&self) -> bool {
-        self.version.is_none() || (*self.version.as_ref().unwrap() < *self.update_to_version())
+        self.update_to_version().map(|upd_v| self.version.is_none() || (*self.version.as_ref().unwrap() < *upd_v)).unwrap_or(false)
     }
 
-    /// Get package version to update to.
+    /// Get package version to update to, or `None` if the crate has no newest version (was yanked)
     ///
     /// # Examples
     ///
@@ -228,18 +228,24 @@ impl MainRepoPackage {
     /// # use cargo_update::ops::MainRepoPackage;
     /// # use semver::Version as Semver;
     /// # fn main() {
-    /// assert_eq!(*MainRepoPackage {
+    /// assert_eq!(MainRepoPackage {
     ///                name: "racer".to_string(),
     ///                version: Some(Semver::parse("1.7.2").unwrap()),
     ///                newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///                max_version: Some(Semver::parse("2.0.5").unwrap()),
     ///            }.update_to_version(),
-    ///            Semver::parse("2.0.5").unwrap());
+    ///            Some(&Semver::parse("2.0.5").unwrap()));
+    /// assert_eq!(MainRepoPackage {
+    ///                name: "gutenberg".to_string(),
+    ///                version: Some(Semver::parse("0.0.7").unwrap()),
+    ///                newest_version: None,
+    ///                max_version: None,
+    ///            }.update_to_version(),
+    ///            None);
     /// # }
     /// ```
-    pub fn update_to_version(&self) -> &Semver {
-        let new_v = self.newest_version.as_ref().unwrap();
-        cmp::min(new_v, self.max_version.as_ref().unwrap_or(new_v))
+    pub fn update_to_version(&self) -> Option<&Semver> {
+        self.newest_version.as_ref().map(|new_v| cmp::min(new_v, self.max_version.as_ref().unwrap_or(new_v)))
     }
 }
 
