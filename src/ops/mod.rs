@@ -212,10 +212,21 @@ impl MainRepoPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
     ///         }.needs_update());
+    /// assert!(!MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             newest_version: None,
+    ///             max_version: None,
+    ///         }.needs_update());
     /// # }
     /// ```
     pub fn needs_update(&self) -> bool {
-        self.version.is_none() || (*self.version.as_ref().unwrap() < *self.update_to_version())
+        if self.newest_version.is_none() {
+            // This happens if all versions of the current crate have been yanked
+            false
+        } else {
+            self.version.is_none() || (*self.version.as_ref().unwrap() < *self.update_to_version().expect("newest_version or max_version not available"))
+        }
     }
 
     /// Get package version to update to.
@@ -233,13 +244,16 @@ impl MainRepoPackage {
     ///                version: Some(Semver::parse("1.7.2").unwrap()),
     ///                newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///                max_version: Some(Semver::parse("2.0.5").unwrap()),
-    ///            }.update_to_version(),
+    ///            }.update_to_version().unwrap(),
     ///            Semver::parse("2.0.5").unwrap());
     /// # }
     /// ```
-    pub fn update_to_version(&self) -> &Semver {
-        let new_v = self.newest_version.as_ref().unwrap();
-        cmp::min(new_v, self.max_version.as_ref().unwrap_or(new_v))
+    pub fn update_to_version(&self) -> Option<&Semver> {
+        if let Some(ref new_v) = self.newest_version {
+            Some(cmp::min(new_v, self.max_version.as_ref().unwrap_or(new_v)))
+        } else {
+            None
+        }
     }
 }
 
