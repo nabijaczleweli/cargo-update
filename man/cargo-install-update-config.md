@@ -82,7 +82,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Mateusz Mikuła &lt;<mati865@gmail.com>&gt;,
            sinkuu &lt;<sinkuupump@gmail.com>&gt;
            Alex Burka &lt;<aburka@seas.upenn.edu>&gt;
-       and Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;
+           Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;
+       and Stefan Schindler &lt;<dns2utf8@estada.ch>&gt;
 
 ## REPORTING BUGS
 

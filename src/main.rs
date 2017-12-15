@@ -75,7 +75,7 @@ fn actual_main() -> Result<(), i32> {
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
             }
-            writeln!(out, "\tv{}\t{}", package.update_to_version(), if package.needs_update() { "Yes" } else { "No" }).unwrap();
+            writeln!(out, "\t{}\t{}", package.update_to_version().map(|v| "v".to_string() + &v.to_string()).unwrap_or("yanked".into()), if package.needs_update() { "Yes" } else { "No" }).unwrap();
         }
         writeln!(out, "").unwrap();
         out.flush().unwrap();
@@ -106,7 +106,7 @@ fn actual_main() -> Result<(), i32> {
                                 .args(&cfg.cargo_args()[..])
                                 .arg(&package.name)
                                 .arg("--vers")
-                                .arg(package.update_to_version().to_string())
+                                .arg(package.update_to_version().expect("new version").to_string())
                                 .status()
                         } else {
                             Command::new("cargo")
@@ -114,7 +114,7 @@ fn actual_main() -> Result<(), i32> {
                                 .arg("-f")
                                 .arg(&package.name)
                                 .arg("--vers")
-                                .arg(package.update_to_version().to_string())
+                                .arg(package.update_to_version().expect("new version").to_string())
                                 .status()
                         }
                         .unwrap();
