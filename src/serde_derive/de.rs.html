@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-1.0.23/src/de.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-1.0.24/src/de.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>de.rs.html -- source</title>
@@ -1957,6 +1957,29 @@
 <span id="1912">1912</span>
 <span id="1913">1913</span>
 <span id="1914">1914</span>
+<span id="1915">1915</span>
+<span id="1916">1916</span>
+<span id="1917">1917</span>
+<span id="1918">1918</span>
+<span id="1919">1919</span>
+<span id="1920">1920</span>
+<span id="1921">1921</span>
+<span id="1922">1922</span>
+<span id="1923">1923</span>
+<span id="1924">1924</span>
+<span id="1925">1925</span>
+<span id="1926">1926</span>
+<span id="1927">1927</span>
+<span id="1928">1928</span>
+<span id="1929">1929</span>
+<span id="1930">1930</span>
+<span id="1931">1931</span>
+<span id="1932">1932</span>
+<span id="1933">1933</span>
+<span id="1934">1934</span>
+<span id="1935">1935</span>
+<span id="1936">1936</span>
+<span id="1937">1937</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -2407,7 +2430,30 @@
         };
     }
 
+    <span class="kw">let</span> <span class="ident">let_default</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">cattrs</span>.<span class="ident">default</span>() {
+        <span class="ident">attr</span>::<span class="ident">Default</span>::<span class="ident">Default</span> <span class="op">=&gt;</span> {
+            <span class="prelude-val">Some</span>(
+                <span class="macro">quote</span><span class="macro">!</span>(
+                    <span class="kw">let</span> <span class="ident">__default</span>: <span class="self">Self</span>::<span class="ident">Value</span> <span class="op">=</span> <span class="ident">_serde</span>::<span class="ident">export</span>::<span class="ident">Default</span>::<span class="ident">default</span>();
+                ),
+            )
+        }
+        <span class="ident">attr</span>::<span class="ident">Default</span>::<span class="ident">Path</span>(<span class="kw-2">ref</span> <span class="ident">path</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Some</span>(
+                <span class="macro">quote</span><span class="macro">!</span>(
+                    <span class="kw">let</span> <span class="ident">__default</span>: <span class="self">Self</span>::<span class="ident">Value</span> <span class="op">=</span> #<span class="ident">path</span>();
+                ),
+            )
+        }
+        <span class="ident">attr</span>::<span class="ident">Default</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+            <span class="comment">// We don&#39;t need the default value, to prevent an unused variable warning</span>
+            <span class="comment">// we&#39;ll leave the line empty.</span>
+            <span class="prelude-val">None</span>
+        }
+    };
+
     <span class="macro">quote_block</span><span class="macro">!</span> {
+        #<span class="ident">let_default</span>
         #(#<span class="ident">let_values</span>)<span class="op">*</span>
         <span class="ident">_serde</span>::<span class="ident">export</span>::<span class="prelude-val">Ok</span>(#<span class="ident">result</span>)
     }
@@ -3661,15 +3707,15 @@
         <span class="ident">attr</span>::<span class="ident">Default</span>::<span class="ident">Default</span> <span class="op">=&gt;</span> {
             <span class="prelude-val">Some</span>(
                 <span class="macro">quote</span><span class="macro">!</span>(
-                <span class="kw">let</span> <span class="ident">__default</span>: <span class="self">Self</span>::<span class="ident">Value</span> <span class="op">=</span> <span class="ident">_serde</span>::<span class="ident">export</span>::<span class="ident">Default</span>::<span class="ident">default</span>();
-            ),
+                    <span class="kw">let</span> <span class="ident">__default</span>: <span class="self">Self</span>::<span class="ident">Value</span> <span class="op">=</span> <span class="ident">_serde</span>::<span class="ident">export</span>::<span class="ident">Default</span>::<span class="ident">default</span>();
+                ),
             )
         }
         <span class="ident">attr</span>::<span class="ident">Default</span>::<span class="ident">Path</span>(<span class="kw-2">ref</span> <span class="ident">path</span>) <span class="op">=&gt;</span> {
             <span class="prelude-val">Some</span>(
                 <span class="macro">quote</span><span class="macro">!</span>(
-                <span class="kw">let</span> <span class="ident">__default</span>: <span class="self">Self</span>::<span class="ident">Value</span> <span class="op">=</span> #<span class="ident">path</span>();
-            ),
+                    <span class="kw">let</span> <span class="ident">__default</span>: <span class="self">Self</span>::<span class="ident">Value</span> <span class="op">=</span> #<span class="ident">path</span>();
+                ),
             )
         }
         <span class="ident">attr</span>::<span class="ident">Default</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> {

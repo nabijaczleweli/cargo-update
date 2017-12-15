@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.8/src/error.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.9/src/error.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>error.rs.html -- source</title>
@@ -280,6 +280,38 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">JoinPathsError</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">NulError</span>};
@@ -299,16 +331,40 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Error</span> {
-    <span class="doccomment">/// Returns the last error, or `None` if one is not available.</span>
+    <span class="doccomment">/// Returns the last error that happened with the code specified by `code`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Historically this function returned `Some` or `None` based on the return</span>
+    <span class="doccomment">/// value of `giterr_last` but nowadays it always returns `Some` so it&#39;s</span>
+    <span class="doccomment">/// safe to unwrap the return value. This API will change in the next major</span>
+    <span class="doccomment">/// version.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">last_error</span>(<span class="ident">code</span>: <span class="ident">c_int</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span> {
         ::<span class="ident">init</span>();
         <span class="kw">unsafe</span> {
+            <span class="comment">// Note that whenever libgit2 returns an error any negative value</span>
+            <span class="comment">// indicates that an error happened. Auxiliary information is</span>
+            <span class="comment">// *usually* in `giterr_last` but unfortunately that&#39;s not always</span>
+            <span class="comment">// the case. Sometimes a negative error code is returned from</span>
+            <span class="comment">// libgit2 *without* calling `giterr_set` internally to configure</span>
+            <span class="comment">// the error.</span>
+            <span class="comment">//</span>
+            <span class="comment">// To handle this case and hopefully provide better error messages</span>
+            <span class="comment">// on our end we unconditionally call `giterr_clear` when we&#39;re done</span>
+            <span class="comment">// with an error. This is an attempt to clear it as aggressively as</span>
+            <span class="comment">// possible when we can to ensure that error information from one</span>
+            <span class="comment">// api invocation doesn&#39;t leak over to the next api invocation.</span>
+            <span class="comment">//</span>
+            <span class="comment">// Additionally if `giterr_last` returns null then we returned a</span>
+            <span class="comment">// canned error out.</span>
             <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">giterr_last</span>();
-            <span class="kw">if</span> <span class="ident">ptr</span>.<span class="ident">is_null</span>() {
-                <span class="prelude-val">None</span>
+            <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ptr</span>.<span class="ident">is_null</span>() {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">Error</span>::<span class="ident">from_str</span>(<span class="string">&quot;an unknown git error occurred&quot;</span>);
+                <span class="ident">error</span>.<span class="ident">code</span> <span class="op">=</span> <span class="ident">code</span>;
+                <span class="ident">error</span>
             } <span class="kw">else</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Error</span>::<span class="ident">from_raw</span>(<span class="ident">code</span>, <span class="ident">ptr</span>))
-            }
+                <span class="ident">Error</span>::<span class="ident">from_raw</span>(<span class="ident">code</span>, <span class="ident">ptr</span>)
+            };
+            <span class="ident">raw</span>::<span class="ident">giterr_clear</span>();
+            <span class="prelude-val">Some</span>(<span class="ident">err</span>)
         }
     }
 
@@ -486,8 +542,16 @@
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">try</span><span class="macro">!</span>(<span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;[{}/{}] &quot;</span>, <span class="self">self</span>.<span class="ident">klass</span>, <span class="self">self</span>.<span class="ident">code</span>));
-        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">message</span>)
+        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">message</span>)<span class="question-mark">?</span>;
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">class</span>() {
+            <span class="ident">ErrorClass</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+            <span class="ident">other</span> <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;; class={:?} ({})&quot;</span>, <span class="ident">other</span>, <span class="self">self</span>.<span class="ident">klass</span>)<span class="question-mark">?</span>,
+        }
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">code</span>() {
+            <span class="ident">ErrorCode</span>::<span class="ident">GenericError</span> <span class="op">=&gt;</span> {}
+            <span class="ident">other</span> <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;; code={:?} ({})&quot;</span>, <span class="ident">other</span>, <span class="self">self</span>.<span class="ident">code</span>)<span class="question-mark">?</span>,
+        }
+        <span class="prelude-val">Ok</span>(())
     }
 }
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.28.0/src/app/help.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.29.0/src/app/help.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>help.rs.html -- source</title>
@@ -1048,6 +1048,12 @@
 <span id="1003">1003</span>
 <span id="1004">1004</span>
 <span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
 </pre><pre class="rust ">
 <span class="comment">// Std</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
@@ -1556,11 +1562,17 @@
                 <span class="ident">env</span>.<span class="number">0</span>,
                 <span class="ident">env</span>.<span class="number">1</span>
             );
-            <span class="ident">spec_vals</span>.<span class="ident">push</span>(<span class="macro">format</span><span class="macro">!</span>(
-                <span class="string">&quot; [env: {}={}]&quot;</span>,
+            <span class="kw">let</span> <span class="ident">env_val</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">a</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">HideEnvValues</span>) {
+                <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;={}&quot;</span>, <span class="ident">env</span>.<span class="number">1</span>.<span class="ident">map_or</span>(<span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="string">&quot;&quot;</span>), <span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_string_lossy</span>()))
+            } <span class="kw">else</span> {
+                <span class="ident">String</span>::<span class="ident">new</span>()
+            };
+            <span class="kw">let</span> <span class="ident">env_info</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
+                <span class="string">&quot; [env: {}{}]&quot;</span>,
                 <span class="ident">env</span>.<span class="number">0</span>.<span class="ident">to_string_lossy</span>(),
-                <span class="ident">env</span>.<span class="number">1</span>.<span class="ident">map_or</span>(<span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="string">&quot;&quot;</span>), <span class="op">|</span><span class="ident">val</span><span class="op">|</span> <span class="ident">val</span>.<span class="ident">to_string_lossy</span>())
-            ));
+                <span class="ident">env_val</span>
+            );
+            <span class="ident">spec_vals</span>.<span class="ident">push</span>(<span class="ident">env_info</span>);
         }
         <span class="kw">if</span> <span class="op">!</span><span class="ident">a</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">HideDefaultValue</span>) {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pv</span>) <span class="op">=</span> <span class="ident">a</span>.<span class="ident">default_val</span>() {
