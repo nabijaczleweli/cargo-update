@@ -315,6 +315,7 @@ extern crate git2;
 extern crate clap;
 extern crate toml;
 extern crate json;
+extern crate url;
 
 mod options;
 

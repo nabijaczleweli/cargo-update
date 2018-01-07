@@ -199,18 +199,24 @@ fn actual_main() -> Result<(), i32> {
                         }
 
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                                Command::new("cargo")
-                                    .args(&cfg.cargo_args()[..])
+                                let mut cmd = Command::new("cargo");
+                                cmd.args(&cfg.cargo_args()[..])
                                     .arg("--git")
-                                    .arg(&package.url)
-                                    .status()
+                                    .arg(&package.url);
+                                if let Some(ref b) = package.branch.as_ref() {
+                                    cmd.arg("--branch").arg(b);
+                                }
+                                cmd.status()
                             } else {
-                                Command::new("cargo")
-                                    .arg("install")
+                                let mut cmd = Command::new("cargo");
+                                cmd.arg("install")
                                     .arg("-f")
                                     .arg("--git")
-                                    .arg(&package.url)
-                                    .status()
+                                    .arg(&package.url);
+                                if let Some(ref b) = package.branch.as_ref() {
+                                    cmd.arg("--branch").arg(b);
+                                }
+                                cmd.status()
                             }
                             .unwrap();
 

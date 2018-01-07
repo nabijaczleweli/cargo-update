@@ -13,6 +13,7 @@ use semver::Version as Semver;
 use std::time::SystemTime;
 use std::io::Read;
 use regex::Regex;
+use url::Url;
 use std::cmp;
 use toml;
 use json;
@@ -94,6 +95,7 @@ pub struct MainRepoPackage {
 ///            GitRepoPackage {
 ///                name: "alacritty".to_string(),
 ///                url: "https://github.com/jwilm/alacritty".to_string(),
+///                branch: None,
 ///                id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
 ///                newest_id: None,
 ///            });
@@ -111,6 +113,8 @@ pub struct GitRepoPackage {
     pub name: String,
     /// The remote git repo URL.
     pub url: String,
+    /// The installed branch, or `None` for default.
+    pub branch: Option<String>,
     /// The package's locally installed version's object hash.
     pub id: Oid,
     /// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.
@@ -279,17 +283,19 @@ impl GitRepoPackage {
     ///            GitRepoPackage {
     ///                name: "alacritty".to_string(),
     ///                url: "https://github.com/jwilm/alacritty".to_string(),
+    ///                branch: None,
     ///                id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
     ///                newest_id: None,
     ///            });
     ///
     /// let package_s = "chattium-oxide-client 0.1.0 \
     ///                  (git+https://github.com/nabijaczleweli/chattium-oxide-client\
-    ///                       #108a7b94f0e0dcb2a875f70fc0459d5a682df14c)";
+    ///                       ?branch=master#108a7b94f0e0dcb2a875f70fc0459d5a682df14c)";
     /// assert_eq!(GitRepoPackage::parse(package_s).unwrap(),
     ///            GitRepoPackage {
     ///                name: "chattium-oxide-client".to_string(),
     ///                url: "https://github.com/nabijaczleweli/chattium-oxide-client".to_string(),
+    ///                branch: Some("master".to_string()),
     ///                id: git2::Oid::from_str("108a7b94f0e0dcb2a875f70fc0459d5a682df14c").unwrap(),
     ///                newest_id: None,
     ///            });
@@ -305,9 +311,13 @@ impl GitRepoPackage {
     /// ```
     pub fn parse(what: &str) -> Option<GitRepoPackage> {
         GIT_PACKAGE_RGX.captures(what).map(|c| {
+            let mut url = Url::parse(c.get(3).unwrap().as_str()).unwrap();
+            let branch = url.query_pairs().find(|&(ref name, _)| name == "branch").map(|(_, value)| value.to_string());
+            url.set_query(None);
             GitRepoPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
-                url: c.get(3).unwrap().as_str().to_string(),
+                url: url.into_string(),
+                branch: branch,
                 id: Oid::from_str(c.get(4).unwrap().as_str()).unwrap(),
                 newest_id: None,
             }
@@ -321,13 +331,16 @@ impl GitRepoPackage {
         let repo = if clone_dir.exists() {
             let mut r = git2::Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
-                r.find_remote("origin").and_then(|mut rm| rm.fetch(&["master"], None, None)).unwrap();
+                r.find_remote("origin").and_then(|mut rm| rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")], None, None)).unwrap();
             }
             r
         } else {
-            git2::build::RepoBuilder::new()
-                .bare(true)
-                .clone(&self.url, &clone_dir)
+            let mut bldr = git2::build::RepoBuilder::new();
+            bldr.bare(true);
+            if let Some(ref b) = self.branch.as_ref() {
+                bldr.branch(b);
+            }
+            bldr.clone(&self.url, &clone_dir)
         };
 
         self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
@@ -345,12 +358,14 @@ impl GitRepoPackage {
     /// assert!(GitRepoPackage {
     ///             name: "alacritty".to_string(),
     ///             url: "https://github.com/jwilm/alacritty".to_string(),
+    ///             branch: None,
     ///             id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
     ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
     ///         }.needs_update());
     /// assert!(!GitRepoPackage {
     ///             name: "alacritty".to_string(),
     ///             url: "https://github.com/jwilm/alacritty".to_string(),
+    ///             branch: None,
     ///             id: git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap(),
     ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
     ///         }.needs_update());
