@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.29.0/src/app/parser.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-2.29.2/src/app/parser.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parser.rs.html -- source</title>
@@ -2087,6 +2087,40 @@
 <span id="2042">2042</span>
 <span id="2043">2043</span>
 <span id="2044">2044</span>
+<span id="2045">2045</span>
+<span id="2046">2046</span>
+<span id="2047">2047</span>
+<span id="2048">2048</span>
+<span id="2049">2049</span>
+<span id="2050">2050</span>
+<span id="2051">2051</span>
+<span id="2052">2052</span>
+<span id="2053">2053</span>
+<span id="2054">2054</span>
+<span id="2055">2055</span>
+<span id="2056">2056</span>
+<span id="2057">2057</span>
+<span id="2058">2058</span>
+<span id="2059">2059</span>
+<span id="2060">2060</span>
+<span id="2061">2061</span>
+<span id="2062">2062</span>
+<span id="2063">2063</span>
+<span id="2064">2064</span>
+<span id="2065">2065</span>
+<span id="2066">2066</span>
+<span id="2067">2067</span>
+<span id="2068">2068</span>
+<span id="2069">2069</span>
+<span id="2070">2070</span>
+<span id="2071">2071</span>
+<span id="2072">2072</span>
+<span id="2073">2073</span>
+<span id="2074">2074</span>
+<span id="2075">2075</span>
+<span id="2076">2076</span>
+<span id="2077">2077</span>
+<span id="2078">2078</span>
 </pre><pre class="rust ">
 <span class="comment">// Std</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::{<span class="ident">OsStr</span>, <span class="ident">OsString</span>};
@@ -2151,8 +2185,7 @@
     <span class="kw">pub</span> <span class="ident">global_args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Arg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span><span class="op">&gt;&gt;</span>,
     <span class="kw">pub</span> <span class="ident">required</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">r_ifs</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)<span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">blacklist</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">overrides</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">overrides</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)<span class="op">&gt;</span>,
     <span class="ident">help_short</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>,
     <span class="ident">version_short</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>,
     <span class="ident">cache</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
@@ -2436,9 +2469,9 @@
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">reqs</span>) <span class="op">=</span> <span class="ident">group</span>.<span class="ident">requires</span> {
                 <span class="self">self</span>.<span class="ident">required</span>.<span class="ident">extend_from_slice</span>(<span class="ident">reqs</span>);
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">bl</span>) <span class="op">=</span> <span class="ident">group</span>.<span class="ident">conflicts</span> {
-                <span class="self">self</span>.<span class="ident">blacklist</span>.<span class="ident">extend_from_slice</span>(<span class="ident">bl</span>);
-            }
+<span class="comment">//            if let Some(ref bl) = group.conflicts {</span>
+<span class="comment">//                self.blacklist.extend_from_slice(bl);</span>
+<span class="comment">//            }</span>
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">groups</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="ident">g</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">group</span>.<span class="ident">name</span>) {
             <span class="kw">let</span> <span class="ident">grp</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">groups</span>
@@ -2863,12 +2896,8 @@
 
     <span class="comment">// allow wrong self convention due to self.valid_neg_num = true and it&#39;s a private method</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;lints&quot;</span>, <span class="ident">allow</span>(<span class="ident">wrong_self_convention</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">is_new_arg</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">arg_os</span>: <span class="kw-2">&amp;</span><span class="ident">OsStr</span>, <span class="ident">needs_val_of</span>: <span class="ident">ParseResult</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="macro">debugln</span><span class="macro">!</span>(
-            <span class="string">&quot;Parser::is_new_arg: arg={:?}, Needs Val of={:?}&quot;</span>,
-            <span class="ident">arg_os</span>,
-            <span class="ident">needs_val_of</span>
-        );
+    <span class="kw">fn</span> <span class="ident">is_new_arg</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">arg_os</span>: <span class="kw-2">&amp;</span><span class="ident">OsStr</span>, <span class="ident">needs_val_of</span>: <span class="ident">ParseResult</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">debugln</span><span class="macro">!</span>( <span class="string">&quot;Parser::is_new_arg:{:?}:{:?}&quot;</span>, <span class="ident">arg_os</span>, <span class="ident">needs_val_of</span>);
         <span class="kw">let</span> <span class="ident">app_wide_settings</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">AllowLeadingHyphen</span>) {
             <span class="bool-val">true</span>
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">AllowNegativeNumbers</span>) {
@@ -2897,12 +2926,10 @@
                     .<span class="ident">expect</span>(<span class="ident">INTERNAL_ERROR_MSG</span>);
                 (<span class="ident">p</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">AllowLeadingHyphen</span>) <span class="op">||</span> <span class="ident">app_wide_settings</span>)
             }
+            <span class="ident">ParseResult</span>::<span class="ident">ValuesDone</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
             _ <span class="op">=&gt;</span> <span class="bool-val">false</span>,
         };
-        <span class="macro">debugln</span><span class="macro">!</span>(
-            <span class="string">&quot;Parser::is_new_arg: Arg::allow_leading_hyphen({:?})&quot;</span>,
-            <span class="ident">arg_allows_tac</span>
-        );
+        <span class="macro">debugln</span><span class="macro">!</span>( <span class="string">&quot;Parser::is_new_arg: arg_allows_tac={:?}&quot;</span>, <span class="ident">arg_allows_tac</span> );
 
         <span class="comment">// Is this a new argument, or values from a previous option?</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">arg_os</span>.<span class="ident">starts_with</span>(<span class="string">b&quot;--&quot;</span>) {
@@ -3003,7 +3030,52 @@
                     }
                 }
 
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">starts_new_arg</span> {
+                <span class="kw">if</span> <span class="ident">starts_new_arg</span> {
+                    {
+                        <span class="kw">let</span> <span class="ident">any_arg</span> <span class="op">=</span> <span class="macro">find_any_by_name</span><span class="macro">!</span>(<span class="self">self</span>, <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>));
+                        <span class="ident">matcher</span>.<span class="ident">process_arg_overrides</span>(<span class="ident">any_arg</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">overrides</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">required</span>);
+                    }
+
+                    <span class="kw">if</span> <span class="ident">arg_os</span>.<span class="ident">starts_with</span>(<span class="string">b&quot;--&quot;</span>) {
+                        <span class="ident">needs_val_of</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_long_arg</span>(<span class="ident">matcher</span>, <span class="kw-2">&amp;</span><span class="ident">arg_os</span>)<span class="question-mark">?</span>;
+                        <span class="macro">debugln</span><span class="macro">!</span>( <span class="string">&quot;Parser:get_matches_with: After parse_long_arg {:?}&quot;</span>, <span class="ident">needs_val_of</span> );
+                        <span class="kw">match</span> <span class="ident">needs_val_of</span> {
+                            <span class="ident">ParseResult</span>::<span class="ident">Flag</span> <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">Opt</span>(..) <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">ValuesDone</span> <span class="op">=&gt;</span> {
+                                <span class="kw">continue</span>
+                            }
+                            _ <span class="op">=&gt;</span> (),
+                        }
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">arg_os</span>.<span class="ident">starts_with</span>(<span class="string">b&quot;-&quot;</span>) <span class="op">&amp;&amp;</span> <span class="ident">arg_os</span>.<span class="ident">len_</span>() <span class="op">!=</span> <span class="number">1</span> {
+                        <span class="comment">// Try to parse short args like normal, if AllowLeadingHyphen or</span>
+                        <span class="comment">// AllowNegativeNumbers is set, parse_short_arg will *not* throw</span>
+                        <span class="comment">// an error, and instead return Ok(None)</span>
+                        <span class="ident">needs_val_of</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_short_arg</span>(<span class="ident">matcher</span>, <span class="kw-2">&amp;</span><span class="ident">arg_os</span>)<span class="question-mark">?</span>;
+                        <span class="comment">// If it&#39;s None, we then check if one of those two AppSettings was set</span>
+                        <span class="macro">debugln</span><span class="macro">!</span>(
+                            <span class="string">&quot;Parser:get_matches_with: After parse_short_arg {:?}&quot;</span>,
+                            <span class="ident">needs_val_of</span>
+                        );
+                        <span class="kw">match</span> <span class="ident">needs_val_of</span> {
+                            <span class="ident">ParseResult</span>::<span class="ident">MaybeNegNum</span> <span class="op">=&gt;</span> {
+                                <span class="kw">if</span> <span class="op">!</span>(<span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>().<span class="ident">is_ok</span>()
+                                    <span class="op">||</span> <span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>().<span class="ident">is_ok</span>())
+                                    {
+                                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">unknown_argument</span>(
+                                            <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>(),
+                                            <span class="string">&quot;&quot;</span>,
+                                            <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">usage</span>::<span class="ident">create_error_usage</span>(<span class="self">self</span>, <span class="ident">matcher</span>, <span class="prelude-val">None</span>),
+                                            <span class="self">self</span>.<span class="ident">color</span>(),
+                                        ));
+                                    }
+                            },
+                            <span class="ident">ParseResult</span>::<span class="ident">Opt</span>(..) <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">Flag</span> <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">ValuesDone</span> <span class="op">=&gt;</span> {
+                                <span class="kw">continue</span>
+                            }
+                            _ <span class="op">=&gt;</span> (),
+                        }
+                    }
+
+                } <span class="kw">else</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ParseResult</span>::<span class="ident">Opt</span>(<span class="ident">name</span>) <span class="op">=</span> <span class="ident">needs_val_of</span> {
                         <span class="comment">// Check to see if parsing a value from a previous arg</span>
                         <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">opts</span>
@@ -3015,62 +3087,20 @@
                         <span class="comment">// get the next value from the iterator</span>
                         <span class="kw">continue</span>;
                     }
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">arg_os</span>.<span class="ident">starts_with</span>(<span class="string">b&quot;--&quot;</span>) {
-                    <span class="ident">needs_val_of</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_long_arg</span>(<span class="ident">matcher</span>, <span class="kw-2">&amp;</span><span class="ident">arg_os</span>)<span class="question-mark">?</span>;
-                    <span class="macro">debugln</span><span class="macro">!</span>(
-                        <span class="string">&quot;Parser:get_matches_with: After parse_long_arg {:?}&quot;</span>,
-                        <span class="ident">needs_val_of</span>
-                    );
-                    <span class="kw">match</span> <span class="ident">needs_val_of</span> {
-                        <span class="ident">ParseResult</span>::<span class="ident">Flag</span> <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">Opt</span>(..) <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">ValuesDone</span> <span class="op">=&gt;</span> {
-                            <span class="kw">continue</span>
-                        }
-                        _ <span class="op">=&gt;</span> (),
-                    }
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">arg_os</span>.<span class="ident">starts_with</span>(<span class="string">b&quot;-&quot;</span>) <span class="op">&amp;&amp;</span> <span class="ident">arg_os</span>.<span class="ident">len_</span>() <span class="op">!=</span> <span class="number">1</span> {
-                    <span class="comment">// Try to parse short args like normal, if AllowLeadingHyphen or</span>
-                    <span class="comment">// AllowNegativeNumbers is set, parse_short_arg will *not* throw</span>
-                    <span class="comment">// an error, and instead return Ok(None)</span>
-                    <span class="ident">needs_val_of</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_short_arg</span>(<span class="ident">matcher</span>, <span class="kw-2">&amp;</span><span class="ident">arg_os</span>)<span class="question-mark">?</span>;
-                    <span class="comment">// If it&#39;s None, we then check if one of those two AppSettings was set</span>
-                    <span class="macro">debugln</span><span class="macro">!</span>(
-                        <span class="string">&quot;Parser:get_matches_with: After parse_short_arg {:?}&quot;</span>,
-                        <span class="ident">needs_val_of</span>
-                    );
-                    <span class="kw">match</span> <span class="ident">needs_val_of</span> {
-                        <span class="ident">ParseResult</span>::<span class="ident">MaybeNegNum</span> <span class="op">=&gt;</span> {
-                            <span class="kw">if</span> <span class="op">!</span>(<span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>().<span class="ident">is_ok</span>()
-                                <span class="op">||</span> <span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>().<span class="ident">is_ok</span>())
-                            {
-                                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">unknown_argument</span>(
-                                    <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>(),
-                                    <span class="string">&quot;&quot;</span>,
-                                    <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">usage</span>::<span class="ident">create_error_usage</span>(<span class="self">self</span>, <span class="ident">matcher</span>, <span class="prelude-val">None</span>),
-                                    <span class="self">self</span>.<span class="ident">color</span>(),
-                                ));
-                            }
-                        }
-                        <span class="ident">ParseResult</span>::<span class="ident">Opt</span>(..) <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">Flag</span> <span class="op">|</span> <span class="ident">ParseResult</span>::<span class="ident">ValuesDone</span> <span class="op">=&gt;</span> {
-                            <span class="kw">continue</span>
-                        }
-                        _ <span class="op">=&gt;</span> (),
-                    }
                 }
+            }
 
-                <span class="kw">if</span> <span class="op">!</span>(<span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">ArgsNegateSubcommands</span>) <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">ValidArgFound</span>))
-                    <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">InferSubcommands</span>)
-                {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cdate</span>) <span class="op">=</span>
-                        <span class="ident">suggestions</span>::<span class="ident">did_you_mean</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>(), <span class="macro">sc_names</span><span class="macro">!</span>(<span class="self">self</span>))
-                    {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">invalid_subcommand</span>(
-                            <span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>(),
-                            <span class="ident">cdate</span>,
-                            <span class="self">self</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">meta</span>.<span class="ident">name</span>),
-                            <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">usage</span>::<span class="ident">create_error_usage</span>(<span class="self">self</span>, <span class="ident">matcher</span>, <span class="prelude-val">None</span>),
-                            <span class="self">self</span>.<span class="ident">color</span>(),
-                        ));
-                    }
+            <span class="kw">if</span> <span class="op">!</span>(<span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">ArgsNegateSubcommands</span>) <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">ValidArgFound</span>))
+                <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">InferSubcommands</span>)
+            {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cdate</span>) <span class="op">=</span> <span class="ident">suggestions</span>::<span class="ident">did_you_mean</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>(), <span class="macro">sc_names</span><span class="macro">!</span>(<span class="self">self</span>)) {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">invalid_subcommand</span>(
+                        <span class="ident">arg_os</span>.<span class="ident">to_string_lossy</span>().<span class="ident">into_owned</span>(),
+                        <span class="ident">cdate</span>,
+                        <span class="self">self</span>.<span class="ident">meta</span>.<span class="ident">bin_name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">meta</span>.<span class="ident">name</span>),
+                        <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">usage</span>::<span class="ident">create_error_usage</span>(<span class="self">self</span>, <span class="ident">matcher</span>, <span class="prelude-val">None</span>),
+                        <span class="self">self</span>.<span class="ident">color</span>(),
+                    ));
                 }
             }
 
@@ -3125,7 +3155,29 @@
                         <span class="self">self</span>.<span class="ident">color</span>(),
                     ));
                 }
-                <span class="macro">parse_positional</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">p</span>, <span class="ident">arg_os</span>, <span class="ident">pos_counter</span>, <span class="ident">matcher</span>);
+                <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">TrailingValues</span>) <span class="op">&amp;&amp;</span>
+                    (<span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">TrailingVarArg</span>) <span class="op">&amp;&amp;</span>
+                    <span class="ident">pos_counter</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">positionals</span>.<span class="ident">len</span>()) {
+                    <span class="self">self</span>.<span class="ident">settings</span>.<span class="ident">set</span>(<span class="ident">AS</span>::<span class="ident">TrailingValues</span>);
+                }
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="ident">p</span>.<span class="ident">b</span>.<span class="ident">name</span>) {
+                    {
+                        <span class="kw">let</span> <span class="ident">any_arg</span> <span class="op">=</span> <span class="macro">find_any_by_name</span><span class="macro">!</span>(<span class="self">self</span>, <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>));
+                        <span class="ident">matcher</span>.<span class="ident">process_arg_overrides</span>(<span class="ident">any_arg</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">overrides</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">required</span>);
+                    }
+                    <span class="self">self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>.<span class="ident">b</span>.<span class="ident">name</span>);
+                }
+                <span class="kw">let</span> _ <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_val_to_arg</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">arg_os</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
+
+                <span class="ident">matcher</span>.<span class="ident">inc_occurrence_of</span>(<span class="ident">p</span>.<span class="ident">b</span>.<span class="ident">name</span>);
+                <span class="kw">let</span> _ <span class="op">=</span> <span class="self">self</span>.<span class="ident">groups_for_arg</span>(<span class="ident">p</span>.<span class="ident">b</span>.<span class="ident">name</span>)
+                    .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">vec</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">matcher</span>.<span class="ident">inc_occurrences_of</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">vec</span>)));
+
+                <span class="self">self</span>.<span class="ident">settings</span>.<span class="ident">set</span>(<span class="ident">AS</span>::<span class="ident">ValidArgFound</span>);
+                <span class="comment">// Only increment the positional counter if it doesn&#39;t allow multiples</span>
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">p</span>.<span class="ident">b</span>.<span class="ident">settings</span>.<span class="ident">is_set</span>(<span class="ident">ArgSettings</span>::<span class="ident">Multiple</span>) {
+                    <span class="ident">pos_counter</span> <span class="op">+=</span> <span class="number">1</span>;
+                }
                 <span class="self">self</span>.<span class="ident">settings</span>.<span class="ident">set</span>(<span class="ident">AS</span>::<span class="ident">ValidArgFound</span>);
             } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">AllowExternalSubcommands</span>) {
                 <span class="comment">// Get external subcommand name</span>
@@ -3226,9 +3278,34 @@
             });
         }
 
+        <span class="comment">// In case the last arg was new, we  need to process it&#39;s overrides</span>
+        {
+            <span class="kw">let</span> <span class="ident">any_arg</span> <span class="op">=</span> <span class="macro">find_any_by_name</span><span class="macro">!</span>(<span class="self">self</span>, <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>));
+            <span class="ident">matcher</span>.<span class="ident">process_arg_overrides</span>(<span class="ident">any_arg</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">overrides</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">required</span>);
+        }
+
+        <span class="self">self</span>.<span class="ident">remove_overrides</span>(<span class="ident">matcher</span>);
+
         <span class="ident">Validator</span>::<span class="ident">new</span>(<span class="self">self</span>).<span class="ident">validate</span>(<span class="ident">needs_val_of</span>, <span class="ident">subcmd_name</span>, <span class="ident">matcher</span>)
     }
 
+    <span class="kw">fn</span> <span class="ident">remove_overrides</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">matcher</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ArgMatcher</span>) {
+        <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Parser::remove_overrides:{:?};&quot;</span>, <span class="self">self</span>.<span class="ident">overrides</span>);
+        <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">overr</span>, <span class="ident">name</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">overrides</span> {
+            <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Parser::remove_overrides:iter:({},{});&quot;</span>, <span class="ident">overr</span>, <span class="ident">name</span>);
+            <span class="kw">if</span> <span class="ident">matcher</span>.<span class="ident">is_present</span>(<span class="ident">overr</span>) {
+                <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Parser::remove_overrides:iter:({},{}): removing {};&quot;</span>, <span class="ident">overr</span>, <span class="ident">name</span>, <span class="ident">name</span>);
+                <span class="ident">matcher</span>.<span class="ident">remove</span>(<span class="ident">name</span>);
+                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> (<span class="number">0</span> .. <span class="self">self</span>.<span class="ident">required</span>.<span class="ident">len</span>()).<span class="ident">rev</span>() {
+                    <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Parser::remove_overrides:iter:({},{}): removing required {};&quot;</span>, <span class="ident">overr</span>, <span class="ident">name</span>, <span class="ident">name</span>);
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">required</span>[<span class="ident">i</span>] <span class="op">==</span> <span class="ident">name</span> {
+                        <span class="self">self</span>.<span class="ident">required</span>.<span class="ident">swap_remove</span>(<span class="ident">i</span>);
+                        <span class="kw">break</span>;
+                    }
+                }
+            }
+        }
+    }
 
     <span class="kw">fn</span> <span class="ident">propagate_help_version</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="macro">debugln</span><span class="macro">!</span>(<span class="string">&quot;Parser::propagate_help_version;&quot;</span>);
@@ -3573,7 +3650,6 @@
             <span class="self">self</span>.<span class="ident">settings</span>.<span class="ident">set</span>(<span class="ident">AS</span>::<span class="ident">ValidArgFound</span>);
             <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_opt</span>(<span class="ident">val</span>, <span class="ident">opt</span>, <span class="ident">val</span>.<span class="ident">is_some</span>(), <span class="ident">matcher</span>)<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="ident">opt</span>.<span class="ident">b</span>.<span class="ident">name</span>) {
-                <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">opt</span>, <span class="ident">matcher</span>);
                 <span class="self">self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">opt</span>.<span class="ident">b</span>.<span class="ident">name</span>);
             }
 
@@ -3591,10 +3667,9 @@
             <span class="self">self</span>.<span class="ident">parse_flag</span>(<span class="ident">flag</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
 
             <span class="comment">// Handle conflicts, requirements, etc.</span>
-            <span class="comment">// if self.cache.map_or(true, |name| name != flag.b.name) {</span>
-            <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">flag</span>, <span class="ident">matcher</span>);
-            <span class="comment">// self.cache = Some(flag.b.name);</span>
-            <span class="comment">// }</span>
+             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="ident">flag</span>.<span class="ident">b</span>.<span class="ident">name</span>) {
+                 <span class="self">self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>.<span class="ident">b</span>.<span class="ident">name</span>);
+             }
 
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">ParseResult</span>::<span class="ident">Flag</span>);
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_set</span>(<span class="ident">AS</span>::<span class="ident">AllowLeadingHyphen</span>) {
@@ -3670,7 +3745,6 @@
                 <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_opt</span>(<span class="ident">val</span>, <span class="ident">opt</span>, <span class="bool-val">false</span>, <span class="ident">matcher</span>)<span class="question-mark">?</span>;
 
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="ident">opt</span>.<span class="ident">b</span>.<span class="ident">name</span>) {
-                    <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">opt</span>, <span class="ident">matcher</span>);
                     <span class="self">self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">opt</span>.<span class="ident">b</span>.<span class="ident">name</span>);
                 }
 
@@ -3685,7 +3759,6 @@
                 <span class="comment">// Handle conflicts, requirements, overrides, etc.</span>
                 <span class="comment">// Must be called here due to mutablilty</span>
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="ident">flag</span>.<span class="ident">b</span>.<span class="ident">name</span>) {
-                    <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">flag</span>, <span class="ident">matcher</span>);
                     <span class="self">self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">flag</span>.<span class="ident">b</span>.<span class="ident">name</span>);
                 }
             } <span class="kw">else</span> {
@@ -3934,7 +4007,6 @@
                         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">add_val_to_arg</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="ident">OsStr</span>::<span class="ident">new</span>(<span class="ident">val</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)<span class="question-mark">?</span>;
 
                         <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>()) {
-                            <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>);
                             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>());
                         }
                     } <span class="kw">else</span> <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>.<span class="ident">get</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">b</span>.<span class="ident">name</span>).<span class="ident">is_some</span>() {
@@ -3945,7 +4017,6 @@
                         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">add_val_to_arg</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="ident">OsStr</span>::<span class="ident">new</span>(<span class="ident">val</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)<span class="question-mark">?</span>;
 
                         <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>()) {
-                            <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>);
                             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>());
                         }
                     }
@@ -3971,7 +4042,6 @@
                             <span class="kw">if</span> <span class="ident">add</span> {
                                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">add_val_to_arg</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="ident">OsStr</span>::<span class="ident">new</span>(<span class="ident">default</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)<span class="question-mark">?</span>;
                                 <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>()) {
-                                    <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>);
                                     <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>());
                                 }
                                 <span class="ident">done</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -4010,7 +4080,6 @@
                             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">add_val_to_arg</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="ident">OsStr</span>::<span class="ident">new</span>(<span class="ident">val</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)<span class="question-mark">?</span>;
 
                             <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>()) {
-                                <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>);
                                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>());
                             }
                         }
@@ -4019,7 +4088,6 @@
                             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">add_val_to_arg</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="ident">OsStr</span>::<span class="ident">new</span>(<span class="ident">val</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>)<span class="question-mark">?</span>;
 
                             <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="ident">name</span> <span class="op">!=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>()) {
-                                <span class="macro">arg_post_processing</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">m</span>);
                                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">_self</span>.<span class="ident">cache</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>.<span class="ident">name</span>());
                             }
                         }
@@ -4062,7 +4130,7 @@
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_any_arg</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">AnyArg</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_any_arg</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">AnyArg</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span><span class="op">&gt;&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=</span> <span class="macro">find_by_name</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">name</span>, <span class="ident">flags</span>, <span class="ident">iter</span>) {
             <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>);
         }
@@ -4150,13 +4218,15 @@
                     <dd>Show this help dialog</dd>
                     <dt>S</dt>
                     <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
+                    <dt>↑</dt>
                     <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
+                    <dt>↓</dt>
                     <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
-                    <dt>+</dt>
+                    <dt style="width:31px;">+ / -</dt>
                     <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>

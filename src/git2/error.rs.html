@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.9/src/error.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.6.11/src/error.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>error.rs.html -- source</title>
@@ -312,6 +312,21 @@
 <span id="267">267</span>
 <span id="268">268</span>
 <span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">JoinPathsError</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::{<span class="ident">CStr</span>, <span class="ident">NulError</span>};
@@ -332,6 +347,9 @@
 
 <span class="kw">impl</span> <span class="ident">Error</span> {
     <span class="doccomment">/// Returns the last error that happened with the code specified by `code`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The `code` argument typically comes from the return value of a function</span>
+    <span class="doccomment">/// call. This code will later be returned from the `code` function.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Historically this function returned `Some` or `None` based on the return</span>
     <span class="doccomment">/// value of `giterr_last` but nowadays it always returns `Some` so it&#39;s</span>
@@ -375,6 +393,9 @@
     }
 
     <span class="doccomment">/// Creates a new error from the given string as the error.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The error returned will have the code `GIT_ERROR` and the class</span>
+    <span class="doccomment">/// `GITERR_NONE`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
         <span class="ident">Error</span> {
             <span class="ident">code</span>: <span class="ident">raw</span>::<span class="ident">GIT_ERROR</span> <span class="kw">as</span> <span class="ident">c_int</span>,
@@ -384,6 +405,11 @@
     }
 
     <span class="doccomment">/// Return the error code associated with this error.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// An error code is intended to be programmatically actionable most of the</span>
+    <span class="doccomment">/// time. For example the code `GIT_EAGAIN` indicates that an error could be</span>
+    <span class="doccomment">/// fixed by trying again, while the code `GIT_ERROR` is more bland and</span>
+    <span class="doccomment">/// doesn&#39;t convey anything in particular.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ErrorCode</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">raw_code</span>() {
             <span class="ident">raw</span>::<span class="ident">GIT_OK</span> <span class="op">=&gt;</span> <span class="kw">super</span>::<span class="ident">ErrorCode</span>::<span class="ident">GenericError</span>,
@@ -416,6 +442,10 @@
     }
 
     <span class="doccomment">/// Return the error class associated with this error.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Error classes are in general mostly just informative. For example the</span>
+    <span class="doccomment">/// class will show up in the error message but otherwise an error class is</span>
+    <span class="doccomment">/// typically not directly actionable.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">class</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ErrorClass</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">raw_class</span>() {
             <span class="ident">raw</span>::<span class="ident">GITERR_NONE</span> <span class="op">=&gt;</span> <span class="kw">super</span>::<span class="ident">ErrorClass</span>::<span class="prelude-val">None</span>,
@@ -600,13 +630,15 @@
                     <dd>Show this help dialog</dd>
                     <dt>S</dt>
                     <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
+                    <dt>↑</dt>
                     <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
+                    <dt>↓</dt>
                     <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
-                    <dt>+</dt>
+                    <dt style="width:31px;">+ / -</dt>
                     <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>

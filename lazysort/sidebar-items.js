@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["LazySortIterator",""]],"trait":[["Sorted",""],["SortedBy",""],["SortedPartial",""]]});
+initSidebarItems({"struct":[["LazySortIterator",""],["LazySortIteratorBy",""],["LazySortIteratorPartialFirst",""],["LazySortIteratorPartialLast",""]],"trait":[["Sorted",""],["SortedBy",""],["SortedPartial",""]]});

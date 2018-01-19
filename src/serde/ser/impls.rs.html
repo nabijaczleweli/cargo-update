@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.24/src/ser/impls.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.27/src/ser/impls.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>impls.rs.html -- source</title>
@@ -725,6 +725,14 @@
 <span id="680">680</span>
 <span id="681">681</span>
 <span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -839,7 +847,7 @@
 
 <span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
@@ -1192,7 +1200,8 @@
         <span class="ident">S</span>: <span class="ident">Serializer</span>,
     {
         <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">SerializeStruct</span>;
-        <span class="kw">let</span> <span class="ident">duration_since_epoch</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">duration_since</span>(<span class="ident">UNIX_EPOCH</span>).<span class="ident">expect</span>(<span class="string">&quot;SystemTime must be later than UNIX_EPOCH&quot;</span>);
+        <span class="kw">let</span> <span class="ident">duration_since_epoch</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">duration_since</span>(<span class="ident">UNIX_EPOCH</span>)
+            .<span class="ident">expect</span>(<span class="string">&quot;SystemTime must be later than UNIX_EPOCH&quot;</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">serializer</span>.<span class="ident">serialize_struct</span>(<span class="string">&quot;SystemTime&quot;</span>, <span class="number">2</span>));
         <span class="macro">try</span><span class="macro">!</span>(<span class="ident">state</span>.<span class="ident">serialize_field</span>(<span class="string">&quot;secs_since_epoch&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">duration_since_epoch</span>.<span class="ident">as_secs</span>()));
         <span class="macro">try</span><span class="macro">!</span>(<span class="ident">state</span>.<span class="ident">serialize_field</span>(<span class="string">&quot;nanos_since_epoch&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">duration_since_epoch</span>.<span class="ident">subsec_nanos</span>()));
@@ -1241,10 +1250,12 @@
             }
         } <span class="kw">else</span> {
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-                <span class="ident">net</span>::<span class="ident">IpAddr</span>::<span class="ident">V4</span>(<span class="kw-2">ref</span> <span class="ident">a</span>) <span class="op">=&gt;</span>
-                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;IpAddr&quot;</span>, <span class="number">0</span>, <span class="string">&quot;V4&quot;</span>, <span class="ident">a</span>),
-                <span class="ident">net</span>::<span class="ident">IpAddr</span>::<span class="ident">V6</span>(<span class="kw-2">ref</span> <span class="ident">a</span>) <span class="op">=&gt;</span>
-                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;IpAddr&quot;</span>, <span class="number">1</span>, <span class="string">&quot;V6&quot;</span>, <span class="ident">a</span>),
+                <span class="ident">net</span>::<span class="ident">IpAddr</span>::<span class="ident">V4</span>(<span class="kw-2">ref</span> <span class="ident">a</span>) <span class="op">=&gt;</span> {
+                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;IpAddr&quot;</span>, <span class="number">0</span>, <span class="string">&quot;V4&quot;</span>, <span class="ident">a</span>)
+                }
+                <span class="ident">net</span>::<span class="ident">IpAddr</span>::<span class="ident">V6</span>(<span class="kw-2">ref</span> <span class="ident">a</span>) <span class="op">=&gt;</span> {
+                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;IpAddr&quot;</span>, <span class="number">1</span>, <span class="string">&quot;V6&quot;</span>, <span class="ident">a</span>)
+                }
             }
         }
     }
@@ -1295,10 +1306,12 @@
             }
         } <span class="kw">else</span> {
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-                <span class="ident">net</span>::<span class="ident">SocketAddr</span>::<span class="ident">V4</span>(<span class="kw-2">ref</span> <span class="ident">addr</span>) <span class="op">=&gt;</span>
-                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;SocketAddr&quot;</span>, <span class="number">0</span>, <span class="string">&quot;V4&quot;</span>, <span class="ident">addr</span>),
-                <span class="ident">net</span>::<span class="ident">SocketAddr</span>::<span class="ident">V6</span>(<span class="kw-2">ref</span> <span class="ident">addr</span>) <span class="op">=&gt;</span>
-                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;SocketAddr&quot;</span>, <span class="number">1</span>, <span class="string">&quot;V6&quot;</span>, <span class="ident">addr</span>),
+                <span class="ident">net</span>::<span class="ident">SocketAddr</span>::<span class="ident">V4</span>(<span class="kw-2">ref</span> <span class="ident">addr</span>) <span class="op">=&gt;</span> {
+                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;SocketAddr&quot;</span>, <span class="number">0</span>, <span class="string">&quot;V4&quot;</span>, <span class="ident">addr</span>)
+                }
+                <span class="ident">net</span>::<span class="ident">SocketAddr</span>::<span class="ident">V6</span>(<span class="kw-2">ref</span> <span class="ident">addr</span>) <span class="op">=&gt;</span> {
+                    <span class="ident">serializer</span>.<span class="ident">serialize_newtype_variant</span>(<span class="string">&quot;SocketAddr&quot;</span>, <span class="number">1</span>, <span class="string">&quot;V6&quot;</span>, <span class="ident">addr</span>)
+                }
             }
         }
     }
@@ -1328,7 +1341,10 @@
     {
         <span class="kw">if</span> <span class="ident">serializer</span>.<span class="ident">is_human_readable</span>() {
             <span class="kw">const</span> <span class="ident">MAX_LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">47</span>;
-            <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="ident">MAX_LEN</span>, <span class="string">&quot;[1001:1002:1003:1004:1005:1006:1007:1008]:65000&quot;</span>.<span class="ident">len</span>());
+            <span class="macro">debug_assert_eq</span><span class="macro">!</span>(
+                <span class="ident">MAX_LEN</span>,
+                <span class="string">&quot;[1001:1002:1003:1004:1005:1006:1007:1008]:65000&quot;</span>.<span class="ident">len</span>()
+            );
             <span class="macro">serialize_display_bounded_length</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">MAX_LEN</span>, <span class="ident">serializer</span>)
         } <span class="kw">else</span> {
             (<span class="self">self</span>.<span class="ident">ip</span>(), <span class="self">self</span>.<span class="ident">port</span>()).<span class="ident">serialize</span>(<span class="ident">serializer</span>)
@@ -1426,13 +1442,15 @@
                     <dd>Show this help dialog</dd>
                     <dt>S</dt>
                     <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
+                    <dt>↑</dt>
                     <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
+                    <dt>↓</dt>
                     <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
-                    <dt>+</dt>
+                    <dt style="width:31px;">+ / -</dt>
                     <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>

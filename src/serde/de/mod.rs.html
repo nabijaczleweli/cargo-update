@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.24/src/de/mod.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.27/src/de/mod.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mod.rs.html -- source</title>
@@ -2056,6 +2056,37 @@
 <span id="2011">2011</span>
 <span id="2012">2012</span>
 <span id="2013">2013</span>
+<span id="2014">2014</span>
+<span id="2015">2015</span>
+<span id="2016">2016</span>
+<span id="2017">2017</span>
+<span id="2018">2018</span>
+<span id="2019">2019</span>
+<span id="2020">2020</span>
+<span id="2021">2021</span>
+<span id="2022">2022</span>
+<span id="2023">2023</span>
+<span id="2024">2024</span>
+<span id="2025">2025</span>
+<span id="2026">2026</span>
+<span id="2027">2027</span>
+<span id="2028">2028</span>
+<span id="2029">2029</span>
+<span id="2030">2030</span>
+<span id="2031">2031</span>
+<span id="2032">2032</span>
+<span id="2033">2033</span>
+<span id="2034">2034</span>
+<span id="2035">2035</span>
+<span id="2036">2036</span>
+<span id="2037">2037</span>
+<span id="2038">2038</span>
+<span id="2039">2039</span>
+<span id="2040">2040</span>
+<span id="2041">2041</span>
+<span id="2042">2042</span>
+<span id="2043">2043</span>
+<span id="2044">2044</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -2563,6 +2594,35 @@
     <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>;
+
+    <span class="doccomment">/// Deserializes a value into `self` from the given Deserializer.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The purpose of this method is to allow the deserializer to reuse</span>
+    <span class="doccomment">/// resources and avoid copies. As such, if this method returns an error,</span>
+    <span class="doccomment">/// `self` will be in an indeterminate state where some parts of the struct</span>
+    <span class="doccomment">/// have been overwritten. Although whatever state that is will be</span>
+    <span class="doccomment">/// memory-safe.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is generally useful when repeateadly deserializing values that</span>
+    <span class="doccomment">/// are processed one at a time, where the value of `self` doesn&#39;t matter</span>
+    <span class="doccomment">/// when the next deserialization occurs.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If you manually implement this, your recursive deserializations should</span>
+    <span class="doccomment">/// use `deserialize_in_place`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is stable and an official public API, but hidden from the</span>
+    <span class="doccomment">/// documentation because it is almost never what newbies are looking for.</span>
+    <span class="doccomment">/// Showing it in rustdoc would cause it to be featured more prominently</span>
+    <span class="doccomment">/// than it deserves.</span>
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">deserialize_in_place</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>, <span class="ident">place</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    {
+        <span class="comment">// Default implementation just delegates to `deserialize` impl.</span>
+        <span class="kw-2">*</span><span class="ident">place</span> <span class="op">=</span> <span class="ident">Deserialize</span>::<span class="ident">deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
+    }
 }
 
 <span class="doccomment">/// A data structure that can be deserialized without borrowing any data from</span>
@@ -3137,7 +3197,9 @@
     <span class="doccomment">/// change, as a value serialized in human-readable mode is not required to</span>
     <span class="doccomment">/// deserialize from the same data in compact mode.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">is_human_readable</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="bool-val">true</span> }
+    <span class="kw">fn</span> <span class="ident">is_human_readable</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="bool-val">true</span>
+    }
 }
 
 <span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
@@ -4088,13 +4150,15 @@
                     <dd>Show this help dialog</dd>
                     <dt>S</dt>
                     <dd>Focus the search field</dd>
-                    <dt>&larrb;</dt>
+                    <dt>↑</dt>
                     <dd>Move up in search results</dd>
-                    <dt>&rarrb;</dt>
+                    <dt>↓</dt>
                     <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
-                    <dt>+</dt>
+                    <dt style="width:31px;">+ / -</dt>
                     <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
