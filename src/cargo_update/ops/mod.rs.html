@@ -660,6 +660,21 @@
 <span id="615">615</span>
 <span id="616">616</span>
 <span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
@@ -676,6 +691,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">SystemTime</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
 <span class="kw">use</span> <span class="ident">regex</span>::<span class="ident">Regex</span>;
+<span class="kw">use</span> <span class="ident">url</span>::<span class="ident">Url</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 <span class="kw">use</span> <span class="ident">toml</span>;
 <span class="kw">use</span> <span class="ident">json</span>;
@@ -757,6 +773,7 @@
 <span class="doccomment">///            GitRepoPackage {</span>
 <span class="doccomment">///                name: &quot;alacritty&quot;.to_string(),</span>
 <span class="doccomment">///                url: &quot;https://github.com/jwilm/alacritty&quot;.to_string(),</span>
+<span class="doccomment">///                branch: None,</span>
 <span class="doccomment">///                id: git2::Oid::from_str(&quot;eb231b3e70b87875df4bdd1974d5e94704024d70&quot;).unwrap(),</span>
 <span class="doccomment">///                newest_id: None,</span>
 <span class="doccomment">///            });</span>
@@ -774,6 +791,8 @@
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="doccomment">/// The remote git repo URL.</span>
     <span class="kw">pub</span> <span class="ident">url</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The installed branch, or `None` for default.</span>
+    <span class="kw">pub</span> <span class="ident">branch</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// The package&#39;s locally installed version&#39;s object hash.</span>
     <span class="kw">pub</span> <span class="ident">id</span>: <span class="ident">Oid</span>,
     <span class="doccomment">/// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.</span>
@@ -942,17 +961,19 @@
     <span class="doccomment">///            GitRepoPackage {</span>
     <span class="doccomment">///                name: &quot;alacritty&quot;.to_string(),</span>
     <span class="doccomment">///                url: &quot;https://github.com/jwilm/alacritty&quot;.to_string(),</span>
+    <span class="doccomment">///                branch: None,</span>
     <span class="doccomment">///                id: git2::Oid::from_str(&quot;eb231b3e70b87875df4bdd1974d5e94704024d70&quot;).unwrap(),</span>
     <span class="doccomment">///                newest_id: None,</span>
     <span class="doccomment">///            });</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// let package_s = &quot;chattium-oxide-client 0.1.0 \</span>
     <span class="doccomment">///                  (git+https://github.com/nabijaczleweli/chattium-oxide-client\</span>
-    <span class="doccomment">///                       #108a7b94f0e0dcb2a875f70fc0459d5a682df14c)&quot;;</span>
+    <span class="doccomment">///                       ?branch=master#108a7b94f0e0dcb2a875f70fc0459d5a682df14c)&quot;;</span>
     <span class="doccomment">/// assert_eq!(GitRepoPackage::parse(package_s).unwrap(),</span>
     <span class="doccomment">///            GitRepoPackage {</span>
     <span class="doccomment">///                name: &quot;chattium-oxide-client&quot;.to_string(),</span>
     <span class="doccomment">///                url: &quot;https://github.com/nabijaczleweli/chattium-oxide-client&quot;.to_string(),</span>
+    <span class="doccomment">///                branch: Some(&quot;master&quot;.to_string()),</span>
     <span class="doccomment">///                id: git2::Oid::from_str(&quot;108a7b94f0e0dcb2a875f70fc0459d5a682df14c&quot;).unwrap(),</span>
     <span class="doccomment">///                newest_id: None,</span>
     <span class="doccomment">///            });</span>
@@ -968,9 +989,13 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">what</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">GitRepoPackage</span><span class="op">&gt;</span> {
         <span class="ident">GIT_PACKAGE_RGX</span>.<span class="ident">captures</span>(<span class="ident">what</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="ident">c</span>.<span class="ident">get</span>(<span class="number">3</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>()).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">branch</span> <span class="op">=</span> <span class="ident">url</span>.<span class="ident">query_pairs</span>().<span class="ident">find</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">name</span>, _)<span class="op">|</span> <span class="ident">name</span> <span class="op">==</span> <span class="string">&quot;branch&quot;</span>).<span class="ident">map</span>(<span class="op">|</span>(_, <span class="ident">value</span>)<span class="op">|</span> <span class="ident">value</span>.<span class="ident">to_string</span>());
+            <span class="ident">url</span>.<span class="ident">set_query</span>(<span class="prelude-val">None</span>);
             <span class="ident">GitRepoPackage</span> {
                 <span class="ident">name</span>: <span class="ident">c</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_string</span>(),
-                <span class="ident">url</span>: <span class="ident">c</span>.<span class="ident">get</span>(<span class="number">3</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_string</span>(),
+                <span class="ident">url</span>: <span class="ident">url</span>.<span class="ident">into_string</span>(),
+                <span class="ident">branch</span>: <span class="ident">branch</span>,
                 <span class="ident">id</span>: <span class="ident">Oid</span>::<span class="ident">from_str</span>(<span class="ident">c</span>.<span class="ident">get</span>(<span class="number">4</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>()).<span class="ident">unwrap</span>(),
                 <span class="ident">newest_id</span>: <span class="prelude-val">None</span>,
             }
@@ -984,13 +1009,16 @@
         <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">clone_dir</span>.<span class="ident">exists</span>() {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">git2</span>::<span class="ident">Repository</span>::<span class="ident">open</span>(<span class="ident">clone_dir</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">r</span>) <span class="op">=</span> <span class="ident">r</span>.<span class="ident">as_mut</span>() {
-                <span class="ident">r</span>.<span class="ident">find_remote</span>(<span class="string">&quot;origin&quot;</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">rm</span><span class="op">|</span> <span class="ident">rm</span>.<span class="ident">fetch</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;master&quot;</span>], <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)).<span class="ident">unwrap</span>();
+                <span class="ident">r</span>.<span class="ident">find_remote</span>(<span class="string">&quot;origin&quot;</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">rm</span><span class="op">|</span> <span class="ident">rm</span>.<span class="ident">fetch</span>(<span class="kw-2">&amp;</span>[<span class="self">self</span>.<span class="ident">branch</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">as_str</span>).<span class="ident">unwrap_or</span>(<span class="string">&quot;master&quot;</span>)], <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)).<span class="ident">unwrap</span>();
             }
             <span class="ident">r</span>
         } <span class="kw">else</span> {
-            <span class="ident">git2</span>::<span class="ident">build</span>::<span class="ident">RepoBuilder</span>::<span class="ident">new</span>()
-                .<span class="ident">bare</span>(<span class="bool-val">true</span>)
-                .<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">url</span>, <span class="kw-2">&amp;</span><span class="ident">clone_dir</span>)
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bldr</span> <span class="op">=</span> <span class="ident">git2</span>::<span class="ident">build</span>::<span class="ident">RepoBuilder</span>::<span class="ident">new</span>();
+            <span class="ident">bldr</span>.<span class="ident">bare</span>(<span class="bool-val">true</span>);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">b</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">branch</span>.<span class="ident">as_ref</span>() {
+                <span class="ident">bldr</span>.<span class="ident">branch</span>(<span class="ident">b</span>);
+            }
+            <span class="ident">bldr</span>.<span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">url</span>, <span class="kw-2">&amp;</span><span class="ident">clone_dir</span>)
         };
 
         <span class="self">self</span>.<span class="ident">newest_id</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">repo</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">head</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">h</span><span class="op">|</span> <span class="ident">h</span>.<span class="ident">target</span>().<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">GitError</span>::<span class="ident">from_str</span>(<span class="string">&quot;HEAD not a direct reference&quot;</span>)))).<span class="ident">unwrap</span>());
@@ -1008,12 +1036,14 @@
     <span class="doccomment">/// assert!(GitRepoPackage {</span>
     <span class="doccomment">///             name: &quot;alacritty&quot;.to_string(),</span>
     <span class="doccomment">///             url: &quot;https://github.com/jwilm/alacritty&quot;.to_string(),</span>
+    <span class="doccomment">///             branch: None,</span>
     <span class="doccomment">///             id: git2::Oid::from_str(&quot;eb231b3e70b87875df4bdd1974d5e94704024d70&quot;).unwrap(),</span>
     <span class="doccomment">///             newest_id: Some(git2::Oid::from_str(&quot;5f7885749c4d7e48869b1fc0be4d430601cdbbfa&quot;).unwrap()),</span>
     <span class="doccomment">///         }.needs_update());</span>
     <span class="doccomment">/// assert!(!GitRepoPackage {</span>
     <span class="doccomment">///             name: &quot;alacritty&quot;.to_string(),</span>
     <span class="doccomment">///             url: &quot;https://github.com/jwilm/alacritty&quot;.to_string(),</span>
+    <span class="doccomment">///             branch: None,</span>
     <span class="doccomment">///             id: git2::Oid::from_str(&quot;5f7885749c4d7e48869b1fc0be4d430601cdbbfa&quot;).unwrap(),</span>
     <span class="doccomment">///             newest_id: Some(git2::Oid::from_str(&quot;5f7885749c4d7e48869b1fc0be4d430601cdbbfa&quot;).unwrap()),</span>
     <span class="doccomment">///         }.needs_update());</span>
