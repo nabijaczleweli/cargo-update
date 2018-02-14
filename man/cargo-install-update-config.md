@@ -50,6 +50,16 @@ See cargo-install-update(1) for general information.
 
     Compile in release mode (default).
 
+  -v --version [VERSION_REQ]
+
+    Require a cargo-compatible version range not to update beyond.
+
+    Example: ">1.3", "^0.1.8".
+
+  -a --any-version
+
+    Allow any version.
+
   -c --cargo-dir <CARGO_DIR>
 
     Set the directory containing cargo metadata.
@@ -58,7 +68,7 @@ See cargo-install-update(1) for general information.
 
 ## EXAMPLES
 
-  `cargo install-update-config -t nightly -d 0 -f log -f colour clippy`
+  `cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 clippy`
 
     Set clippy to be compiled with the nightly toolchain without default
     features, with log and colour features.

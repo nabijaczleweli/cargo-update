@@ -12,12 +12,13 @@
 //! ```
 
 
+use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{self, AppSettings, SubCommand, App, Arg};
 use self::super::ops::ConfigOperation;
 use std::env::{self, home_dir};
-use semver::Version as Semver;
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::fs;
 
 
@@ -148,6 +149,10 @@ impl ConfigOptions {
                             .hide_possible_values(true),
                         Arg::from_usage("--debug 'Compile the package in debug mode'").conflicts_with("release"),
                         Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug"),
+                        Arg::from_usage("-v --version=[VERSION_REQ] 'Require a cargo-compatible version range'")
+                            .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
+                            .conflicts_with("any-version"),
+                        Arg::from_usage("-a --any-version 'Allow any version'").conflicts_with("version"),
                         Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
@@ -177,6 +182,12 @@ impl ConfigOptions {
                 .chain(match (matches.is_present("debug"), matches.is_present("release")) {
                         (true, _) => Some(ConfigOperation::SetDebugMode(true)),
                         (_, true) => Some(ConfigOperation::SetDebugMode(false)),
+                        _ => None,
+                    }
+                    .into_iter())
+                .chain(match (matches.is_present("any-version"), matches.value_of("version")) {
+                        (true, _) => Some(ConfigOperation::RemoveTargetVersion),
+                        (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
                         _ => None,
                     }
                     .into_iter())

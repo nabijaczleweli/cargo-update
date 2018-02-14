@@ -2,6 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as FWrite;
 use std::io::{Read, Write};
 use std::default::Default;
+use semver::VersionReq;
 use std::path::Path;
 use std::fs::File;
 use toml;
@@ -22,6 +23,10 @@ pub enum ConfigOperation {
     RemoveFeature(String),
     /// Set debug mode being enabled to the specified value.
     SetDebugMode(bool),
+    /// Constrain the installed to the specified one.
+    SetTargetVersion(VersionReq),
+    /// Always install latest package version.
+    RemoveTargetVersion,
 }
 
 
@@ -53,6 +58,8 @@ pub struct PackageConfig {
     pub features: BTreeSet<String>,
     /// Whether to compile in debug mode.
     pub debug: Option<bool>,
+    /// Whether to compile in debug mode.
+    pub target_version: Option<VersionReq>,
 }
 
 
@@ -62,12 +69,18 @@ impl PackageConfig {
     /// # Examples
     ///
     /// ```
+    /// # extern crate cargo_update;
+    /// # extern crate semver;
+    /// # fn main() {
     /// # use cargo_update::ops::{ConfigOperation, PackageConfig};
     /// # use std::collections::BTreeSet;
+    /// # use semver::VersionReq;
+    /// # use std::str::FromStr;
     /// assert_eq!(PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string()),
     ///                                  ConfigOperation::DefaultFeatures(false),
     ///                                  ConfigOperation::AddFeature("rustc-serialize".to_string()),
-    ///                                  ConfigOperation::SetDebugMode(true)]),
+    ///                                  ConfigOperation::SetDebugMode(true),
+    ///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(">=0.1").unwrap())]),
     ///            PackageConfig {
     ///                toolchain: Some("nightly".to_string()),
     ///                default_features: false,
@@ -77,7 +90,9 @@ impl PackageConfig {
     ///                    feats
     ///                },
     ///                debug: Some(true),
+    ///                target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     ///            });
+    /// # }
     /// ```
     pub fn from<'o, O: IntoIterator<Item = &'o ConfigOperation>>(ops: O) -> PackageConfig {
         let mut def = PackageConfig::default();
@@ -130,8 +145,13 @@ impl PackageConfig {
     /// # Examples
     ///
     /// ```
+    /// # extern crate cargo_update;
+    /// # extern crate semver;
+    /// # fn main() {
     /// # use cargo_update::ops::{ConfigOperation, PackageConfig};
     /// # use std::collections::BTreeSet;
+    /// # use semver::VersionReq;
+    /// # use std::str::FromStr;
     /// let mut cfg = PackageConfig {
     ///     toolchain: Some("nightly".to_string()),
     ///     default_features: false,
@@ -141,11 +161,13 @@ impl PackageConfig {
     ///         feats
     ///     },
     ///     debug: None,
+    ///     target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
     ///                          ConfigOperation::AddFeature("serde".to_string()),
     ///                          ConfigOperation::RemoveFeature("rustc-serialize".to_string()),
-    ///                          ConfigOperation::SetDebugMode(true)]);
+    ///                          ConfigOperation::SetDebugMode(true),
+    ///                          ConfigOperation::RemoveTargetVersion]);
     /// assert_eq!(cfg,
     ///            PackageConfig {
     ///                toolchain: None,
@@ -155,8 +177,10 @@ impl PackageConfig {
     ///                    feats.insert("serde".to_string());
     ///                    feats
     ///                },
-    ///                debug: Some(true)
+    ///                debug: Some(true),
+    ///                target_version: None,
     ///            });
+    /// # }
     /// ```
     pub fn execute_operations<'o, O: IntoIterator<Item = &'o ConfigOperation>>(&mut self, ops: O) {
         for op in ops {
@@ -171,6 +195,8 @@ impl PackageConfig {
                     self.features.remove(feat);
                 }
                 ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
+                ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
+                ConfigOperation::RemoveTargetVersion => self.target_version = None,
             }
         }
     }
@@ -205,6 +231,7 @@ impl PackageConfig {
     ///             feats
     ///         },
     ///         debug: None,
+    ///         target_version: None,
     ///     });
     ///     pkgs
     /// }));
@@ -246,6 +273,7 @@ impl PackageConfig {
     ///             feats
     ///         },
     ///         debug: None,
+    ///         target_version: None,
     ///     });
     ///     pkgs
     /// }, &config_file).unwrap();
@@ -270,6 +298,7 @@ impl Default for PackageConfig {
             default_features: true,
             features: BTreeSet::new(),
             debug: None,
+            target_version: None,
         }
     }
 }

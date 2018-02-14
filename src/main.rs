@@ -69,18 +69,29 @@ fn actual_main() -> Result<(), i32> {
     {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-        for package in packages.iter()
-            .sorted_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name))) {
+        for (package, package_target_version) in
+            packages.iter()
+                .map(|p| (p, configuration.get(&p.name).and_then(|c| c.target_version.as_ref())))
+                .sorted_by(|&(ref lhs, lhstv), &(ref rhs, rhstv)| (!lhs.needs_update(lhstv), &lhs.name).cmp(&(!rhs.needs_update(rhstv), &rhs.name))) {
             write!(out, "{}\t", package.name).unwrap();
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
             }
-            if let Some(upd_v) = package.update_to_version() {
+            if let Some(tv) = package_target_version {
+                write!(out, "\t{}", tv).unwrap();
+            } else if let Some(upd_v) = package.update_to_version() {
                 write!(out, "\tv{}", upd_v).unwrap();
             } else {
                 write!(out, "\tN/A").unwrap();
             }
-            writeln!(out, "\t{}", if package.needs_update() { "Yes" } else { "No" }).unwrap();
+            writeln!(out,
+                     "\t{}",
+                     if package.needs_update(package_target_version) {
+                         "Yes"
+                     } else {
+                         "No"
+                     })
+                .unwrap();
         }
         writeln!(out, "").unwrap();
         out.flush().unwrap();
@@ -88,7 +99,7 @@ fn actual_main() -> Result<(), i32> {
 
     if opts.update {
         if !opts.force {
-            packages.retain(cargo_update::ops::MainRepoPackage::needs_update);
+            packages.retain(|p| p.needs_update(configuration.get(&p.name).and_then(|c| c.target_version.as_ref())));
         }
 
         packages.retain(|pkg| pkg.update_to_version().is_some());
@@ -113,7 +124,11 @@ fn actual_main() -> Result<(), i32> {
                                 .args(&cfg.cargo_args()[..])
                                 .arg(&package.name)
                                 .arg("--vers")
-                                .arg(package.update_to_version().unwrap().to_string())
+                                .arg(if let Some(tv) = cfg.target_version.as_ref() {
+                                    tv.to_string()
+                                } else {
+                                    package.update_to_version().unwrap().to_string()
+                                })
                                 .status()
                         } else {
                             Command::new("cargo")

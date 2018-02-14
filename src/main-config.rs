@@ -37,6 +37,9 @@ fn actual_main() -> Result<(), i32> {
         if let Some(d) = cfg.debug {
             writeln!(out, "Debug mode\t{}", d).unwrap();
         }
+        if let Some(ref tv) = cfg.target_version {
+            writeln!(out, "Target version\t{}", tv).unwrap();
+        }
         writeln!(out, "Default features\t{}", cfg.default_features).unwrap();
         if !cfg.features.is_empty() {
             write!(out, "Features").unwrap();

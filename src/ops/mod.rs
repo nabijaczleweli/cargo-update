@@ -7,9 +7,9 @@
 
 
 use git2::{self, Error as GitError, Repository, Tree, Oid};
+use semver::{VersionReq as SemverReq, Version as Semver};
 use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
-use semver::Version as Semver;
 use std::time::SystemTime;
 use std::io::Read;
 use regex::Regex;
@@ -195,36 +195,59 @@ impl MainRepoPackage {
     /// ```
     /// # extern crate cargo_update;
     /// # extern crate semver;
+    /// # use semver::{VersionReq as SemverReq, Version as Semver};
     /// # use cargo_update::ops::MainRepoPackage;
-    /// # use semver::Version as Semver;
+    /// # use std::str::FromStr;
     /// # fn main() {
     /// assert!(MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update());
+    ///         }.needs_update(None));
     /// assert!(MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update());
+    ///         }.needs_update(None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update());
+    ///         }.needs_update(None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: None,
     ///             max_version: None,
-    ///         }.needs_update());
+    ///         }.needs_update(None));
+    ///
+    /// let req = SemverReq::from_str("^1.7").unwrap();
+    /// assert!(MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: Some(Semver::parse("1.7.2").unwrap()),
+    ///             newest_version: Some(Semver::parse("1.7.3").unwrap()),
+    ///             max_version: None,
+    ///         }.needs_update(Some(&req)));
+    /// assert!(MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: None,
+    ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             max_version: None,
+    ///         }.needs_update(Some(&req)));
+    /// assert!(!MainRepoPackage {
+    ///             name: "racer".to_string(),
+    ///             version: Some(Semver::parse("1.7.2").unwrap()),
+    ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             max_version: None,
+    ///         }.needs_update(Some(&req)));
     /// # }
     /// ```
-    pub fn needs_update(&self) -> bool {
+    pub fn needs_update(&self, req: Option<&SemverReq>) -> bool {
+        (req.into_iter().zip(self.version.as_ref()).map(|(sr, cv)| !sr.matches(cv)).next().unwrap_or(true) ||
+         req.into_iter().zip(self.update_to_version()).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
         self.update_to_version().map(|upd_v| self.version.is_none() || (*self.version.as_ref().unwrap() < *upd_v)).unwrap_or(false)
     }
 
