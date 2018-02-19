@@ -42,9 +42,9 @@
 
     // On the search screen, so you remain on the last tab you opened.
     //
-    // 0 for "Types/modules"
-    // 1 for "As parameters"
-    // 2 for "As return value"
+    // 0 for "In Names"
+    // 1 for "In Parameters"
+    // 2 for "In Return Types"
     var currentTab = 0;
 
     function hasClass(elem, className) {
@@ -106,6 +106,38 @@
         return (elem.offsetParent === null)
     }
 
+    function showSidebar() {
+        var elems = document.getElementsByClassName("sidebar-elems")[0];
+        if (elems) {
+            addClass(elems, "show-it");
+        }
+        var sidebar = document.getElementsByClassName('sidebar')[0];
+        if (sidebar) {
+            addClass(sidebar, 'mobile');
+            var filler = document.getElementById("sidebar-filler");
+            if (!filler) {
+                var div = document.createElement("div");
+                div.id = "sidebar-filler";
+                sidebar.appendChild(div);
+            }
+        }
+        document.getElementsByTagName("body")[0].style.marginTop = '45px';
+    }
+
+    function hideSidebar() {
+        var elems = document.getElementsByClassName("sidebar-elems")[0];
+        if (elems) {
+            removeClass(elems, "show-it");
+        }
+        var sidebar = document.getElementsByClassName('sidebar')[0];
+        removeClass(sidebar, 'mobile');
+        var filler = document.getElementById("sidebar-filler");
+        if (filler) {
+            filler.remove();
+        }
+        document.getElementsByTagName("body")[0].style.marginTop = '';
+    }
+
     // used for special search precedence
     var TY_PRIMITIVE = itemTypes.indexOf("primitive");
 
@@ -119,8 +151,7 @@
             map(function(s) {
                 var pair = s.split("=");
                 params[decodeURIComponent(pair[0])] =
-                    typeof pair[1] === "undefined" ?
-                            null : decodeURIComponent(pair[1]);
+                    typeof pair[1] === "undefined" ? null : decodeURIComponent(pair[1]);
             });
         return params;
     }
@@ -131,6 +162,8 @@
     }
 
     function highlightSourceLines(ev) {
+        // If we're in mobile mode, we should add the sidebar in any case.
+        hideSidebar();
         var search = document.getElementById("search");
         var i, from, to, match = window.location.hash.match(/^#?(\d+)(?:-(\d+))?$/);
         if (match) {
@@ -216,6 +249,7 @@
         var help = document.getElementById("help");
         switch (getVirtualKey(ev)) {
         case "Escape":
+            hideModal();
             var search = document.getElementById("search");
             if (!hasClass(help, "hidden")) {
                 displayHelp(false, ev);
@@ -229,6 +263,7 @@
         case "s":
         case "S":
             displayHelp(false, ev);
+            hideModal();
             ev.preventDefault();
             focusSearchBar();
             break;
@@ -241,6 +276,7 @@
 
         case "?":
             if (ev.shiftKey) {
+                hideModal();
                 displayHelp(true, ev);
             }
             break;
@@ -653,6 +689,9 @@
             }
 
             function checkPath(startsWith, lastElem, ty) {
+                if (startsWith.length === 0) {
+                    return 0;
+                }
                 var ret_lev = MAX_LEV_DISTANCE + 1;
                 var path = ty.path.split("::");
 
@@ -678,18 +717,7 @@
                         lev_total += lev;
                     }
                     if (aborted === false) {
-                        var extra = MAX_LEV_DISTANCE + 1;
-                        if (i + startsWith.length < path.length) {
-                            extra = levenshtein(path[i + startsWith.length], lastElem);
-                        }
-                        if (extra > MAX_LEV_DISTANCE) {
-                            extra = levenshtein(ty.name, lastElem);
-                        }
-                        if (extra < MAX_LEV_DISTANCE + 1) {
-                            lev_total += extra;
-                            ret_lev = Math.min(ret_lev,
-                                               Math.round(lev_total / (startsWith.length + 1)));
-                        }
+                        ret_lev = Math.min(ret_lev, Math.round(lev_total / startsWith.length));
                     }
                 }
                 return ret_lev;
@@ -906,6 +934,13 @@
                     }
 
                     lev += lev_add;
+                    if (lev > 0 && val.length > 3 && searchWords[j].startsWith(val)) {
+                        if (val.length < 6) {
+                            lev -= 1;
+                        } else {
+                            lev = 0;
+                        }
+                    }
                     if (in_args <= MAX_LEV_DISTANCE) {
                         if (results_in_args[fullId] === undefined) {
                             results_in_args[fullId] = {
@@ -1193,9 +1228,9 @@
             output = '<h1>Results for ' + escape(query.query) +
                 (query.type ? ' (type: ' + escape(query.type) + ')' : '') + '</h1>' +
                 '<div id="titles">' +
-                makeTabHeader(0, "Types/modules", results['others'].length) +
-                makeTabHeader(1, "As parameters", results['in_args'].length) +
-                makeTabHeader(2, "As return value", results['returned'].length) +
+                makeTabHeader(0, "In Names", results['others'].length) +
+                makeTabHeader(1, "In Parameters", results['in_args'].length) +
+                makeTabHeader(2, "In Return Types", results['returned'].length) +
                 '</div><div id="results">';
 
             output += addTab(results['others'], query);
@@ -1419,7 +1454,7 @@
 
         // Draw a convenient sidebar of known crates if we have a listing
         if (rootPath === '../') {
-            var sidebar = document.getElementsByClassName('sidebar')[0];
+            var sidebar = document.getElementsByClassName('sidebar-elems')[0];
             var div = document.createElement('div');
             div.className = 'block crate';
             div.innerHTML = '<h3>Crates</h3>';
@@ -1457,7 +1492,7 @@
 
     // delayed sidebar rendering.
     function initSidebarItems(items) {
-        var sidebar = document.getElementsByClassName('sidebar')[0];
+        var sidebar = document.getElementsByClassName('sidebar-elems')[0];
         var current = window.sidebarCurrent;
 
         function block(shortty, longty) {
@@ -1779,6 +1814,31 @@
         }
     });
 
+    function showModal(content) {
+        var modal = document.createElement('div');
+        modal.id = "important";
+        addClass(modal, 'modal');
+        modal.innerHTML = '<div class="modal-content"><div class="close" id="modal-close">✕</div>' +
+                          '<div class="whiter"></div><span class="docblock">' + content +
+                          '</span></div>';
+        document.getElementsByTagName('body')[0].appendChild(modal);
+        document.getElementById('modal-close').onclick = hideModal;
+        modal.onclick = hideModal;
+    }
+
+    function hideModal() {
+        var modal = document.getElementById("important");
+        if (modal) {
+            modal.parentNode.removeChild(modal);
+        }
+    }
+
+    onEach(document.getElementsByClassName('important-traits'), function(e) {
+        e.onclick = function() {
+            showModal(e.lastElementChild.innerHTML);
+        };
+    });
+
     var search_input = document.getElementsByClassName("search-input")[0];
 
     if (search_input) {
@@ -1794,6 +1854,30 @@
             }
         };
     }
+
+    var params = getQueryStringParams();
+    if (params && params.search) {
+        addClass(document.getElementById("main"), "hidden");
+        var search = document.getElementById("search");
+        removeClass(search, "hidden");
+        search.innerHTML = '<h3 style="text-align: center;">Loading search results...</h3>';
+    }
+
+    var sidebar_menu = document.getElementsByClassName("sidebar-menu")[0];
+    if (sidebar_menu) {
+        sidebar_menu.onclick = function() {
+            var sidebar = document.getElementsByClassName('sidebar')[0];
+            if (hasClass(sidebar, "mobile") === true) {
+                hideSidebar();
+            } else {
+                showSidebar();
+            }
+        };
+    }
+
+    window.onresize = function() {
+        hideSidebar();
+    };
 }());
 
 // Sets the focus on the search bar at the top of the page
