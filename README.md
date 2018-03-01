@@ -6,7 +6,7 @@ A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo
 
 ### Installation
 
-Firstly, ensure you have [CMake](https://cmake.org), be it from your package manager, or from the [download page](https://cmake.org/download).
+Firstly, ensure you have [CMake](https://cmake.org) and the [Required Libraries™](#required-libraries).
 
 Then proceed as usual:
 
@@ -15,6 +15,14 @@ cargo install cargo-update
 ```
 
 If that doesn't work and you're on Mac, [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/alexcrichton/git2-rs/issues/257). If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
+
+#### Required libraries
+
+| Library                                 | \*X package name | msys2 package name         |
+|-----------------------------------------|------------------|----------------------------|
+| [`libgit2`](https://libgit2.github.com) | `libgit2-devel`  | `mingw-w64-x86_64-libgit2` |
+| [`libssh2`](https://libssh2.org)        | `libssh2-devel`  | `mingw-w64-x86_64-libssh2` |
+| [`libssh2`](https://openssl.org)        | `openssl-devel`  | `mingw-w64-x86_64-openssl` |
 
 ### Usage
 
