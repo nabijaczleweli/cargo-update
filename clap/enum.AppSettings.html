@@ -49,7 +49,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/clap/app/settings.rs.html#128-871' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../src/clap/app/settings.rs.html#128-945' title='goto source code'>[src]</a></span></h1>
 <pre class='rust enum'>pub enum AppSettings {
     AllowInvalidUtf8,
     AllArgsOverrideSelf,
@@ -158,7 +158,9 @@ other undefined leading hyphens will fail to parse.</p>
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">res</span>.<span class="ident">is_ok</span>());
 <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">res</span>.<span class="ident">unwrap</span>();
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;num&quot;</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;-20&quot;</span>);</pre>
-</div><span id="variant.AllowMissingPositional" class="variant small-section-header"><a href="#variant.AllowMissingPositional" class="anchor field"></a><span id='AllowMissingPositional.v' class='invisible'><code>AllowMissingPositional</code></span></span><div class='docblock'><p>Allows one to implement a CLI where the second to last positional argument is optional, but
+</div><span id="variant.AllowMissingPositional" class="variant small-section-header"><a href="#variant.AllowMissingPositional" class="anchor field"></a><span id='AllowMissingPositional.v' class='invisible'><code>AllowMissingPositional</code></span></span><div class='docblock'><p>Allows one to implement two styles of CLIs where positionals can be used out of order.</p>
+
+<p>The first example is a CLI where the second to last positional argument is optional, but
 the final positional argument is required. Such as <code>$ prog [optional] &lt;required&gt;</code> where one
 of the two following usages is allowed:</p>
 
@@ -169,10 +171,45 @@ of the two following usages is allowed:</p>
 
 <p>This would otherwise not be allowed. This is useful when <code>[optional]</code> has a default value.</p>
 
-<p><strong>Note:</strong> In addition to using this setting, the second positional argument <em>must</em> be
-<a href="./struct.Arg.html#method.required">required</a></p>
+<p><strong>Note:</strong> when using this style of &quot;missing positionals&quot; the final positional <em>must</em> be
+<a href="./struct.Arg.html#method.required">required</a> if <code>--</code> will not be used to skip to the final positional argument.</p>
+
+<p><strong>Note:</strong> This style also only allows a single positional argument to be &quot;skipped&quot; without
+the use of <code>--</code>. To skip more than one, see the second example.</p>
+
+<p>The second example is when one wants to skip multiple optional positional arguments, and use
+of the <code>--</code> operator is OK (but not required if all arguments will be specified anyways).</p>
+
+<p>For example, imagine a CLI which has three positional arguments <code>[foo] [bar] [baz]...</code> where
+<code>baz</code> accepts multiple values (similar to man <code>ARGS...</code> style training arguments).</p>
+
+<p>With this setting the following invocations are posisble:</p>
+
+<ul>
+<li><code>$ prog foo bar baz1 baz2 baz3</code></li>
+<li><code>$ prog foo -- baz1 baz2 baz3</code></li>
+<li><code>$ prog -- baz1 baz2 baz3</code></li>
+</ul>
 
 <h1 id='examples-3' class='section-header'><a href='#examples-3'>Examples</a></h1>
+<p>Style number one from above:</p>
+
+<pre class="rust rust-example-rendered">
+<span class="comment">// Assume there is an external subcommand named &quot;subcmd&quot;</span>
+<span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;myprog&quot;</span>)
+    .<span class="ident">setting</span>(<span class="ident">AppSettings</span>::<span class="ident">AllowMissingPositional</span>)
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;arg1&quot;</span>))
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;arg2&quot;</span>)
+        .<span class="ident">required</span>(<span class="bool-val">true</span>))
+    .<span class="ident">get_matches_from</span>(<span class="macro">vec</span><span class="macro">!</span>[
+        <span class="string">&quot;prog&quot;</span>, <span class="string">&quot;other&quot;</span>
+    ]);
+
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;arg1&quot;</span>), <span class="prelude-val">None</span>);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;arg2&quot;</span>), <span class="prelude-val">Some</span>(<span class="string">&quot;other&quot;</span>));</pre>
+
+<p>Now the same example, but using a default value for the first optional positional argument</p>
+
 <pre class="rust rust-example-rendered">
 <span class="comment">// Assume there is an external subcommand named &quot;subcmd&quot;</span>
 <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;myprog&quot;</span>)
@@ -182,11 +219,45 @@ of the two following usages is allowed:</p>
     .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;arg2&quot;</span>)
         .<span class="ident">required</span>(<span class="bool-val">true</span>))
     .<span class="ident">get_matches_from</span>(<span class="macro">vec</span><span class="macro">!</span>[
-        <span class="string">&quot;myprog&quot;</span>, <span class="string">&quot;other&quot;</span>
+        <span class="string">&quot;prog&quot;</span>, <span class="string">&quot;other&quot;</span>
     ]);
 
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;arg1&quot;</span>), <span class="prelude-val">Some</span>(<span class="string">&quot;something&quot;</span>));
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;arg2&quot;</span>), <span class="prelude-val">Some</span>(<span class="string">&quot;other&quot;</span>));</pre>
+
+<p>Style number two from above:</p>
+
+<pre class="rust rust-example-rendered">
+<span class="comment">// Assume there is an external subcommand named &quot;subcmd&quot;</span>
+<span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;myprog&quot;</span>)
+    .<span class="ident">setting</span>(<span class="ident">AppSettings</span>::<span class="ident">AllowMissingPositional</span>)
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;foo&quot;</span>))
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;bar&quot;</span>))
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;baz&quot;</span>).<span class="ident">multiple</span>(<span class="bool-val">true</span>))
+    .<span class="ident">get_matches_from</span>(<span class="macro">vec</span><span class="macro">!</span>[
+        <span class="string">&quot;prog&quot;</span>, <span class="string">&quot;foo&quot;</span>, <span class="string">&quot;bar&quot;</span>, <span class="string">&quot;baz1&quot;</span>, <span class="string">&quot;baz2&quot;</span>, <span class="string">&quot;baz3&quot;</span>
+    ]);
+
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;foo&quot;</span>), <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>));
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;bar&quot;</span>), <span class="prelude-val">Some</span>(<span class="string">&quot;bar&quot;</span>));
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">values_of</span>(<span class="string">&quot;baz&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;&gt;</span>(), <span class="kw-2">&amp;</span>[<span class="string">&quot;baz1&quot;</span>, <span class="string">&quot;baz2&quot;</span>, <span class="string">&quot;baz3&quot;</span>]);</pre>
+
+<p>Now nofice if we don&#39;t specifiy <code>foo</code> or <code>baz</code> but use the <code>--</code> operator.</p>
+
+<pre class="rust rust-example-rendered">
+<span class="comment">// Assume there is an external subcommand named &quot;subcmd&quot;</span>
+<span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">App</span>::<span class="ident">new</span>(<span class="string">&quot;myprog&quot;</span>)
+    .<span class="ident">setting</span>(<span class="ident">AppSettings</span>::<span class="ident">AllowMissingPositional</span>)
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;foo&quot;</span>))
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;bar&quot;</span>))
+    .<span class="ident">arg</span>(<span class="ident">Arg</span>::<span class="ident">with_name</span>(<span class="string">&quot;baz&quot;</span>).<span class="ident">multiple</span>(<span class="bool-val">true</span>))
+    .<span class="ident">get_matches_from</span>(<span class="macro">vec</span><span class="macro">!</span>[
+        <span class="string">&quot;prog&quot;</span>, <span class="string">&quot;--&quot;</span>, <span class="string">&quot;baz1&quot;</span>, <span class="string">&quot;baz2&quot;</span>, <span class="string">&quot;baz3&quot;</span>
+    ]);
+
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;foo&quot;</span>), <span class="prelude-val">None</span>);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">value_of</span>(<span class="string">&quot;bar&quot;</span>), <span class="prelude-val">None</span>);
+<span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">m</span>.<span class="ident">values_of</span>(<span class="string">&quot;baz&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>_<span class="op">&gt;&gt;</span>(), <span class="kw-2">&amp;</span>[<span class="string">&quot;baz1&quot;</span>, <span class="string">&quot;baz2&quot;</span>, <span class="string">&quot;baz3&quot;</span>]);</pre>
 </div><span id="variant.AllowExternalSubcommands" class="variant small-section-header"><a href="#variant.AllowExternalSubcommands" class="anchor field"></a><span id='AllowExternalSubcommands.v' class='invisible'><code>AllowExternalSubcommands</code></span></span><div class='docblock'><p>Specifies that an unexpected positional argument,
 which would otherwise cause a <a href="./enum.ErrorKind.html#variant.UnknownArgument"><code>ErrorKind::UnknownArgument</code></a> error,
 should instead be treated as a <a href="./struct.SubCommand.html"><code>SubCommand</code></a> within the <a href="./struct.ArgMatches.html"><code>ArgMatches</code></a> struct.</p>
@@ -360,7 +431,7 @@ declared in, and not alphabetically which is the default.</p>
     .<span class="ident">setting</span>(<span class="ident">AppSettings</span>::<span class="ident">DeriveDisplayOrder</span>)
     .<span class="ident">get_matches</span>();</pre>
 </div><span id="variant.GlobalVersion" class="variant small-section-header"><a href="#variant.GlobalVersion" class="anchor field"></a><span id='GlobalVersion.v' class='invisible'><code>GlobalVersion</code></span></span><div class='docblock'><p>Specifies to use the version of the current command for all child <a href="./struct.SubCommand.html"><code>SubCommand</code></a>s.
-(Defaults to <code>false</code>; subcommands have independant version strings from their parents.)</p>
+(Defaults to <code>false</code>; subcommands have independent version strings from their parents.)</p>
 
 <p><strong>NOTE:</strong> The version for the current command <strong>and</strong> this setting must be set <strong>prior</strong> to
 adding any child subcommands</p>
@@ -393,7 +464,7 @@ to <code>test</code> there could not also be a subcommand or alias <code>temp</c
 designing CLIs which allow inferred subcommands and have potential positional/free
 arguments whose values could start with the same characters as subcommands. If this is the
 case, it&#39;s recommended to use settings such as <a href="./enum.AppSettings.html#variant.ArgsNegateSubcommands"><code>AppSeettings::ArgsNegateSubcommands</code></a> in
-conjuction with this setting.</p>
+conjunction with this setting.</p>
 
 <h1 id='examples-18' class='section-header'><a href='#examples-18'>Examples</a></h1>
 <pre class="rust rust-example-rendered">
@@ -624,10 +695,10 @@ rare)</p>
 <div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
 </div><h4 id='method.clone_from' class="method"><span id='clone_from.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</code></span><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/clone.rs.html#112-114' title='goto source code'>[src]</a></span></h4>
 <div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
-</div></div><h3 id='impl-FromStr' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html" title="trait core::str::FromStr">FromStr</a> for <a class="enum" href="../clap/enum.AppSettings.html" title="enum clap::AppSettings">AppSettings</a></code><a href='#impl-FromStr' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/clap/app/settings.rs.html#873-914' title='goto source code'>[src]</a></span></h3>
+</div></div><h3 id='impl-FromStr' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html" title="trait core::str::FromStr">FromStr</a> for <a class="enum" href="../clap/enum.AppSettings.html" title="enum clap::AppSettings">AppSettings</a></code><a href='#impl-FromStr' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/clap/app/settings.rs.html#947-988' title='goto source code'>[src]</a></span></h3>
 <div class='impl-items'><h4 id='associatedtype.Err' class="type"><span id='Err.t' class='invisible'><code>type <a href='https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html#associatedtype.Err' class="type">Err</a> = <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a></code></span></h4>
 <div class='docblock'><p>The associated error which can be returned from parsing.</p>
-</div><h4 id='method.from_str' class="method"><span id='from_str.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html#tymethod.from_str' class='fnname'>from_str</a>(s: &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;Self, Self::<a class="type" href="https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html#associatedtype.Err" title="type core::str::FromStr::Err">Err</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/clap/app/settings.rs.html#875-913' title='goto source code'>[src]</a></span></h4>
+</div><h4 id='method.from_str' class="method"><span id='from_str.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html#tymethod.from_str' class='fnname'>from_str</a>(s: &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;Self, Self::<a class="type" href="https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html#associatedtype.Err" title="type core::str::FromStr::Err">Err</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/clap/app/settings.rs.html#949-987' title='goto source code'>[src]</a></span></h4>
 <div class='docblock'><p>Parses a string <code>s</code> to return a value of this type. <a href="https://doc.rust-lang.org/nightly/core/str/trait.FromStr.html#tymethod.from_str">Read more</a></p>
 </div></div></section>
     <section id='search' class="content hidden"></section>

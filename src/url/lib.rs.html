@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.6.0/src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.7.0/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>lib.rs.html -- source</title>
@@ -2473,6 +2473,56 @@
 <span id="2427">2427</span>
 <span id="2428">2428</span>
 <span id="2429">2429</span>
+<span id="2430">2430</span>
+<span id="2431">2431</span>
+<span id="2432">2432</span>
+<span id="2433">2433</span>
+<span id="2434">2434</span>
+<span id="2435">2435</span>
+<span id="2436">2436</span>
+<span id="2437">2437</span>
+<span id="2438">2438</span>
+<span id="2439">2439</span>
+<span id="2440">2440</span>
+<span id="2441">2441</span>
+<span id="2442">2442</span>
+<span id="2443">2443</span>
+<span id="2444">2444</span>
+<span id="2445">2445</span>
+<span id="2446">2446</span>
+<span id="2447">2447</span>
+<span id="2448">2448</span>
+<span id="2449">2449</span>
+<span id="2450">2450</span>
+<span id="2451">2451</span>
+<span id="2452">2452</span>
+<span id="2453">2453</span>
+<span id="2454">2454</span>
+<span id="2455">2455</span>
+<span id="2456">2456</span>
+<span id="2457">2457</span>
+<span id="2458">2458</span>
+<span id="2459">2459</span>
+<span id="2460">2460</span>
+<span id="2461">2461</span>
+<span id="2462">2462</span>
+<span id="2463">2463</span>
+<span id="2464">2464</span>
+<span id="2465">2465</span>
+<span id="2466">2466</span>
+<span id="2467">2467</span>
+<span id="2468">2468</span>
+<span id="2469">2469</span>
+<span id="2470">2470</span>
+<span id="2471">2471</span>
+<span id="2472">2472</span>
+<span id="2473">2473</span>
+<span id="2474">2474</span>
+<span id="2475">2475</span>
+<span id="2476">2476</span>
+<span id="2477">2477</span>
+<span id="2478">2478</span>
+<span id="2479">2479</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2013-2015 The rust-url developers.</span>
 <span class="comment">//</span>
@@ -2580,7 +2630,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 # run().unwrap();
 */</span>
 
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/url/1.6.0&quot;</span>)]</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/url/1.7.0&quot;</span>)]</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;rustc-serialize&quot;</span>)]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rustc_serialize</span>;
 <span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">matches</span>;
@@ -2593,7 +2643,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 <span class="kw">use</span> <span class="ident">encoding</span>::<span class="ident">EncodingOverride</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;heapsize&quot;</span>)]</span> <span class="kw">use</span> <span class="ident">heapsize</span>::<span class="ident">HeapSizeOf</span>;
 <span class="kw">use</span> <span class="ident">host</span>::<span class="ident">HostInternal</span>;
-<span class="kw">use</span> <span class="ident">parser</span>::{<span class="ident">Parser</span>, <span class="ident">Context</span>, <span class="ident">SchemeType</span>, <span class="ident">to_u32</span>};
+<span class="kw">use</span> <span class="ident">parser</span>::{<span class="ident">Parser</span>, <span class="ident">Context</span>, <span class="ident">SchemeType</span>, <span class="ident">to_u32</span>, <span class="ident">ViolationFn</span>};
 <span class="kw">use</span> <span class="ident">percent_encoding</span>::{<span class="ident">PATH_SEGMENT_ENCODE_SET</span>, <span class="ident">USERINFO_ENCODE_SET</span>,
                        <span class="ident">percent_encode</span>, <span class="ident">percent_decode</span>, <span class="ident">utf8_percent_encode</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Borrow</span>;
@@ -2611,7 +2661,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">origin</span>::{<span class="ident">Origin</span>, <span class="ident">OpaqueOrigin</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">host</span>::{<span class="ident">Host</span>, <span class="ident">HostAndPort</span>, <span class="ident">SocketAddrs</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">path_segments</span>::<span class="ident">PathSegmentsMut</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">parser</span>::<span class="ident">ParseError</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">parser</span>::{<span class="ident">ParseError</span>, <span class="ident">SyntaxViolation</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">slicing</span>::<span class="ident">Position</span>;
 
 <span class="kw">mod</span> <span class="ident">encoding</span>;
@@ -2662,7 +2712,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ParseOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">base_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Url</span><span class="op">&gt;</span>,
     <span class="ident">encoding_override</span>: <span class="ident">encoding</span>::<span class="ident">EncodingOverride</span>,
-    <span class="ident">log_syntax_violation</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)<span class="op">&gt;</span>,
+    <span class="ident">violation_fn</span>: <span class="ident">ViolationFn</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ParseOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -2685,9 +2735,47 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
         <span class="self">self</span>
     }
 
-    <span class="doccomment">/// Call the provided function or closure on non-fatal parse errors.</span>
+    <span class="doccomment">/// Call the provided function or closure on non-fatal parse errors, passing</span>
+    <span class="doccomment">/// a static string description.  This method is deprecated in favor of</span>
+    <span class="doccomment">/// `syntax_violation_callback` and is implemented as an adaptor for the</span>
+    <span class="doccomment">/// latter, passing the `SyntaxViolation` description. Only the last value</span>
+    <span class="doccomment">/// passed to either method will be used by a parser.</span>
+    <span class="attribute">#[<span class="ident">deprecated</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">log_syntax_violation</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">new</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)<span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">log_syntax_violation</span> <span class="op">=</span> <span class="ident">new</span>;
+        <span class="self">self</span>.<span class="ident">violation_fn</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">new</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=&gt;</span> <span class="ident">ViolationFn</span>::<span class="ident">OldFn</span>(<span class="ident">f</span>),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">ViolationFn</span>::<span class="ident">NoOp</span>
+        };
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Call the provided function or closure for a non-fatal `SyntaxViolation`</span>
+    <span class="doccomment">/// when it occurs during parsing. Note that since the provided function is</span>
+    <span class="doccomment">/// `Fn`, the caller might need to utilize _interior mutability_, such as with</span>
+    <span class="doccomment">/// a `RefCell`, to collect the violations.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ## Example</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use std::cell::RefCell;</span>
+    <span class="doccomment">/// use url::{Url, SyntaxViolation};</span>
+    <span class="doccomment">/// # use url::ParseError;</span>
+    <span class="doccomment">/// # fn run() -&gt; Result&lt;(), url::ParseError&gt; {</span>
+    <span class="doccomment">/// let violations = RefCell::new(Vec::new());</span>
+    <span class="doccomment">/// let url = Url::options()</span>
+    <span class="doccomment">///     .syntax_violation_callback(Some(&amp;|v| violations.borrow_mut().push(v)))</span>
+    <span class="doccomment">///     .parse(&quot;https:////example.com&quot;)?;</span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/&quot;);</span>
+    <span class="doccomment">/// assert_eq!(violations.into_inner(),</span>
+    <span class="doccomment">///            vec!(SyntaxViolation::ExpectedDoubleSlash));</span>
+    <span class="doccomment">/// # Ok(())</span>
+    <span class="doccomment">/// # }</span>
+    <span class="doccomment">/// # run().unwrap();</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">syntax_violation_callback</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">new</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Fn</span>(<span class="ident">SyntaxViolation</span>)<span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">violation_fn</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">new</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=&gt;</span> <span class="ident">ViolationFn</span>::<span class="ident">NewFn</span>(<span class="ident">f</span>),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">ViolationFn</span>::<span class="ident">NoOp</span>
+        };
         <span class="self">self</span>
     }
 
@@ -2697,7 +2785,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
             <span class="ident">serialization</span>: <span class="ident">String</span>::<span class="ident">with_capacity</span>(<span class="ident">input</span>.<span class="ident">len</span>()),
             <span class="ident">base_url</span>: <span class="self">self</span>.<span class="ident">base_url</span>,
             <span class="ident">query_encoding_override</span>: <span class="self">self</span>.<span class="ident">encoding_override</span>,
-            <span class="ident">log_syntax_violation</span>: <span class="self">self</span>.<span class="ident">log_syntax_violation</span>,
+            <span class="ident">violation_fn</span>: <span class="self">self</span>.<span class="ident">violation_fn</span>,
             <span class="ident">context</span>: <span class="ident">Context</span>::<span class="ident">UrlParser</span>,
         }.<span class="ident">parse_url</span>(<span class="ident">input</span>)
     }
@@ -2705,11 +2793,12 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ParseOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;ParseOptions {{ base_url: {:?}, encoding_override: {:?}, log_syntax_violation: &quot;</span>, <span class="self">self</span>.<span class="ident">base_url</span>, <span class="self">self</span>.<span class="ident">encoding_override</span>)<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">log_syntax_violation</span> {
-            <span class="prelude-val">Some</span>(_) <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Some(Fn(&amp;&#39;static str)) }}&quot;</span>),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;None }}&quot;</span>)
-        }
+        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>,
+               <span class="string">&quot;ParseOptions {{ base_url: {:?}, encoding_override: {:?}, \
+                violation_fn: {:?} }}&quot;</span>,
+               <span class="self">self</span>.<span class="ident">base_url</span>,
+               <span class="self">self</span>.<span class="ident">encoding_override</span>,
+               <span class="self">self</span>.<span class="ident">violation_fn</span>)
     }
 }
 
@@ -2728,7 +2817,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// # run().unwrap();</span>
     <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Errors</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If the function can not parse an absolute URL from the given string,</span>
@@ -2791,7 +2880,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```rust</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let base = Url::parse(&quot;https://example.net/a/b.html&quot;)?;</span>
     <span class="doccomment">/// let url = base.join(&quot;c.png&quot;)?;</span>
@@ -2807,7 +2896,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Errors</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// If the function can not parse an URL from the given string </span>
+    <span class="doccomment">/// If the function can not parse an URL from the given string</span>
     <span class="doccomment">/// with this URL as the base URL, a [`ParseError`] variant will be returned.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`ParseError`]: enum.ParseError.html</span>
@@ -2839,7 +2928,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
         <span class="ident">ParseOptions</span> {
             <span class="ident">base_url</span>: <span class="prelude-val">None</span>,
             <span class="ident">encoding_override</span>: <span class="ident">EncodingOverride</span>::<span class="ident">utf8</span>(),
-            <span class="ident">log_syntax_violation</span>: <span class="prelude-val">None</span>,
+            <span class="ident">violation_fn</span>: <span class="ident">ViolationFn</span>::<span class="ident">NoOp</span>,
         }
     }
 
@@ -3653,11 +3742,11 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data.csv&quot;);</span>
 
     <span class="doccomment">/// url.set_fragment(Some(&quot;cell=4,1-6,2&quot;));</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data.csv#cell=4,1-6,2&quot;);  </span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data.csv#cell=4,1-6,2&quot;);</span>
     <span class="doccomment">/// assert_eq!(url.fragment(), Some(&quot;cell=4,1-6,2&quot;));</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// url.set_fragment(None);</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data.csv&quot;);    </span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data.csv&quot;);</span>
     <span class="doccomment">/// assert!(url.fragment().is_none());</span>
     <span class="doccomment">/// # Ok(())</span>
     <span class="doccomment">/// # }</span>
@@ -3710,7 +3799,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/products&quot;);</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// url.set_query(Some(&quot;page=2&quot;));</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/products?page=2&quot;);    </span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/products?page=2&quot;);</span>
     <span class="doccomment">/// assert_eq!(url.query(), Some(&quot;page=2&quot;));</span>
     <span class="doccomment">/// # Ok(())</span>
     <span class="doccomment">/// # }</span>
@@ -3806,12 +3895,12 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;https://example.com&quot;)?;</span>
     <span class="doccomment">/// url.set_path(&quot;api/comments&quot;);</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/api/comments&quot;);    </span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/api/comments&quot;);</span>
     <span class="doccomment">/// assert_eq!(url.path(), &quot;/api/comments&quot;);</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;https://example.com/api&quot;)?;</span>
     <span class="doccomment">/// url.set_path(&quot;data/report.csv&quot;);</span>
-    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data/report.csv&quot;);    </span>
+    <span class="doccomment">/// assert_eq!(url.as_str(), &quot;https://example.com/data/report.csv&quot;);</span>
     <span class="doccomment">/// assert_eq!(url.path(), &quot;/data/report.csv&quot;);</span>
     <span class="doccomment">/// # Ok(())</span>
     <span class="doccomment">/// # }</span>
@@ -3903,7 +3992,8 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # run().unwrap();</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_port</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">port</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">scheme</span>() <span class="op">==</span> <span class="string">&quot;file&quot;</span> {
+        <span class="comment">// has_host implies !cannot_be_a_base</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">host</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">Host</span>::<span class="ident">Domain</span>(<span class="string">&quot;&quot;</span>)) <span class="op">||</span> <span class="self">self</span>.<span class="ident">scheme</span>() <span class="op">==</span> <span class="string">&quot;file&quot;</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(())
         }
         <span class="kw">if</span> <span class="ident">port</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">port</span> <span class="op">==</span> <span class="ident">parser</span>::<span class="ident">default_port</span>(<span class="self">self</span>.<span class="ident">scheme</span>()) {
@@ -3971,7 +4061,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;foo://example.net&quot;)?;</span>
     <span class="doccomment">/// let result = url.set_host(None);</span>
@@ -3987,7 +4077,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;https://example.net&quot;)?;</span>
     <span class="doccomment">/// let result = url.set_host(None);</span>
@@ -4003,7 +4093,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;mailto:rms@example.net&quot;)?;</span>
     <span class="doccomment">///</span>
@@ -4034,7 +4124,11 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
             <span class="kw">if</span> <span class="ident">host</span> <span class="op">==</span> <span class="string">&quot;&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">scheme</span>()).<span class="ident">is_special</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">EmptyHost</span>);
             }
-            <span class="self">self</span>.<span class="ident">set_host_internal</span>(<span class="ident">Host</span>::<span class="ident">parse</span>(<span class="ident">host</span>)<span class="question-mark">?</span>, <span class="prelude-val">None</span>)
+            <span class="kw">if</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">scheme</span>()).<span class="ident">is_special</span>() {
+                <span class="self">self</span>.<span class="ident">set_host_internal</span>(<span class="ident">Host</span>::<span class="ident">parse</span>(<span class="ident">host</span>)<span class="question-mark">?</span>, <span class="prelude-val">None</span>)
+            } <span class="kw">else</span> {
+                <span class="self">self</span>.<span class="ident">set_host_internal</span>(<span class="ident">Host</span>::<span class="ident">parse_opaque</span>(<span class="ident">host</span>)<span class="question-mark">?</span>, <span class="prelude-val">None</span>)
+            }
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">has_host</span>() {
             <span class="kw">if</span> <span class="ident">SchemeType</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">scheme</span>()).<span class="ident">is_special</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">EmptyHost</span>)
@@ -4167,7 +4261,8 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # run().unwrap();</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_password</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">password</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() {
+        <span class="comment">// has_host implies !cannot_be_a_base</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">host</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">Host</span>::<span class="ident">Domain</span>(<span class="string">&quot;&quot;</span>)) <span class="op">||</span> <span class="self">self</span>.<span class="ident">scheme</span>() <span class="op">==</span> <span class="string">&quot;file&quot;</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(())
         }
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">password</span>) <span class="op">=</span> <span class="ident">password</span> {
@@ -4248,7 +4343,8 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # run().unwrap();</span>
     <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_username</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">username</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() {
+        <span class="comment">// has_host implies !cannot_be_a_base</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_host</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">host</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="ident">Host</span>::<span class="ident">Domain</span>(<span class="string">&quot;&quot;</span>)) <span class="op">||</span> <span class="self">self</span>.<span class="ident">scheme</span>() <span class="op">==</span> <span class="string">&quot;file&quot;</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(())
         }
         <span class="kw">let</span> <span class="ident">username_start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">scheme_end</span> <span class="op">+</span> <span class="number">3</span>;
@@ -4307,7 +4403,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;https://example.net&quot;)?;</span>
     <span class="doccomment">/// let result = url.set_scheme(&quot;foo&quot;);</span>
@@ -4324,7 +4420,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;https://example.net&quot;)?;</span>
     <span class="doccomment">/// let result = url.set_scheme(&quot;foõ&quot;);</span>
@@ -4340,7 +4436,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// use url::Url;</span>
     <span class="doccomment">/// # use url::ParseError;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ParseError&gt; {</span>
     <span class="doccomment">/// let mut url = Url::parse(&quot;mailto:rms@example.net&quot;)?;</span>
     <span class="doccomment">/// let result = url.set_scheme(&quot;https&quot;);</span>
@@ -4389,7 +4485,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// # if cfg!(unix) {</span>
     <span class="doccomment">/// use url::Url;</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # fn run() -&gt; Result&lt;(), ()&gt; {</span>
     <span class="doccomment">/// let url = Url::from_file_path(&quot;/tmp/foo.txt&quot;)?;</span>
     <span class="doccomment">/// assert_eq!(url.as_str(), &quot;file:///tmp/foo.txt&quot;);</span>
@@ -4404,6 +4500,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// # run().unwrap();</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">unix</span>, <span class="ident">windows</span>, <span class="ident">target_os</span><span class="op">=</span><span class="string">&quot;redox&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_file_path</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, ()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">serialization</span> <span class="op">=</span> <span class="string">&quot;file://&quot;</span>.<span class="ident">to_owned</span>();
         <span class="kw">let</span> <span class="ident">host_start</span> <span class="op">=</span> <span class="ident">serialization</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>;
@@ -4439,6 +4536,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note that `std::path` does not consider trailing slashes significant</span>
     <span class="doccomment">/// and usually does not include them (e.g. in `Path::parent()`).</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">unix</span>, <span class="ident">windows</span>, <span class="ident">target_os</span><span class="op">=</span><span class="string">&quot;redox&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_directory_path</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Url</span>, ()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">url</span> <span class="op">=</span> <span class="ident">Url</span>::<span class="ident">from_file_path</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="op">!</span><span class="ident">url</span>.<span class="ident">serialization</span>.<span class="ident">ends_with</span>(<span class="string">&#39;/&#39;</span>) {
@@ -4520,6 +4618,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     <span class="doccomment">/// (That is, if the percent-decoded path contains a NUL byte or,</span>
     <span class="doccomment">/// for a Windows path, is not UTF-8.)</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">unix</span>, <span class="ident">windows</span>, <span class="ident">target_os</span><span class="op">=</span><span class="string">&quot;redox&quot;</span>))]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_file_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, ()<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">segments</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">path_segments</span>() {
             <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">host</span>() {
@@ -4765,6 +4864,7 @@ assert_eq!(css_url.as_str(), &quot;http://servo.github.io/rust-url/main.css&quot
     }
     <span class="prelude-val">Ok</span>((<span class="ident">host_end</span>, <span class="ident">host_internal</span>))
 }
+
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">unix</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;redox&quot;</span>))]</span>
 <span class="kw">fn</span> <span class="ident">file_url_segments_to_pathbuf</span>(<span class="ident">host</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">segments</span>: <span class="ident">str</span>::<span class="ident">Split</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, ()<span class="op">&gt;</span> {

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.6.0/src/host.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/url-1.7.0/src/host.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>host.rs.html -- source</title>
@@ -561,6 +561,45 @@
 <span id="515">515</span>
 <span id="516">516</span>
 <span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2013-2016 The rust-url developers.</span>
 <span class="comment">//</span>
@@ -577,7 +616,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">net</span>::{<span class="ident">Ipv4Addr</span>, <span class="ident">Ipv6Addr</span>, <span class="ident">SocketAddr</span>, <span class="ident">SocketAddrV4</span>, <span class="ident">SocketAddrV6</span>, <span class="ident">ToSocketAddrs</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">vec</span>;
 <span class="kw">use</span> <span class="ident">parser</span>::{<span class="ident">ParseResult</span>, <span class="ident">ParseError</span>};
-<span class="kw">use</span> <span class="ident">percent_encoding</span>::<span class="ident">percent_decode</span>;
+<span class="kw">use</span> <span class="ident">percent_encoding</span>::{<span class="ident">percent_decode</span>, <span class="ident">utf8_percent_encode</span>, <span class="ident">SIMPLE_ENCODE_SET</span>};
 <span class="kw">use</span> <span class="ident">idna</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
@@ -637,7 +676,9 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Host</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">=</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="doccomment">/// A DNS domain name, as &#39;.&#39; dot-separated labels.</span>
-    <span class="doccomment">/// Non-ASCII labels are encoded in punycode per IDNA.</span>
+    <span class="doccomment">/// Non-ASCII labels are encoded in punycode per IDNA if this is the host of</span>
+    <span class="doccomment">/// a special URL, or percent encoded for non-special URLs. Hosts for</span>
+    <span class="doccomment">/// non-special URLs are also called opaque hosts.</span>
     <span class="ident">Domain</span>(<span class="ident">S</span>),
 
     <span class="doccomment">/// An IPv4 address.</span>
@@ -721,6 +762,23 @@
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">Host</span>::<span class="ident">Domain</span>(<span class="ident">domain</span>.<span class="ident">into</span>()))
         }
+    }
+
+    <span class="comment">// &lt;https://url.spec.whatwg.org/#concept-opaque-host-parser&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_opaque</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&#39;[&#39;</span>) {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">ends_with</span>(<span class="string">&#39;]&#39;</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">InvalidIpv6Address</span>)
+            }
+            <span class="kw">return</span> <span class="ident">parse_ipv6addr</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..<span class="ident">input</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>]).<span class="ident">map</span>(<span class="ident">Host</span>::<span class="ident">Ipv6</span>)
+        }
+        <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">find</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="macro">matches</span><span class="macro">!</span>(<span class="ident">c</span>,
+            <span class="string">&#39;\0&#39;</span> <span class="op">|</span> <span class="string">&#39;\t&#39;</span> <span class="op">|</span> <span class="string">&#39;\n&#39;</span> <span class="op">|</span> <span class="string">&#39;\r&#39;</span> <span class="op">|</span> <span class="string">&#39; &#39;</span> <span class="op">|</span> <span class="string">&#39;#&#39;</span> <span class="op">|</span> <span class="string">&#39;/&#39;</span> <span class="op">|</span> <span class="string">&#39;:&#39;</span> <span class="op">|</span> <span class="string">&#39;?&#39;</span> <span class="op">|</span> <span class="string">&#39;@&#39;</span> <span class="op">|</span> <span class="string">&#39;[&#39;</span> <span class="op">|</span> <span class="string">&#39;\\&#39;</span> <span class="op">|</span> <span class="string">&#39;]&#39;</span>
+        )).<span class="ident">is_some</span>() {
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">InvalidDomainCharacter</span>)
+        }
+        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">utf8_percent_encode</span>(<span class="ident">input</span>, <span class="ident">SIMPLE_ENCODE_SET</span>).<span class="ident">to_string</span>();
+        <span class="prelude-val">Ok</span>(<span class="ident">Host</span>::<span class="ident">Domain</span>(<span class="ident">s</span>))
     }
 }
 
@@ -874,7 +932,7 @@
 }
 
 <span class="doccomment">/// &lt;https://url.spec.whatwg.org/#ipv4-number-parser&gt;</span>
-<span class="kw">fn</span> <span class="ident">parse_ipv4number</span>(<span class="kw-2">mut</span> <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, ()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">parse_ipv4number</span>(<span class="kw-2">mut</span> <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, ()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="number">10</span>;
     <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0x&quot;</span>) <span class="op">||</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0X&quot;</span>) {
         <span class="ident">input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">2</span>..];
@@ -883,14 +941,30 @@
         <span class="ident">input</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..];
         <span class="ident">r</span> <span class="op">=</span> <span class="number">8</span>;
     }
+
+    <span class="comment">// At the moment we can&#39;t know the reason why from_str_radix fails</span>
+    <span class="comment">// https://github.com/rust-lang/rust/issues/22639</span>
+    <span class="comment">// So instead we check if the input looks like a real number and only return</span>
+    <span class="comment">// an error when it&#39;s an overflow.</span>
+    <span class="kw">let</span> <span class="ident">valid_number</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">r</span> {
+        <span class="number">8</span> <span class="op">=&gt;</span> <span class="ident">input</span>.<span class="ident">chars</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">&gt;=</span> <span class="string">&#39;0&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">&lt;=</span><span class="string">&#39;7&#39;</span>),
+        <span class="number">10</span> <span class="op">=&gt;</span> <span class="ident">input</span>.<span class="ident">chars</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span> <span class="op">&gt;=</span> <span class="string">&#39;0&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">&lt;=</span><span class="string">&#39;9&#39;</span>),
+        <span class="number">16</span> <span class="op">=&gt;</span> <span class="ident">input</span>.<span class="ident">chars</span>().<span class="ident">all</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> (<span class="ident">c</span> <span class="op">&gt;=</span> <span class="string">&#39;0&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">&lt;=</span><span class="string">&#39;9&#39;</span>) <span class="op">||</span> (<span class="ident">c</span> <span class="op">&gt;=</span><span class="string">&#39;a&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">&lt;=</span> <span class="string">&#39;f&#39;</span>) <span class="op">||</span> (<span class="ident">c</span> <span class="op">&gt;=</span> <span class="string">&#39;A&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">c</span> <span class="op">&lt;=</span> <span class="string">&#39;F&#39;</span>)),
+        _ <span class="op">=&gt;</span> <span class="bool-val">false</span>
+    };
+
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">valid_number</span> {
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+    }
+
     <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">0</span>);
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="number">0</span>));
     }
     <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">starts_with</span>(<span class="string">&#39;+&#39;</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(())
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
     <span class="kw">match</span> <span class="ident">u32</span>::<span class="ident">from_str_radix</span>(<span class="ident">input</span>, <span class="ident">r</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">number</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">number</span>),
+        <span class="prelude-val">Ok</span>(<span class="ident">number</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">number</span>)),
         <span class="prelude-val">Err</span>(_) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(()),
     }
 }
@@ -908,15 +982,19 @@
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">numbers</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">overflow</span> <span class="op">=</span> <span class="bool-val">false</span>;
     <span class="kw">for</span> <span class="ident">part</span> <span class="kw">in</span> <span class="ident">parts</span> {
         <span class="kw">if</span> <span class="ident">part</span> <span class="op">==</span> <span class="string">&quot;&quot;</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">parse_ipv4number</span>(<span class="ident">part</span>) {
-            <span class="ident">numbers</span>.<span class="ident">push</span>(<span class="ident">n</span>);
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
-        }
+        <span class="kw">match</span> <span class="ident">parse_ipv4number</span>(<span class="ident">part</span>) {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">n</span>)) <span class="op">=&gt;</span> <span class="ident">numbers</span>.<span class="ident">push</span>(<span class="ident">n</span>),
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Err</span>(()) <span class="op">=&gt;</span> <span class="ident">overflow</span> <span class="op">=</span> <span class="bool-val">true</span>
+        };
+    }
+    <span class="kw">if</span> <span class="ident">overflow</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">InvalidIpv4Address</span>);
     }
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ipv4</span> <span class="op">=</span> <span class="ident">numbers</span>.<span class="ident">pop</span>().<span class="ident">expect</span>(<span class="string">&quot;a non-empty list of numbers&quot;</span>);
     <span class="comment">// Equivalent to: ipv4 &gt;= 256 ** (4 − numbers.len())</span>

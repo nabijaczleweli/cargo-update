@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["uniques","Get `uniques` from two vectors"]],"mod":[["string","A string is a collection so we should have more methods for handling strings."],["vec","Array Tool provides many useful methods for vectors"]]});
+initSidebarItems({"fn":[["uniques","Get `uniques` from two vectors"]],"mod":[["iter","Array Tool provides useful methods for iterators "],["string","A string is a collection so we should have more methods for handling strings."],["vec","Array Tool provides many useful methods for vectors"]]});
