@@ -217,7 +217,8 @@ fn actual_main() -> Result<(), i32> {
                                 let mut cmd = Command::new("cargo");
                                 cmd.args(&cfg.cargo_args()[..])
                                     .arg("--git")
-                                    .arg(&package.url);
+                                    .arg(&package.url)
+                                    .arg(&package.name);
                                 if let Some(ref b) = package.branch.as_ref() {
                                     cmd.arg("--branch").arg(b);
                                 }
@@ -227,7 +228,8 @@ fn actual_main() -> Result<(), i32> {
                                 cmd.arg("install")
                                     .arg("-f")
                                     .arg("--git")
-                                    .arg(&package.url);
+                                    .arg(&package.url)
+                                    .arg(&package.name);
                                 if let Some(ref b) = package.branch.as_ref() {
                                     cmd.arg("--branch").arg(b);
                                 }
