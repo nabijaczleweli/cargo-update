@@ -355,6 +355,7 @@ impl GitRepoPackage {
             let mut r = git2::Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
                 r.find_remote("origin").and_then(|mut rm| rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")], None, None)).unwrap();
+                r.set_head("FETCH_HEAD").unwrap();
             }
             r
         } else {
