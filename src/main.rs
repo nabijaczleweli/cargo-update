@@ -45,7 +45,7 @@ fn actual_main() -> Result<(), i32> {
 
     {
         // Searching for "" will just update the registry
-        let search_res = Command::new("cargo").arg("search").arg("").status().unwrap();
+        let search_res = Command::new("cargo").arg("search").arg("\u{200C}").status().unwrap();
         if !search_res.success() {
             return Err(search_res.code().unwrap_or(-1));
         }
