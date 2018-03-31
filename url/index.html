@@ -10,8 +10,11 @@
     <title>url - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../main.css" id="themeStyle">
+    <script src="../storage.js"></script>
     
 
     
@@ -30,9 +33,16 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <p class='location'>Crate url</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Reexports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'url', ty: 'mod', relpath: '../'};</script></div>
+        <p class='location'>Crate url</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Re-exports</a></li><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'url', ty: 'mod', relpath: '../'};</script></div>
     </nav>
 
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -52,15 +62,13 @@
                </span><a class='srclink' href='../src/url/lib.rs.html#9-2479' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>rust-url is an implementation of the <a href="http://url.spec.whatwg.org/">URL Standard</a>
 for the <a href="http://rust-lang.org/">Rust</a> programming language.</p>
-
-<h1 id='url-parsing-and-data-structures' class='section-header'><a href='#url-parsing-and-data-structures'>URL parsing and data structures</a></h1>
+<h1 id="url-parsing-and-data-structures" class="section-header"><a href="#url-parsing-and-data-structures">URL parsing and data structures</a></h1>
 <p>First, URL parsing may fail for various reasons and therefore returns a <code>Result</code>.</p>
 
 <pre class="rust rust-example-rendered">
 <span class="kw">use</span> <span class="ident">url</span>::{<span class="ident">Url</span>, <span class="ident">ParseError</span>};
 
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">Url</span>::<span class="ident">parse</span>(<span class="string">&quot;http://[:::1]&quot;</span>) <span class="op">==</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">InvalidIpv6Address</span>))</pre>
-
 <p>Let’s parse a valid URL and look at its components.</p>
 
 <pre class="rust rust-example-rendered">
@@ -82,7 +90,6 @@ for the <a href="http://rust-lang.org/">Rust</a> programming language.</p>
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">issue_list_url</span>.<span class="ident">query</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;labels=E-easy&amp;state=open&quot;</span>));
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">issue_list_url</span>.<span class="ident">fragment</span>() <span class="op">==</span> <span class="prelude-val">None</span>);
 <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">issue_list_url</span>.<span class="ident">cannot_be_a_base</span>());</pre>
-
 <p>Some URLs are said to be <em>cannot-be-a-base</em>:
 they don’t have a username, password, host, or port,
 and their &quot;path&quot; is an arbitrary string rather than slash-separated segments:</p>
@@ -98,20 +105,16 @@ and their &quot;path&quot; is an arbitrary string rather than slash-separated se
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">data_url</span>.<span class="ident">path_segments</span>().<span class="ident">is_none</span>());
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">data_url</span>.<span class="ident">query</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;World&quot;</span>));
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">data_url</span>.<span class="ident">fragment</span>() <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>));</pre>
-
-<h1 id='base-url' class='section-header'><a href='#base-url'>Base URL</a></h1>
+<h1 id="base-url" class="section-header"><a href="#base-url">Base URL</a></h1>
 <p>Many contexts allow URL <em>references</em> that can be relative to a <em>base URL</em>:</p>
-
 <pre><code class="language-html">&lt;link rel=&quot;stylesheet&quot; href=&quot;../main.css&quot;&gt;
 </code></pre>
-
 <p>Since parsed URL are absolute, giving a base is required for parsing relative URLs:</p>
 
 <pre class="rust rust-example-rendered">
 <span class="kw">use</span> <span class="ident">url</span>::{<span class="ident">Url</span>, <span class="ident">ParseError</span>};
 
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">Url</span>::<span class="ident">parse</span>(<span class="string">&quot;../main.css&quot;</span>) <span class="op">==</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">RelativeUrlWithoutBase</span>))</pre>
-
 <p>Use the <code>join</code> method on an <code>Url</code> to use it as a base URL:</p>
 
 <pre class="rust rust-example-rendered">
@@ -120,7 +123,7 @@ and their &quot;path&quot; is an arbitrary string rather than slash-separated se
 <span class="kw">let</span> <span class="ident">this_document</span> <span class="op">=</span> <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="string">&quot;http://servo.github.io/rust-url/url/index.html&quot;</span>)<span class="question-mark">?</span>;
 <span class="kw">let</span> <span class="ident">css_url</span> <span class="op">=</span> <span class="ident">this_document</span>.<span class="ident">join</span>(<span class="string">&quot;../main.css&quot;</span>)<span class="question-mark">?</span>;
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">css_url</span>.<span class="ident">as_str</span>(), <span class="string">&quot;http://servo.github.io/rust-url/main.css&quot;</span>);</pre>
-</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
 <table><tr><td><code>pub extern crate <a class="mod" href="../idna/index.html" title="mod idna">idna</a>;</code></td></tr><tr><td><code>pub extern crate <a class="mod" href="../percent_encoding/index.html" title="mod percent_encoding">percent_encoding</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                        <tr class=' module-item'>
@@ -129,6 +132,7 @@ and their &quot;path&quot; is an arbitrary string rather than slash-separated se
                            <td class='docblock-short'>
                                 <p>Parser and serializer for the <a href="http://url.spec.whatwg.org/#application/x-www-form-urlencoded"><code>application/x-www-form-urlencoded</code> syntax</a>,
 as used by HTML forms.</p>
+
                            </td>
                        </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
 <table>
@@ -140,6 +144,7 @@ as used by HTML forms.</p>
 that implements the <a href="percent_encoding/trait.EncodeSet.html"><code>EncodeSet</code></a> trait,
 for use in <a href="percent_encoding/fn.percent_encode.html"><code>percent_decode()</code></a>
 and related functions.</p>
+
                            </td>
                        </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
@@ -149,6 +154,7 @@ and related functions.</p>
                            <td class='docblock-short'>
                                 <p>This mostly exists because coherence rules don’t allow us to implement
 <code>ToSocketAddrs for (Host&lt;S&gt;, u16)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -156,6 +162,7 @@ and related functions.</p>
                                   title='struct url::OpaqueOrigin'>OpaqueOrigin</a></td>
                            <td class='docblock-short'>
                                 <p>Opaque identifier for URLs that have file or other schemes</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -163,6 +170,7 @@ and related functions.</p>
                                   title='struct url::ParseOptions'>ParseOptions</a></td>
                            <td class='docblock-short'>
                                 <p>Full configuration for the URL parser.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -170,6 +178,7 @@ and related functions.</p>
                                   title='struct url::PathSegmentsMut'>PathSegmentsMut</a></td>
                            <td class='docblock-short'>
                                 <p>Exposes methods to manipulate the path of an URL that is not cannot-be-base.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -177,6 +186,7 @@ and related functions.</p>
                                   title='struct url::SocketAddrs'>SocketAddrs</a></td>
                            <td class='docblock-short'>
                                 <p>Socket addresses for an URL.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -184,6 +194,7 @@ and related functions.</p>
                                   title='struct url::Url'>Url</a></td>
                            <td class='docblock-short'>
                                 <p>A parsed URL record.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -191,6 +202,7 @@ and related functions.</p>
                                   title='struct url::UrlQuery'>UrlQuery</a></td>
                            <td class='docblock-short'>
                                 <p>Implementation detail of <code>Url::query_pairs_mut</code>. Typically not used directly.</p>
+
                            </td>
                        </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
@@ -199,6 +211,7 @@ and related functions.</p>
                                   title='enum url::Host'>Host</a></td>
                            <td class='docblock-short'>
                                 <p>The host name of an URL.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -206,6 +219,7 @@ and related functions.</p>
                                   title='enum url::Origin'>Origin</a></td>
                            <td class='docblock-short'>
                                 <p>The origin of an URL</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -213,6 +227,7 @@ and related functions.</p>
                                   title='enum url::ParseError'>ParseError</a></td>
                            <td class='docblock-short'>
                                 <p>Errors that can occur during parsing.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -220,6 +235,7 @@ and related functions.</p>
                                   title='enum url::Position'>Position</a></td>
                            <td class='docblock-short'>
                                 <p>Indicates a position within a URL based on its components.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -227,6 +243,7 @@ and related functions.</p>
                                   title='enum url::SyntaxViolation'>SyntaxViolation</a></td>
                            <td class='docblock-short'>
                                 <p>Non-fatal syntax violations that can occur during parsing.</p>
+
                            </td>
                        </tr></table></section>
     <section id='search' class="content hidden"></section>
@@ -241,20 +258,22 @@ and related functions.</p>
                 <h2>Keyboard Shortcuts</h2>
 
                 <dl>
-                    <dt>?</dt>
+                    <dt><kbd>?</kbd></dt>
                     <dd>Show this help dialog</dd>
-                    <dt>S</dt>
+                    <dt><kbd>S</kbd></dt>
                     <dd>Focus the search field</dd>
-                    <dt>↑</dt>
+                    <dt><kbd>↑</kbd></dt>
                     <dd>Move up in search results</dd>
-                    <dt>↓</dt>
+                    <dt><kbd>↓</kbd></dt>
                     <dd>Move down in search results</dd>
-                    <dt>↹</dt>
+                    <dt><kbd>↹</kbd></dt>
                     <dd>Switch tab</dd>
-                    <dt>&#9166;</dt>
+                    <dt><kbd>&#9166;</kbd></dt>
                     <dd>Go to active search result</dd>
-                    <dt style="width:31px;">+ / -</dt>
-                    <dd>Collapse/expand all sections</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
                 </dl>
             </div>
 

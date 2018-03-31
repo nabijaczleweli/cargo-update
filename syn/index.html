@@ -10,8 +10,11 @@
     <title>syn - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../main.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../main.css" id="themeStyle">
+    <script src="../storage.js"></script>
     
 
     
@@ -33,6 +36,13 @@
         <p class='location'>Crate syn</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'syn', ty: 'mod', relpath: '../'};</script></div>
     </nav>
 
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -52,51 +62,56 @@
                </span><a class='srclink' href='../src/syn/lib.rs.html#9-723' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Syn is a parsing library for parsing a stream of Rust tokens into a syntax
 tree of Rust source code.</p>
-
 <p>Currently this library is geared toward the <a href="https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md">custom derive</a> use case but
 contains some APIs that may be useful for Rust procedural macros more
 generally.</p>
-
 <ul>
-<li><p><strong>Data structures</strong> — Syn provides a complete syntax tree that can
+<li>
+<p><strong>Data structures</strong> — Syn provides a complete syntax tree that can
 represent any valid Rust source code. The syntax tree is rooted at
 <a href="struct.File.html"><code>syn::File</code></a> which represents a full source file, but there are other
 entry points that may be useful to procedural macros including
-<a href="enum.Item.html"><code>syn::Item</code></a>, <a href="enum.Expr.html"><code>syn::Expr</code></a> and <a href="enum.Type.html"><code>syn::Type</code></a>.</p></li>
-<li><p><strong>Custom derives</strong> — Of particular interest to custom derives is
+<a href="enum.Item.html"><code>syn::Item</code></a>, <a href="enum.Expr.html"><code>syn::Expr</code></a> and <a href="enum.Type.html"><code>syn::Type</code></a>.</p>
+</li>
+<li>
+<p><strong>Custom derives</strong> — Of particular interest to custom derives is
 <a href="struct.DeriveInput.html"><code>syn::DeriveInput</code></a> which is any of the three legal input items to a
 derive macro. An example below shows using this type in a library that can
-derive implementations of a trait of your own.</p></li>
-<li><p><strong>Parser combinators</strong> — Parsing in Syn is built on a suite of public
+derive implementations of a trait of your own.</p>
+</li>
+<li>
+<p><strong>Parser combinators</strong> — Parsing in Syn is built on a suite of public
 parser combinator macros that you can use for parsing any token-based
 syntax you dream up within a <code>functionlike!(...)</code> procedural macro. Every
 syntax tree node defined by Syn is individually parsable and may be used
 as a building block for custom syntaxes, or you may do it all yourself
-working from the most primitive tokens.</p></li>
-<li><p><strong>Location information</strong> — Every token parsed by Syn is associated with a
+working from the most primitive tokens.</p>
+</li>
+<li>
+<p><strong>Location information</strong> — Every token parsed by Syn is associated with a
 <code>Span</code> that tracks line and column information back to the source of that
 token. These spans allow a procedural macro to display detailed error
-messages pointing to all the right places in the user&#39;s code. There is an
-example of this below.</p></li>
-<li><p><strong>Feature flags</strong> — Functionality is aggressively feature gated so your
+messages pointing to all the right places in the user's code. There is an
+example of this below.</p>
+</li>
+<li>
+<p><strong>Feature flags</strong> — Functionality is aggressively feature gated so your
 procedural macros enable only what they need, and do not pay in compile
-time for all the rest.</p></li>
+time for all the rest.</p>
+</li>
 </ul>
-
-<p><em>Version requirement: Syn supports any compiler version back to Rust&#39;s very
+<p><em>Version requirement: Syn supports any compiler version back to Rust's very
 first support for procedural macros in Rust 1.15.0. Some features especially
 around error reporting are only available in newer compilers or on the
 nightly channel.</em></p>
-
-<h2 id='example-of-a-custom-derive' class='section-header'><a href='#example-of-a-custom-derive'>Example of a custom derive</a></h2>
+<h2 id="example-of-a-custom-derive" class="section-header"><a href="#example-of-a-custom-derive">Example of a custom derive</a></h2>
 <p>The canonical custom derive using Syn looks like this. We write an ordinary
 Rust function tagged with a <code>proc_macro_derive</code> attribute and the name of
-the trait we are deriving. Any time that derive appears in the user&#39;s code,
+the trait we are deriving. Any time that derive appears in the user's code,
 the Rust compiler passes their data structure as tokens into our macro. We
 get to execute arbitrary Rust code to figure out what to do with those
 tokens, then hand some tokens back to the compiler to compile into the
-user&#39;s crate.</p>
-
+user's crate.</p>
 <pre><code class="language-toml">[dependencies]
 syn = &quot;0.12&quot;
 quote = &quot;0.4&quot;
@@ -128,7 +143,6 @@ proc-macro = true
     <span class="comment">// Hand the output tokens back to the compiler</span>
     <span class="ident">expanded</span>.<span class="ident">into</span>()
 }</pre>
-
 <p>The <a href="https://github.com/dtolnay/syn/tree/master/examples/heapsize"><code>heapsize</code></a> example directory shows a complete working Macros 1.1
 implementation of a custom derive. It works on any Rust compiler &gt;=1.15.0.
 The example derives a <code>HeapSize</code> trait which computes an estimate of the
@@ -139,7 +153,6 @@ amount of heap memory owned by a value.</p>
     <span class="doccomment">/// Total number of bytes of heap memory owned by `self`.</span>
     <span class="kw">fn</span> <span class="ident">heap_size_of_children</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span>;
 }</pre>
-
 <p>The custom derive allows users to write <code>#[derive(HeapSize)]</code> on data
 structures in their program.</p>
 
@@ -151,15 +164,13 @@ structures in their program.</p>
     <span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
     <span class="ident">d</span>: <span class="ident">String</span>,
 }</pre>
-
-<h2 id='spans-and-error-reporting' class='section-header'><a href='#spans-and-error-reporting'>Spans and error reporting</a></h2>
+<h2 id="spans-and-error-reporting" class="section-header"><a href="#spans-and-error-reporting">Spans and error reporting</a></h2>
 <p>The <a href="https://github.com/dtolnay/syn/tree/master/examples/heapsize2"><code>heapsize2</code></a> example directory is an extension of the <code>heapsize</code>
 example that demonstrates some of the hygiene and error reporting properties
 of Macros 2.0. This example currently requires a nightly Rust compiler
 &gt;=1.24.0-nightly but we are working to stabilize all of the APIs involved.</p>
-
 <p>The token-based procedural macro API provides great control over where the
-compiler&#39;s error messages are displayed in user code. Consider the error the
+compiler's error messages are displayed in user code. Consider the error the
 user sees if one of their field types does not implement <code>HeapSize</code>.</p>
 
 <pre class="rust rust-example-rendered">
@@ -168,35 +179,29 @@ user sees if one of their field types does not implement <code>HeapSize</code>.<
     <span class="ident">ok</span>: <span class="ident">String</span>,
     <span class="ident">bad</span>: <span class="ident">std</span>::<span class="ident">thread</span>::<span class="ident">Thread</span>,
 }</pre>
-
 <p>In the Macros 1.1 string-based procedural macro world, the resulting error
 would point unhelpfully to the invocation of the derive macro and not to the
 actual problematic field.</p>
-
 <pre><code class="language-text">error[E0599]: no method named `heap_size_of_children` found for type `std::thread::Thread` in the current scope
  --&gt; src/main.rs:4:10
   |
 4 | #[derive(HeapSize)]
   |          ^^^^^^^^
 </code></pre>
-
 <p>By tracking span information all the way through the expansion of a
 procedural macro as shown in the <code>heapsize2</code> example, token-based macros in
 Syn are able to trigger errors that directly pinpoint the source of the
 problem.</p>
-
 <pre><code class="language-text">error[E0277]: the trait bound `std::thread::Thread: HeapSize` is not satisfied
  --&gt; src/main.rs:7:5
   |
 7 |     bad: std::thread::Thread,
   |     ^^^^^^^^^^^^^^^^^^^^^^^^ the trait `HeapSize` is not implemented for `Thread`
 </code></pre>
-
-<h2 id='parsing-a-custom-syntax-using-combinators' class='section-header'><a href='#parsing-a-custom-syntax-using-combinators'>Parsing a custom syntax using combinators</a></h2>
+<h2 id="parsing-a-custom-syntax-using-combinators" class="section-header"><a href="#parsing-a-custom-syntax-using-combinators">Parsing a custom syntax using combinators</a></h2>
 <p>The <a href="https://github.com/dtolnay/syn/tree/master/examples/lazy-static"><code>lazy-static</code></a> example directory shows the implementation of a
 <code>functionlike!(...)</code> procedural macro in which the input tokens are parsed
 using <a href="https://github.com/Geal/nom"><code>nom</code></a>-style parser combinators.</p>
-
 <p>The example reimplements the popular <code>lazy_static</code> crate from crates.io as a
 procedural macro.</p>
 
@@ -204,34 +209,27 @@ procedural macro.</p>
 <span class="macro">lazy_static</span><span class="macro">!</span> {
     <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">USERNAME</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">&quot;^[a-z0-9_-]{3,16}$&quot;</span>).<span class="ident">unwrap</span>();
 }</pre>
-
 <p>The implementation shows how to trigger custom warnings and error messages
 on the macro input.</p>
-
 <pre><code class="language-text">warning: come on, pick a more creative name
   --&gt; src/main.rs:10:16
    |
 10 |     static ref FOO: String = &quot;lazy_static&quot;.to_owned();
    |                ^^^
 </code></pre>
-
-<h2 id='debugging' class='section-header'><a href='#debugging'>Debugging</a></h2>
+<h2 id="debugging" class="section-header"><a href="#debugging">Debugging</a></h2>
 <p>When developing a procedural macro it can be helpful to look at what the
 generated code looks like. Use <code>cargo rustc -- -Zunstable-options --pretty=expanded</code> or the <a href="https://github.com/dtolnay/cargo-expand"><code>cargo expand</code></a> subcommand.</p>
-
 <p>To show the expanded code for some crate that uses your procedural macro,
 run <code>cargo expand</code> from that crate. To show the expanded code for one of
 your own test cases, run <code>cargo expand --test the_test_case</code> where the last
 argument is the name of the test file without the <code>.rs</code> extension.</p>
-
 <p>This write-up by Brandon W Maister discusses debugging in more detail:
-<a href="https://quodlibetor.github.io/posts/debugging-rusts-new-custom-derive-system/">Debugging Rust&#39;s new Custom Derive system</a>.</p>
-
-<h2 id='optional-features' class='section-header'><a href='#optional-features'>Optional features</a></h2>
+<a href="https://quodlibetor.github.io/posts/debugging-rusts-new-custom-derive-system/">Debugging Rust's new Custom Derive system</a>.</p>
+<h2 id="optional-features" class="section-header"><a href="#optional-features">Optional features</a></h2>
 <p>Syn puts a lot of functionality behind optional features in order to
 optimize compile time for the most common use cases. The following features
 are available.</p>
-
 <ul>
 <li><strong><code>derive</code></strong> <em>(enabled by default)</em> — Data structures for representing the
 possible input to a custom derive, including structs and enums and types.</li>
@@ -258,6 +256,7 @@ types.</li>
                            <td class='docblock-short'>
                                 <p>A stably addressed token buffer supporting efficient traversal based on a
 cheaply copyable cursor.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -265,6 +264,7 @@ cheaply copyable cursor.</p>
                                   title='mod syn::punctuated'>punctuated</a></td>
                            <td class='docblock-short'>
                                 <p>A punctuated sequence of syntax tree nodes separated by punctuation.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -273,6 +273,7 @@ cheaply copyable cursor.</p>
                            <td class='docblock-short'>
                                 <p>A trait that can provide the <code>Span</code> of the complete contents of a syntax
 tree node.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -280,6 +281,7 @@ tree node.</p>
                                   title='mod syn::synom'>synom</a></td>
                            <td class='docblock-short'>
                                 <p>Parsing interface for parsing a token stream into a syntax tree node.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -287,6 +289,7 @@ tree node.</p>
                                   title='mod syn::token'>token</a></td>
                            <td class='docblock-short'>
                                 <p>Tokens representing Rust punctuation, keywords, and delimiters.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -294,6 +297,7 @@ tree node.</p>
                                   title='mod syn::visit'>visit</a></td>
                            <td class='docblock-short'>
                                 <p>Syntax tree traversal to walk a shared borrow of a syntax tree.</p>
+
                            </td>
                        </tr></table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
 <table>
@@ -303,6 +307,7 @@ tree node.</p>
                            <td class='docblock-short'>
                                 <p>A type-macro that expands to the name of the Rust type representation of a
 given token.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -311,6 +316,7 @@ given token.</p>
                            <td class='docblock-short'>
                                 <p>Run a series of parsers, returning the result of the first one which
 succeeds.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -318,6 +324,7 @@ succeeds.</p>
                                   title='macro syn::braces'>braces</a></td>
                            <td class='docblock-short'>
                                 <p>Parse inside of <code>{</code> <code>}</code> curly braces.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -325,6 +332,7 @@ succeeds.</p>
                                   title='macro syn::brackets'>brackets</a></td>
                            <td class='docblock-short'>
                                 <p>Parse inside of <code>[</code> <code>]</code> square brackets.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -332,6 +340,7 @@ succeeds.</p>
                                   title='macro syn::call'>call</a></td>
                            <td class='docblock-short'>
                                 <p>Invoke the given parser function with zero or more arguments.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -339,6 +348,7 @@ succeeds.</p>
                                   title='macro syn::cond'>cond</a></td>
                            <td class='docblock-short'>
                                 <p>Execute a parser only if a condition is met, otherwise return None.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -346,6 +356,7 @@ succeeds.</p>
                                   title='macro syn::cond_reduce'>cond_reduce</a></td>
                            <td class='docblock-short'>
                                 <p>Execute a parser only if a condition is met, otherwise fail to parse.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -354,6 +365,7 @@ succeeds.</p>
                            <td class='docblock-short'>
                                 <p>Run a series of parsers, optionally naming each intermediate result,
 followed by a step to combine the intermediate results.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -361,6 +373,7 @@ followed by a step to combine the intermediate results.</p>
                                   title='macro syn::epsilon'>epsilon</a></td>
                            <td class='docblock-short'>
                                 <p>Parses nothing and always succeeds.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -369,6 +382,7 @@ followed by a step to combine the intermediate results.</p>
                            <td class='docblock-short'>
                                 <p>Parse nothing and succeed only if the end of the enclosing block has been
 reached.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -376,6 +390,7 @@ reached.</p>
                                   title='macro syn::keyword'>keyword</a></td>
                            <td class='docblock-short'>
                                 <p>Parse a single Rust keyword token.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -383,6 +398,7 @@ reached.</p>
                                   title='macro syn::many0'>many0</a></td>
                            <td class='docblock-short'>
                                 <p>Parse zero or more values using the given parser.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -390,6 +406,7 @@ reached.</p>
                                   title='macro syn::map'>map</a></td>
                            <td class='docblock-short'>
                                 <p>Transform the result of a parser by applying a function or closure.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -398,6 +415,7 @@ reached.</p>
                            <td class='docblock-short'>
                                 <p>Define a parser function with the signature expected by syn parser
 combinators.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -406,6 +424,7 @@ combinators.</p>
                            <td class='docblock-short'>
                                 <p>Invert the result of a parser by parsing successfully if the given parser
 fails to parse and vice versa.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -413,6 +432,7 @@ fails to parse and vice versa.</p>
                                   title='macro syn::option'>option</a></td>
                            <td class='docblock-short'>
                                 <p>Turn a failed parse into <code>None</code> and a successful parse into <code>Some</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -420,6 +440,7 @@ fails to parse and vice versa.</p>
                                   title='macro syn::parens'>parens</a></td>
                            <td class='docblock-short'>
                                 <p>Parse inside of <code>(</code> <code>)</code> parentheses.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -428,6 +449,7 @@ fails to parse and vice versa.</p>
                            <td class='docblock-short'>
                                 <p>Quasi-quotation macro that accepts input like the <a href="https://docs.rs/quote/0.4/quote/index.html"><code>quote!</code></a> macro but uses
 type inference to figure out a return type for those tokens.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -435,6 +457,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='macro syn::punct'>punct</a></td>
                            <td class='docblock-short'>
                                 <p>Parse a single Rust punctuation token.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -442,6 +465,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='macro syn::reject'>reject</a></td>
                            <td class='docblock-short'>
                                 <p>Unconditionally fail to parse anything.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -449,6 +473,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='macro syn::switch'>switch</a></td>
                            <td class='docblock-short'>
                                 <p>Pattern-match the result of a parser to select which other parser to run.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -456,6 +481,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='macro syn::syn'>syn</a></td>
                            <td class='docblock-short'>
                                 <p>Parse any type that implements the <code>Synom</code> trait.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -463,6 +489,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='macro syn::tuple'>tuple</a></td>
                            <td class='docblock-short'>
                                 <p>Run a series of parsers and produce all of the results in a tuple.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -470,6 +497,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='macro syn::value'>value</a></td>
                            <td class='docblock-short'>
                                 <p>Produce the given value without parsing anything.</p>
+
                            </td>
                        </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
@@ -478,6 +506,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::Abi'>Abi</a></td>
                            <td class='docblock-short'>
                                 <p>The binary interface of a function: <code>extern &quot;C&quot;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -485,6 +514,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::AngleBracketedGenericArguments'>AngleBracketedGenericArguments</a></td>
                            <td class='docblock-short'>
                                 <p>Angle bracketed arguments of a path segment: the <code>&lt;K, V&gt;</code> in <code>HashMap&lt;K, V&gt;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -492,6 +522,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::Attribute'>Attribute</a></td>
                            <td class='docblock-short'>
                                 <p>An attribute like <code>#[repr(transparent)]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -499,6 +530,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::BareFnArg'>BareFnArg</a></td>
                            <td class='docblock-short'>
                                 <p>An argument in a function type: the <code>usize</code> in <code>fn(usize) -&gt; bool</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -506,13 +538,15 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::Binding'>Binding</a></td>
                            <td class='docblock-short'>
                                 <p>A binding (equality constraint) on an associated type: <code>Item = u8</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.BoundLifetimes.html"
                                   title='struct syn::BoundLifetimes'>BoundLifetimes</a></td>
                            <td class='docblock-short'>
-                                <p>A set of bound lifetimes: <code>for&lt;&#39;a, &#39;b, &#39;c&gt;</code>.</p>
+                                <p>A set of bound lifetimes: <code>for&lt;'a, 'b, 'c&gt;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -520,6 +554,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ConstParam'>ConstParam</a></td>
                            <td class='docblock-short'>
                                 <p>A const generic parameter: <code>const LENGTH: usize</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -527,6 +562,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::DataEnum'>DataEnum</a></td>
                            <td class='docblock-short'>
                                 <p>An enum input to a <code>proc_macro_derive</code> macro.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -534,6 +570,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::DataStruct'>DataStruct</a></td>
                            <td class='docblock-short'>
                                 <p>A struct input to a <code>proc_macro_derive</code> macro.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -541,6 +578,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::DataUnion'>DataUnion</a></td>
                            <td class='docblock-short'>
                                 <p>A tagged union input to a <code>proc_macro_derive</code> macro.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -548,6 +586,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::DeriveInput'>DeriveInput</a></td>
                            <td class='docblock-short'>
                                 <p>Data structure sent to a <code>proc_macro_derive</code> macro.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -555,6 +594,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprAddrOf'>ExprAddrOf</a></td>
                            <td class='docblock-short'>
                                 <p>A referencing operation: <code>&amp;a</code> or <code>&amp;mut a</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -562,6 +602,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprArray'>ExprArray</a></td>
                            <td class='docblock-short'>
                                 <p>A slice literal expression: <code>[a, b, c, d]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -569,6 +610,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprAssign'>ExprAssign</a></td>
                            <td class='docblock-short'>
                                 <p>An assignment expression: <code>a = compute()</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -576,6 +618,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprAssignOp'>ExprAssignOp</a></td>
                            <td class='docblock-short'>
                                 <p>A compound assignment expression: <code>counter += 1</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -583,6 +626,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprBinary'>ExprBinary</a></td>
                            <td class='docblock-short'>
                                 <p>A binary operation: <code>a + b</code>, <code>a * b</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -590,6 +634,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprBlock'>ExprBlock</a></td>
                            <td class='docblock-short'>
                                 <p>A blocked scope: <code>{ ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -597,6 +642,7 @@ type inference to figure out a return type for those tokens.</p>
                                   title='struct syn::ExprBox'>ExprBox</a></td>
                            <td class='docblock-short'>
                                 <p>A box expression: <code>box f</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -605,6 +651,7 @@ type inference to figure out a return type for those tokens.</p>
                            <td class='docblock-short'>
                                 <p>A <code>break</code>, with an optional label to break and an optional
 expression.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -612,6 +659,7 @@ expression.</p>
                                   title='struct syn::ExprCall'>ExprCall</a></td>
                            <td class='docblock-short'>
                                 <p>A function call expression: <code>invoke(a, b)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -619,6 +667,7 @@ expression.</p>
                                   title='struct syn::ExprCast'>ExprCast</a></td>
                            <td class='docblock-short'>
                                 <p>A cast expression: <code>foo as f64</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -626,6 +675,7 @@ expression.</p>
                                   title='struct syn::ExprCatch'>ExprCatch</a></td>
                            <td class='docblock-short'>
                                 <p>A catch expression: <code>do catch { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -633,6 +683,7 @@ expression.</p>
                                   title='struct syn::ExprClosure'>ExprClosure</a></td>
                            <td class='docblock-short'>
                                 <p>A closure expression: <code>|a, b| a + b</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -640,6 +691,7 @@ expression.</p>
                                   title='struct syn::ExprContinue'>ExprContinue</a></td>
                            <td class='docblock-short'>
                                 <p>A <code>continue</code>, with an optional label.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -648,6 +700,7 @@ expression.</p>
                            <td class='docblock-short'>
                                 <p>Access of a named struct field (<code>obj.k</code>) or unnamed tuple struct
 field (<code>obj.0</code>).</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -655,6 +708,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprForLoop'>ExprForLoop</a></td>
                            <td class='docblock-short'>
                                 <p>A for loop: <code>for pat in expr { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -662,6 +716,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprGroup'>ExprGroup</a></td>
                            <td class='docblock-short'>
                                 <p>An expression contained within invisible delimiters.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -669,6 +724,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprIf'>ExprIf</a></td>
                            <td class='docblock-short'>
                                 <p>An <code>if</code> expression with an optional <code>else</code> block: <code>if expr { ... } else { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -676,6 +732,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprIfLet'>ExprIfLet</a></td>
                            <td class='docblock-short'>
                                 <p>An <code>if let</code> expression with an optional <code>else</code> block: <code>if let pat = expr { ... } else { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -683,6 +740,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprInPlace'>ExprInPlace</a></td>
                            <td class='docblock-short'>
                                 <p>A placement expression: <code>place &lt;- value</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -690,6 +748,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprIndex'>ExprIndex</a></td>
                            <td class='docblock-short'>
                                 <p>A square bracketed indexing expression: <code>vector[2]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -697,6 +756,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprLit'>ExprLit</a></td>
                            <td class='docblock-short'>
                                 <p>A literal in place of an expression: <code>1</code>, <code>&quot;foo&quot;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -704,6 +764,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprLoop'>ExprLoop</a></td>
                            <td class='docblock-short'>
                                 <p>Conditionless loop: <code>loop { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -711,6 +772,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprMacro'>ExprMacro</a></td>
                            <td class='docblock-short'>
                                 <p>A macro invocation expression: <code>format!(&quot;{}&quot;, q)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -718,6 +780,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprMatch'>ExprMatch</a></td>
                            <td class='docblock-short'>
                                 <p>A <code>match</code> expression: <code>match n { Some(n) =&gt; {}, None =&gt; {} }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -725,6 +788,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprMethodCall'>ExprMethodCall</a></td>
                            <td class='docblock-short'>
                                 <p>A method call expression: <code>x.foo::&lt;T&gt;(a, b)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -732,6 +796,7 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprParen'>ExprParen</a></td>
                            <td class='docblock-short'>
                                 <p>A parenthesized expression: <code>(a + b)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -740,6 +805,7 @@ field (<code>obj.0</code>).</p>
                            <td class='docblock-short'>
                                 <p>A path like <code>std::mem::replace</code> possibly containing generic
 parameters and a qualified self-type.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -747,6 +813,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprRange'>ExprRange</a></td>
                            <td class='docblock-short'>
                                 <p>A range expression: <code>1..2</code>, <code>1..</code>, <code>..2</code>, <code>1..=2</code>, <code>..=2</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -754,6 +821,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprRepeat'>ExprRepeat</a></td>
                            <td class='docblock-short'>
                                 <p>An array literal constructed from one repeated element: <code>[0u8; N]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -761,6 +829,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprReturn'>ExprReturn</a></td>
                            <td class='docblock-short'>
                                 <p>A <code>return</code>, with an optional value to be returned.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -768,6 +837,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprStruct'>ExprStruct</a></td>
                            <td class='docblock-short'>
                                 <p>A struct literal expression: <code>Point { x: 1, y: 1 }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -775,6 +845,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprTry'>ExprTry</a></td>
                            <td class='docblock-short'>
                                 <p>A try-expression: <code>expr?</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -782,6 +853,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprTuple'>ExprTuple</a></td>
                            <td class='docblock-short'>
                                 <p>A tuple expression: <code>(a, b, c, d)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -789,6 +861,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprType'>ExprType</a></td>
                            <td class='docblock-short'>
                                 <p>A type ascription expression: <code>foo: f64</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -796,6 +869,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprUnary'>ExprUnary</a></td>
                            <td class='docblock-short'>
                                 <p>A unary operation: <code>!x</code>, <code>*x</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -803,6 +877,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprUnsafe'>ExprUnsafe</a></td>
                            <td class='docblock-short'>
                                 <p>An unsafe block: <code>unsafe { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -810,6 +885,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprVerbatim'>ExprVerbatim</a></td>
                            <td class='docblock-short'>
                                 <p>Tokens in expression position not interpreted by Syn.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -817,6 +893,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprWhile'>ExprWhile</a></td>
                            <td class='docblock-short'>
                                 <p>A while loop: <code>while expr { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -824,6 +901,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprWhileLet'>ExprWhileLet</a></td>
                            <td class='docblock-short'>
                                 <p>A while-let loop: <code>while let pat = expr { ... }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -831,6 +909,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprYield'>ExprYield</a></td>
                            <td class='docblock-short'>
                                 <p>A yield expression: <code>yield expr</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -838,6 +917,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::Field'>Field</a></td>
                            <td class='docblock-short'>
                                 <p>A field of a struct or enum variant.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -845,6 +925,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::FieldsNamed'>FieldsNamed</a></td>
                            <td class='docblock-short'>
                                 <p>Named fields of a struct or struct variant such as <code>Point { x: f64, y: f64 }</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -852,6 +933,7 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::FieldsUnnamed'>FieldsUnnamed</a></td>
                            <td class='docblock-short'>
                                 <p>Unnamed fields of a tuple struct or tuple variant such as <code>Some(T)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -860,6 +942,7 @@ parameters and a qualified self-type.</p>
                            <td class='docblock-short'>
                                 <p>Lifetimes and type parameters attached to a declaration of a function,
 enum, trait, etc.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -867,6 +950,7 @@ enum, trait, etc.</p>
                                   title='struct syn::Ident'>Ident</a></td>
                            <td class='docblock-short'>
                                 <p>A word of Rust code, which may be a keyword or legal variable name.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -874,6 +958,7 @@ enum, trait, etc.</p>
                                   title='struct syn::ImplGenerics'>ImplGenerics</a></td>
                            <td class='docblock-short'>
                                 <p>Returned by <code>Generics::split_for_impl</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -881,20 +966,23 @@ enum, trait, etc.</p>
                                   title='struct syn::Index'>Index</a></td>
                            <td class='docblock-short'>
                                 <p>The index of an unnamed tuple struct field.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.Lifetime.html"
                                   title='struct syn::Lifetime'>Lifetime</a></td>
                            <td class='docblock-short'>
-                                <p>A Rust lifetime: <code>&#39;a</code>.</p>
+                                <p>A Rust lifetime: <code>'a</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.LifetimeDef.html"
                                   title='struct syn::LifetimeDef'>LifetimeDef</a></td>
                            <td class='docblock-short'>
-                                <p>A lifetime definition: <code>&#39;a: &#39;b + &#39;c + &#39;d</code>.</p>
+                                <p>A lifetime definition: <code>'a: 'b + 'c + 'd</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -902,13 +990,15 @@ enum, trait, etc.</p>
                                   title='struct syn::LitBool'>LitBool</a></td>
                            <td class='docblock-short'>
                                 <p>A boolean literal: <code>true</code> or <code>false</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.LitByte.html"
                                   title='struct syn::LitByte'>LitByte</a></td>
                            <td class='docblock-short'>
-                                <p>A byte literal: <code>b&#39;f&#39;</code>.</p>
+                                <p>A byte literal: <code>b'f'</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -916,13 +1006,15 @@ enum, trait, etc.</p>
                                   title='struct syn::LitByteStr'>LitByteStr</a></td>
                            <td class='docblock-short'>
                                 <p>A byte string literal: <code>b&quot;foo&quot;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.LitChar.html"
                                   title='struct syn::LitChar'>LitChar</a></td>
                            <td class='docblock-short'>
-                                <p>A character literal: <code>&#39;a&#39;</code>.</p>
+                                <p>A character literal: <code>'a'</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -930,6 +1022,7 @@ enum, trait, etc.</p>
                                   title='struct syn::LitFloat'>LitFloat</a></td>
                            <td class='docblock-short'>
                                 <p>A floating point literal: <code>1f64</code> or <code>1.0e10f64</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -937,6 +1030,7 @@ enum, trait, etc.</p>
                                   title='struct syn::LitInt'>LitInt</a></td>
                            <td class='docblock-short'>
                                 <p>An integer literal: <code>1</code> or <code>1u16</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -944,6 +1038,7 @@ enum, trait, etc.</p>
                                   title='struct syn::LitStr'>LitStr</a></td>
                            <td class='docblock-short'>
                                 <p>A UTF-8 string literal: <code>&quot;foo&quot;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -952,6 +1047,7 @@ enum, trait, etc.</p>
                            <td class='docblock-short'>
                                 <p>A raw token literal not interpreted by Syn, possibly because it
 represents an integer larger than 64 bits.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -959,6 +1055,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::Macro'>Macro</a></td>
                            <td class='docblock-short'>
                                 <p>A macro invocation: <code>println!(&quot;{}&quot;, mac)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -966,6 +1063,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::MetaList'>MetaList</a></td>
                            <td class='docblock-short'>
                                 <p>A structured list within an attribute, like <code>derive(Copy, Clone)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -973,6 +1071,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::MetaNameValue'>MetaNameValue</a></td>
                            <td class='docblock-short'>
                                 <p>A name-value pair within an attribute, like <code>feature = &quot;nightly&quot;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -980,6 +1079,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::ParenthesizedGenericArguments'>ParenthesizedGenericArguments</a></td>
                            <td class='docblock-short'>
                                 <p>Arguments of a function path segment: the <code>(A, B) -&gt; C</code> in <code>Fn(A,B) -&gt; C</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -987,6 +1087,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::Path'>Path</a></td>
                            <td class='docblock-short'>
                                 <p>A path at which a named item is exported: <code>std::collections::HashMap</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -994,6 +1095,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::PathSegment'>PathSegment</a></td>
                            <td class='docblock-short'>
                                 <p>A segment of a path together with any path arguments on that segment.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1001,6 +1103,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::PathTokens'>PathTokens</a></td>
                            <td class='docblock-short'>
                                 <p>A helper for printing a self-type qualified path as tokens.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1008,20 +1111,23 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::PredicateEq'>PredicateEq</a></td>
                            <td class='docblock-short'>
                                 <p>An equality predicate in a <code>where</code> clause (unsupported).</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.PredicateLifetime.html"
                                   title='struct syn::PredicateLifetime'>PredicateLifetime</a></td>
                            <td class='docblock-short'>
-                                <p>A lifetime predicate in a <code>where</code> clause: <code>&#39;a: &#39;b + &#39;c</code>.</p>
+                                <p>A lifetime predicate in a <code>where</code> clause: <code>'a: 'b + 'c</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.PredicateType.html"
                                   title='struct syn::PredicateType'>PredicateType</a></td>
                            <td class='docblock-short'>
-                                <p>A type predicate in a <code>where</code> clause: <code>for&lt;&#39;c&gt; Foo&lt;&#39;c&gt;: Trait&lt;&#39;c&gt;</code>.</p>
+                                <p>A type predicate in a <code>where</code> clause: <code>for&lt;'c&gt; Foo&lt;'c&gt;: Trait&lt;'c&gt;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1029,6 +1135,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::QSelf'>QSelf</a></td>
                            <td class='docblock-short'>
                                 <p>The explicit Self type in a qualified path: the <code>T</code> in <code>&lt;T as Display&gt;::fmt</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1036,6 +1143,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::TraitBound'>TraitBound</a></td>
                            <td class='docblock-short'>
                                 <p>A trait used as a bound on a type parameter.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1043,6 +1151,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::Turbofish'>Turbofish</a></td>
                            <td class='docblock-short'>
                                 <p>Returned by <code>TypeGenerics::as_turbofish</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1050,6 +1159,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::TypeArray'>TypeArray</a></td>
                            <td class='docblock-short'>
                                 <p>A fixed size array type: <code>[T; n]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1057,6 +1167,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::TypeBareFn'>TypeBareFn</a></td>
                            <td class='docblock-short'>
                                 <p>A bare function type: <code>fn(usize) -&gt; bool</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1064,6 +1175,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::TypeGenerics'>TypeGenerics</a></td>
                            <td class='docblock-short'>
                                 <p>Returned by <code>Generics::split_for_impl</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1071,6 +1183,7 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::TypeGroup'>TypeGroup</a></td>
                            <td class='docblock-short'>
                                 <p>A type contained within invisible delimiters.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1079,6 +1192,7 @@ represents an integer larger than 64 bits.</p>
                            <td class='docblock-short'>
                                 <p>An <code>impl Bound1 + Bound2 + Bound3</code> type where <code>Bound</code> is a trait or
 a lifetime.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1086,6 +1200,7 @@ a lifetime.</p>
                                   title='struct syn::TypeInfer'>TypeInfer</a></td>
                            <td class='docblock-short'>
                                 <p>Indication that a type should be inferred by the compiler: <code>_</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1093,6 +1208,7 @@ a lifetime.</p>
                                   title='struct syn::TypeMacro'>TypeMacro</a></td>
                            <td class='docblock-short'>
                                 <p>A macro in the type position.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1100,6 +1216,7 @@ a lifetime.</p>
                                   title='struct syn::TypeNever'>TypeNever</a></td>
                            <td class='docblock-short'>
                                 <p>The never type: <code>!</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1107,6 +1224,7 @@ a lifetime.</p>
                                   title='struct syn::TypeParam'>TypeParam</a></td>
                            <td class='docblock-short'>
                                 <p>A generic type parameter: <code>T: Into&lt;String&gt;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1114,6 +1232,7 @@ a lifetime.</p>
                                   title='struct syn::TypeParen'>TypeParen</a></td>
                            <td class='docblock-short'>
                                 <p>A parenthesized type equivalent to the inner type.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1122,6 +1241,7 @@ a lifetime.</p>
                            <td class='docblock-short'>
                                 <p>A path like <code>std::slice::Iter</code>, optionally qualified with a
 self-type as in <code>&lt;Vec&lt;T&gt; as SomeTrait&gt;::Associated</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1129,13 +1249,15 @@ self-type as in <code>&lt;Vec&lt;T&gt; as SomeTrait&gt;::Associated</code>.</p>
                                   title='struct syn::TypePtr'>TypePtr</a></td>
                            <td class='docblock-short'>
                                 <p>A raw pointer type: <code>*const T</code> or <code>*mut T</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.TypeReference.html"
                                   title='struct syn::TypeReference'>TypeReference</a></td>
                            <td class='docblock-short'>
-                                <p>A reference type: <code>&amp;&#39;a T</code> or <code>&amp;&#39;a mut T</code>.</p>
+                                <p>A reference type: <code>&amp;'a T</code> or <code>&amp;'a mut T</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1143,6 +1265,7 @@ self-type as in <code>&lt;Vec&lt;T&gt; as SomeTrait&gt;::Associated</code>.</p>
                                   title='struct syn::TypeSlice'>TypeSlice</a></td>
                            <td class='docblock-short'>
                                 <p>A dynamically sized slice type: <code>[T]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1151,6 +1274,7 @@ self-type as in <code>&lt;Vec&lt;T&gt; as SomeTrait&gt;::Associated</code>.</p>
                            <td class='docblock-short'>
                                 <p>A trait object type <code>Bound1 + Bound2 + Bound3</code> where <code>Bound</code> is a
 trait or a lifetime.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1158,6 +1282,7 @@ trait or a lifetime.</p>
                                   title='struct syn::TypeTuple'>TypeTuple</a></td>
                            <td class='docblock-short'>
                                 <p>A tuple type: <code>(A, B, C, String)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1165,6 +1290,7 @@ trait or a lifetime.</p>
                                   title='struct syn::TypeVerbatim'>TypeVerbatim</a></td>
                            <td class='docblock-short'>
                                 <p>Tokens in type position not interpreted by Syn.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1172,6 +1298,7 @@ trait or a lifetime.</p>
                                   title='struct syn::Variant'>Variant</a></td>
                            <td class='docblock-short'>
                                 <p>An enum variant.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1179,6 +1306,7 @@ trait or a lifetime.</p>
                                   title='struct syn::VisCrate'>VisCrate</a></td>
                            <td class='docblock-short'>
                                 <p>A crate-level visibility: <code>pub(crate)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1186,6 +1314,7 @@ trait or a lifetime.</p>
                                   title='struct syn::VisPublic'>VisPublic</a></td>
                            <td class='docblock-short'>
                                 <p>A public visibility level: <code>pub</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1194,13 +1323,15 @@ trait or a lifetime.</p>
                            <td class='docblock-short'>
                                 <p>A visibility level restricted to some path: <code>pub(self)</code> or
 <code>pub(super)</code> or <code>pub(in some::module)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="struct" href="struct.WhereClause.html"
                                   title='struct syn::WhereClause'>WhereClause</a></td>
                            <td class='docblock-short'>
-                                <p>A <code>where</code> clause in a definition: <code>where T: Deserialize&lt;&#39;de&gt;, D: &#39;static</code>.</p>
+                                <p>A <code>where</code> clause in a definition: <code>where T: Deserialize&lt;'de&gt;, D: 'static</code>.</p>
+
                            </td>
                        </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
 <table>
@@ -1210,6 +1341,7 @@ trait or a lifetime.</p>
                            <td class='docblock-short'>
                                 <p>Distinguishes between attributes that decorate an item and attributes
 that are contained within an item.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1217,6 +1349,7 @@ that are contained within an item.</p>
                                   title='enum syn::BareFnArgName'>BareFnArgName</a></td>
                            <td class='docblock-short'>
                                 <p>Name of an argument in a function type: the <code>n</code> in <code>fn(n: usize)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1224,6 +1357,7 @@ that are contained within an item.</p>
                                   title='enum syn::BinOp'>BinOp</a></td>
                            <td class='docblock-short'>
                                 <p>A binary operator: <code>+</code>, <code>+=</code>, <code>&amp;</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1231,6 +1365,7 @@ that are contained within an item.</p>
                                   title='enum syn::Data'>Data</a></td>
                            <td class='docblock-short'>
                                 <p>The storage of a struct, enum or union data structure.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1238,6 +1373,7 @@ that are contained within an item.</p>
                                   title='enum syn::Expr'>Expr</a></td>
                            <td class='docblock-short'>
                                 <p>A Rust expression.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1245,6 +1381,7 @@ that are contained within an item.</p>
                                   title='enum syn::Fields'>Fields</a></td>
                            <td class='docblock-short'>
                                 <p>Data stored within an enum variant or struct.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1253,13 +1390,15 @@ that are contained within an item.</p>
                            <td class='docblock-short'>
                                 <p>The suffix on a floating point literal if any, like the <code>f32</code> in
 <code>1.0f32</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="enum" href="enum.GenericArgument.html"
                                   title='enum syn::GenericArgument'>GenericArgument</a></td>
                            <td class='docblock-short'>
-                                <p>An individual generic argument, like <code>&#39;a</code>, <code>T</code>, or <code>Item = T</code>.</p>
+                                <p>An individual generic argument, like <code>'a</code>, <code>T</code>, or <code>Item = T</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1267,7 +1406,8 @@ that are contained within an item.</p>
                                   title='enum syn::GenericParam'>GenericParam</a></td>
                            <td class='docblock-short'>
                                 <p>A generic type parameter, lifetime, or const generic: <code>T: Into&lt;String&gt;</code>,
-<code>&#39;a: &#39;b</code>, <code>const LEN: usize</code>.</p>
+<code>'a: 'b</code>, <code>const LEN: usize</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1275,6 +1415,7 @@ that are contained within an item.</p>
                                   title='enum syn::IntSuffix'>IntSuffix</a></td>
                            <td class='docblock-short'>
                                 <p>The suffix on an integer literal if any, like the <code>u8</code> in <code>127u8</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1282,6 +1423,7 @@ that are contained within an item.</p>
                                   title='enum syn::Lit'>Lit</a></td>
                            <td class='docblock-short'>
                                 <p>A Rust literal such as a string or integer or boolean.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1289,6 +1431,7 @@ that are contained within an item.</p>
                                   title='enum syn::MacroDelimiter'>MacroDelimiter</a></td>
                            <td class='docblock-short'>
                                 <p>A grouping token that surrounds a macro body: <code>m!(...)</code> or <code>m!{...}</code> or <code>m![...]</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1297,6 +1440,7 @@ that are contained within an item.</p>
                            <td class='docblock-short'>
                                 <p>A struct or tuple struct field accessed in a struct literal or field
 expression.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1304,6 +1448,7 @@ expression.</p>
                                   title='enum syn::Meta'>Meta</a></td>
                            <td class='docblock-short'>
                                 <p>Content of a compile-time structured attribute.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1311,6 +1456,7 @@ expression.</p>
                                   title='enum syn::NestedMeta'>NestedMeta</a></td>
                            <td class='docblock-short'>
                                 <p>Element of a compile-time attribute list.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1318,6 +1464,7 @@ expression.</p>
                                   title='enum syn::PathArguments'>PathArguments</a></td>
                            <td class='docblock-short'>
                                 <p>Angle bracketed or parenthesized arguments of a path segment.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1325,6 +1472,7 @@ expression.</p>
                                   title='enum syn::ReturnType'>ReturnType</a></td>
                            <td class='docblock-short'>
                                 <p>Return type of a function signature.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1333,6 +1481,7 @@ expression.</p>
                            <td class='docblock-short'>
                                 <p>The style of a string literal, either plain quoted or a raw string like
 <code>r##&quot;data&quot;##</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1341,6 +1490,7 @@ expression.</p>
                            <td class='docblock-short'>
                                 <p>A modifier on a trait bound, currently only used for the <code>?</code> in
 <code>?Sized</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1348,6 +1498,7 @@ expression.</p>
                                   title='enum syn::Type'>Type</a></td>
                            <td class='docblock-short'>
                                 <p>The possible types that a Rust value could have.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1355,6 +1506,7 @@ expression.</p>
                                   title='enum syn::TypeParamBound'>TypeParamBound</a></td>
                            <td class='docblock-short'>
                                 <p>A trait or lifetime used as a bound on a type parameter.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1362,6 +1514,7 @@ expression.</p>
                                   title='enum syn::UnOp'>UnOp</a></td>
                            <td class='docblock-short'>
                                 <p>A unary operator: <code>*</code>, <code>!</code>, <code>-</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1370,13 +1523,15 @@ expression.</p>
                            <td class='docblock-short'>
                                 <p>The visibility level of an item: inherited or <code>pub</code> or
 <code>pub(restricted)</code>.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
                            <td><a class="enum" href="enum.WherePredicate.html"
                                   title='enum syn::WherePredicate'>WherePredicate</a></td>
                            <td class='docblock-short'>
-                                <p>A single predicate in a <code>where</code> clause: <code>T: Deserialize&lt;&#39;de&gt;</code>.</p>
+                                <p>A single predicate in a <code>where</code> clause: <code>T: Deserialize&lt;'de&gt;</code>.</p>
+
                            </td>
                        </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table>
@@ -1385,6 +1540,7 @@ expression.</p>
                                   title='fn syn::parse'>parse</a></td>
                            <td class='docblock-short'>
                                 <p>Parse tokens of source code into the chosen syntax tree node.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1392,6 +1548,7 @@ expression.</p>
                                   title='fn syn::parse2'>parse2</a></td>
                            <td class='docblock-short'>
                                 <p>Parse a proc-macro2 token stream into the chosen syntax tree node.</p>
+
                            </td>
                        </tr>
                        <tr class=' module-item'>
@@ -1399,6 +1556,7 @@ expression.</p>
                                   title='fn syn::parse_str'>parse_str</a></td>
                            <td class='docblock-short'>
                                 <p>Parse a string of Rust code into the chosen syntax tree node.</p>
+
                            </td>
                        </tr></table></section>
     <section id='search' class="content hidden"></section>
@@ -1413,20 +1571,22 @@ expression.</p>
                 <h2>Keyboard Shortcuts</h2>
 
                 <dl>
-                    <dt>?</dt>
+                    <dt><kbd>?</kbd></dt>
                     <dd>Show this help dialog</dd>
-                    <dt>S</dt>
+                    <dt><kbd>S</kbd></dt>
                     <dd>Focus the search field</dd>
-                    <dt>↑</dt>
+                    <dt><kbd>↑</kbd></dt>
                     <dd>Move up in search results</dd>
-                    <dt>↓</dt>
+                    <dt><kbd>↓</kbd></dt>
                     <dd>Move down in search results</dd>
-                    <dt>↹</dt>
+                    <dt><kbd>↹</kbd></dt>
                     <dd>Switch tab</dd>
-                    <dt>&#9166;</dt>
+                    <dt><kbd>&#9166;</kbd></dt>
                     <dd>Go to active search result</dd>
-                    <dt style="width:31px;">+ / -</dt>
-                    <dd>Collapse/expand all sections</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
                 </dl>
             </div>
 

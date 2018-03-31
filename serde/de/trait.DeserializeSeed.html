@@ -10,8 +10,11 @@
     <title>serde::de::DeserializeSeed - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css" id="themeStyle">
+    <script src="../../storage.js"></script>
     
 
     
@@ -33,6 +36,13 @@
         <p class='location'>Trait DeserializeSeed</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#associated-types">Associated Types</a><div class="sidebar-links"><a href="#associatedtype.Value">Value</a></div><a class="sidebar-title" href="#required-methods">Required Methods</a><div class="sidebar-links"><a href="#tymethod.deserialize">deserialize</a></div><a class="sidebar-title" href="#foreign-impls">Implementations on Foreign Types</a><div class="sidebar-links"><a href="#impl-DeserializeSeed%3C%27de%3E">PhantomData&lt;T&gt;</a></div><a class="sidebar-title" href="#implementors">Implementors</a></div><p class='location'><a href='../index.html'>serde</a>::<wbr><a href='index.html'>de</a></p><script>window.sidebarCurrent = {name: 'DeserializeSeed', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -49,37 +59,32 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../src/serde/de/mod.rs.html#709-718' title='goto source code'>[src]</a></span></h1>
+               </span><a class='srclink' href='../../src/serde/de/mod.rs.html#710-719' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait DeserializeSeed&lt;'de&gt;: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a> {
     type <a href='#associatedtype.Value' class="type">Value</a>;
     fn <a href='#tymethod.deserialize' class='fnname'>deserialize</a>&lt;D&gt;(self, deserializer: D) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;Self::<a class="type" href="../../serde/de/trait.DeserializeSeed.html#associatedtype.Value" title="type serde::de::DeserializeSeed::Value">Value</a>, D::<a class="type" href="../../serde/trait.Deserializer.html#associatedtype.Error" title="type serde::Deserializer::Error">Error</a>&gt;<br>&nbsp;&nbsp;&nbsp; <span class="where">where<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;D: <a class="trait" href="../../serde/trait.Deserializer.html" title="trait serde::Deserializer">Deserializer</a>&lt;'de&gt;</span>;
 }</pre><div class='docblock'><p><code>DeserializeSeed</code> is the stateful form of the <code>Deserialize</code> trait. If you
 ever find yourself looking for a way to pass data into a <code>Deserialize</code> impl,
 this trait is the way to do it.</p>
-
 <p>As one example of stateful deserialization consider deserializing a JSON
 array into an existing buffer. Using the <code>Deserialize</code> trait we could
 deserialize a JSON array into a <code>Vec&lt;T&gt;</code> but it would be a freshly allocated
 <code>Vec&lt;T&gt;</code>; there is no way for <code>Deserialize</code> to reuse a previously allocated
 buffer. Using <code>DeserializeSeed</code> instead makes this possible as in the
 example code below.</p>
-
 <p>The canonical API for stateless deserialization looks like this:</p>
 
 <pre class="rust rust-example-rendered">
 <span class="kw">fn</span> <span class="ident">func</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;&gt;</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span></pre>
-
 <p>Adjusting an API like this to support stateful deserialization is a matter
 of accepting a seed as input:</p>
 
 <pre class="rust rust-example-rendered">
 <span class="kw">fn</span> <span class="ident">func_seed</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">T</span>: <span class="ident">DeserializeSeed</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;&gt;</span>(<span class="ident">seed</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span></pre>
-
 <p>In practice the majority of deserialization is stateless. An API expecting a
 seed can be appeased by passing <code>std::marker::PhantomData</code> as a seed in the
 case of stateless deserialization.</p>
-
-<h1 id='example' class='section-header'><a href='#example'>Example</a></h1>
+<h1 id="example" class="section-header"><a href="#example">Example</a></h1>
 <p>Suppose we have JSON that looks like <code>[[1, 2], [3, 4, 5], [6]]</code> and we need
 to deserialize it into a flat representation like <code>vec![1, 2, 3, 4, 5, 6]</code>.
 Allocating a brand new <code>Vec&lt;T&gt;</code> for each subarray would be slow. Instead we
@@ -189,9 +194,9 @@ with some initial piece of data (the seed) passed in.</p>
                 <h2 id='foreign-impls' class='small-section-header'>
                   Implementations on Foreign Types<a href='#foreign-impls' class='anchor'></a>
                 </h2>
-            <h3 id='impl-DeserializeSeed%3C%27de%3E' class='impl'><span class='in-band'><code>impl&lt;'de, T&gt; <a class="trait" href="../../serde/de/trait.DeserializeSeed.html" title="trait serde::de::DeserializeSeed">DeserializeSeed</a>&lt;'de&gt; for <a class="struct" href="https://doc.rust-lang.org/nightly/core/marker/struct.PhantomData.html" title="struct core::marker::PhantomData">PhantomData</a>&lt;T&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../serde/trait.Deserialize.html" title="trait serde::Deserialize">Deserialize</a>&lt;'de&gt;,&nbsp;</span></code><a href='#impl-DeserializeSeed%3C%27de%3E' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/serde/de/mod.rs.html#720-733' title='goto source code'>[src]</a></span></h3>
+            <h3 id='impl-DeserializeSeed%3C%27de%3E' class='impl'><span class='in-band'><code>impl&lt;'de, T&gt; <a class="trait" href="../../serde/de/trait.DeserializeSeed.html" title="trait serde::de::DeserializeSeed">DeserializeSeed</a>&lt;'de&gt; for <a class="struct" href="https://doc.rust-lang.org/nightly/core/marker/struct.PhantomData.html" title="struct core::marker::PhantomData">PhantomData</a>&lt;T&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: <a class="trait" href="../../serde/trait.Deserialize.html" title="trait serde::Deserialize">Deserialize</a>&lt;'de&gt;,&nbsp;</span></code><a href='#impl-DeserializeSeed%3C%27de%3E' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/serde/de/mod.rs.html#721-734' title='goto source code'>[src]</a></span></h3>
 <span class='docblock autohide'><div class='impl-items'><h4 id='associatedtype.Value-1' class="type"><span id='Value.t-1' class='invisible'><code>type <a href='#associatedtype.Value' class="type">Value</a> = T</code></span></h4>
-<h4 id='method.deserialize' class="method"><span id='deserialize.v-1' class='invisible'><code>fn <a href='#method.deserialize' class='fnname'>deserialize</a>&lt;D&gt;(self, deserializer: D) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;T, D::<a class="type" href="../../serde/trait.Deserializer.html#associatedtype.Error" title="type serde::Deserializer::Error">Error</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;D: <a class="trait" href="../../serde/trait.Deserializer.html" title="trait serde::Deserializer">Deserializer</a>&lt;'de&gt;,&nbsp;</span></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/serde/de/mod.rs.html#727-732' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.deserialize' class="method"><span id='deserialize.v-1' class='invisible'><code>fn <a href='#method.deserialize' class='fnname'>deserialize</a>&lt;D&gt;(self, deserializer: D) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;T, D::<a class="type" href="../../serde/trait.Deserializer.html#associatedtype.Error" title="type serde::Deserializer::Error">Error</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;D: <a class="trait" href="../../serde/trait.Deserializer.html" title="trait serde::Deserializer">Deserializer</a>&lt;'de&gt;,&nbsp;</span></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/serde/de/mod.rs.html#728-733' title='goto source code'>[src]</a></span></h4>
 </div></span>
         <h2 id='implementors' class='small-section-header'>
           Implementors<a href='#implementors' class='anchor'></a>
@@ -212,20 +217,22 @@ with some initial piece of data (the seed) passed in.</p>
                 <h2>Keyboard Shortcuts</h2>
 
                 <dl>
-                    <dt>?</dt>
+                    <dt><kbd>?</kbd></dt>
                     <dd>Show this help dialog</dd>
-                    <dt>S</dt>
+                    <dt><kbd>S</kbd></dt>
                     <dd>Focus the search field</dd>
-                    <dt>↑</dt>
+                    <dt><kbd>↑</kbd></dt>
                     <dd>Move up in search results</dd>
-                    <dt>↓</dt>
+                    <dt><kbd>↓</kbd></dt>
                     <dd>Move down in search results</dd>
-                    <dt>↹</dt>
+                    <dt><kbd>↹</kbd></dt>
                     <dd>Switch tab</dd>
-                    <dt>&#9166;</dt>
+                    <dt><kbd>&#9166;</kbd></dt>
                     <dd>Go to active search result</dd>
-                    <dt style="width:31px;">+ / -</dt>
-                    <dd>Collapse/expand all sections</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
                 </dl>
             </div>
 

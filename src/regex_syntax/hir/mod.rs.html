@@ -4,14 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.5.0/src/hir/mod.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.5.3/src/hir/mod.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>mod.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css" id="themeStyle">
+    <script src="../../../storage.js"></script>
     
 
     
@@ -33,6 +36,13 @@
         
     </nav>
 
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../../../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../../../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -2084,6 +2094,21 @@
 <span id="2038">2038</span>
 <span id="2039">2039</span>
 <span id="2040">2040</span>
+<span id="2041">2041</span>
+<span id="2042">2042</span>
+<span id="2043">2043</span>
+<span id="2044">2044</span>
+<span id="2045">2045</span>
+<span id="2046">2046</span>
+<span id="2047">2047</span>
+<span id="2048">2048</span>
+<span id="2049">2049</span>
+<span id="2050">2050</span>
+<span id="2051">2051</span>
+<span id="2052">2052</span>
+<span id="2053">2053</span>
+<span id="2054">2054</span>
+<span id="2055">2055</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -2112,6 +2137,7 @@ Defines a high-level intermediate representation for regular expressions.
 
 <span class="kw">mod</span> <span class="ident">interval</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">literal</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">print</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">translate</span>;
 <span class="kw">mod</span> <span class="ident">visitor</span>;
 
@@ -2239,6 +2265,10 @@ Defines a high-level intermediate representation for regular expressions.
 <span class="doccomment">///    and can be computed cheaply during the construction process. For</span>
 <span class="doccomment">///    example, one such attribute is whether the expression must match at the</span>
 <span class="doccomment">///    beginning of the text.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Also, an `Hir`&#39;s `fmt::Display` implementation prints an HIR as a regular</span>
+<span class="doccomment">/// expression pattern string, and uses constant stack space and heap space</span>
+<span class="doccomment">/// proportional to the size of the `Hir`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Hir</span> {
     <span class="doccomment">/// The underlying HIR kind.</span>
@@ -2389,10 +2419,7 @@ Defines a high-level intermediate representation for regular expressions.
         <span class="comment">// A negated word boundary matches the empty string, but a normal</span>
         <span class="comment">// word boundary does not!</span>
         <span class="ident">info</span>.<span class="ident">set_match_empty</span>(<span class="ident">word_boundary</span>.<span class="ident">is_negated</span>());
-        <span class="comment">// ASCII word boundaries can match invalid UTF-8.</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">WordBoundary</span>::<span class="ident">Ascii</span> <span class="op">=</span> <span class="ident">word_boundary</span> {
-            <span class="ident">info</span>.<span class="ident">set_always_utf8</span>(<span class="bool-val">false</span>);
-        }
+        <span class="comment">// Negated ASCII word boundaries can match invalid UTF-8.</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">WordBoundary</span>::<span class="ident">AsciiNegate</span> <span class="op">=</span> <span class="ident">word_boundary</span> {
             <span class="ident">info</span>.<span class="ident">set_always_utf8</span>(<span class="bool-val">false</span>);
         }
@@ -2689,6 +2716,19 @@ Defines a high-level intermediate representation for regular expressions.
             <span class="op">|</span> <span class="ident">HirKind</span>::<span class="ident">Concat</span>(_)
             <span class="op">|</span> <span class="ident">HirKind</span>::<span class="ident">Alternation</span>(_) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
         }
+    }
+}
+
+<span class="doccomment">/// Print a display representation of this Hir.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The result of this is a valid regular expression pattern string.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This implementation uses constant stack space and heap space proportional</span>
+<span class="doccomment">/// to the size of the `Hir`.</span>
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Hir</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="kw">use</span> <span class="ident">hir</span>::<span class="ident">print</span>::<span class="ident">Printer</span>;
+        <span class="ident">Printer</span>::<span class="ident">new</span>().<span class="ident">print</span>(<span class="self">self</span>, <span class="ident">f</span>)
     }
 }
 
@@ -4139,20 +4179,22 @@ Defines a high-level intermediate representation for regular expressions.
                 <h2>Keyboard Shortcuts</h2>
 
                 <dl>
-                    <dt>?</dt>
+                    <dt><kbd>?</kbd></dt>
                     <dd>Show this help dialog</dd>
-                    <dt>S</dt>
+                    <dt><kbd>S</kbd></dt>
                     <dd>Focus the search field</dd>
-                    <dt>↑</dt>
+                    <dt><kbd>↑</kbd></dt>
                     <dd>Move up in search results</dd>
-                    <dt>↓</dt>
+                    <dt><kbd>↓</kbd></dt>
                     <dd>Move down in search results</dd>
-                    <dt>↹</dt>
+                    <dt><kbd>↹</kbd></dt>
                     <dd>Switch tab</dd>
-                    <dt>&#9166;</dt>
+                    <dt><kbd>&#9166;</kbd></dt>
                     <dd>Go to active search result</dd>
-                    <dt style="width:31px;">+ / -</dt>
-                    <dd>Collapse/expand all sections</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
                 </dl>
             </div>
 
