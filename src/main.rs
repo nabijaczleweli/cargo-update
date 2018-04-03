@@ -44,7 +44,14 @@ fn actual_main() -> Result<(), i32> {
     }
 
     {
-        // Searching for "" will just update the registry
+        // Searching for "" used to just update the registry, but since rustc 1.25.0/cargo 0.26.0, if not earlier, one just gets a dump
+        // of every crate (https://github.com/nabijaczleweli/cargo-update/issues/79).
+        //
+        // Searching for a ZWNJ here will ensure we don't get any results (I'm pretty sure that's just forbidden, and if it's not and
+        // someone makes one I'll make sure that that be the case).
+        //
+        // Another option would be (a) capturing the output (slower) or (b) passing "--limit 0" (not sure how well-supported that is
+        // across past versions).
         let search_res = Command::new("cargo").arg("search").arg("\u{200C}").status().unwrap();
         if !search_res.success() {
             return Err(search_res.code().unwrap_or(-1));
