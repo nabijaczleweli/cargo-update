@@ -22,7 +22,7 @@ If that doesn't work and you're on Mac, [re-try with `PKG_CONFIG_PATH=/usr/local
 |-----------------------------------------|------------------|----------------------------|
 | [`libgit2`](https://libgit2.github.com) | `libgit2-devel`  | `mingw-w64-x86_64-libgit2` |
 | [`libssh2`](https://libssh2.org)        | `libssh2-devel`  | `mingw-w64-x86_64-libssh2` |
-| [`libssh2`](https://openssl.org)        | `openssl-devel`  | `mingw-w64-x86_64-openssl` |
+| [`openssl`](https://openssl.org)        | `openssl-devel`  | `mingw-w64-x86_64-openssl` |
 
 ### Usage
 
