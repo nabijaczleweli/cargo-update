@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.39/src/private/de.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-1.0.40/src/private/de.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>de.rs.html -- source</title>
@@ -2862,6 +2862,16 @@
 <span id="2806">2806</span>
 <span id="2807">2807</span>
 <span id="2808">2808</span>
+<span id="2809">2809</span>
+<span id="2810">2810</span>
+<span id="2811">2811</span>
+<span id="2812">2812</span>
+<span id="2813">2813</span>
+<span id="2814">2814</span>
+<span id="2815">2815</span>
+<span id="2816">2816</span>
+<span id="2817">2817</span>
+<span id="2818">2818</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2017 Serde Developers</span>
 <span class="comment">//</span>
@@ -4110,6 +4120,8 @@
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">content</span> {
                 <span class="ident">Content</span>::<span class="ident">String</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_string</span>(<span class="ident">v</span>),
                 <span class="ident">Content</span>::<span class="ident">Str</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">ByteBuf</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_byte_buf</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">Bytes</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_bytes</span>(<span class="ident">v</span>),
                 _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">invalid_type</span>(<span class="kw-2">&amp;</span><span class="ident">visitor</span>)),
             }
         }
@@ -4126,8 +4138,11 @@
             <span class="ident">V</span>: <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">content</span> {
+                <span class="ident">Content</span>::<span class="ident">String</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_string</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">Str</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">v</span>),
                 <span class="ident">Content</span>::<span class="ident">ByteBuf</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_byte_buf</span>(<span class="ident">v</span>),
                 <span class="ident">Content</span>::<span class="ident">Bytes</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_bytes</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">Seq</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visit_content_seq</span>(<span class="ident">v</span>, <span class="ident">visitor</span>),
                 _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">invalid_type</span>(<span class="kw-2">&amp;</span><span class="ident">visitor</span>)),
             }
         }
@@ -4831,6 +4846,8 @@
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">content</span> {
                 <span class="ident">Content</span>::<span class="ident">String</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_str</span>(<span class="ident">v</span>),
                 <span class="ident">Content</span>::<span class="ident">Str</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">ByteBuf</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_bytes</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">Bytes</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_bytes</span>(<span class="ident">v</span>),
                 _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">invalid_type</span>(<span class="kw-2">&amp;</span><span class="ident">visitor</span>)),
             }
         }
@@ -4847,8 +4864,11 @@
             <span class="ident">V</span>: <span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
         {
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">content</span> {
+                <span class="ident">Content</span>::<span class="ident">String</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_str</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">Str</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">v</span>),
                 <span class="ident">Content</span>::<span class="ident">ByteBuf</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_bytes</span>(<span class="ident">v</span>),
                 <span class="ident">Content</span>::<span class="ident">Bytes</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_bytes</span>(<span class="ident">v</span>),
+                <span class="ident">Content</span>::<span class="ident">Seq</span>(<span class="kw-2">ref</span> <span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">visit_content_seq_ref</span>(<span class="ident">v</span>, <span class="ident">visitor</span>),
                 _ <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">invalid_type</span>(<span class="kw-2">&amp;</span><span class="ident">visitor</span>)),
             }
         }
