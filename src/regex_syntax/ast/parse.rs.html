@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.5.5/src/ast/parse.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.5.6/src/ast/parse.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parse.rs.html -- source</title>
@@ -5406,6 +5406,19 @@
 <span id="5350">5350</span>
 <span id="5351">5351</span>
 <span id="5352">5352</span>
+<span id="5353">5353</span>
+<span id="5354">5354</span>
+<span id="5355">5355</span>
+<span id="5356">5356</span>
+<span id="5357">5357</span>
+<span id="5358">5358</span>
+<span id="5359">5359</span>
+<span id="5360">5360</span>
+<span id="5361">5361</span>
+<span id="5362">5362</span>
+<span id="5363">5363</span>
+<span id="5364">5364</span>
+<span id="5365">5365</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -5504,7 +5517,7 @@ This module provides a regular expression parser.
 
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Literal</span>(<span class="ident">lit</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">lit</span>),
-            <span class="ident">x</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">p</span>.<span class="ident">error</span>(<span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">span</span>(), <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">ClassEscapeInvalid</span>)),
+            <span class="ident">x</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">p</span>.<span class="ident">error</span>(<span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">span</span>(), <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">ClassRangeLiteral</span>)),
         }
     }
 }
@@ -6460,6 +6473,13 @@ This module provides a regular expression parser.
                 <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">RepetitionMissing</span>,
             )),
         };
+        <span class="kw">match</span> <span class="ident">ast</span> {
+            <span class="ident">Ast</span>::<span class="ident">Empty</span>(_) <span class="op">|</span> <span class="ident">Ast</span>::<span class="ident">Flags</span>(_) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(
+                <span class="self">self</span>.<span class="ident">span</span>(),
+                <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">RepetitionMissing</span>,
+            )),
+            _ <span class="op">=&gt;</span> {}
+        }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">greedy</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">bump</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">char</span>() <span class="op">==</span> <span class="string">&#39;?&#39;</span> {
             <span class="ident">greedy</span> <span class="op">=</span> <span class="bool-val">false</span>;
@@ -8352,6 +8372,12 @@ bar
                 <span class="ident">kind</span>: <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">RepetitionMissing</span>,
             });
         <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">parser</span>(<span class="string">r&quot;(?i)*&quot;</span>).<span class="ident">parse</span>().<span class="ident">unwrap_err</span>(),
+            <span class="ident">TestError</span> {
+                <span class="ident">span</span>: <span class="ident">span</span>(<span class="number">4</span>..<span class="number">4</span>),
+                <span class="ident">kind</span>: <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">RepetitionMissing</span>,
+            });
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">parser</span>(<span class="string">r&quot;(*)&quot;</span>).<span class="ident">parse</span>().<span class="ident">unwrap_err</span>(),
             <span class="ident">TestError</span> {
                 <span class="ident">span</span>: <span class="ident">span</span>(<span class="number">1</span>..<span class="number">1</span>),
@@ -10086,13 +10112,13 @@ bar
             <span class="ident">parser</span>(<span class="string">r&quot;[\w-a]&quot;</span>).<span class="ident">parse</span>().<span class="ident">unwrap_err</span>(),
             <span class="ident">TestError</span> {
                 <span class="ident">span</span>: <span class="ident">span</span>(<span class="number">1</span>..<span class="number">3</span>),
-                <span class="ident">kind</span>: <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">ClassEscapeInvalid</span>,
+                <span class="ident">kind</span>: <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">ClassRangeLiteral</span>,
             });
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">parser</span>(<span class="string">r&quot;[a-\w]&quot;</span>).<span class="ident">parse</span>().<span class="ident">unwrap_err</span>(),
             <span class="ident">TestError</span> {
                 <span class="ident">span</span>: <span class="ident">span</span>(<span class="number">3</span>..<span class="number">5</span>),
-                <span class="ident">kind</span>: <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">ClassEscapeInvalid</span>,
+                <span class="ident">kind</span>: <span class="ident">ast</span>::<span class="ident">ErrorKind</span>::<span class="ident">ClassRangeLiteral</span>,
             });
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">parser</span>(<span class="string">r&quot;[z-a]&quot;</span>).<span class="ident">parse</span>().<span class="ident">unwrap_err</span>(),

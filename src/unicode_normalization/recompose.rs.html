@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-normalization-0.1.5/src/recompose.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/unicode-normalization-0.1.6/src/recompose.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>recompose.rs.html -- source</title>
@@ -201,6 +201,7 @@
 <span id="145">145</span>
 <span id="146">146</span>
 <span id="147">147</span>
+<span id="148">148</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2012-2015 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -248,7 +249,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_compatible</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span><span class="op">=</span><span class="ident">char</span><span class="op">&gt;&gt;</span>(<span class="ident">iter</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="ident">Recompositions</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
     <span class="ident">Recompositions</span> {
         <span class="ident">iter</span>: <span class="kw">super</span>::<span class="ident">decompose</span>::<span class="ident">new_compatible</span>(<span class="ident">iter</span>),
-        <span class="ident">state</span> : <span class="self">self</span>::<span class="ident">RecompositionState</span>::<span class="ident">Composing</span>,
+        <span class="ident">state</span>: <span class="self">self</span>::<span class="ident">RecompositionState</span>::<span class="ident">Composing</span>,
         <span class="ident">buffer</span>: <span class="ident">VecDeque</span>::<span class="ident">new</span>(),
         <span class="ident">composee</span>: <span class="prelude-val">None</span>,
         <span class="ident">last_ccc</span>: <span class="prelude-val">None</span>,
@@ -267,15 +268,16 @@
                 <span class="ident">Composing</span> <span class="op">=&gt;</span> {
                     <span class="kw">for</span> <span class="ident">ch</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">by_ref</span>() {
                         <span class="kw">let</span> <span class="ident">ch_class</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">char</span>::<span class="ident">canonical_combining_class</span>(<span class="ident">ch</span>);
-                        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">composee</span>.<span class="ident">is_none</span>() {
-                            <span class="kw">if</span> <span class="ident">ch_class</span> <span class="op">!=</span> <span class="number">0</span> {
-                                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>);
-                            }
-                            <span class="self">self</span>.<span class="ident">composee</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>);
-                            <span class="kw">continue</span>;
-                        }
-                        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">composee</span>.<span class="ident">clone</span>().<span class="ident">unwrap</span>();
-
+                        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">composee</span> {
+                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                                <span class="kw">if</span> <span class="ident">ch_class</span> <span class="op">!=</span> <span class="number">0</span> {
+                                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>);
+                                }
+                                <span class="self">self</span>.<span class="ident">composee</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ch</span>);
+                                <span class="kw">continue</span>;
+                            },
+                            <span class="prelude-val">Some</span>(<span class="ident">k</span>) <span class="op">=&gt;</span> <span class="ident">k</span>,
+                        };
                         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">last_ccc</span> {
                             <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                                 <span class="kw">match</span> <span class="kw">super</span>::<span class="ident">char</span>::<span class="ident">compose</span>(<span class="ident">k</span>, <span class="ident">ch</span>) {

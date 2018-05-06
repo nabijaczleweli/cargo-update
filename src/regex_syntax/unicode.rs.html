@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.5.5/src/unicode.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.5.6/src/unicode.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>unicode.rs.html -- source</title>
@@ -516,6 +516,16 @@
 <span id="460">460</span>
 <span id="461">461</span>
 <span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">result</span>;
@@ -736,7 +746,7 @@
 <span class="doccomment">/// Like ClassQuery, but its parameters have been canonicalized. This also</span>
 <span class="doccomment">/// differentiates binary properties from flattened general categories and</span>
 <span class="doccomment">/// scripts.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">enum</span> <span class="ident">CanonicalClassQuery</span> {
     <span class="doccomment">/// The canonical binary property name.</span>
     <span class="ident">Binary</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>),
@@ -977,6 +987,16 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">contains_simple_case_mapping</span>(<span class="string">&#39;[&#39;</span>, <span class="string">&#39;`&#39;</span>));
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">contains_simple_case_mapping</span>(<span class="string">&#39;☃&#39;</span>, <span class="string">&#39;☃&#39;</span>));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">regression_466</span>() {
+        <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">CanonicalClassQuery</span>, <span class="ident">ClassQuery</span>};
+
+        <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">ClassQuery</span>::<span class="ident">OneLetter</span>(<span class="string">&#39;C&#39;</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">q</span>.<span class="ident">canonicalize</span>().<span class="ident">unwrap</span>(),
+            <span class="ident">CanonicalClassQuery</span>::<span class="ident">GeneralCategory</span>(<span class="string">&quot;Other&quot;</span>));
     }
 }
 </pre>

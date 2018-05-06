@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.13.1/src/parse_quote.rs`.">
+    <meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.13.7/src/parse_quote.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
     <title>parse_quote.rs.html -- source</title>
@@ -214,6 +214,9 @@
 <span id="158">158</span>
 <span id="159">159</span>
 <span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
 </pre><pre class="rust ">
 <span class="doccomment">/// Quasi-quotation macro that accepts input like the [`quote!`] macro but uses</span>
 <span class="doccomment">/// type inference to figure out a return type for those tokens.</span>
@@ -305,9 +308,9 @@
 <span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
 <span class="comment">// Can parse any type that implements Synom.</span>
 
-<span class="kw">use</span> <span class="ident">synom</span>::{<span class="ident">Synom</span>, <span class="ident">Parser</span>, <span class="ident">PResult</span>};
 <span class="kw">use</span> <span class="ident">buffer</span>::<span class="ident">Cursor</span>;
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span>;
+<span class="kw">use</span> <span class="ident">synom</span>::{<span class="ident">PResult</span>, <span class="ident">Parser</span>, <span class="ident">Synom</span>};
 
 <span class="comment">// Not public API.</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -322,7 +325,7 @@
         <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">T</span>::<span class="ident">description</span>() {
             <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;failed to parse {}: {}&quot;</span>, <span class="ident">s</span>, <span class="ident">err</span>),
             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
-        }
+        },
     }
 }
 
@@ -333,7 +336,10 @@
     <span class="kw">fn</span> <span class="ident">description</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span>;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">ParseQuote</span> <span class="kw">for</span> <span class="ident">T</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Synom</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">ParseQuote</span> <span class="kw">for</span> <span class="ident">T</span>
+<span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">Synom</span>,
+{
     <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Synom</span><span class="op">&gt;</span>::<span class="ident">parse</span>(<span class="ident">input</span>)
     }
