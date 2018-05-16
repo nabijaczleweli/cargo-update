@@ -12,9 +12,9 @@
 //! ```
 
 
+use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{self, AppSettings, SubCommand, App, Arg};
-use self::super::ops::ConfigOperation;
 use std::env::{self, home_dir};
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
@@ -37,6 +37,8 @@ pub struct Options {
     pub force: bool,
     /// Update git packages too (it's expensive). Default: `false`
     pub update_git: bool,
+    /// Update all packages. Default: empty
+    pub filter: Vec<PackageFilterElement>,
     /// The `.crates.toml` file in the `cargo` home directory.
     /// Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub crates_file: (String, PathBuf),
@@ -79,6 +81,8 @@ impl Options {
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
                         Arg::from_usage("-g --git 'Also update git packages'"),
+                        Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
+                            .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'")
                             .conflicts_with("all")
                             .empty_values(false)
@@ -99,6 +103,7 @@ impl Options {
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
             update_git: matches.is_present("git"),
+            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_else(|| vec![]),
             crates_file: match matches.value_of("cargo-dir") {
                 Some(dir) => (format!("{}/.crates.toml", dir), fs::canonicalize(dir).unwrap().join(".crates.toml")),
                 None => {

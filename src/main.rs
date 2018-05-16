@@ -39,6 +39,7 @@ fn actual_main() -> Result<(), i32> {
     let configuration = try!(cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")));
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
 
+    packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
     if !opts.to_update.is_empty() {
         packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install);
     }
@@ -181,6 +182,7 @@ fn actual_main() -> Result<(), i32> {
     if opts.update_git {
         let mut packages = cargo_update::ops::installed_git_repo_packages(&crates_file);
 
+        packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
         if !opts.to_update.is_empty() {
             packages.retain(|p| opts.to_update.iter().any(|u| p.name == u.0));
         }

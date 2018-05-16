@@ -3,6 +3,7 @@ use semver::Version as Semver;
 use std::fs::File;
 
 mod installed_main_repo_packages;
+mod package_filter_element;
 mod main_repo_package;
 mod get_index_path;
 

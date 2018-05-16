@@ -401,6 +401,57 @@ impl GitRepoPackage {
 }
 
 
+/// One of elements with which to filter required packages.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum PackageFilterElement {
+    /// Requires toolchain to be specified to the specified toolchain.
+    ///
+    /// Parsed name: `"toolchain"`.
+    Toolchain(String),
+}
+
+impl PackageFilterElement {
+    /// Parse one filter specifier into up to one package filter
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use cargo_update::ops::PackageFilterElement;
+    /// assert_eq!(PackageFilterElement::parse("toolchain=nightly"),
+    ///            Ok(PackageFilterElement::Toolchain("nightly".to_string())));
+    ///
+    /// assert!(PackageFilterElement::parse("capitalism").is_err());
+    /// assert!(PackageFilterElement::parse("communism=good").is_err());
+    /// ```
+    pub fn parse(from: &str) -> Result<PackageFilterElement, String> {
+        let (key, value) = from.split_at(from.find('=').ok_or_else(|| format!(r#"Filter string "{}" does not contain the key/value separator "=""#, from))?);
+        let value = &value[1..];
+
+        Ok(match key {
+            "toolchain" => PackageFilterElement::Toolchain(value.to_string()),
+            _ => return Err(format!(r#"Unrecognised filter key "{}""#, key)),
+        })
+    }
+
+    /// Check if the specified package config matches this filter element.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use cargo_update::ops::{PackageFilterElement, ConfigOperation, PackageConfig};
+    /// assert!(PackageFilterElement::Toolchain("nightly".to_string())
+    ///     .matches(&PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string())])));
+    ///
+    /// assert!(!PackageFilterElement::Toolchain("nightly".to_string()).matches(&PackageConfig::from(&[])));
+    /// ```
+    pub fn matches(&self, cfg: &PackageConfig) -> bool {
+        match *self {
+            PackageFilterElement::Toolchain(ref chain) => Some(chain) == cfg.toolchain.as_ref(),
+        }
+    }
+}
+
+
 /// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file
 /// parallel to the specified crates file up to the final one.
 ///
