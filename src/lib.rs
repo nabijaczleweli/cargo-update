@@ -302,7 +302,9 @@
 //!   Updated 1 package.
 //! ```
 
+
 #![cfg_attr(feature = "cargo-clippy", allow(redundant_field_names))]
+
 
 #[macro_use]
 extern crate serde_derive;
@@ -314,10 +316,10 @@ extern crate regex;
 extern crate git2;
 #[macro_use]
 extern crate clap;
+extern crate dirs;
 extern crate toml;
 extern crate json;
 extern crate url;
-extern crate dirs;
 
 mod options;
 
