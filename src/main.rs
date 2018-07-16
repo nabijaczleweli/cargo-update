@@ -46,25 +46,13 @@ fn actual_main() -> Result<(), i32> {
         packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install);
     }
 
-    {
-        // Searching for "" used to just update the registry, but since rustc 1.25.0/cargo 0.26.0, if not earlier, one just gets a dump
-        // of every crate (https://github.com/nabijaczleweli/cargo-update/issues/79).
-        //
-        // Searching for a ZWNJ here will ensure we don't get any results (I'm pretty sure that's just forbidden, and if it's not and
-        // someone makes one I'll make sure that that be the case).
-        //
-        // Another option would be (a) capturing the output (slower) or (b) passing "--limit 0" (not sure how well-supported that is
-        // across past versions).
-        let search_res = Command::new("cargo").arg("search").arg("\u{200C}").status().unwrap();
-        if !search_res.success() {
-            return Err(search_res.code().unwrap_or(-1));
-        }
-        println!();
-    }
-
     let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
-    let registry_repo = try!(Repository::open(&registry).map_err(|_| {
+    let mut registry_repo = try!(Repository::open(&registry).map_err(|_| {
         println!("Failed to open registry repository at {}.", registry.display());
+        2
+    }));
+    try!(cargo_update::ops::update_index(&mut registry_repo, "https://github.com/rust-lang/crates.io-index", &mut stdout()).map_err(|e| {
+        println!("Failed to update index repository: {}.", e);
         2
     }));
     let latest_registry = try!(registry_repo.revparse_single("origin/master").map_err(|_| {

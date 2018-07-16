@@ -10,8 +10,8 @@ use git2::{self, Error as GitError, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
+use std::io::{Write, Read};
 use std::time::SystemTime;
-use std::io::Read;
 use regex::Regex;
 use url::Url;
 use std::cmp;
@@ -654,6 +654,57 @@ pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
         .unwrap()
         .path()
 }
+
+/// Update the specified index repository from the specified URL.
+///
+/// Historically, `cargo search` was used, first of an
+/// [empty string](https://github.com/nabijaczleweli/cargo-update/commit/aa090b4a38a486654cd73b173c3f49f6a56aa059#diff-639fbc4ef05b315af92b4d836c31b023R24),
+/// then a [ZWNJ](https://github.com/nabijaczleweli/cargo-update/commit/aeccbd6252a2ddc90dc796117cefe327fbd7fb58#diff-639fbc4ef05b315af92b4d836c31b023R48)
+/// ([why?](https://github.com/nabijaczleweli/cargo-update/commit/08a7111831c6397b7d67a51f9b77bee0a3bbbed4#diff-639fbc4ef05b315af92b4d836c31b023R47)).
+///
+/// The need for this in-house has first emerged with [#93](https://github.com/nabijaczleweli/cargo-update/issues/93): since
+/// [`cargo` v1.29.0-nightly](https://github.com/rust-lang/cargo/pull/5621/commits/5e680f2849e44ce9dfe44416c3284a3b30747e74),
+/// the registry was no longer updated.
+/// So a [two-year-old `cargo` issue](https://github.com/rust-lang/cargo/issues/3377#issuecomment-417950125) was dug up,
+/// asking for a `cargo update-registry` command, followed by a [PR](https://github.com/rust-lang/cargo/pull/5961) implementing
+/// this.
+/// Up to this point, there was no good substitute: `cargo install lazy_static`, the poster-child of replacements errored out
+/// and left garbage in the console,
+/// making it unsuitable.
+///
+/// But then, a [man of steel eyes and hawk will](https://github.com/Eh2406) has emerged, seemingly from nowhere, remarking:
+///
+/// > [21:09] Eh2406:
+/// https://github.com/rust-lang/cargo/blob/1ee1ef0ea7ab47d657ca675e3b1bd2fcd68b5aab/src/cargo/sources/registry/remote.
+/// rs#L204<br />
+/// > [21:10] Eh2406: looks like it is a git fetch of "refs/heads/master:refs/remotes/origin/master"<br />
+/// > [21:11] Eh2406: You are already poking about in cargos internal representation of the index, is this so much more?
+///
+/// It, well, isn't. And with some `cargo` maintainers being firmly against blind-merging that `cargo update-registry` PR,
+/// here I go recycling <del>the same old song</del> that implementation (but simpler, and badlier).
+///
+/// Honourable mentions:
+/// * [**@joshtriplett**](https://github.com/joshtriplett), for being a bastion for the people and standing with me in
+///   advocacy for `cargo update-registry`
+///   (NB: it was *his* issue from 2016 requesting it, funny how things turn around)
+/// * [**@alexcrichton**](https://github.com/alexcrichton), for not getting overly too fed up with me while managing that PR
+///   and producing a brilliant
+///   argument list for doing it in-house (as well as suggesting I write another crate for this)
+/// * And lastly, because mostly, [**@Eh2406**](https://github.com/Eh2406), for swooping in and saving me in my hour of
+///   <del>need</del> not having a good replacement.
+///
+/// Most of this would have been impossible, of course, without the [`rust-lang` Discord server](https://discord.gg/rust-lang),
+/// so shoutout to whoever convinced people that Discord is actually good.
+pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, out: &mut W) -> Result<(), String> {
+    try!(writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string()));
+    try!(index_repo.remote_anonymous(repo_url)
+        .and_then(|mut r| r.fetch(&["refs/heads/master:refs/remotes/origin/master"], None, None))
+        .map_err(|e| e.message().to_string()));
+    try!(writeln!(out).map_err(|_| "failed to write post-update newline".to_string()));
+
+    Ok(())
+}
+
 
 fn latest_modified(ent: &DirEntry) -> SystemTime {
     let meta = ent.metadata().unwrap();
