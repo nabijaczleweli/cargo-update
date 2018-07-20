@@ -42,8 +42,20 @@ fn actual_main() -> Result<(), i32> {
     if !opts.filter.is_empty() {
         packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
     }
-    if !opts.to_update.is_empty() {
-        packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install);
+    match (opts.all, opts.to_update.is_empty()) {
+        (true, true) => {}
+        (true, false) => {
+            for pkg in cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install).into_iter() {
+                if packages.iter().find(|p| p.name == pkg.name).is_none() {
+                    packages.push(pkg);
+                }
+            }
+        }
+        (false, true) => {
+            panic!("No packages to update and -a not specified, this should've been caught by option parser (please report to \
+                    http://github.com/nabijaczleweli/cargo-update)")
+        }
+        (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install),
     }
 
     let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);

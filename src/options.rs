@@ -26,10 +26,10 @@ use std::fs;
 /// Representation of the application's all configurable values.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Options {
-    /// Packages to update. Default: `None`
-    ///
-    /// If empty - update all.
+    /// (Additional) packages to update. Default: `[]`
     pub to_update: Vec<(String, Option<Semver>)>,
+    /// Whether to update all packages. Default: `false`
+    pub all: bool,
     /// Whether to update packages or just list them. Default: `true`
     pub update: bool,
     /// Whether to allow for just installing packages. Default: `false`
@@ -77,7 +77,7 @@ impl Options {
                             .validator(|s| existing_dir_validator("Cargo", &s)),
                         Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
                             .validator(|s| existing_dir_validator("Temporary", &s)),
-                        Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
+                        Arg::from_usage("-a --all 'Update all packages'"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
@@ -85,21 +85,31 @@ impl Options {
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
                         Arg::from_usage("<PACKAGE>... 'Packages to update'")
-                            .conflicts_with("all")
                             .empty_values(false)
                             .min_values(1)
                             .validator(|s| package_parse(s).map(|_| ()))]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
 
+        let all = matches.is_present("all");
         let cdir = cargo_dir();
         Options {
-            to_update: if matches.is_present("all") {
-                vec![]
-            } else {
-                let packages: Vec<_> = matches.values_of("PACKAGE").unwrap().map(String::from).map(package_parse).map(Result::unwrap).collect();
-                packages.unique_via(|l, r| l.0 == r.0)
+            to_update: match (all, matches.values_of("PACKAGE")) {
+                (_, Some(pkgs)) => {
+                    let packages: Vec<_> = pkgs.map(String::from).map(package_parse).map(Result::unwrap).collect();
+                    packages.unique_via(|l, r| l.0 == r.0)
+                }
+                (true, None) => vec![],
+                (false, None) => {
+                    clap::Error {
+                            message: format!("Need at least one PACKAGE without --all"),
+                            kind: clap::ErrorKind::MissingRequiredArgument,
+                            info: None,
+                        }
+                        .exit()
+                }
             },
+            all: all,
             update: !matches.is_present("list"),
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
