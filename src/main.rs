@@ -187,7 +187,7 @@ fn actual_main() -> Result<(), i32> {
         if !opts.filter.is_empty() {
             packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
         }
-        if !opts.to_update.is_empty() {
+        if !opts.all {
             packages.retain(|p| opts.to_update.iter().any(|u| p.name == u.0));
         }
 
