@@ -184,7 +184,10 @@ impl MainRepoPackage {
 
     /// Download the version list for this crate off the specified repository tree.
     pub fn pull_version<'t>(&mut self, registry: &Tree<'t>, registry_parent: &'t Repository) {
-        let vers = crate_versions(&mut &find_package_data(&self.name, registry, registry_parent).unwrap()[..]);
+        let vers = crate_versions(&mut &find_package_data(&self.name, registry, registry_parent)
+            .ok_or_else(|| format!("package {} not found", self.name))
+            .unwrap()
+                                            [..]);
         self.newest_version = vers.into_iter().max();
     }
 
