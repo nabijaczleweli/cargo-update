@@ -84,7 +84,7 @@ impl Options {
                         Arg::from_usage("-g --git 'Also update git packages'"),
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
-                        Arg::from_usage("<PACKAGE>... 'Packages to update'")
+                        Arg::from_usage("[PACKAGE]... 'Packages to update'")
                             .empty_values(false)
                             .min_values(1)
                             .validator(|s| package_parse(s).map(|_| ()))]))
