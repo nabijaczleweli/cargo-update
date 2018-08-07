@@ -316,6 +316,7 @@ extern crate clap;
 extern crate toml;
 extern crate json;
 extern crate url;
+extern crate dirs;
 
 mod options;
 

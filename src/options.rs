@@ -15,11 +15,12 @@
 use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{self, AppSettings, SubCommand, App, Arg};
-use std::env::{self, home_dir};
+use std::env;
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::fs;
+use dirs::home_dir;
 
 
 /// Representation of the application's all configurable values.
