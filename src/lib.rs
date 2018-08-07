@@ -302,6 +302,7 @@
 //!   Updated 1 package.
 //! ```
 
+#![cfg_attr(feature = "cargo-clippy", allow(redundant_field_names))]
 
 #[macro_use]
 extern crate serde_derive;

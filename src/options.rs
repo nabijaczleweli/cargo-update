@@ -74,9 +74,9 @@ impl Options {
                 .about("A cargo subcommand for checking and applying updates to installed executables")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .visible_alias("root")
-                            .validator(|s| existing_dir_validator("Cargo", s)),
+                            .validator(|s| existing_dir_validator("Cargo", &s)),
                         Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
-                            .validator(|s| existing_dir_validator("Temporary", s)),
+                            .validator(|s| existing_dir_validator("Temporary", &s)),
                         Arg::from_usage("-a --all 'Update all packages'").conflicts_with("PACKAGE"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
@@ -146,7 +146,7 @@ impl ConfigOptions {
                 .author(crate_authors!("\n"))
                 .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
-                            .validator(|s| existing_dir_validator("Cargo", s)),
+                            .validator(|s| existing_dir_validator("Cargo", &s)),
                         Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
                         Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'"),
                         Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'"),
@@ -225,8 +225,8 @@ fn cargo_dir() -> (String, PathBuf) {
     }
 }
 
-fn existing_dir_validator(label: &str, s: String) -> Result<(), String> {
-    fs::canonicalize(&s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
+fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
+    fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
 }
 
 fn package_parse(s: String) -> Result<(String, Option<Semver>), String> {

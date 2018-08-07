@@ -59,7 +59,7 @@ fn actual_main() -> Result<(), i32> {
         if !search_res.success() {
             return Err(search_res.code().unwrap_or(-1));
         }
-        println!("");
+        println!();
     }
 
     let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
@@ -103,7 +103,7 @@ fn actual_main() -> Result<(), i32> {
                      })
                 .unwrap();
         }
-        writeln!(out, "").unwrap();
+        writeln!(out).unwrap();
         out.flush().unwrap();
     }
 
@@ -151,7 +151,7 @@ fn actual_main() -> Result<(), i32> {
                         }
                         .unwrap();
 
-                    println!("");
+                    println!();
                     if !install_res.success() {
                         if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
                             restore_cargo_update_exec(package.version.as_ref().unwrap());
@@ -170,7 +170,7 @@ fn actual_main() -> Result<(), i32> {
                     }
                 });
 
-            println!("");
+            println!();
             println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
             if !errored.is_empty() && result.is_some() {
                 println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
@@ -208,7 +208,7 @@ fn actual_main() -> Result<(), i32> {
                          if package.needs_update() { "Yes" } else { "No" })
                     .unwrap();
             }
-            writeln!(out, "").unwrap();
+            writeln!(out).unwrap();
             out.flush().unwrap();
         }
 
@@ -250,7 +250,7 @@ fn actual_main() -> Result<(), i32> {
                             }
                             .unwrap();
 
-                        println!("");
+                        println!();
                         if !install_res.success() {
                             if cfg!(target_os = "windows") && package.name == "cargo-update" {
                                 restore_cargo_update_exec(&package.id.to_string());
@@ -269,7 +269,7 @@ fn actual_main() -> Result<(), i32> {
                         }
                     });
 
-                println!("");
+                println!();
                 println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
                 if !errored.is_empty() && result.is_some() {
                     println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
