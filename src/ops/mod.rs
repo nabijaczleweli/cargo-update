@@ -630,6 +630,8 @@ pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
 
 /// Get the location of the latest registry index in the specified cargo directory.
 ///
+/// If no indices exist, an appropriate `Err` is returned.
+///
 /// # Examples
 ///
 /// ```
@@ -644,18 +646,18 @@ pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
 /// # let _ = fs::create_dir(&cargo_dir);
 /// # let idx_dir = cargo_dir.join("registry").join("index").join("github.com-1ecc6299db9ec823");
 /// # let _ = fs::create_dir_all(&idx_dir);
-/// let index = get_index_path(&cargo_dir);
+/// let index = get_index_path(&cargo_dir).unwrap();
 /// // Use find_package_data() to look for packages
 /// # assert_eq!(index, idx_dir);
 /// ```
-pub fn get_index_path(cargo_dir: &Path) -> PathBuf {
-    fs::read_dir(cargo_dir.join("registry").join("index"))
-        .unwrap()
+pub fn get_index_path(cargo_dir: &Path) -> Result<PathBuf, &'static str> {
+    Ok(fs::read_dir(cargo_dir.join("registry").join("index"))
+        .map_err(|_| "index directory nonexistant")?
         .map(Result::unwrap)
         .filter(|i| i.file_type().unwrap().is_dir())
         .max_by_key(latest_modified)
-        .unwrap()
-        .path()
+        .ok_or("empty index directory")?
+        .path())
 }
 
 /// Update the specified index repository from the specified URL.

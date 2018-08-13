@@ -58,7 +58,10 @@ fn actual_main() -> Result<(), i32> {
         (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install),
     }
 
-    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1);
+    let registry = try!(cargo_update::ops::get_index_path(&opts.cargo_dir.1).map_err(|e| {
+        println!("Couldn't get package repository: {}.", e);
+        2
+    }));
     let mut registry_repo = try!(Repository::open(&registry).map_err(|_| {
         println!("Failed to open registry repository at {}.", registry.display());
         2
