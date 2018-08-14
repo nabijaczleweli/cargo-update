@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.4/src/derive.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>derive.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.8/src/derive.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>derive.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -209,6 +209,37 @@
 <span id="209">209</span>
 <span id="210">210</span>
 <span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -293,25 +324,37 @@
 
     <span class="kw">use</span> <span class="ident">synom</span>::<span class="ident">Synom</span>;
 
+    <span class="kw">enum</span> <span class="ident">DeriveInputKind</span> {
+        <span class="ident">Struct</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">struct</span>]),
+        <span class="ident">Enum</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">enum</span>]),
+        <span class="ident">Union</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="ident">union</span>]),
+    }
+
+    <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">DeriveInputKind</span> {
+        <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">alt</span><span class="macro">!</span>(
+            <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">struct</span>) <span class="op">=&gt;</span> { <span class="ident">DeriveInputKind</span>::<span class="ident">Struct</span> }
+            <span class="op">|</span>
+            <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">enum</span>) <span class="op">=&gt;</span> { <span class="ident">DeriveInputKind</span>::<span class="ident">Enum</span> }
+            <span class="op">|</span>
+            <span class="macro">keyword</span><span class="macro">!</span>(<span class="ident">union</span>) <span class="op">=&gt;</span> { <span class="ident">DeriveInputKind</span>::<span class="ident">Union</span> }
+        ));
+    }
+
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">DeriveInput</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
             <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">vis</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Visibility</span>) <span class="op">&gt;&gt;</span>
-            <span class="ident">which</span>: <span class="macro">alt</span><span class="macro">!</span>(
-                <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">struct</span>) <span class="op">=&gt;</span> { <span class="prelude-val">Ok</span> }
-                <span class="op">|</span>
-                <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">enum</span>) <span class="op">=&gt;</span> { <span class="prelude-val">Err</span> }
-            ) <span class="op">&gt;&gt;</span>
+            <span class="ident">which</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">DeriveInputKind</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">id</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Ident</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">generics</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Generics</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">item</span>: <span class="macro">switch</span><span class="macro">!</span>(<span class="macro">value</span><span class="macro">!</span>(<span class="ident">which</span>),
-                <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="macro">map</span><span class="macro">!</span>(<span class="ident">data_struct</span>, <span class="kw">move</span> <span class="op">|</span>(<span class="ident">wh</span>, <span class="ident">fields</span>, <span class="ident">semi</span>)<span class="op">|</span> <span class="ident">DeriveInput</span> {
+                <span class="ident">DeriveInputKind</span>::<span class="ident">Struct</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="macro">map</span><span class="macro">!</span>(<span class="ident">data_struct</span>, <span class="kw">move</span> <span class="op">|</span>(<span class="ident">wh</span>, <span class="ident">fields</span>, <span class="ident">semi</span>)<span class="op">|</span> <span class="ident">DeriveInput</span> {
                     <span class="ident">ident</span>: <span class="ident">id</span>,
                     <span class="ident">vis</span>: <span class="ident">vis</span>,
                     <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                     <span class="ident">generics</span>: <span class="ident">Generics</span> {
                         <span class="ident">where_clause</span>: <span class="ident">wh</span>,
-                        .. <span class="ident">generics</span>
+                        ..<span class="ident">generics</span>
                     },
                     <span class="ident">data</span>: <span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">DataStruct</span> {
                         <span class="ident">struct_token</span>: <span class="ident">s</span>,
@@ -320,18 +363,32 @@
                     }),
                 })
                 <span class="op">|</span>
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">map</span><span class="macro">!</span>(<span class="ident">data_enum</span>, <span class="kw">move</span> <span class="op">|</span>(<span class="ident">wh</span>, <span class="ident">brace</span>, <span class="ident">variants</span>)<span class="op">|</span> <span class="ident">DeriveInput</span> {
+                <span class="ident">DeriveInputKind</span>::<span class="ident">Enum</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">map</span><span class="macro">!</span>(<span class="ident">data_enum</span>, <span class="kw">move</span> <span class="op">|</span>(<span class="ident">wh</span>, <span class="ident">brace</span>, <span class="ident">variants</span>)<span class="op">|</span> <span class="ident">DeriveInput</span> {
                     <span class="ident">ident</span>: <span class="ident">id</span>,
                     <span class="ident">vis</span>: <span class="ident">vis</span>,
                     <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                     <span class="ident">generics</span>: <span class="ident">Generics</span> {
                         <span class="ident">where_clause</span>: <span class="ident">wh</span>,
-                        .. <span class="ident">generics</span>
+                        ..<span class="ident">generics</span>
                     },
                     <span class="ident">data</span>: <span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">DataEnum</span> {
                         <span class="ident">variants</span>: <span class="ident">variants</span>,
                         <span class="ident">brace_token</span>: <span class="ident">brace</span>,
                         <span class="ident">enum_token</span>: <span class="ident">e</span>,
+                    }),
+                })
+                <span class="op">|</span>
+                <span class="ident">DeriveInputKind</span>::<span class="ident">Union</span>(<span class="ident">u</span>) <span class="op">=&gt;</span> <span class="macro">map</span><span class="macro">!</span>(<span class="ident">data_union</span>, <span class="kw">move</span> <span class="op">|</span>(<span class="ident">wh</span>, <span class="ident">fields</span>)<span class="op">|</span> <span class="ident">DeriveInput</span> {
+                    <span class="ident">ident</span>: <span class="ident">id</span>,
+                    <span class="ident">vis</span>: <span class="ident">vis</span>,
+                    <span class="ident">attrs</span>: <span class="ident">attrs</span>,
+                    <span class="ident">generics</span>: <span class="ident">Generics</span> {
+                        <span class="ident">where_clause</span>: <span class="ident">wh</span>,
+                        ..<span class="ident">generics</span>
+                    },
+                    <span class="ident">data</span>: <span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">DataUnion</span> {
+                        <span class="ident">union_token</span>: <span class="ident">u</span>,
+                        <span class="ident">fields</span>: <span class="ident">fields</span>,
                     }),
                 })
             ) <span class="op">&gt;&gt;</span>
@@ -368,6 +425,11 @@
         <span class="ident">wh</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">WhereClause</span>)) <span class="op">&gt;&gt;</span>
         <span class="ident">data</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>) <span class="op">&gt;&gt;</span>
         (<span class="ident">wh</span>, <span class="ident">data</span>.<span class="number">0</span>, <span class="ident">data</span>.<span class="number">1</span>)
+    ));
+
+    <span class="macro">named</span><span class="macro">!</span>(<span class="ident">data_union</span> <span class="op">-&gt;</span> (<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">WhereClause</span><span class="op">&gt;</span>, <span class="ident">FieldsNamed</span>), <span class="macro">tuple</span><span class="macro">!</span>(
+        <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">WhereClause</span>)),
+        <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">FieldsNamed</span>),
     ));
 }
 

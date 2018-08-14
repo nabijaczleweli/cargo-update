@@ -236,6 +236,7 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
+<span id="239">239</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Option parsing and management.</span>
 <span class="doccomment">//!</span>
@@ -254,10 +255,11 @@
 <span class="kw">use</span> <span class="self">self</span>::<span class="kw">super</span>::<span class="ident">ops</span>::{<span class="ident">PackageFilterElement</span>, <span class="ident">ConfigOperation</span>};
 <span class="kw">use</span> <span class="ident">semver</span>::{<span class="ident">VersionReq</span> <span class="kw">as</span> <span class="ident">SemverReq</span>, <span class="ident">Version</span> <span class="kw">as</span> <span class="ident">Semver</span>};
 <span class="kw">use</span> <span class="ident">clap</span>::{<span class="self">self</span>, <span class="ident">AppSettings</span>, <span class="ident">SubCommand</span>, <span class="ident">App</span>, <span class="ident">Arg</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>::{<span class="self">self</span>, <span class="ident">home_dir</span>};
 <span class="kw">use</span> <span class="ident">array_tool</span>::<span class="ident">vec</span>::<span class="ident">Uniq</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
+<span class="kw">use</span> <span class="ident">dirs</span>::<span class="ident">home_dir</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">env</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>;
 
 
@@ -312,9 +314,9 @@
                 .<span class="ident">about</span>(<span class="string">&quot;A cargo subcommand for checking and applying updates to installed executables&quot;</span>)
                 .<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-c --cargo-dir=[CARGO_DIR] &#39;The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo&#39;&quot;</span>)
                             .<span class="ident">visible_alias</span>(<span class="string">&quot;root&quot;</span>)
-                            .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Cargo&quot;</span>, <span class="ident">s</span>)),
+                            .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Cargo&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>)),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-t --temp-dir=[TEMP_DIR] &#39;The temporary directory. Default: $TEMP/cargo-update&#39;&quot;</span>)
-                            .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Temporary&quot;</span>, <span class="ident">s</span>)),
+                            .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Temporary&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>)),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-a --all &#39;Update all packages&#39;&quot;</span>).<span class="ident">conflicts_with</span>(<span class="string">&quot;PACKAGE&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-l --list &#39;Don&#39;t update packages, only list and check if they need an update&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-f --force &#39;Update all packages regardless if they need updating&#39;&quot;</span>),
@@ -384,7 +386,7 @@
                 .<span class="ident">author</span>(<span class="macro">crate_authors</span><span class="macro">!</span>(<span class="string">&quot;\n&quot;</span>))
                 .<span class="ident">about</span>(<span class="string">&quot;A cargo subcommand for checking and applying updates to installed executables -- configuration&quot;</span>)
                 .<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-c --cargo-dir=[CARGO_DIR] &#39;The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo&#39;&quot;</span>)
-                            .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Cargo&quot;</span>, <span class="ident">s</span>)),
+                            .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Cargo&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>)),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-t --toolchain=[TOOLCHAIN] &#39;Toolchain to use or empty for default&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-f --feature=[FEATURE]... &#39;Feature to enable&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-n --no-feature=[DISABLED_FEATURE]... &#39;Feature to disable&#39;&quot;</span>),
@@ -463,8 +465,8 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">existing_dir_validator</span>(<span class="ident">label</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">s</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">fs</span>::<span class="ident">canonicalize</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ()).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} directory \&quot;{}\&quot; not found&quot;</span>, <span class="ident">label</span>, <span class="ident">s</span>))
+<span class="kw">fn</span> <span class="ident">existing_dir_validator</span>(<span class="ident">label</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="ident">fs</span>::<span class="ident">canonicalize</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ()).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} directory \&quot;{}\&quot; not found&quot;</span>, <span class="ident">label</span>, <span class="ident">s</span>))
 }
 
 <span class="kw">fn</span> <span class="ident">package_parse</span>(<span class="ident">s</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>), <span class="ident">String</span><span class="op">&gt;</span> {

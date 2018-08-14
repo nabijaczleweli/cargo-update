@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.4/src/expr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>expr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.8/src/expr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>expr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -3588,6 +3588,252 @@
 <span id="3588">3588</span>
 <span id="3589">3589</span>
 <span id="3590">3590</span>
+<span id="3591">3591</span>
+<span id="3592">3592</span>
+<span id="3593">3593</span>
+<span id="3594">3594</span>
+<span id="3595">3595</span>
+<span id="3596">3596</span>
+<span id="3597">3597</span>
+<span id="3598">3598</span>
+<span id="3599">3599</span>
+<span id="3600">3600</span>
+<span id="3601">3601</span>
+<span id="3602">3602</span>
+<span id="3603">3603</span>
+<span id="3604">3604</span>
+<span id="3605">3605</span>
+<span id="3606">3606</span>
+<span id="3607">3607</span>
+<span id="3608">3608</span>
+<span id="3609">3609</span>
+<span id="3610">3610</span>
+<span id="3611">3611</span>
+<span id="3612">3612</span>
+<span id="3613">3613</span>
+<span id="3614">3614</span>
+<span id="3615">3615</span>
+<span id="3616">3616</span>
+<span id="3617">3617</span>
+<span id="3618">3618</span>
+<span id="3619">3619</span>
+<span id="3620">3620</span>
+<span id="3621">3621</span>
+<span id="3622">3622</span>
+<span id="3623">3623</span>
+<span id="3624">3624</span>
+<span id="3625">3625</span>
+<span id="3626">3626</span>
+<span id="3627">3627</span>
+<span id="3628">3628</span>
+<span id="3629">3629</span>
+<span id="3630">3630</span>
+<span id="3631">3631</span>
+<span id="3632">3632</span>
+<span id="3633">3633</span>
+<span id="3634">3634</span>
+<span id="3635">3635</span>
+<span id="3636">3636</span>
+<span id="3637">3637</span>
+<span id="3638">3638</span>
+<span id="3639">3639</span>
+<span id="3640">3640</span>
+<span id="3641">3641</span>
+<span id="3642">3642</span>
+<span id="3643">3643</span>
+<span id="3644">3644</span>
+<span id="3645">3645</span>
+<span id="3646">3646</span>
+<span id="3647">3647</span>
+<span id="3648">3648</span>
+<span id="3649">3649</span>
+<span id="3650">3650</span>
+<span id="3651">3651</span>
+<span id="3652">3652</span>
+<span id="3653">3653</span>
+<span id="3654">3654</span>
+<span id="3655">3655</span>
+<span id="3656">3656</span>
+<span id="3657">3657</span>
+<span id="3658">3658</span>
+<span id="3659">3659</span>
+<span id="3660">3660</span>
+<span id="3661">3661</span>
+<span id="3662">3662</span>
+<span id="3663">3663</span>
+<span id="3664">3664</span>
+<span id="3665">3665</span>
+<span id="3666">3666</span>
+<span id="3667">3667</span>
+<span id="3668">3668</span>
+<span id="3669">3669</span>
+<span id="3670">3670</span>
+<span id="3671">3671</span>
+<span id="3672">3672</span>
+<span id="3673">3673</span>
+<span id="3674">3674</span>
+<span id="3675">3675</span>
+<span id="3676">3676</span>
+<span id="3677">3677</span>
+<span id="3678">3678</span>
+<span id="3679">3679</span>
+<span id="3680">3680</span>
+<span id="3681">3681</span>
+<span id="3682">3682</span>
+<span id="3683">3683</span>
+<span id="3684">3684</span>
+<span id="3685">3685</span>
+<span id="3686">3686</span>
+<span id="3687">3687</span>
+<span id="3688">3688</span>
+<span id="3689">3689</span>
+<span id="3690">3690</span>
+<span id="3691">3691</span>
+<span id="3692">3692</span>
+<span id="3693">3693</span>
+<span id="3694">3694</span>
+<span id="3695">3695</span>
+<span id="3696">3696</span>
+<span id="3697">3697</span>
+<span id="3698">3698</span>
+<span id="3699">3699</span>
+<span id="3700">3700</span>
+<span id="3701">3701</span>
+<span id="3702">3702</span>
+<span id="3703">3703</span>
+<span id="3704">3704</span>
+<span id="3705">3705</span>
+<span id="3706">3706</span>
+<span id="3707">3707</span>
+<span id="3708">3708</span>
+<span id="3709">3709</span>
+<span id="3710">3710</span>
+<span id="3711">3711</span>
+<span id="3712">3712</span>
+<span id="3713">3713</span>
+<span id="3714">3714</span>
+<span id="3715">3715</span>
+<span id="3716">3716</span>
+<span id="3717">3717</span>
+<span id="3718">3718</span>
+<span id="3719">3719</span>
+<span id="3720">3720</span>
+<span id="3721">3721</span>
+<span id="3722">3722</span>
+<span id="3723">3723</span>
+<span id="3724">3724</span>
+<span id="3725">3725</span>
+<span id="3726">3726</span>
+<span id="3727">3727</span>
+<span id="3728">3728</span>
+<span id="3729">3729</span>
+<span id="3730">3730</span>
+<span id="3731">3731</span>
+<span id="3732">3732</span>
+<span id="3733">3733</span>
+<span id="3734">3734</span>
+<span id="3735">3735</span>
+<span id="3736">3736</span>
+<span id="3737">3737</span>
+<span id="3738">3738</span>
+<span id="3739">3739</span>
+<span id="3740">3740</span>
+<span id="3741">3741</span>
+<span id="3742">3742</span>
+<span id="3743">3743</span>
+<span id="3744">3744</span>
+<span id="3745">3745</span>
+<span id="3746">3746</span>
+<span id="3747">3747</span>
+<span id="3748">3748</span>
+<span id="3749">3749</span>
+<span id="3750">3750</span>
+<span id="3751">3751</span>
+<span id="3752">3752</span>
+<span id="3753">3753</span>
+<span id="3754">3754</span>
+<span id="3755">3755</span>
+<span id="3756">3756</span>
+<span id="3757">3757</span>
+<span id="3758">3758</span>
+<span id="3759">3759</span>
+<span id="3760">3760</span>
+<span id="3761">3761</span>
+<span id="3762">3762</span>
+<span id="3763">3763</span>
+<span id="3764">3764</span>
+<span id="3765">3765</span>
+<span id="3766">3766</span>
+<span id="3767">3767</span>
+<span id="3768">3768</span>
+<span id="3769">3769</span>
+<span id="3770">3770</span>
+<span id="3771">3771</span>
+<span id="3772">3772</span>
+<span id="3773">3773</span>
+<span id="3774">3774</span>
+<span id="3775">3775</span>
+<span id="3776">3776</span>
+<span id="3777">3777</span>
+<span id="3778">3778</span>
+<span id="3779">3779</span>
+<span id="3780">3780</span>
+<span id="3781">3781</span>
+<span id="3782">3782</span>
+<span id="3783">3783</span>
+<span id="3784">3784</span>
+<span id="3785">3785</span>
+<span id="3786">3786</span>
+<span id="3787">3787</span>
+<span id="3788">3788</span>
+<span id="3789">3789</span>
+<span id="3790">3790</span>
+<span id="3791">3791</span>
+<span id="3792">3792</span>
+<span id="3793">3793</span>
+<span id="3794">3794</span>
+<span id="3795">3795</span>
+<span id="3796">3796</span>
+<span id="3797">3797</span>
+<span id="3798">3798</span>
+<span id="3799">3799</span>
+<span id="3800">3800</span>
+<span id="3801">3801</span>
+<span id="3802">3802</span>
+<span id="3803">3803</span>
+<span id="3804">3804</span>
+<span id="3805">3805</span>
+<span id="3806">3806</span>
+<span id="3807">3807</span>
+<span id="3808">3808</span>
+<span id="3809">3809</span>
+<span id="3810">3810</span>
+<span id="3811">3811</span>
+<span id="3812">3812</span>
+<span id="3813">3813</span>
+<span id="3814">3814</span>
+<span id="3815">3815</span>
+<span id="3816">3816</span>
+<span id="3817">3817</span>
+<span id="3818">3818</span>
+<span id="3819">3819</span>
+<span id="3820">3820</span>
+<span id="3821">3821</span>
+<span id="3822">3822</span>
+<span id="3823">3823</span>
+<span id="3824">3824</span>
+<span id="3825">3825</span>
+<span id="3826">3826</span>
+<span id="3827">3827</span>
+<span id="3828">3828</span>
+<span id="3829">3829</span>
+<span id="3830">3830</span>
+<span id="3831">3831</span>
+<span id="3832">3832</span>
+<span id="3833">3833</span>
+<span id="3834">3834</span>
+<span id="3835">3835</span>
+<span id="3836">3836</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -4982,21 +5228,23 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">unary_expr</span>(<span class="ident">allow_struct</span>: <span class="ident">bool</span>, <span class="ident">allow_block</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Expr</span>, <span class="macro">alt</span><span class="macro">!</span>(
         <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">op</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">UnOp</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">expr</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">unary_expr</span>, <span class="ident">allow_struct</span>, <span class="bool-val">true</span>) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprUnary</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">op</span>: <span class="ident">op</span>,
                 <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">expr</span>),
             }.<span class="ident">into</span>())
         )
         <span class="op">|</span>
         <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">and</span>: <span class="macro">punct</span><span class="macro">!</span>(<span class="kw-2">&amp;</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">mutability</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">keyword</span><span class="macro">!</span>(<span class="kw-2">mut</span>)) <span class="op">&gt;&gt;</span>
             <span class="ident">expr</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">unary_expr</span>, <span class="ident">allow_struct</span>, <span class="bool-val">true</span>) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprReference</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">and_token</span>: <span class="ident">and</span>,
                 <span class="ident">mutability</span>: <span class="ident">mutability</span>,
                 <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">expr</span>),
@@ -5004,10 +5252,11 @@
         )
         <span class="op">|</span>
         <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">box_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">box</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">expr</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">unary_expr</span>, <span class="ident">allow_struct</span>, <span class="bool-val">true</span>) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprBox</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">box_token</span>: <span class="ident">box_</span>,
                 <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">expr</span>),
             }.<span class="ident">into</span>())
@@ -5032,6 +5281,20 @@
         <span class="macro">call</span><span class="macro">!</span>(<span class="ident">trailer_expr</span>, <span class="ident">allow_struct</span>, <span class="ident">allow_block</span>)
     ));
 
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">take_outer</span>(<span class="ident">attrs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">outer</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="ident">mem</span>::<span class="ident">replace</span>(<span class="ident">attrs</span>, <span class="ident">Vec</span>::<span class="ident">new</span>()) {
+            <span class="kw">match</span> <span class="ident">attr</span>.<span class="ident">style</span> {
+                <span class="ident">AttrStyle</span>::<span class="ident">Outer</span> <span class="op">=&gt;</span> <span class="ident">outer</span>.<span class="ident">push</span>(<span class="ident">attr</span>),
+                <span class="ident">AttrStyle</span>::<span class="ident">Inner</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">inner</span>.<span class="ident">push</span>(<span class="ident">attr</span>),
+            }
+        }
+        <span class="kw-2">*</span><span class="ident">attrs</span> <span class="op">=</span> <span class="ident">inner</span>;
+        <span class="ident">outer</span>
+    }
+
     <span class="comment">// &lt;atom&gt; (..&lt;args&gt;) ...</span>
     <span class="comment">// &lt;atom&gt; . &lt;ident&gt; (..&lt;args&gt;) ...</span>
     <span class="comment">// &lt;atom&gt; . &lt;ident&gt; ...</span>
@@ -5041,6 +5304,12 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">trailer_expr</span>(<span class="ident">allow_struct</span>: <span class="ident">bool</span>, <span class="ident">allow_block</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Expr</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
         <span class="kw-2">mut</span> <span class="ident">e</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">atom_expr</span>, <span class="ident">allow_struct</span>, <span class="ident">allow_block</span>) <span class="op">&gt;&gt;</span>
+        <span class="ident">outer_attrs</span>: <span class="macro">value</span><span class="macro">!</span>({
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">Vec</span>::<span class="ident">new</span>());
+            <span class="kw">let</span> <span class="ident">outer_attrs</span> <span class="op">=</span> <span class="ident">take_outer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">attrs</span>);
+            <span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">attrs</span>);
+            <span class="ident">outer_attrs</span>
+        }) <span class="op">&gt;&gt;</span>
         <span class="macro">many0</span><span class="macro">!</span>(<span class="macro">alt</span><span class="macro">!</span>(
             <span class="macro">tap</span><span class="macro">!</span>(<span class="ident">args</span>: <span class="ident">and_call</span> <span class="op">=&gt;</span> {
                 <span class="kw">let</span> (<span class="ident">paren</span>, <span class="ident">args</span>) <span class="op">=</span> <span class="ident">args</span>;
@@ -5086,7 +5355,12 @@
                 }.<span class="ident">into</span>();
             })
         )) <span class="op">&gt;&gt;</span>
-        (<span class="ident">e</span>)
+        ({
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+            <span class="ident">attrs</span>.<span class="ident">extend</span>(<span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()));
+            <span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">attrs</span>);
+            <span class="ident">e</span>
+        })
     ));
 
     <span class="comment">// XXX: Duplication == ugly</span>
@@ -5133,6 +5407,9 @@
         <span class="op">|</span>
         <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">ExprLit</span>) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Lit</span> } <span class="comment">// must be before expr_struct</span>
         <span class="op">|</span>
+        <span class="comment">// must be before ExprStruct</span>
+        <span class="macro">call</span><span class="macro">!</span>(<span class="ident">unstable_async_block</span>) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Verbatim</span> }
+        <span class="op">|</span>
         <span class="comment">// must be before expr_path</span>
         <span class="macro">cond_reduce</span><span class="macro">!</span>(<span class="ident">allow_struct</span>, <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">ExprStruct</span>)) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Struct</span> }
         <span class="op">|</span>
@@ -5173,6 +5450,8 @@
         <span class="macro">call</span><span class="macro">!</span>(<span class="ident">expr_closure</span>, <span class="ident">allow_struct</span>)
         <span class="op">|</span>
         <span class="macro">cond_reduce</span><span class="macro">!</span>(<span class="ident">allow_block</span>, <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">ExprBlock</span>)) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Block</span> }
+        <span class="op">|</span>
+        <span class="macro">call</span><span class="macro">!</span>(<span class="ident">unstable_labeled_block</span>) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Verbatim</span> }
         <span class="op">|</span>
         <span class="comment">// NOTE: This is the prefix-form of range</span>
         <span class="macro">call</span><span class="macro">!</span>(<span class="ident">expr_range</span>, <span class="ident">allow_struct</span>)
@@ -5215,6 +5494,8 @@
             <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">ExprUnsafe</span>) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Unsafe</span> }
             <span class="op">|</span>
             <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">ExprBlock</span>) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Block</span> }
+            <span class="op">|</span>
+            <span class="macro">call</span><span class="macro">!</span>(<span class="ident">unstable_labeled_block</span>) <span class="op">=&gt;</span> { <span class="ident">Expr</span>::<span class="ident">Verbatim</span> }
         ) <span class="op">&gt;&gt;</span>
         <span class="comment">// If the next token is a `.` or a `?` it is special-cased to parse</span>
         <span class="comment">// as an expression instead of a blockexpression.</span>
@@ -5224,10 +5505,21 @@
     ));
 
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprLit</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
             <span class="ident">lit</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Lit</span>) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprLit</span> {
                 <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">lit</span>: <span class="ident">lit</span>,
+            })
+        ));
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+        <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">lit</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Lit</span>) <span class="op">&gt;&gt;</span>
+            (<span class="ident">ExprLit</span> {
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">lit</span>: <span class="ident">lit</span>,
             })
         ));
@@ -5240,9 +5532,10 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprMacro</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">mac</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Macro</span>) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprMacro</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">mac</span>: <span class="ident">mac</span>,
             })
         ));
@@ -5269,12 +5562,31 @@
     }
 
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprParen</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
             <span class="ident">e</span>: <span class="macro">parens</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>)) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprParen</span> {
                 <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
                 <span class="ident">paren_token</span>: <span class="ident">e</span>.<span class="number">0</span>,
                 <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">e</span>.<span class="number">1</span>),
+            })
+        ));
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+        <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">e</span>: <span class="macro">parens</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>),
+            )) <span class="op">&gt;&gt;</span>
+            (<span class="ident">ExprParen</span> {
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">e</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
+                <span class="ident">paren_token</span>: <span class="ident">e</span>.<span class="number">0</span>,
+                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>((<span class="ident">e</span>.<span class="number">1</span>).<span class="number">1</span>),
             })
         ));
 
@@ -5286,11 +5598,19 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprArray</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-            <span class="ident">elems</span>: <span class="macro">brackets</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">elems</span>: <span class="macro">brackets</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprArray</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">elems</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
                 <span class="ident">bracket_token</span>: <span class="ident">elems</span>.<span class="number">0</span>,
-                <span class="ident">elems</span>: <span class="ident">elems</span>.<span class="number">1</span>,
+                <span class="ident">elems</span>: (<span class="ident">elems</span>.<span class="number">1</span>).<span class="number">1</span>,
             })
         ));
 
@@ -5300,7 +5620,8 @@
     }
 
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">and_call</span> <span class="op">-&gt;</span> (<span class="ident">token</span>::<span class="ident">Paren</span>, <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">Expr</span>, <span class="macro">Token</span><span class="macro">!</span>[,]<span class="op">&gt;</span>),
-           <span class="macro">parens</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>));
+        <span class="macro">parens</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>)
+    );
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">and_method_call</span> <span class="op">-&gt;</span> <span class="ident">ExprMethodCall</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
@@ -5310,7 +5631,7 @@
             <span class="macro">punct</span><span class="macro">!</span>(::),
             <span class="macro">punct</span><span class="macro">!</span>(<span class="op">&lt;</span>),
             <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>),
-            <span class="macro">punct</span><span class="macro">!</span>(<span class="op">&gt;</span>)
+            <span class="macro">punct</span><span class="macro">!</span>(<span class="op">&gt;</span>),
         )) <span class="op">&gt;&gt;</span>
         <span class="ident">args</span>: <span class="macro">parens</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>) <span class="op">&gt;&gt;</span>
         ({
@@ -5348,10 +5669,18 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprTuple</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-            <span class="ident">elems</span>: <span class="macro">parens</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">elems</span>: <span class="macro">parens</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprTuple</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                <span class="ident">elems</span>: <span class="ident">elems</span>.<span class="number">1</span>,
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">elems</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
+                <span class="ident">elems</span>: (<span class="ident">elems</span>.<span class="number">1</span>).<span class="number">1</span>,
                 <span class="ident">paren_token</span>: <span class="ident">elems</span>.<span class="number">0</span>,
             })
         ));
@@ -5440,20 +5769,31 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprForLoop</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">label</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Label</span>)) <span class="op">&gt;&gt;</span>
             <span class="ident">for_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">for</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">pat</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Pat</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">in_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">in</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">expr</span>: <span class="ident">expr_no_struct</span> <span class="op">&gt;&gt;</span>
-            <span class="ident">loop_block</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">block</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprForLoop</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                <span class="ident">for_token</span>: <span class="ident">for_</span>,
-                <span class="ident">in_token</span>: <span class="ident">in_</span>,
-                <span class="ident">pat</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">pat</span>),
-                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">expr</span>),
-                <span class="ident">body</span>: <span class="ident">loop_block</span>,
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">block</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
                 <span class="ident">label</span>: <span class="ident">label</span>,
+                <span class="ident">for_token</span>: <span class="ident">for_</span>,
+                <span class="ident">pat</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">pat</span>),
+                <span class="ident">in_token</span>: <span class="ident">in_</span>,
+                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">expr</span>),
+                <span class="ident">body</span>: <span class="ident">Block</span> {
+                    <span class="ident">brace_token</span>: <span class="ident">block</span>.<span class="number">0</span>,
+                    <span class="ident">stmts</span>: (<span class="ident">block</span>.<span class="number">1</span>).<span class="number">1</span>,
+                },
             })
         ));
 
@@ -5465,14 +5805,25 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprLoop</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">label</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Label</span>)) <span class="op">&gt;&gt;</span>
             <span class="ident">loop_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">loop</span>) <span class="op">&gt;&gt;</span>
-            <span class="ident">loop_block</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">block</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprLoop</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                <span class="ident">loop_token</span>: <span class="ident">loop_</span>,
-                <span class="ident">body</span>: <span class="ident">loop_block</span>,
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">block</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
                 <span class="ident">label</span>: <span class="ident">label</span>,
+                <span class="ident">loop_token</span>: <span class="ident">loop_</span>,
+                <span class="ident">body</span>: <span class="ident">Block</span> {
+                    <span class="ident">brace_token</span>: <span class="ident">block</span>.<span class="number">0</span>,
+                    <span class="ident">stmts</span>: (<span class="ident">block</span>.<span class="number">1</span>).<span class="number">1</span>,
+                },
             })
         ));
 
@@ -5484,15 +5835,23 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprMatch</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">match_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">match</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">obj</span>: <span class="ident">expr_no_struct</span> <span class="op">&gt;&gt;</span>
-            <span class="ident">res</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Arm</span>::<span class="ident">parse</span>)) <span class="op">&gt;&gt;</span>
+            <span class="ident">braced_content</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Arm</span>)),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprMatch</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">braced_content</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
                 <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">obj</span>),
                 <span class="ident">match_token</span>: <span class="ident">match_</span>,
-                <span class="ident">brace_token</span>: <span class="ident">res</span>.<span class="number">0</span>,
-                <span class="ident">arms</span>: <span class="ident">res</span>.<span class="number">1</span>,
+                <span class="ident">brace_token</span>: <span class="ident">braced_content</span>.<span class="number">0</span>,
+                <span class="ident">arms</span>: (<span class="ident">braced_content</span>.<span class="number">1</span>).<span class="number">1</span>,
             })
         ));
 
@@ -5576,7 +5935,10 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">expr_closure</span>(<span class="ident">allow_struct</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Expr</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-        <span class="ident">movability</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">static</span>)) <span class="op">&gt;&gt;</span>
+        <span class="ident">begin</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">verbatim</span>::<span class="ident">grab_cursor</span>) <span class="op">&gt;&gt;</span>
+        <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+        <span class="ident">asyncness</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">keyword</span><span class="macro">!</span>(<span class="ident">async</span>)) <span class="op">&gt;&gt;</span>
+        <span class="ident">movability</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">cond_reduce</span><span class="macro">!</span>(<span class="ident">asyncness</span>.<span class="ident">is_none</span>(), <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">static</span>))) <span class="op">&gt;&gt;</span>
         <span class="ident">capture</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">move</span>)) <span class="op">&gt;&gt;</span>
         <span class="ident">or1</span>: <span class="macro">punct</span><span class="macro">!</span>(<span class="op">|</span>) <span class="op">&gt;&gt;</span>
         <span class="ident">inputs</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated_with</span>, <span class="ident">fn_arg</span>) <span class="op">&gt;&gt;</span>
@@ -5586,25 +5948,51 @@
                 <span class="ident">arrow</span>: <span class="macro">punct</span><span class="macro">!</span>(<span class="op">-&gt;</span>) <span class="op">&gt;&gt;</span>
                 <span class="ident">ty</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Type</span>) <span class="op">&gt;&gt;</span>
                 <span class="ident">body</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
-                (<span class="ident">ReturnType</span>::<span class="ident">Type</span>(<span class="ident">arrow</span>, <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">ty</span>)),
-                 <span class="ident">Expr</span>::<span class="ident">Block</span>(<span class="ident">ExprBlock</span> {
-                     <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                    <span class="ident">block</span>: <span class="ident">body</span>,
-                }))
+                (
+                    <span class="ident">ReturnType</span>::<span class="ident">Type</span>(<span class="ident">arrow</span>, <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">ty</span>)),
+                    <span class="ident">Expr</span>::<span class="ident">Block</span>(<span class="ident">ExprBlock</span> {
+                        <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                        <span class="ident">block</span>: <span class="ident">body</span>,
+                    },
+                ))
             )
             <span class="op">|</span>
             <span class="macro">map</span><span class="macro">!</span>(<span class="macro">ambiguous_expr</span><span class="macro">!</span>(<span class="ident">allow_struct</span>), <span class="op">|</span><span class="ident">e</span><span class="op">|</span> (<span class="ident">ReturnType</span>::<span class="ident">Default</span>, <span class="ident">e</span>))
         ) <span class="op">&gt;&gt;</span>
-        (<span class="ident">ExprClosure</span> {
-            <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-            <span class="ident">movability</span>: <span class="ident">movability</span>,
-            <span class="ident">capture</span>: <span class="ident">capture</span>,
-            <span class="ident">or1_token</span>: <span class="ident">or1</span>,
-            <span class="ident">inputs</span>: <span class="ident">inputs</span>,
-            <span class="ident">or2_token</span>: <span class="ident">or2</span>,
-            <span class="ident">output</span>: <span class="ident">ret_and_body</span>.<span class="number">0</span>,
-            <span class="ident">body</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">ret_and_body</span>.<span class="number">1</span>),
-        }.<span class="ident">into</span>())
+        <span class="ident">end</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">verbatim</span>::<span class="ident">grab_cursor</span>) <span class="op">&gt;&gt;</span>
+        ({
+            <span class="kw">if</span> <span class="ident">asyncness</span>.<span class="ident">is_some</span>() {
+                <span class="comment">// TODO: include asyncness in ExprClosure</span>
+                <span class="comment">// https://github.com/dtolnay/syn/issues/396</span>
+                <span class="ident">Expr</span>::<span class="ident">Verbatim</span>(<span class="ident">ExprVerbatim</span> {
+                    <span class="ident">tts</span>: <span class="ident">verbatim</span>::<span class="ident">token_range</span>(<span class="ident">begin</span>..<span class="ident">end</span>),
+                })
+            } <span class="kw">else</span> {
+                <span class="ident">Expr</span>::<span class="ident">Closure</span>(<span class="ident">ExprClosure</span> {
+                    <span class="ident">attrs</span>: <span class="ident">attrs</span>,
+                    <span class="ident">movability</span>: <span class="ident">movability</span>,
+                    <span class="ident">capture</span>: <span class="ident">capture</span>,
+                    <span class="ident">or1_token</span>: <span class="ident">or1</span>,
+                    <span class="ident">inputs</span>: <span class="ident">inputs</span>,
+                    <span class="ident">or2_token</span>: <span class="ident">or2</span>,
+                    <span class="ident">output</span>: <span class="ident">ret_and_body</span>.<span class="number">0</span>,
+                    <span class="ident">body</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">ret_and_body</span>.<span class="number">1</span>),
+                })
+            }
+        })
+    ));
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+    <span class="macro">named</span><span class="macro">!</span>(<span class="ident">unstable_async_block</span> <span class="op">-&gt;</span> <span class="ident">ExprVerbatim</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="ident">begin</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">verbatim</span>::<span class="ident">grab_cursor</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">keyword</span><span class="macro">!</span>(<span class="ident">async</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">option</span><span class="macro">!</span>(<span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">move</span>)) <span class="op">&gt;&gt;</span>
+        <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
+        <span class="ident">end</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">verbatim</span>::<span class="ident">grab_cursor</span>) <span class="op">&gt;&gt;</span>
+        (<span class="ident">ExprVerbatim</span> {
+            <span class="ident">tts</span>: <span class="ident">verbatim</span>::<span class="ident">token_range</span>(<span class="ident">begin</span>..<span class="ident">end</span>),
+        })
     ));
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
@@ -5627,16 +6015,27 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprWhile</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">label</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Label</span>)) <span class="op">&gt;&gt;</span>
             <span class="ident">while_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">while</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">cond</span>: <span class="ident">expr_no_struct</span> <span class="op">&gt;&gt;</span>
-            <span class="ident">while_block</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">block</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprWhile</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">block</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
+                <span class="ident">label</span>: <span class="ident">label</span>,
                 <span class="ident">while_token</span>: <span class="ident">while_</span>,
                 <span class="ident">cond</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">cond</span>),
-                <span class="ident">body</span>: <span class="ident">while_block</span>,
-                <span class="ident">label</span>: <span class="ident">label</span>,
+                <span class="ident">body</span>: <span class="ident">Block</span> {
+                    <span class="ident">brace_token</span>: <span class="ident">block</span>.<span class="number">0</span>,
+                    <span class="ident">stmts</span>: (<span class="ident">block</span>.<span class="number">1</span>).<span class="number">1</span>,
+                },
             })
         ));
 
@@ -5648,22 +6047,33 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprWhileLet</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">label</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Label</span>)) <span class="op">&gt;&gt;</span>
             <span class="ident">while_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">while</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">let_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">let</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">pats</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_separated_nonempty</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">eq</span>: <span class="macro">punct</span><span class="macro">!</span>(<span class="op">=</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">value</span>: <span class="ident">expr_no_struct</span> <span class="op">&gt;&gt;</span>
-            <span class="ident">while_block</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">block</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprWhileLet</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                <span class="ident">eq_token</span>: <span class="ident">eq</span>,
-                <span class="ident">let_token</span>: <span class="ident">let_</span>,
-                <span class="ident">while_token</span>: <span class="ident">while_</span>,
-                <span class="ident">pats</span>: <span class="ident">pats</span>,
-                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">value</span>),
-                <span class="ident">body</span>: <span class="ident">while_block</span>,
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">block</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
                 <span class="ident">label</span>: <span class="ident">label</span>,
+                <span class="ident">while_token</span>: <span class="ident">while_</span>,
+                <span class="ident">let_token</span>: <span class="ident">let_</span>,
+                <span class="ident">pats</span>: <span class="ident">pats</span>,
+                <span class="ident">eq_token</span>: <span class="ident">eq</span>,
+                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">value</span>),
+                <span class="ident">body</span>: <span class="ident">Block</span> {
+                    <span class="ident">brace_token</span>: <span class="ident">block</span>.<span class="number">0</span>,
+                    <span class="ident">stmts</span>: (<span class="ident">block</span>.<span class="number">1</span>).<span class="number">1</span>,
+                },
             })
         ));
 
@@ -5691,10 +6101,11 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprContinue</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">cont</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">continue</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">label</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Lifetime</span>)) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprContinue</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">continue_token</span>: <span class="ident">cont</span>,
                 <span class="ident">label</span>: <span class="ident">label</span>,
             })
@@ -5707,13 +6118,14 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">expr_break</span>(<span class="ident">allow_struct</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Expr</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
         <span class="ident">break_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">break</span>) <span class="op">&gt;&gt;</span>
         <span class="ident">label</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Lifetime</span>)) <span class="op">&gt;&gt;</span>
         <span class="comment">// We can&#39;t allow blocks after a `break` expression when we wouldn&#39;t</span>
         <span class="comment">// allow structs, as this expression is ambiguous.</span>
         <span class="ident">val</span>: <span class="macro">opt_ambiguous_expr</span><span class="macro">!</span>(<span class="ident">allow_struct</span>) <span class="op">&gt;&gt;</span>
         (<span class="ident">ExprBreak</span> {
-            <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+            <span class="ident">attrs</span>: <span class="ident">attrs</span>,
             <span class="ident">label</span>: <span class="ident">label</span>,
             <span class="ident">expr</span>: <span class="ident">val</span>.<span class="ident">map</span>(<span class="ident">Box</span>::<span class="ident">new</span>),
             <span class="ident">break_token</span>: <span class="ident">break_</span>,
@@ -5722,6 +6134,7 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">expr_ret</span>(<span class="ident">allow_struct</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Expr</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
         <span class="ident">return_</span>: <span class="macro">keyword</span><span class="macro">!</span>(<span class="kw">return</span>) <span class="op">&gt;&gt;</span>
         <span class="comment">// NOTE: return is greedy and eats blocks after it even when in a</span>
         <span class="comment">// position where structs are not allowed, such as in if statement</span>
@@ -5730,7 +6143,7 @@
         <span class="comment">// if return { println!(&quot;A&quot;) } {} // Prints &quot;A&quot;</span>
         <span class="ident">ret_value</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">ambiguous_expr</span><span class="macro">!</span>(<span class="ident">allow_struct</span>)) <span class="op">&gt;&gt;</span>
         (<span class="ident">ExprReturn</span> {
-            <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+            <span class="ident">attrs</span>: <span class="ident">attrs</span>,
             <span class="ident">expr</span>: <span class="ident">ret_value</span>.<span class="ident">map</span>(<span class="ident">Box</span>::<span class="ident">new</span>),
             <span class="ident">return_token</span>: <span class="ident">return_</span>,
         }.<span class="ident">into</span>())
@@ -5739,24 +6152,30 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprStruct</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">path</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Path</span>) <span class="op">&gt;&gt;</span>
             <span class="ident">data</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">do_parse</span><span class="macro">!</span>(
+                <span class="ident">inner_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>) <span class="op">&gt;&gt;</span>
                 <span class="ident">fields</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Punctuated</span>::<span class="ident">parse_terminated</span>) <span class="op">&gt;&gt;</span>
                 <span class="ident">base</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">cond</span><span class="macro">!</span>(<span class="ident">fields</span>.<span class="ident">empty_or_trailing</span>(), <span class="macro">do_parse</span><span class="macro">!</span>(
                     <span class="ident">dots</span>: <span class="macro">punct</span><span class="macro">!</span>(..) <span class="op">&gt;&gt;</span>
                     <span class="ident">base</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>) <span class="op">&gt;&gt;</span>
                     (<span class="ident">dots</span>, <span class="ident">base</span>)
                 ))) <span class="op">&gt;&gt;</span>
-                (<span class="ident">fields</span>, <span class="ident">base</span>)
+                (<span class="ident">inner_attrs</span>, <span class="ident">fields</span>, <span class="ident">base</span>)
             )) <span class="op">&gt;&gt;</span>
             ({
-                <span class="kw">let</span> (<span class="ident">brace</span>, (<span class="ident">fields</span>, <span class="ident">base</span>)) <span class="op">=</span> <span class="ident">data</span>;
+                <span class="kw">let</span> (<span class="ident">brace</span>, (<span class="ident">inner_attrs</span>, <span class="ident">fields</span>, <span class="ident">base</span>)) <span class="op">=</span> <span class="ident">data</span>;
                 <span class="kw">let</span> (<span class="ident">dots</span>, <span class="ident">rest</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">base</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span>) {
                     <span class="prelude-val">Some</span>((<span class="ident">dots</span>, <span class="ident">base</span>)) <span class="op">=&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">dots</span>), <span class="prelude-val">Some</span>(<span class="ident">base</span>)),
                     <span class="prelude-val">None</span> <span class="op">=&gt;</span> (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>),
                 };
                 <span class="ident">ExprStruct</span> {
-                    <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                    <span class="ident">attrs</span>: {
+                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                        <span class="ident">attrs</span>.<span class="ident">extend</span>(<span class="ident">inner_attrs</span>);
+                        <span class="ident">attrs</span>
+                    },
                     <span class="ident">brace_token</span>: <span class="ident">brace</span>,
                     <span class="ident">path</span>: <span class="ident">path</span>,
                     <span class="ident">fields</span>: <span class="ident">fields</span>,
@@ -5804,18 +6223,23 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprRepeat</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-            <span class="ident">data</span>: <span class="macro">brackets</span><span class="macro">!</span>(<span class="macro">do_parse</span><span class="macro">!</span>(
-                <span class="ident">value</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>) <span class="op">&gt;&gt;</span>
-                <span class="ident">semi</span>: <span class="macro">punct</span><span class="macro">!</span>(;) <span class="op">&gt;&gt;</span>
-                <span class="ident">times</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>) <span class="op">&gt;&gt;</span>
-                (<span class="ident">value</span>, <span class="ident">semi</span>, <span class="ident">times</span>)
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">data</span>: <span class="macro">brackets</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>),
+                <span class="macro">punct</span><span class="macro">!</span>(;),
+                <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>),
             )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprRepeat</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>((<span class="ident">data</span>.<span class="number">1</span>).<span class="number">0</span>),
-                <span class="ident">len</span>: <span class="ident">Box</span>::<span class="ident">new</span>((<span class="ident">data</span>.<span class="number">1</span>).<span class="number">2</span>),
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">data</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
+                <span class="ident">expr</span>: <span class="ident">Box</span>::<span class="ident">new</span>((<span class="ident">data</span>.<span class="number">1</span>).<span class="number">1</span>),
+                <span class="ident">len</span>: <span class="ident">Box</span>::<span class="ident">new</span>((<span class="ident">data</span>.<span class="number">1</span>).<span class="number">3</span>),
                 <span class="ident">bracket_token</span>: <span class="ident">data</span>.<span class="number">0</span>,
-                <span class="ident">semi_token</span>: (<span class="ident">data</span>.<span class="number">1</span>).<span class="number">1</span>,
+                <span class="ident">semi_token</span>: (<span class="ident">data</span>.<span class="number">1</span>).<span class="number">2</span>,
             })
         ));
 
@@ -5844,10 +6268,21 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprBlock</span> {
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-            <span class="ident">b</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Block</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">outer_attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">block</span>: <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+                <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+                <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>),
+            )) <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprBlock</span> {
-                <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-                <span class="ident">block</span>: <span class="ident">b</span>,
+                <span class="ident">attrs</span>: {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">outer_attrs</span>;
+                    <span class="ident">attrs</span>.<span class="ident">extend</span>((<span class="ident">block</span>.<span class="number">1</span>).<span class="number">0</span>);
+                    <span class="ident">attrs</span>
+                },
+                <span class="ident">block</span>: <span class="ident">Block</span> {
+                    <span class="ident">brace_token</span>: <span class="ident">block</span>.<span class="number">0</span>,
+                    <span class="ident">stmts</span>: (<span class="ident">block</span>.<span class="number">1</span>).<span class="number">1</span>,
+                },
             })
         ));
 
@@ -5855,6 +6290,21 @@
             <span class="prelude-val">Some</span>(<span class="string">&quot;block: `{ .. }`&quot;</span>)
         }
     }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+    <span class="macro">named</span><span class="macro">!</span>(<span class="ident">unstable_labeled_block</span> <span class="op">-&gt;</span> <span class="ident">ExprVerbatim</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+        <span class="ident">begin</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">verbatim</span>::<span class="ident">grab_cursor</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Label</span>) <span class="op">&gt;&gt;</span>
+        <span class="macro">braces</span><span class="macro">!</span>(<span class="macro">tuple</span><span class="macro">!</span>(
+            <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>),
+            <span class="macro">call</span><span class="macro">!</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>),
+        )) <span class="op">&gt;&gt;</span>
+        <span class="ident">end</span>: <span class="macro">call</span><span class="macro">!</span>(<span class="ident">verbatim</span>::<span class="ident">grab_cursor</span>) <span class="op">&gt;&gt;</span>
+        (<span class="ident">ExprVerbatim</span> {
+            <span class="ident">tts</span>: <span class="ident">verbatim</span>::<span class="ident">token_range</span>(<span class="ident">begin</span>..<span class="ident">end</span>),
+        })
+    ));
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">expr_range</span>(<span class="ident">allow_struct</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Expr</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
@@ -5886,10 +6336,22 @@
     }
 
     <span class="kw">impl</span> <span class="ident">Synom</span> <span class="kw">for</span> <span class="ident">ExprPath</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
         <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
             <span class="ident">pair</span>: <span class="ident">qpath</span> <span class="op">&gt;&gt;</span>
             (<span class="ident">ExprPath</span> {
                 <span class="ident">attrs</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
+                <span class="ident">qself</span>: <span class="ident">pair</span>.<span class="number">0</span>,
+                <span class="ident">path</span>: <span class="ident">pair</span>.<span class="number">1</span>,
+            })
+        ));
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+        <span class="macro">named</span><span class="macro">!</span>(<span class="ident">parse</span> <span class="op">-&gt;</span> <span class="self">Self</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
+            <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+            <span class="ident">pair</span>: <span class="ident">qpath</span> <span class="op">&gt;&gt;</span>
+            (<span class="ident">ExprPath</span> {
+                <span class="ident">attrs</span>: <span class="ident">attrs</span>,
                 <span class="ident">qself</span>: <span class="ident">pair</span>.<span class="number">0</span>,
                 <span class="ident">path</span>: <span class="ident">pair</span>.<span class="number">1</span>,
             })
@@ -6010,10 +6472,11 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">stmt_blockexpr</span> <span class="op">-&gt;</span> <span class="ident">Stmt</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-        <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+        <span class="kw-2">mut</span> <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
         <span class="kw-2">mut</span> <span class="ident">e</span>: <span class="ident">expr_nosemi</span> <span class="op">&gt;&gt;</span>
         <span class="ident">semi</span>: <span class="macro">option</span><span class="macro">!</span>(<span class="macro">punct</span><span class="macro">!</span>(;)) <span class="op">&gt;&gt;</span>
         ({
+            <span class="ident">attrs</span>.<span class="ident">extend</span>(<span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()));
             <span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">attrs</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">semi</span>) <span class="op">=</span> <span class="ident">semi</span> {
                 <span class="ident">Stmt</span>::<span class="ident">Semi</span>(<span class="ident">e</span>, <span class="ident">semi</span>)
@@ -6025,10 +6488,11 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="macro">named</span><span class="macro">!</span>(<span class="ident">stmt_expr</span> <span class="op">-&gt;</span> <span class="ident">Stmt</span>, <span class="macro">do_parse</span><span class="macro">!</span>(
-        <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
+        <span class="kw-2">mut</span> <span class="ident">attrs</span>: <span class="macro">many0</span><span class="macro">!</span>(<span class="ident">Attribute</span>::<span class="ident">parse_outer</span>) <span class="op">&gt;&gt;</span>
         <span class="kw-2">mut</span> <span class="ident">e</span>: <span class="macro">syn</span><span class="macro">!</span>(<span class="ident">Expr</span>) <span class="op">&gt;&gt;</span>
         <span class="ident">semi</span>: <span class="macro">punct</span><span class="macro">!</span>(;) <span class="op">&gt;&gt;</span>
         ({
+            <span class="ident">attrs</span>.<span class="ident">extend</span>(<span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()));
             <span class="ident">e</span>.<span class="ident">replace_attrs</span>(<span class="ident">attrs</span>);
             <span class="ident">Stmt</span>::<span class="ident">Semi</span>(<span class="ident">e</span>, <span class="ident">semi</span>)
         })
@@ -6436,17 +6900,25 @@
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">attrs_to_tokens</span>(<span class="ident">attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>], <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
+    <span class="kw">fn</span> <span class="ident">outer_attrs_to_tokens</span>(<span class="ident">attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>], <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
         <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="ident">attrs</span>.<span class="ident">outer</span>());
     }
 
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">inner_attrs_to_tokens</span>(<span class="ident">attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>], <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
+        <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="ident">attrs</span>.<span class="ident">inner</span>());
+    }
+
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">attrs_to_tokens</span>(<span class="ident">_attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>], <span class="ident">_tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {}
+    <span class="kw">fn</span> <span class="ident">outer_attrs_to_tokens</span>(<span class="ident">_attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>], <span class="ident">_tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {}
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
+    <span class="kw">fn</span> <span class="ident">inner_attrs_to_tokens</span>(<span class="ident">_attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>], <span class="ident">_tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {}
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprBox</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">box_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6455,7 +6927,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprInPlace</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">place</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">arrow_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6465,8 +6937,9 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprArray</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">bracket_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">elems</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             })
         }
@@ -6474,7 +6947,7 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprCall</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">func</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">paren_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
                 <span class="self">self</span>.<span class="ident">args</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6485,7 +6958,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprMethodCall</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">receiver</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">dot_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">method</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6519,8 +6992,9 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprTuple</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">paren_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">elems</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
                 <span class="comment">// If we only have one argument, we need a trailing comma to</span>
                 <span class="comment">// distinguish ExprTuple from ExprParen.</span>
@@ -6533,7 +7007,7 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprBinary</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">left</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">op</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">right</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6542,7 +7016,7 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprUnary</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">op</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6550,14 +7024,14 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprLit</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">lit</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
     }
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprCast</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">as_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">ty</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6567,7 +7041,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprType</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">colon_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">ty</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6597,7 +7071,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprIf</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">if_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="ident">wrap_bare_struct</span>(<span class="ident">tokens</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cond</span>);
             <span class="self">self</span>.<span class="ident">then_branch</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6608,7 +7082,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprIfLet</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">if_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">let_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">pats</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6622,58 +7096,71 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprWhile</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">label</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">while_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="ident">wrap_bare_struct</span>(<span class="ident">tokens</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cond</span>);
-            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+                <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">body</span>.<span class="ident">stmts</span>);
+            });
         }
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprWhileLet</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">label</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">while_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">let_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">pats</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">eq_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="ident">wrap_bare_struct</span>(<span class="ident">tokens</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">expr</span>);
-            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+                <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">body</span>.<span class="ident">stmts</span>);
+            });
         }
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprForLoop</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">label</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">for_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">pat</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">in_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="ident">wrap_bare_struct</span>(<span class="ident">tokens</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">expr</span>);
-            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+                <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">body</span>.<span class="ident">stmts</span>);
+            });
         }
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprLoop</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">label</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">loop_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
-            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+            <span class="self">self</span>.<span class="ident">body</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+                <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">body</span>.<span class="ident">stmts</span>);
+            });
         }
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprMatch</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">match_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="ident">wrap_bare_struct</span>(<span class="ident">tokens</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">expr</span>);
             <span class="self">self</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">arm</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">arms</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
                     <span class="ident">arm</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
                     <span class="comment">// Ensure that we have a comma after a non-block arm, except</span>
@@ -6690,7 +7177,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprCatch</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">do_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">catch_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">block</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6700,7 +7187,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprYield</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">yield_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6709,7 +7196,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprClosure</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">movability</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">capture</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">or1_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6735,7 +7222,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprUnsafe</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">unsafe_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">block</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6744,15 +7231,18 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprBlock</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
-            <span class="self">self</span>.<span class="ident">block</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="self">self</span>.<span class="ident">block</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+                <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">block</span>.<span class="ident">stmts</span>);
+            });
         }
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprAssign</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">left</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">eq_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">right</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6762,7 +7252,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprAssignOp</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">left</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">op</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">right</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6771,8 +7261,7 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprField</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">base</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">dot_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">member</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6798,7 +7287,7 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprIndex</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">bracket_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
                 <span class="self">self</span>.<span class="ident">index</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6809,7 +7298,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprRange</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">from</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">limits</span> {
                 <span class="ident">RangeLimits</span>::<span class="ident">HalfOpen</span>(<span class="kw-2">ref</span> <span class="ident">t</span>) <span class="op">=&gt;</span> <span class="ident">t</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>),
@@ -6821,7 +7310,7 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprPath</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             ::<span class="ident">PathTokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">qself</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>)
         }
     }
@@ -6829,7 +7318,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprReference</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">and_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">mutability</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6839,7 +7328,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprBreak</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">break_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">label</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6849,7 +7338,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprContinue</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">continue_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">label</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6858,7 +7347,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprReturn</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">return_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6867,7 +7356,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprMacro</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">mac</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
     }
@@ -6875,9 +7364,10 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprStruct</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">path</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rest</span>.<span class="ident">is_some</span>() {
                     <span class="ident">TokensOrDefault</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">dot2_token</span>).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6890,8 +7380,9 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprRepeat</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">bracket_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">semi_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">len</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -6902,7 +7393,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprGroup</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">group_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
                 <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             });
@@ -6911,8 +7402,9 @@
 
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprParen</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">paren_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
+                <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             });
         }
@@ -6921,7 +7413,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">ExprTry</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">expr</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">question_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
         }
@@ -6944,7 +7436,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">FieldValue</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">member</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">colon_token</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">colon_token</span> {
                 <span class="ident">colon_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
@@ -7164,7 +7656,7 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">Local</span> {
         <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TokenStream</span>) {
-            <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="self">self</span>.<span class="ident">attrs</span>.<span class="ident">outer</span>());
+            <span class="ident">outer_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">let_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="self">self</span>.<span class="ident">pats</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw-2">ref</span> <span class="ident">colon_token</span>, <span class="kw-2">ref</span> <span class="ident">ty</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">ty</span> {
