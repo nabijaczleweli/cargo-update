@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.8/src/punctuated.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>punctuated.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.15.4/src/punctuated.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>punctuated.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -789,22 +789,6 @@
 <span id="789">789</span>
 <span id="790">790</span>
 <span id="791">791</span>
-<span id="792">792</span>
-<span id="793">793</span>
-<span id="794">794</span>
-<span id="795">795</span>
-<span id="796">796</span>
-<span id="797">797</span>
-<span id="798">798</span>
-<span id="799">799</span>
-<span id="800">800</span>
-<span id="801">801</span>
-<span id="802">802</span>
-<span id="803">803</span>
-<span id="804">804</span>
-<span id="805">805</span>
-<span id="806">806</span>
-<span id="807">807</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -846,11 +830,11 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">vec</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">buffer</span>::<span class="ident">Cursor</span>;
+<span class="kw">use</span> <span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
+<span class="kw">use</span> <span class="ident">private</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">parse_error</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">synom</span>::{<span class="ident">PResult</span>, <span class="ident">Synom</span>};
+<span class="kw">use</span> <span class="ident">token</span>::<span class="ident">Token</span>;
 
 <span class="doccomment">/// A punctuated sequence of syntax tree nodes of type `T` separated by</span>
 <span class="doccomment">/// punctuation of type `P`.</span>
@@ -1016,18 +1000,16 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">empty_or_trailing</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">last</span>.<span class="ident">is_none</span>()
     }
-}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">Default</span>,
-{
     <span class="doccomment">/// Appends a syntax tree node onto the end of this punctuated sequence.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If there is not a trailing punctuation in this sequence when this method</span>
     <span class="doccomment">/// is called, the default value of punctuation type `P` is inserted before</span>
     <span class="doccomment">/// the given value of type `T`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>)
+    <span class="kw">where</span>
+        <span class="ident">P</span>: <span class="ident">Default</span>,
+    {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">empty_or_trailing</span>() {
             <span class="self">self</span>.<span class="ident">push_punct</span>(<span class="ident">Default</span>::<span class="ident">default</span>());
         }
@@ -1040,7 +1022,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Panics if `index` is greater than the number of elements previously in</span>
     <span class="doccomment">/// this punctuated sequence.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">T</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>, <span class="ident">value</span>: <span class="ident">T</span>)
+    <span class="kw">where</span>
+        <span class="ident">P</span>: <span class="ident">Default</span>,
+    {
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">index</span> <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">len</span>());
 
         <span class="kw">if</span> <span class="ident">index</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">len</span>() {
@@ -1048,6 +1033,113 @@
         } <span class="kw">else</span> {
             <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">insert</span>(<span class="ident">index</span>, (<span class="ident">value</span>, <span class="ident">Default</span>::<span class="ident">default</span>()));
         }
+    }
+
+    <span class="doccomment">/// Parses zero or more occurrences of `T` separated by punctuation of type</span>
+    <span class="doccomment">/// `P`, with optional trailing punctuation.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Parsing continues until the end of this parse stream. The entire content</span>
+    <span class="doccomment">/// of this parse stream must consist of `T` and `P`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// *This function is available if Syn is built with the `&quot;parsing&quot;`</span>
+    <span class="doccomment">/// feature.*</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_terminated</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">T</span>: <span class="ident">Parse</span>,
+        <span class="ident">P</span>: <span class="ident">Parse</span>,
+    {
+        <span class="self">Self</span>::<span class="ident">parse_terminated_with</span>(<span class="ident">input</span>, <span class="ident">T</span>::<span class="ident">parse</span>)
+    }
+
+    <span class="doccomment">/// Parses zero or more occurrences of `T` using the given parse function,</span>
+    <span class="doccomment">/// separated by punctuation of type `P`, with optional trailing</span>
+    <span class="doccomment">/// punctuation.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Like [`parse_terminated`], the entire content of this stream is expected</span>
+    <span class="doccomment">/// to be parsed.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`parse_terminated`]: #method.parse_terminated</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// *This function is available if Syn is built with the `&quot;parsing&quot;`</span>
+    <span class="doccomment">/// feature.*</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_terminated_with</span>(
+        <span class="ident">input</span>: <span class="ident">ParseStream</span>,
+        <span class="ident">parser</span>: <span class="kw">fn</span>(<span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">P</span>: <span class="ident">Parse</span>,
+    {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">punctuated</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="ident">new</span>();
+
+        <span class="kw">loop</span> {
+            <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">is_empty</span>() {
+                <span class="kw">break</span>;
+            }
+            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">parser</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
+            <span class="ident">punctuated</span>.<span class="ident">push_value</span>(<span class="ident">value</span>);
+            <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">is_empty</span>() {
+                <span class="kw">break</span>;
+            }
+            <span class="kw">let</span> <span class="ident">punct</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+            <span class="ident">punctuated</span>.<span class="ident">push_punct</span>(<span class="ident">punct</span>);
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="ident">punctuated</span>)
+    }
+
+    <span class="doccomment">/// Parses one or more occurrences of `T` separated by punctuation of type</span>
+    <span class="doccomment">/// `P`, not accepting trailing punctuation.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Parsing continues as long as punctuation `P` is present at the head of</span>
+    <span class="doccomment">/// the stream. This method returns upon parsing a `T` and observing that it</span>
+    <span class="doccomment">/// is not followed by a `P`, even if there are remaining tokens in the</span>
+    <span class="doccomment">/// stream.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// *This function is available if Syn is built with the `&quot;parsing&quot;`</span>
+    <span class="doccomment">/// feature.*</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_separated_nonempty</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">T</span>: <span class="ident">Parse</span>,
+        <span class="ident">P</span>: <span class="ident">Token</span> <span class="op">+</span> <span class="ident">Parse</span>,
+    {
+        <span class="self">Self</span>::<span class="ident">parse_separated_nonempty_with</span>(<span class="ident">input</span>, <span class="ident">T</span>::<span class="ident">parse</span>)
+    }
+
+    <span class="doccomment">/// Parses one or more occurrences of `T` using the given parse function,</span>
+    <span class="doccomment">/// separated by punctuation of type `P`, not accepting trailing</span>
+    <span class="doccomment">/// punctuation.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Like [`parse_separated_nonempty`], may complete early without parsing</span>
+    <span class="doccomment">/// the entire content of this stream.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`parse_separated_nonempty`]: #method.parse_separated_nonempty</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// *This function is available if Syn is built with the `&quot;parsing&quot;`</span>
+    <span class="doccomment">/// feature.*</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_separated_nonempty_with</span>(
+        <span class="ident">input</span>: <span class="ident">ParseStream</span>,
+        <span class="ident">parser</span>: <span class="kw">fn</span>(<span class="ident">ParseStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">P</span>: <span class="ident">Token</span> <span class="op">+</span> <span class="ident">Parse</span>,
+    {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">punctuated</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="ident">new</span>();
+
+        <span class="kw">loop</span> {
+            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">parser</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
+            <span class="ident">punctuated</span>.<span class="ident">push_value</span>(<span class="ident">value</span>);
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">P</span>::<span class="ident">peek</span>(<span class="ident">input</span>.<span class="ident">cursor</span>()) {
+                <span class="kw">break</span>;
+            }
+            <span class="kw">let</span> <span class="ident">punct</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+            <span class="ident">punctuated</span>.<span class="ident">push_punct</span>(<span class="ident">punct</span>);
+        }
+
+        <span class="prelude-val">Ok</span>(<span class="ident">punctuated</span>)
     }
 }
 
@@ -1274,10 +1366,8 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="comment">// Not public API.</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">private_empty</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">private</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">empty_punctuated_iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>() <span class="op">-&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">Iter</span> {
             <span class="ident">inner</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">iter</span>::<span class="ident">empty</span>()),
         }
@@ -1330,10 +1420,8 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="comment">// Not public API.</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">private_empty</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">private</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">empty_punctuated_iter_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>() <span class="op">-&gt;</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">IterMut</span> {
             <span class="ident">inner</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">iter</span>::<span class="ident">empty</span>()),
         }
@@ -1457,126 +1545,6 @@
             }
         } <span class="kw">else</span> {
             <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>[<span class="ident">index</span>].<span class="number">0</span>
-        }
-    }
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Synom</span>,
-    <span class="ident">P</span>: <span class="ident">Synom</span>,
-{
-    <span class="doccomment">/// Parse **zero or more** syntax tree nodes with punctuation in between and</span>
-    <span class="doccomment">/// **no trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_separated</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">parse_separated_with</span>(<span class="ident">input</span>, <span class="ident">T</span>::<span class="ident">parse</span>)
-    }
-
-    <span class="doccomment">/// Parse **one or more** syntax tree nodes with punctuation in bewteen and</span>
-    <span class="doccomment">/// **no trailing** punctuation.</span>
-    <span class="doccomment">/// allowing trailing punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_separated_nonempty</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">parse_separated_nonempty_with</span>(<span class="ident">input</span>, <span class="ident">T</span>::<span class="ident">parse</span>)
-    }
-
-    <span class="doccomment">/// Parse **zero or more** syntax tree nodes with punctuation in between and</span>
-    <span class="doccomment">/// **optional trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_terminated</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">parse_terminated_with</span>(<span class="ident">input</span>, <span class="ident">T</span>::<span class="ident">parse</span>)
-    }
-
-    <span class="doccomment">/// Parse **one or more** syntax tree nodes with punctuation in between and</span>
-    <span class="doccomment">/// **optional trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_terminated_nonempty</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">parse_terminated_nonempty_with</span>(<span class="ident">input</span>, <span class="ident">T</span>::<span class="ident">parse</span>)
-    }
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span> <span class="ident">Punctuated</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">P</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">Synom</span>,
-{
-    <span class="doccomment">/// Parse **zero or more** syntax tree nodes using the given parser with</span>
-    <span class="doccomment">/// punctuation in between and **no trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_separated_with</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>, <span class="ident">parse</span>: <span class="kw">fn</span>(<span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">parse</span>(<span class="ident">input</span>, <span class="ident">parse</span>, <span class="bool-val">false</span>)
-    }
-
-    <span class="doccomment">/// Parse **one or more** syntax tree nodes using the given parser with</span>
-    <span class="doccomment">/// punctuation in between and **no trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_separated_nonempty_with</span>(
-        <span class="ident">input</span>: <span class="ident">Cursor</span>,
-        <span class="ident">parse</span>: <span class="kw">fn</span>(<span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">Self</span>::<span class="ident">parse</span>(<span class="ident">input</span>, <span class="ident">parse</span>, <span class="bool-val">false</span>) {
-            <span class="prelude-val">Ok</span>((<span class="kw-2">ref</span> <span class="ident">b</span>, <span class="kw">_</span>)) <span class="kw">if</span> <span class="ident">b</span>.<span class="ident">is_empty</span>() <span class="op">=&gt;</span> <span class="ident">parse_error</span>(),
-            <span class="ident">other</span> <span class="op">=&gt;</span> <span class="ident">other</span>,
-        }
-    }
-
-    <span class="doccomment">/// Parse **zero or more** syntax tree nodes using the given parser with</span>
-    <span class="doccomment">/// punctuation in between and **optional trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_terminated_with</span>(<span class="ident">input</span>: <span class="ident">Cursor</span>, <span class="ident">parse</span>: <span class="kw">fn</span>(<span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">parse</span>(<span class="ident">input</span>, <span class="ident">parse</span>, <span class="bool-val">true</span>)
-    }
-
-    <span class="doccomment">/// Parse **one or more** syntax tree nodes using the given parser with</span>
-    <span class="doccomment">/// punctuation in between and **optional trailing** punctuation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_terminated_nonempty_with</span>(
-        <span class="ident">input</span>: <span class="ident">Cursor</span>,
-        <span class="ident">parse</span>: <span class="kw">fn</span>(<span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">Self</span>::<span class="ident">parse</span>(<span class="ident">input</span>, <span class="ident">parse</span>, <span class="bool-val">true</span>) {
-            <span class="prelude-val">Ok</span>((<span class="kw-2">ref</span> <span class="ident">b</span>, <span class="kw">_</span>)) <span class="kw">if</span> <span class="ident">b</span>.<span class="ident">is_empty</span>() <span class="op">=&gt;</span> <span class="ident">parse_error</span>(),
-            <span class="ident">other</span> <span class="op">=&gt;</span> <span class="ident">other</span>,
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">parse</span>(
-        <span class="kw-2">mut</span> <span class="ident">input</span>: <span class="ident">Cursor</span>,
-        <span class="ident">parse</span>: <span class="kw">fn</span>(<span class="ident">Cursor</span>) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-        <span class="ident">terminated</span>: <span class="ident">bool</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">PResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Punctuated</span>::<span class="ident">new</span>();
-
-        <span class="comment">// get the first element</span>
-        <span class="kw">match</span> <span class="ident">parse</span>(<span class="ident">input</span>) {
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>((<span class="ident">res</span>, <span class="ident">input</span>)),
-            <span class="prelude-val">Ok</span>((<span class="ident">o</span>, <span class="ident">i</span>)) <span class="op">=&gt;</span> {
-                <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">input</span> {
-                    <span class="kw">return</span> <span class="ident">parse_error</span>();
-                }
-                <span class="ident">input</span> <span class="op">=</span> <span class="ident">i</span>;
-                <span class="ident">res</span>.<span class="ident">push_value</span>(<span class="ident">o</span>);
-
-                <span class="comment">// get the separator first</span>
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>((<span class="ident">s</span>, <span class="ident">i2</span>)) <span class="op">=</span> <span class="ident">P</span>::<span class="ident">parse</span>(<span class="ident">input</span>) {
-                    <span class="kw">if</span> <span class="ident">i2</span> <span class="op">==</span> <span class="ident">input</span> {
-                        <span class="kw">break</span>;
-                    }
-
-                    <span class="comment">// get the element next</span>
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>((<span class="ident">o3</span>, <span class="ident">i3</span>)) <span class="op">=</span> <span class="ident">parse</span>(<span class="ident">i2</span>) {
-                        <span class="kw">if</span> <span class="ident">i3</span> <span class="op">==</span> <span class="ident">i2</span> {
-                            <span class="kw">break</span>;
-                        }
-                        <span class="ident">res</span>.<span class="ident">push_punct</span>(<span class="ident">s</span>);
-                        <span class="ident">res</span>.<span class="ident">push_value</span>(<span class="ident">o3</span>);
-                        <span class="ident">input</span> <span class="op">=</span> <span class="ident">i3</span>;
-                    } <span class="kw">else</span> {
-                        <span class="kw">break</span>;
-                    }
-                }
-                <span class="kw">if</span> <span class="ident">terminated</span> {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>((<span class="ident">sep</span>, <span class="ident">after</span>)) <span class="op">=</span> <span class="ident">P</span>::<span class="ident">parse</span>(<span class="ident">input</span>) {
-                        <span class="ident">res</span>.<span class="ident">push_punct</span>(<span class="ident">sep</span>);
-                        <span class="ident">input</span> <span class="op">=</span> <span class="ident">after</span>;
-                    }
-                }
-                <span class="prelude-val">Ok</span>((<span class="ident">res</span>, <span class="ident">input</span>))
-            }
         }
     }
 }

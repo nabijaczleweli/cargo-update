@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.14.8/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.15.4/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -786,6 +786,37 @@
 <span id="786">786</span>
 <span id="787">787</span>
 <span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -798,11 +829,8 @@
 <span class="doccomment">//! Syn is a parsing library for parsing a stream of Rust tokens into a syntax</span>
 <span class="doccomment">//! tree of Rust source code.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Currently this library is geared toward the [custom derive] use case but</span>
-<span class="doccomment">//! contains some APIs that may be useful for Rust procedural macros more</span>
-<span class="doccomment">//! generally.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [custom derive]: https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md</span>
+<span class="doccomment">//! Currently this library is geared toward use in Rust procedural macros, but</span>
+<span class="doccomment">//! contains some APIs that may be useful more generally.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! - **Data structures** — Syn provides a complete syntax tree that can</span>
 <span class="doccomment">//!   represent any valid Rust source code. The syntax tree is rooted at</span>
@@ -815,12 +843,11 @@
 <span class="doccomment">//!   derive macro. An example below shows using this type in a library that can</span>
 <span class="doccomment">//!   derive implementations of a trait of your own.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! - **Parser combinators** — Parsing in Syn is built on a suite of public</span>
-<span class="doccomment">//!   parser combinator macros that you can use for parsing any token-based</span>
-<span class="doccomment">//!   syntax you dream up within a `functionlike!(...)` procedural macro. Every</span>
-<span class="doccomment">//!   syntax tree node defined by Syn is individually parsable and may be used</span>
-<span class="doccomment">//!   as a building block for custom syntaxes, or you may do it all yourself</span>
-<span class="doccomment">//!   working from the most primitive tokens.</span>
+<span class="doccomment">//! - **Parsing** — Parsing in Syn is built around [parser functions] with the</span>
+<span class="doccomment">//!   signature `fn(ParseStream) -&gt; Result&lt;T&gt;`. Every syntax tree node defined</span>
+<span class="doccomment">//!   by Syn is individually parsable and may be used as a building block for</span>
+<span class="doccomment">//!   custom syntaxes, or you may dream up your own brand new syntax without</span>
+<span class="doccomment">//!   involving any of our syntax tree types.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! - **Location information** — Every token parsed by Syn is associated with a</span>
 <span class="doccomment">//!   `Span` that tracks line and column information back to the source of that</span>
@@ -837,6 +864,7 @@
 <span class="doccomment">//! [`syn::Expr`]: enum.Expr.html</span>
 <span class="doccomment">//! [`syn::Type`]: enum.Type.html</span>
 <span class="doccomment">//! [`syn::DeriveInput`]: struct.DeriveInput.html</span>
+<span class="doccomment">//! [parser functions]: parse/index.html</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! *Version requirement: Syn supports any compiler version back to Rust&#39;s very</span>
 <span class="doccomment">//! first support for procedural macros in Rust 1.15.0. Some features especially</span>
@@ -857,7 +885,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```toml</span>
 <span class="doccomment">//! [dependencies]</span>
-<span class="doccomment">//! syn = &quot;0.14&quot;</span>
+<span class="doccomment">//! syn = &quot;0.15&quot;</span>
 <span class="doccomment">//! quote = &quot;0.6&quot;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! [lib]</span>
@@ -865,11 +893,12 @@
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! extern crate proc_macro;</span>
-<span class="doccomment">//! extern crate syn;</span>
-<span class="doccomment">//!</span>
 <span class="doccomment">//! #[macro_use]</span>
 <span class="doccomment">//! extern crate quote;</span>
+<span class="doccomment">//! #[macro_use]</span>
+<span class="doccomment">//! extern crate syn;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! extern crate proc_macro;</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! use proc_macro::TokenStream;</span>
 <span class="doccomment">//! use syn::DeriveInput;</span>
@@ -879,7 +908,7 @@
 <span class="doccomment">//! # };</span>
 <span class="doccomment">//! pub fn my_macro(input: TokenStream) -&gt; TokenStream {</span>
 <span class="doccomment">//!     // Parse the input tokens into a syntax tree</span>
-<span class="doccomment">//!     let input: DeriveInput = syn::parse(input).unwrap();</span>
+<span class="doccomment">//!     let input = parse_macro_input!(input as DeriveInput);</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     // Build the output, possibly using quasi-quotation</span>
 <span class="doccomment">//!     let expanded = quote! {</span>
@@ -887,7 +916,7 @@
 <span class="doccomment">//!     };</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     // Hand the output tokens back to the compiler</span>
-<span class="doccomment">//!     expanded.into()</span>
+<span class="doccomment">//!     TokenStream::from(expanded)</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! #</span>
 <span class="doccomment">//! # fn main() {}</span>
@@ -970,14 +999,13 @@
 <span class="doccomment">//!   |     ^^^^^^^^^^^^^^^^^^^^^^^^ the trait `HeapSize` is not implemented for `Thread`</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ## Parsing a custom syntax using combinators</span>
+<span class="doccomment">//! ## Parsing a custom syntax</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! The [`lazy-static`] example directory shows the implementation of a</span>
 <span class="doccomment">//! `functionlike!(...)` procedural macro in which the input tokens are parsed</span>
-<span class="doccomment">//! using [`nom`]-style parser combinators.</span>
+<span class="doccomment">//! using Syn&#39;s parsing API.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! [`lazy-static`]: https://github.com/dtolnay/syn/tree/master/examples/lazy-static</span>
-<span class="doccomment">//! [`nom`]: https://github.com/Geal/nom</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! The example reimplements the popular `lazy_static` crate from crates.io as a</span>
 <span class="doccomment">//! procedural macro.</span>
@@ -1047,16 +1075,20 @@
 <span class="doccomment">//!   dynamic library libproc_macro from rustc toolchain.</span>
 
 <span class="comment">// Syn types in rustdoc of other crates get linked to here.</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/syn/0.14.8&quot;</span>)]</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/syn/0.15.4&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cargo-clippy&quot;</span>, <span class="ident">deny</span>(<span class="ident">clippy</span>, <span class="ident">clippy_pedantic</span>))]</span>
 <span class="comment">// Ignored clippy lints.</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(
     <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cargo-clippy&quot;</span>,
     <span class="ident">allow</span>(
+        <span class="ident">block_in_if_condition_stmt</span>,
         <span class="ident">const_static_lifetime</span>,
+        <span class="ident">cyclomatic_complexity</span>,
         <span class="ident">doc_markdown</span>,
+        <span class="ident">eval_order_dependence</span>,
         <span class="ident">large_enum_variant</span>,
         <span class="ident">match_bool</span>,
+        <span class="ident">never_loop</span>,
         <span class="ident">redundant_closure</span>,
         <span class="ident">needless_pass_by_value</span>,
         <span class="ident">redundant_field_names</span>,
@@ -1069,9 +1101,11 @@
     <span class="ident">allow</span>(
         <span class="ident">cast_possible_truncation</span>,
         <span class="ident">cast_possible_wrap</span>,
+        <span class="ident">empty_enum</span>,
         <span class="ident">if_not_else</span>,
         <span class="ident">indexing_slicing</span>,
         <span class="ident">items_after_statements</span>,
+        <span class="ident">shadow_unrelated</span>,
         <span class="ident">similar_names</span>,
         <span class="ident">single_match_else</span>,
         <span class="ident">stutter</span>,
@@ -1081,7 +1115,10 @@
     )
 )]</span>
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;wasm32&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;unknown&quot;</span>)), <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;proc-macro&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
+    <span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;wasm32&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;unknown&quot;</span>)),
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;proc-macro&quot;</span>
+))]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro2</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">unicode_xid</span>;
@@ -1089,18 +1126,20 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">quote</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">parsers</span>;
-
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">mod</span> <span class="ident">macros</span>;
+
+<span class="comment">// Not public API.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">group</span>;
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">token</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">proc_macro2</span>::<span class="ident">Ident</span>;
+<span class="kw">mod</span> <span class="ident">ident</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ident</span>::<span class="ident">Ident</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
 <span class="kw">mod</span> <span class="ident">attr</span>;
@@ -1119,12 +1158,12 @@
 <span class="kw">mod</span> <span class="ident">expr</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">expr</span>::{
-    <span class="ident">Expr</span>, <span class="ident">ExprArray</span>, <span class="ident">ExprAssign</span>, <span class="ident">ExprAssignOp</span>, <span class="ident">ExprBinary</span>, <span class="ident">ExprBlock</span>, <span class="ident">ExprBox</span>, <span class="ident">ExprBreak</span>, <span class="ident">ExprCall</span>,
-    <span class="ident">ExprCast</span>, <span class="ident">ExprCatch</span>, <span class="ident">ExprClosure</span>, <span class="ident">ExprContinue</span>, <span class="ident">ExprField</span>, <span class="ident">ExprForLoop</span>, <span class="ident">ExprGroup</span>, <span class="ident">ExprIf</span>,
-    <span class="ident">ExprIfLet</span>, <span class="ident">ExprInPlace</span>, <span class="ident">ExprIndex</span>, <span class="ident">ExprLit</span>, <span class="ident">ExprLoop</span>, <span class="ident">ExprMacro</span>, <span class="ident">ExprMatch</span>, <span class="ident">ExprMethodCall</span>,
-    <span class="ident">ExprParen</span>, <span class="ident">ExprPath</span>, <span class="ident">ExprRange</span>, <span class="ident">ExprReference</span>, <span class="ident">ExprRepeat</span>, <span class="ident">ExprReturn</span>, <span class="ident">ExprStruct</span>, <span class="ident">ExprTry</span>,
-    <span class="ident">ExprTuple</span>, <span class="ident">ExprType</span>, <span class="ident">ExprUnary</span>, <span class="ident">ExprUnsafe</span>, <span class="ident">ExprVerbatim</span>, <span class="ident">ExprWhile</span>, <span class="ident">ExprWhileLet</span>, <span class="ident">ExprYield</span>,
-    <span class="ident">Index</span>, <span class="ident">Member</span>,
+    <span class="ident">Expr</span>, <span class="ident">ExprArray</span>, <span class="ident">ExprAssign</span>, <span class="ident">ExprAssignOp</span>, <span class="ident">ExprAsync</span>, <span class="ident">ExprBinary</span>, <span class="ident">ExprBlock</span>, <span class="ident">ExprBox</span>,
+    <span class="ident">ExprBreak</span>, <span class="ident">ExprCall</span>, <span class="ident">ExprCast</span>, <span class="ident">ExprClosure</span>, <span class="ident">ExprContinue</span>, <span class="ident">ExprField</span>, <span class="ident">ExprForLoop</span>, <span class="ident">ExprGroup</span>,
+    <span class="ident">ExprIf</span>, <span class="ident">ExprInPlace</span>, <span class="ident">ExprIndex</span>, <span class="ident">ExprLet</span>, <span class="ident">ExprLit</span>, <span class="ident">ExprLoop</span>, <span class="ident">ExprMacro</span>, <span class="ident">ExprMatch</span>,
+    <span class="ident">ExprMethodCall</span>, <span class="ident">ExprParen</span>, <span class="ident">ExprPath</span>, <span class="ident">ExprRange</span>, <span class="ident">ExprReference</span>, <span class="ident">ExprRepeat</span>, <span class="ident">ExprReturn</span>,
+    <span class="ident">ExprStruct</span>, <span class="ident">ExprTry</span>, <span class="ident">ExprTryBlock</span>, <span class="ident">ExprTuple</span>, <span class="ident">ExprType</span>, <span class="ident">ExprUnary</span>, <span class="ident">ExprUnsafe</span>, <span class="ident">ExprVerbatim</span>,
+    <span class="ident">ExprWhile</span>, <span class="ident">ExprYield</span>, <span class="ident">Index</span>, <span class="ident">Member</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
@@ -1142,25 +1181,24 @@
     <span class="ident">PredicateLifetime</span>, <span class="ident">PredicateType</span>, <span class="ident">TraitBound</span>, <span class="ident">TraitBoundModifier</span>, <span class="ident">TypeParam</span>, <span class="ident">TypeParamBound</span>,
     <span class="ident">WhereClause</span>, <span class="ident">WherePredicate</span>,
 };
-<span class="attribute">#[<span class="ident">cfg</span>(
-    <span class="ident">all</span>(
-        <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
-        <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>
-    )
-)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
+    <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>
+))]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">generics</span>::{<span class="ident">ImplGenerics</span>, <span class="ident">Turbofish</span>, <span class="ident">TypeGenerics</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">item</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">item</span>::{
-    <span class="ident">ArgCaptured</span>, <span class="ident">ArgSelf</span>, <span class="ident">ArgSelfRef</span>, <span class="ident">FnArg</span>, <span class="ident">FnDecl</span>, <span class="ident">ForeignItem</span>, <span class="ident">ForeignItemFn</span>, <span class="ident">ForeignItemStatic</span>,
-    <span class="ident">ForeignItemType</span>, <span class="ident">ForeignItemVerbatim</span>, <span class="ident">ImplItem</span>, <span class="ident">ImplItemConst</span>, <span class="ident">ImplItemMacro</span>, <span class="ident">ImplItemMethod</span>,
-    <span class="ident">ImplItemType</span>, <span class="ident">ImplItemVerbatim</span>, <span class="ident">Item</span>, <span class="ident">ItemConst</span>, <span class="ident">ItemEnum</span>, <span class="ident">ItemExternCrate</span>, <span class="ident">ItemFn</span>,
-    <span class="ident">ItemForeignMod</span>, <span class="ident">ItemImpl</span>, <span class="ident">ItemMacro</span>, <span class="ident">ItemMacro2</span>, <span class="ident">ItemMod</span>, <span class="ident">ItemStatic</span>, <span class="ident">ItemStruct</span>, <span class="ident">ItemTrait</span>,
-    <span class="ident">ItemType</span>, <span class="ident">ItemUnion</span>, <span class="ident">ItemUse</span>, <span class="ident">ItemVerbatim</span>, <span class="ident">MethodSig</span>, <span class="ident">TraitItem</span>, <span class="ident">TraitItemConst</span>,
-    <span class="ident">TraitItemMacro</span>, <span class="ident">TraitItemMethod</span>, <span class="ident">TraitItemType</span>, <span class="ident">TraitItemVerbatim</span>, <span class="ident">UseGlob</span>, <span class="ident">UseGroup</span>, <span class="ident">UseName</span>,
-    <span class="ident">UsePath</span>, <span class="ident">UseRename</span>, <span class="ident">UseTree</span>,
+    <span class="ident">ArgCaptured</span>, <span class="ident">ArgSelf</span>, <span class="ident">ArgSelfRef</span>, <span class="ident">FnArg</span>, <span class="ident">FnDecl</span>, <span class="ident">ForeignItem</span>, <span class="ident">ForeignItemFn</span>, <span class="ident">ForeignItemMacro</span>,
+    <span class="ident">ForeignItemStatic</span>, <span class="ident">ForeignItemType</span>, <span class="ident">ForeignItemVerbatim</span>, <span class="ident">ImplItem</span>, <span class="ident">ImplItemConst</span>,
+    <span class="ident">ImplItemExistential</span>, <span class="ident">ImplItemMacro</span>, <span class="ident">ImplItemMethod</span>, <span class="ident">ImplItemType</span>, <span class="ident">ImplItemVerbatim</span>, <span class="ident">Item</span>,
+    <span class="ident">ItemConst</span>, <span class="ident">ItemEnum</span>, <span class="ident">ItemExistential</span>, <span class="ident">ItemExternCrate</span>, <span class="ident">ItemFn</span>, <span class="ident">ItemForeignMod</span>, <span class="ident">ItemImpl</span>,
+    <span class="ident">ItemMacro</span>, <span class="ident">ItemMacro2</span>, <span class="ident">ItemMod</span>, <span class="ident">ItemStatic</span>, <span class="ident">ItemStruct</span>, <span class="ident">ItemTrait</span>, <span class="ident">ItemTraitAlias</span>, <span class="ident">ItemType</span>,
+    <span class="ident">ItemUnion</span>, <span class="ident">ItemUse</span>, <span class="ident">ItemVerbatim</span>, <span class="ident">MethodSig</span>, <span class="ident">TraitItem</span>, <span class="ident">TraitItemConst</span>, <span class="ident">TraitItemMacro</span>,
+    <span class="ident">TraitItemMethod</span>, <span class="ident">TraitItemType</span>, <span class="ident">TraitItemVerbatim</span>, <span class="ident">UseGlob</span>, <span class="ident">UseGroup</span>, <span class="ident">UseName</span>, <span class="ident">UsePath</span>,
+    <span class="ident">UseRename</span>, <span class="ident">UseTree</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
@@ -1168,9 +1206,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">file</span>::<span class="ident">File</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
 <span class="kw">mod</span> <span class="ident">lifetime</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lifetime</span>::<span class="ident">Lifetime</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
@@ -1207,25 +1243,21 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
 <span class="kw">mod</span> <span class="ident">path</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(
-    <span class="ident">all</span>(
-        <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
-        <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>
-    )
-)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">path</span>::<span class="ident">PathTokens</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">path</span>::{
-    <span class="ident">AngleBracketedGenericArguments</span>, <span class="ident">Binding</span>, <span class="ident">GenericArgument</span>, <span class="ident">ParenthesizedGenericArguments</span>, <span class="ident">Path</span>,
-    <span class="ident">PathArguments</span>, <span class="ident">PathSegment</span>, <span class="ident">QSelf</span>,
+    <span class="ident">AngleBracketedGenericArguments</span>, <span class="ident">Binding</span>, <span class="ident">Constraint</span>, <span class="ident">GenericArgument</span>,
+    <span class="ident">ParenthesizedGenericArguments</span>, <span class="ident">Path</span>, <span class="ident">PathArguments</span>, <span class="ident">PathSegment</span>, <span class="ident">QSelf</span>,
 };
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">buffer</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">punctuated</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">synom</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">ext</span>;
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">punctuated</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
+    <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;extra-traits&quot;</span>
+))]</span>
 <span class="kw">mod</span> <span class="ident">tt</span>;
 
 <span class="comment">// Not public API except the `parse_quote!` macro.</span>
@@ -1235,9 +1267,6 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">spanned</span>;
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
-<span class="kw">mod</span> <span class="ident">verbatim</span>;
 
 <span class="kw">mod</span> <span class="ident">gen</span> {
     <span class="doccomment">/// Syntax tree traversal to walk a shared borrow of a syntax tree.</span>
@@ -1356,20 +1385,38 @@
 }
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gen</span>::<span class="kw-2">*</span>;
 
-<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
+<span class="comment">// Not public API.</span>
+<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">export</span>;
+
+<span class="kw">mod</span> <span class="ident">keyword</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">synom</span>::{<span class="ident">Parser</span>, <span class="ident">Synom</span>};
+<span class="kw">mod</span> <span class="ident">lookahead</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">parse</span>;
+
+<span class="kw">mod</span> <span class="ident">span</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
+    <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>
+))]</span>
+<span class="kw">mod</span> <span class="ident">print</span>;
+
+<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
+<span class="kw">struct</span> <span class="ident">private</span>;
+
+<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
 <span class="kw">mod</span> <span class="ident">error</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">error</span>::<span class="ident">ParseError</span>;
-
-<span class="comment">// Not public API.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error</span>::<span class="ident">parse_error</span>;
+<span class="kw">use</span> <span class="ident">error</span>::<span class="ident">Error</span>;
 
 <span class="doccomment">/// Parse tokens of source code into the chosen syntax tree node.</span>
 <span class="doccomment">///</span>
@@ -1390,14 +1437,13 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// extern crate proc_macro;</span>
-<span class="doccomment">/// use proc_macro::TokenStream;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// extern crate syn;</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// #[macro_use]</span>
 <span class="doccomment">/// extern crate quote;</span>
 <span class="doccomment">///</span>
+<span class="doccomment">/// extern crate proc_macro;</span>
+<span class="doccomment">/// extern crate syn;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// use proc_macro::TokenStream;</span>
 <span class="doccomment">/// use syn::DeriveInput;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # const IGNORE_TOKENS: &amp;str = stringify! {</span>
@@ -1418,12 +1464,13 @@
 <span class="doccomment">/// #</span>
 <span class="doccomment">/// # fn main() {}</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;wasm32&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;unknown&quot;</span>)), <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;proc-macro&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">tokens</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">ParseError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Synom</span>,
-{
-    <span class="ident">parse2</span>(<span class="ident">tokens</span>.<span class="ident">into</span>())
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
+    <span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;wasm32&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;unknown&quot;</span>)),
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>,
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;proc-macro&quot;</span>
+))]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">parse</span>::<span class="ident">Parse</span><span class="op">&gt;</span>(<span class="ident">tokens</span>: <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="ident">parse</span>::<span class="ident">Parser</span>::<span class="ident">parse</span>(<span class="ident">T</span>::<span class="ident">parse</span>, <span class="ident">tokens</span>)
 }
 
 <span class="doccomment">/// Parse a proc-macro2 token stream into the chosen syntax tree node.</span>
@@ -1439,15 +1486,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// *This function is available if Syn is built with the `&quot;parsing&quot;` feature.*</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse2</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">tokens</span>: <span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">ParseError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Synom</span>,
-{
-    <span class="kw">let</span> <span class="ident">parser</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">parse</span>;
-    <span class="ident">parser</span>.<span class="ident">parse2</span>(<span class="ident">tokens</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">T</span>::<span class="ident">description</span>() {
-        <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">ParseError</span>::<span class="ident">new</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse {}: {}&quot;</span>, <span class="ident">s</span>, <span class="ident">err</span>)),
-        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">err</span>,
-    })
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse2</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">parse</span>::<span class="ident">Parse</span><span class="op">&gt;</span>(<span class="ident">tokens</span>: <span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="ident">parse</span>::<span class="ident">Parser</span>::<span class="ident">parse2</span>(<span class="ident">T</span>::<span class="ident">parse</span>, <span class="ident">tokens</span>)
 }
 
 <span class="doccomment">/// Parse a string of Rust code into the chosen syntax tree node.</span>
@@ -1462,12 +1502,10 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// extern crate syn;</span>
+<span class="doccomment">/// # extern crate syn;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #</span>
-<span class="doccomment">/// # type Result&lt;T&gt; = std::result::Result&lt;T, Box&lt;std::error::Error&gt;&gt;;</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// use syn::Expr;</span>
+<span class="doccomment">/// use syn::parse::Result;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// fn run() -&gt; Result&lt;()&gt; {</span>
 <span class="doccomment">///     let code = &quot;assert_eq!(u8::max_value(), 255)&quot;;</span>
@@ -1479,11 +1517,8 @@
 <span class="doccomment">/// # fn main() { run().unwrap() }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_str</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Synom</span><span class="op">&gt;</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">parse</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">tts</span>) <span class="op">=&gt;</span> <span class="ident">parse2</span>(<span class="ident">tts</span>),
-        <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">ParseError</span>::<span class="ident">new</span>(<span class="string">&quot;error while lexing input string&quot;</span>)),
-    }
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_str</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">parse</span>::<span class="ident">Parse</span><span class="op">&gt;</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="ident">parse</span>::<span class="ident">Parser</span>::<span class="ident">parse_str</span>(<span class="ident">T</span>::<span class="ident">parse</span>, <span class="ident">s</span>)
 }
 
 <span class="comment">// FIXME the name parse_file makes it sound like you might pass in a path to a</span>
@@ -1502,15 +1537,13 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// extern crate syn;</span>
+<span class="doccomment">/// # extern crate syn;</span>
 <span class="doccomment">/// #</span>
-<span class="doccomment">/// #</span>
-<span class="doccomment">/// # type Result&lt;T&gt; = std::result::Result&lt;T, Box&lt;std::error::Error&gt;&gt;;</span>
-<span class="doccomment">///</span>
+<span class="doccomment">/// use std::error::Error;</span>
 <span class="doccomment">/// use std::fs::File;</span>
 <span class="doccomment">/// use std::io::Read;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// fn run() -&gt; Result&lt;()&gt; {</span>
+<span class="doccomment">/// fn run() -&gt; Result&lt;(), Box&lt;Error&gt;&gt; {</span>
 <span class="doccomment">///     let mut file = File::open(&quot;path/to/code.rs&quot;)?;</span>
 <span class="doccomment">///     let mut content = String::new();</span>
 <span class="doccomment">///     file.read_to_string(&amp;mut content)?;</span>
@@ -1527,7 +1560,7 @@
 <span class="doccomment">/// # fn main() { run().unwrap() }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;parsing&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_file</span>(<span class="kw-2">mut</span> <span class="ident">content</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">File</span>, <span class="ident">ParseError</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_file</span>(<span class="kw-2">mut</span> <span class="ident">content</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">File</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="comment">// Strip the BOM if it is present</span>
     <span class="kw">const</span> <span class="ident">BOM</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;\u{feff}&quot;</span>;
     <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">starts_with</span>(<span class="ident">BOM</span>) {
@@ -1550,30 +1583,59 @@
     <span class="prelude-val">Ok</span>(<span class="ident">file</span>)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(
-    <span class="ident">all</span>(
-        <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
-        <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>
-    )
-)]</span>
-<span class="kw">struct</span> <span class="ident">TokensOrDefault</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-
-<span class="attribute">#[<span class="ident">cfg</span>(
-    <span class="ident">all</span>(
-        <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;derive&quot;</span>),
-        <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;printing&quot;</span>
-    )
-)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">quote</span>::<span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">TokensOrDefault</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">quote</span>::<span class="ident">ToTokens</span> <span class="op">+</span> <span class="ident">Default</span>,
-{
-    <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span>) {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">t</span>) <span class="op">=&gt;</span> <span class="ident">t</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">T</span>::<span class="ident">default</span>().<span class="ident">to_tokens</span>(<span class="ident">tokens</span>),
-        }
-    }
+<span class="doccomment">/// Parse the input TokenStream of a macro, triggering a compile error if the</span>
+<span class="doccomment">/// tokens fail to parse.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Refer to the [`parse` module] documentation for more details about parsing</span>
+<span class="doccomment">/// in Syn.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`parse` module]: parse/index.html</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Intended usage</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// #[macro_use]</span>
+<span class="doccomment">/// extern crate syn;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// extern crate proc_macro;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// use proc_macro::TokenStream;</span>
+<span class="doccomment">/// use syn::parse::{Parse, ParseStream, Result};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// struct MyMacroInput {</span>
+<span class="doccomment">///     /* ... */</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// impl Parse for MyMacroInput {</span>
+<span class="doccomment">///     fn parse(input: ParseStream) -&gt; Result&lt;Self&gt; {</span>
+<span class="doccomment">///         /* ... */</span>
+<span class="doccomment">/// #       Ok(MyMacroInput {})</span>
+<span class="doccomment">///     }</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # const IGNORE: &amp;str = stringify! {</span>
+<span class="doccomment">/// #[proc_macro]</span>
+<span class="doccomment">/// # };</span>
+<span class="doccomment">/// pub fn my_macro(tokens: TokenStream) -&gt; TokenStream {</span>
+<span class="doccomment">///     let input = parse_macro_input!(tokens as MyMacroInput);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     /* ... */</span>
+<span class="doccomment">/// #   &quot;&quot;.parse().unwrap()</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// # fn main() {}</span>
+<span class="doccomment">/// ```</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;proc-macro&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">parse_macro_input</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">tokenstream</span>:<span class="ident">ident</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> {
+        <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">parse</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">tokenstream</span>) {
+            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">export</span>::<span class="prelude-val">Ok</span>(<span class="ident">data</span>) <span class="op">=&gt;</span> <span class="ident">data</span>,
+            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">export</span>::<span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> {
+                <span class="kw">return</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">export</span>::<span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">err</span>.<span class="ident">to_compile_error</span>());
+            }
+        };
+    };
 }
 </pre>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "syn";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

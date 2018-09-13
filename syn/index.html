@@ -1,8 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `syn` crate."><meta name="keywords" content="rust, rustlang, rust-lang, syn"><title>syn - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate syn</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'syn', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>syn</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/syn/lib.rs.html#9-788' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Syn is a parsing library for parsing a stream of Rust tokens into a syntax
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `syn` crate."><meta name="keywords" content="rust, rustlang, rust-lang, syn"><title>syn - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../dark.css"><link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle"><script src="../storage.js"></script></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><p class='location'>Crate syn</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'syn', ty: 'mod', relpath: '../'};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>syn</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../src/syn/lib.rs.html#9-819' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Syn is a parsing library for parsing a stream of Rust tokens into a syntax
 tree of Rust source code.</p>
-<p>Currently this library is geared toward the <a href="https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md">custom derive</a> use case but
-contains some APIs that may be useful for Rust procedural macros more
-generally.</p>
+<p>Currently this library is geared toward use in Rust procedural macros, but
+contains some APIs that may be useful more generally.</p>
 <ul>
 <li>
 <p><strong>Data structures</strong> — Syn provides a complete syntax tree that can
@@ -18,12 +17,11 @@ derive macro. An example below shows using this type in a library that can
 derive implementations of a trait of your own.</p>
 </li>
 <li>
-<p><strong>Parser combinators</strong> — Parsing in Syn is built on a suite of public
-parser combinator macros that you can use for parsing any token-based
-syntax you dream up within a <code>functionlike!(...)</code> procedural macro. Every
-syntax tree node defined by Syn is individually parsable and may be used
-as a building block for custom syntaxes, or you may do it all yourself
-working from the most primitive tokens.</p>
+<p><strong>Parsing</strong> — Parsing in Syn is built around <a href="parse/index.html">parser functions</a> with the
+signature <code>fn(ParseStream) -&gt; Result&lt;T&gt;</code>. Every syntax tree node defined
+by Syn is individually parsable and may be used as a building block for
+custom syntaxes, or you may dream up your own brand new syntax without
+involving any of our syntax tree types.</p>
 </li>
 <li>
 <p><strong>Location information</strong> — Every token parsed by Syn is associated with a
@@ -51,7 +49,7 @@ get to execute arbitrary Rust code to figure out what to do with those
 tokens, then hand some tokens back to the compiler to compile into the
 user's crate.</p>
 <pre><code class="language-toml">[dependencies]
-syn = &quot;0.14&quot;
+syn = &quot;0.15&quot;
 quote = &quot;0.6&quot;
 
 [lib]
@@ -59,11 +57,12 @@ proc-macro = true
 </code></pre>
 
 <pre class="rust rust-example-rendered">
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">syn</span>;
-
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">quote</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">syn</span>;
+
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;
 
 <span class="kw">use</span> <span class="ident">proc_macro</span>::<span class="ident">TokenStream</span>;
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">DeriveInput</span>;
@@ -71,7 +70,7 @@ proc-macro = true
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">MyMacro</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">my_macro</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
     <span class="comment">// Parse the input tokens into a syntax tree</span>
-    <span class="kw">let</span> <span class="ident">input</span>: <span class="ident">DeriveInput</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="ident">parse</span>(<span class="ident">input</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">parse_macro_input</span><span class="macro">!</span>(<span class="ident">input</span> <span class="kw">as</span> <span class="ident">DeriveInput</span>);
 
     <span class="comment">// Build the output, possibly using quasi-quotation</span>
     <span class="kw">let</span> <span class="ident">expanded</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
@@ -79,7 +78,7 @@ proc-macro = true
     };
 
     <span class="comment">// Hand the output tokens back to the compiler</span>
-    <span class="ident">expanded</span>.<span class="ident">into</span>()
+    <span class="ident">TokenStream</span>::<span class="ident">from</span>(<span class="ident">expanded</span>)
 }</pre>
 <p>The <a href="https://github.com/dtolnay/syn/tree/master/examples/heapsize"><code>heapsize</code></a> example directory shows a complete working Macros 1.1
 implementation of a custom derive. It works on any Rust compiler &gt;=1.15.0.
@@ -136,10 +135,10 @@ problem.</p>
 7 |     bad: std::thread::Thread,
   |     ^^^^^^^^^^^^^^^^^^^^^^^^ the trait `HeapSize` is not implemented for `Thread`
 </code></pre>
-<h2 id="parsing-a-custom-syntax-using-combinators" class="section-header"><a href="#parsing-a-custom-syntax-using-combinators">Parsing a custom syntax using combinators</a></h2>
+<h2 id="parsing-a-custom-syntax" class="section-header"><a href="#parsing-a-custom-syntax">Parsing a custom syntax</a></h2>
 <p>The <a href="https://github.com/dtolnay/syn/tree/master/examples/lazy-static"><code>lazy-static</code></a> example directory shows the implementation of a
 <code>functionlike!(...)</code> procedural macro in which the input tokens are parsed
-using <a href="https://github.com/Geal/nom"><code>nom</code></a>-style parser combinators.</p>
+using Syn's parsing API.</p>
 <p>The example reimplements the popular <code>lazy_static</code> crate from crates.io as a
 procedural macro.</p>
 
@@ -200,6 +199,22 @@ cheaply copyable cursor.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="mod" href="ext/index.html"
+                                  title='mod syn::ext'>ext</a></td>
+                           <td class='docblock-short'>
+                                <p>Extension traits to provide parsing methods on foreign types.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="parse/index.html"
+                                  title='mod syn::parse'>parse</a></td>
+                           <td class='docblock-short'>
+                                <p>Parsing interface for parsing a token stream into a syntax tree node.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="mod" href="punctuated/index.html"
                                   title='mod syn::punctuated'>punctuated</a></td>
                            <td class='docblock-short'>
@@ -213,14 +228,6 @@ cheaply copyable cursor.</p>
                            <td class='docblock-short'>
                                 <p>A trait that can provide the <code>Span</code> of the complete contents of a syntax
 tree node.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="mod" href="synom/index.html"
-                                  title='mod syn::synom'>synom</a></td>
-                           <td class='docblock-short'>
-                                <p>Parsing interface for parsing a token stream into a syntax tree node.</p>
 
                            </td>
                        </tr>
@@ -251,51 +258,19 @@ given token.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class="macro" href="macro.alt.html"
-                                  title='macro syn::alt'>alt</a></td>
+                           <td><a class="macro" href="macro.braced.html"
+                                  title='macro syn::braced'>braced</a></td>
                            <td class='docblock-short'>
-                                <p>Run a series of parsers, returning the result of the first one which
-succeeds.</p>
+                                <p>Parse a set of curly braces and expose their content to subsequent parsers.</p>
 
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class="macro" href="macro.braces.html"
-                                  title='macro syn::braces'>braces</a></td>
+                           <td><a class="macro" href="macro.bracketed.html"
+                                  title='macro syn::bracketed'>bracketed</a></td>
                            <td class='docblock-short'>
-                                <p>Parse inside of <code>{</code> <code>}</code> curly braces.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.brackets.html"
-                                  title='macro syn::brackets'>brackets</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse inside of <code>[</code> <code>]</code> square brackets.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.call.html"
-                                  title='macro syn::call'>call</a></td>
-                           <td class='docblock-short'>
-                                <p>Invoke the given parser function with zero or more arguments.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.cond.html"
-                                  title='macro syn::cond'>cond</a></td>
-                           <td class='docblock-short'>
-                                <p>Execute a parser only if a condition is met, otherwise return None.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.cond_reduce.html"
-                                  title='macro syn::cond_reduce'>cond_reduce</a></td>
-                           <td class='docblock-short'>
-                                <p>Execute a parser only if a condition is met, otherwise fail to parse.</p>
+                                <p>Parse a set of square brackets and expose their content to subsequent
+parsers.</p>
 
                            </td>
                        </tr>
@@ -303,91 +278,25 @@ succeeds.</p>
                            <td><a class="macro" href="macro.custom_keyword.html"
                                   title='macro syn::custom_keyword'>custom_keyword</a></td>
                            <td class='docblock-short'>
-                                <p>Parse the given word as a keyword.</p>
+                                <p>Define a type that supports parsing and printing a given identifier as if it
+were a keyword.</p>
 
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class="macro" href="macro.do_parse.html"
-                                  title='macro syn::do_parse'>do_parse</a></td>
+                           <td><a class="macro" href="macro.parenthesized.html"
+                                  title='macro syn::parenthesized'>parenthesized</a></td>
                            <td class='docblock-short'>
-                                <p>Run a series of parsers, optionally naming each intermediate result,
-followed by a step to combine the intermediate results.</p>
+                                <p>Parse a set of parentheses and expose their content to subsequent parsers.</p>
 
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class="macro" href="macro.epsilon.html"
-                                  title='macro syn::epsilon'>epsilon</a></td>
+                           <td><a class="macro" href="macro.parse_macro_input.html"
+                                  title='macro syn::parse_macro_input'>parse_macro_input</a></td>
                            <td class='docblock-short'>
-                                <p>Parses nothing and always succeeds.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.input_end.html"
-                                  title='macro syn::input_end'>input_end</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse nothing and succeed only if the end of the enclosing block has been
-reached.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.keyword.html"
-                                  title='macro syn::keyword'>keyword</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse a single Rust keyword token.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.many0.html"
-                                  title='macro syn::many0'>many0</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse zero or more values using the given parser.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.map.html"
-                                  title='macro syn::map'>map</a></td>
-                           <td class='docblock-short'>
-                                <p>Transform the result of a parser by applying a function or closure.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.named.html"
-                                  title='macro syn::named'>named</a></td>
-                           <td class='docblock-short'>
-                                <p>Define a parser function with the signature expected by syn parser
-combinators.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.not.html"
-                                  title='macro syn::not'>not</a></td>
-                           <td class='docblock-short'>
-                                <p>Invert the result of a parser by parsing successfully if the given parser
-fails to parse and vice versa.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.option.html"
-                                  title='macro syn::option'>option</a></td>
-                           <td class='docblock-short'>
-                                <p>Turn a failed parse into <code>None</code> and a successful parse into <code>Some</code>.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.parens.html"
-                                  title='macro syn::parens'>parens</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse inside of <code>(</code> <code>)</code> parentheses.</p>
+                                <p>Parse the input TokenStream of a macro, triggering a compile error if the
+tokens fail to parse.</p>
 
                            </td>
                        </tr>
@@ -395,56 +304,8 @@ fails to parse and vice versa.</p>
                            <td><a class="macro" href="macro.parse_quote.html"
                                   title='macro syn::parse_quote'>parse_quote</a></td>
                            <td class='docblock-short'>
-                                <p>Quasi-quotation macro that accepts input like the <a href="https://docs.rs/quote/0.4/quote/index.html"><code>quote!</code></a> macro but uses
+                                <p>Quasi-quotation macro that accepts input like the <a href="https://docs.rs/quote/0.6/quote/index.html"><code>quote!</code></a> macro but uses
 type inference to figure out a return type for those tokens.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.punct.html"
-                                  title='macro syn::punct'>punct</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse a single Rust punctuation token.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.reject.html"
-                                  title='macro syn::reject'>reject</a></td>
-                           <td class='docblock-short'>
-                                <p>Unconditionally fail to parse anything.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.switch.html"
-                                  title='macro syn::switch'>switch</a></td>
-                           <td class='docblock-short'>
-                                <p>Pattern-match the result of a parser to select which other parser to run.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.syn.html"
-                                  title='macro syn::syn'>syn</a></td>
-                           <td class='docblock-short'>
-                                <p>Parse any type that implements the <code>Synom</code> trait.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.tuple.html"
-                                  title='macro syn::tuple'>tuple</a></td>
-                           <td class='docblock-short'>
-                                <p>Run a series of parsers and produce all of the results in a tuple.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="macro" href="macro.value.html"
-                                  title='macro syn::value'>value</a></td>
-                           <td class='docblock-short'>
-                                <p>Produce the given value without parsing anything.</p>
 
                            </td>
                        </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
@@ -506,6 +367,14 @@ type inference to figure out a return type for those tokens.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Constraint.html"
+                                  title='struct syn::Constraint'>Constraint</a></td>
+                           <td class='docblock-short'>
+                                <p>An associated type bound: <code>Iterator&lt;Item: Display&gt;</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="struct" href="struct.DataEnum.html"
                                   title='struct syn::DataEnum'>DataEnum</a></td>
                            <td class='docblock-short'>
@@ -562,6 +431,14 @@ type inference to figure out a return type for those tokens.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ExprAsync.html"
+                                  title='struct syn::ExprAsync'>ExprAsync</a></td>
+                           <td class='docblock-short'>
+                                <p>An async block: <code>async { ... }</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="struct" href="struct.ExprBinary.html"
                                   title='struct syn::ExprBinary'>ExprBinary</a></td>
                            <td class='docblock-short'>
@@ -607,14 +484,6 @@ expression.</p>
                                   title='struct syn::ExprCast'>ExprCast</a></td>
                            <td class='docblock-short'>
                                 <p>A cast expression: <code>foo as f64</code>.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="struct" href="struct.ExprCatch.html"
-                                  title='struct syn::ExprCatch'>ExprCatch</a></td>
-                           <td class='docblock-short'>
-                                <p>A catch expression: <code>do catch { ... }</code>.</p>
 
                            </td>
                        </tr>
@@ -668,14 +537,6 @@ field (<code>obj.0</code>).</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
-                           <td><a class="struct" href="struct.ExprIfLet.html"
-                                  title='struct syn::ExprIfLet'>ExprIfLet</a></td>
-                           <td class='docblock-short'>
-                                <p>An <code>if let</code> expression with an optional <code>else</code> block: <code>if let pat = expr { ... } else { ... }</code>.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
                            <td><a class="struct" href="struct.ExprInPlace.html"
                                   title='struct syn::ExprInPlace'>ExprInPlace</a></td>
                            <td class='docblock-short'>
@@ -688,6 +549,14 @@ field (<code>obj.0</code>).</p>
                                   title='struct syn::ExprIndex'>ExprIndex</a></td>
                            <td class='docblock-short'>
                                 <p>A square bracketed indexing expression: <code>vector[2]</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ExprLet.html"
+                                  title='struct syn::ExprLet'>ExprLet</a></td>
+                           <td class='docblock-short'>
+                                <p>A <code>let</code> guard: <code>let Some(x) = opt</code>.</p>
 
                            </td>
                        </tr>
@@ -797,6 +666,14 @@ parameters and a qualified self-type.</p>
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="struct" href="struct.ExprTryBlock.html"
+                                  title='struct syn::ExprTryBlock'>ExprTryBlock</a></td>
+                           <td class='docblock-short'>
+                                <p>A try block: <code>try { ... }</code>.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="struct" href="struct.ExprTuple.html"
                                   title='struct syn::ExprTuple'>ExprTuple</a></td>
                            <td class='docblock-short'>
@@ -841,14 +718,6 @@ parameters and a qualified self-type.</p>
                                   title='struct syn::ExprWhile'>ExprWhile</a></td>
                            <td class='docblock-short'>
                                 <p>A while loop: <code>while expr { ... }</code>.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="struct" href="struct.ExprWhileLet.html"
-                                  title='struct syn::ExprWhileLet'>ExprWhileLet</a></td>
-                           <td class='docblock-short'>
-                                <p>A while-let loop: <code>while let pat = expr { ... }</code>.</p>
 
                            </td>
                        </tr>
@@ -1043,14 +912,6 @@ represents an integer larger than 64 bits.</p>
                                   title='struct syn::PathSegment'>PathSegment</a></td>
                            <td class='docblock-short'>
                                 <p>A segment of a path together with any path arguments on that segment.</p>
-
-                           </td>
-                       </tr>
-                       <tr class=' module-item'>
-                           <td><a class="struct" href="struct.PathTokens.html"
-                                  title='struct syn::PathTokens'>PathTokens</a></td>
-                           <td class='docblock-short'>
-                                <p>A helper for printing a self-type qualified path as tokens.</p>
 
                            </td>
                        </tr>
