@@ -1,8 +1,8 @@
 # cargo-update [![TravisCI build status](https://travis-ci.org/nabijaczleweli/cargo-update.svg?branch=master)](https://travis-ci.org/nabijaczleweli/cargo-update) [![AppVeyorCI build status](https://ci.appveyor.com/api/projects/status/cspjknvfow5gfro0/branch/master?svg=true)](https://ci.appveyor.com/project/nabijaczleweli/cargo-update/branch/master) [![Licence](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE) [![Crates.io version](https://meritbadge.herokuapp.com/cargo-update)](https://crates.io/crates/cargo-update)
 A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo-subcommands) for checking and applying updates to installed executables
 
-## [Documentation](https://cdn.rawgit.com/nabijaczleweli/cargo-update/doc/cargo_update/index.html)
-## [Manpage](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html)
+## [Documentation](https://rawcdn.githack.com/nabijaczleweli/cargo-update/doc/cargo_update/index.html)
+## [Manpage](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html)
 
 ### Installation
 
@@ -30,7 +30,7 @@ If that doesn't work and you're on Mac, [re-try with `PKG_CONFIG_PATH=/usr/local
 
 `cargo install-update crate1 crate2 ...` - check for newer versions and update selected packages, will not install new packages.
 
-For more information and examples see the [manpage](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html).
+For more information and examples see the [manpage](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html).
 
 #### Self-update
 

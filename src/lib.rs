@@ -31,7 +31,7 @@
 //! Only updates packages from the main repository.
 //!
 //! See
-//! [cargo-install-update-config(1)](https://cdn.rawgit.com/nabijaczleweli/cargo-update/man/cargo-install-update-config.1.html)
+//! [cargo-install-update-config(1)](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update-config.1.html)
 //! for further configuring updates.
 //!
 //! Exit values and possible errors:
