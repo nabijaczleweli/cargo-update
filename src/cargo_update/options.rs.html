@@ -237,6 +237,16 @@
 <span id="237">237</span>
 <span id="238">238</span>
 <span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Option parsing and management.</span>
 <span class="doccomment">//!</span>
@@ -266,10 +276,10 @@
 <span class="doccomment">/// Representation of the application&#39;s all configurable values.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Options</span> {
-    <span class="doccomment">/// Packages to update. Default: `None`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If empty - update all.</span>
+    <span class="doccomment">/// (Additional) packages to update. Default: `[]`</span>
     <span class="kw">pub</span> <span class="ident">to_update</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
+    <span class="doccomment">/// Whether to update all packages. Default: `false`</span>
+    <span class="kw">pub</span> <span class="ident">all</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Whether to update packages or just list them. Default: `true`</span>
     <span class="kw">pub</span> <span class="ident">update</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Whether to allow for just installing packages. Default: `false`</span>
@@ -317,7 +327,7 @@
                             .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Cargo&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>)),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-t --temp-dir=[TEMP_DIR] &#39;The temporary directory. Default: $TEMP/cargo-update&#39;&quot;</span>)
                             .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">existing_dir_validator</span>(<span class="string">&quot;Temporary&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>)),
-                        <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-a --all &#39;Update all packages&#39;&quot;</span>).<span class="ident">conflicts_with</span>(<span class="string">&quot;PACKAGE&quot;</span>),
+                        <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-a --all &#39;Update all packages&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-l --list &#39;Don&#39;t update packages, only list and check if they need an update&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-f --force &#39;Update all packages regardless if they need updating&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-i --allow-no-update &#39;Allow for fresh-installing packages&#39;&quot;</span>),
@@ -325,21 +335,31 @@
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-s --filter=[PACKAGE_FILTER]... &#39;Specify a filter a package must match to be considered&#39;&quot;</span>)
                             .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">PackageFilterElement</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;&lt;PACKAGE&gt;... &#39;Packages to update&#39;&quot;</span>)
-                            .<span class="ident">conflicts_with</span>(<span class="string">&quot;all&quot;</span>)
                             .<span class="ident">empty_values</span>(<span class="bool-val">false</span>)
                             .<span class="ident">min_values</span>(<span class="number">1</span>)
                             .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">package_parse</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ()))]))
             .<span class="ident">get_matches</span>();
         <span class="kw">let</span> <span class="ident">matches</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">subcommand_matches</span>(<span class="string">&quot;install-update&quot;</span>).<span class="ident">unwrap</span>();
 
+        <span class="kw">let</span> <span class="ident">all</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;all&quot;</span>);
         <span class="kw">let</span> <span class="ident">cdir</span> <span class="op">=</span> <span class="ident">cargo_dir</span>();
         <span class="ident">Options</span> {
-            <span class="ident">to_update</span>: <span class="kw">if</span> <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;all&quot;</span>) {
-                <span class="macro">vec</span><span class="macro">!</span>[]
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="ident">packages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="string">&quot;PACKAGE&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>).<span class="ident">map</span>(<span class="ident">package_parse</span>).<span class="ident">map</span>(<span class="prelude-ty">Result</span>::<span class="ident">unwrap</span>).<span class="ident">collect</span>();
-                <span class="ident">packages</span>.<span class="ident">unique_via</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span>.<span class="number">0</span> <span class="op">==</span> <span class="ident">r</span>.<span class="number">0</span>)
+            <span class="ident">to_update</span>: <span class="kw">match</span> (<span class="ident">all</span>, <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="string">&quot;PACKAGE&quot;</span>)) {
+                (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="ident">pkgs</span>)) <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> <span class="ident">packages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">pkgs</span>.<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>).<span class="ident">map</span>(<span class="ident">package_parse</span>).<span class="ident">map</span>(<span class="prelude-ty">Result</span>::<span class="ident">unwrap</span>).<span class="ident">collect</span>();
+                    <span class="ident">packages</span>.<span class="ident">unique_via</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span>.<span class="number">0</span> <span class="op">==</span> <span class="ident">r</span>.<span class="number">0</span>)
+                }
+                (<span class="bool-val">true</span>, <span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="macro">vec</span><span class="macro">!</span>[],
+                (<span class="bool-val">false</span>, <span class="prelude-val">None</span>) <span class="op">=&gt;</span> {
+                    <span class="ident">clap</span>::<span class="ident">Error</span> {
+                            <span class="ident">message</span>: <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Need at least one PACKAGE without --all&quot;</span>),
+                            <span class="ident">kind</span>: <span class="ident">clap</span>::<span class="ident">ErrorKind</span>::<span class="ident">MissingRequiredArgument</span>,
+                            <span class="ident">info</span>: <span class="prelude-val">None</span>,
+                        }
+                        .<span class="ident">exit</span>()
+                }
             },
+            <span class="ident">all</span>: <span class="ident">all</span>,
             <span class="ident">update</span>: <span class="op">!</span><span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;list&quot;</span>),
             <span class="ident">install</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;allow-no-update&quot;</span>),
             <span class="ident">force</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;force&quot;</span>),

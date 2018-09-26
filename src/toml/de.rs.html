@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/toml-0.4.6/src/de.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>de.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/toml-0.4.7/src/de.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>de.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1325,6 +1325,207 @@
 <span id="1325">1325</span>
 <span id="1326">1326</span>
 <span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
+<span id="1333">1333</span>
+<span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
+<span id="1337">1337</span>
+<span id="1338">1338</span>
+<span id="1339">1339</span>
+<span id="1340">1340</span>
+<span id="1341">1341</span>
+<span id="1342">1342</span>
+<span id="1343">1343</span>
+<span id="1344">1344</span>
+<span id="1345">1345</span>
+<span id="1346">1346</span>
+<span id="1347">1347</span>
+<span id="1348">1348</span>
+<span id="1349">1349</span>
+<span id="1350">1350</span>
+<span id="1351">1351</span>
+<span id="1352">1352</span>
+<span id="1353">1353</span>
+<span id="1354">1354</span>
+<span id="1355">1355</span>
+<span id="1356">1356</span>
+<span id="1357">1357</span>
+<span id="1358">1358</span>
+<span id="1359">1359</span>
+<span id="1360">1360</span>
+<span id="1361">1361</span>
+<span id="1362">1362</span>
+<span id="1363">1363</span>
+<span id="1364">1364</span>
+<span id="1365">1365</span>
+<span id="1366">1366</span>
+<span id="1367">1367</span>
+<span id="1368">1368</span>
+<span id="1369">1369</span>
+<span id="1370">1370</span>
+<span id="1371">1371</span>
+<span id="1372">1372</span>
+<span id="1373">1373</span>
+<span id="1374">1374</span>
+<span id="1375">1375</span>
+<span id="1376">1376</span>
+<span id="1377">1377</span>
+<span id="1378">1378</span>
+<span id="1379">1379</span>
+<span id="1380">1380</span>
+<span id="1381">1381</span>
+<span id="1382">1382</span>
+<span id="1383">1383</span>
+<span id="1384">1384</span>
+<span id="1385">1385</span>
+<span id="1386">1386</span>
+<span id="1387">1387</span>
+<span id="1388">1388</span>
+<span id="1389">1389</span>
+<span id="1390">1390</span>
+<span id="1391">1391</span>
+<span id="1392">1392</span>
+<span id="1393">1393</span>
+<span id="1394">1394</span>
+<span id="1395">1395</span>
+<span id="1396">1396</span>
+<span id="1397">1397</span>
+<span id="1398">1398</span>
+<span id="1399">1399</span>
+<span id="1400">1400</span>
+<span id="1401">1401</span>
+<span id="1402">1402</span>
+<span id="1403">1403</span>
+<span id="1404">1404</span>
+<span id="1405">1405</span>
+<span id="1406">1406</span>
+<span id="1407">1407</span>
+<span id="1408">1408</span>
+<span id="1409">1409</span>
+<span id="1410">1410</span>
+<span id="1411">1411</span>
+<span id="1412">1412</span>
+<span id="1413">1413</span>
+<span id="1414">1414</span>
+<span id="1415">1415</span>
+<span id="1416">1416</span>
+<span id="1417">1417</span>
+<span id="1418">1418</span>
+<span id="1419">1419</span>
+<span id="1420">1420</span>
+<span id="1421">1421</span>
+<span id="1422">1422</span>
+<span id="1423">1423</span>
+<span id="1424">1424</span>
+<span id="1425">1425</span>
+<span id="1426">1426</span>
+<span id="1427">1427</span>
+<span id="1428">1428</span>
+<span id="1429">1429</span>
+<span id="1430">1430</span>
+<span id="1431">1431</span>
+<span id="1432">1432</span>
+<span id="1433">1433</span>
+<span id="1434">1434</span>
+<span id="1435">1435</span>
+<span id="1436">1436</span>
+<span id="1437">1437</span>
+<span id="1438">1438</span>
+<span id="1439">1439</span>
+<span id="1440">1440</span>
+<span id="1441">1441</span>
+<span id="1442">1442</span>
+<span id="1443">1443</span>
+<span id="1444">1444</span>
+<span id="1445">1445</span>
+<span id="1446">1446</span>
+<span id="1447">1447</span>
+<span id="1448">1448</span>
+<span id="1449">1449</span>
+<span id="1450">1450</span>
+<span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
+<span id="1459">1459</span>
+<span id="1460">1460</span>
+<span id="1461">1461</span>
+<span id="1462">1462</span>
+<span id="1463">1463</span>
+<span id="1464">1464</span>
+<span id="1465">1465</span>
+<span id="1466">1466</span>
+<span id="1467">1467</span>
+<span id="1468">1468</span>
+<span id="1469">1469</span>
+<span id="1470">1470</span>
+<span id="1471">1471</span>
+<span id="1472">1472</span>
+<span id="1473">1473</span>
+<span id="1474">1474</span>
+<span id="1475">1475</span>
+<span id="1476">1476</span>
+<span id="1477">1477</span>
+<span id="1478">1478</span>
+<span id="1479">1479</span>
+<span id="1480">1480</span>
+<span id="1481">1481</span>
+<span id="1482">1482</span>
+<span id="1483">1483</span>
+<span id="1484">1484</span>
+<span id="1485">1485</span>
+<span id="1486">1486</span>
+<span id="1487">1487</span>
+<span id="1488">1488</span>
+<span id="1489">1489</span>
+<span id="1490">1490</span>
+<span id="1491">1491</span>
+<span id="1492">1492</span>
+<span id="1493">1493</span>
+<span id="1494">1494</span>
+<span id="1495">1495</span>
+<span id="1496">1496</span>
+<span id="1497">1497</span>
+<span id="1498">1498</span>
+<span id="1499">1499</span>
+<span id="1500">1500</span>
+<span id="1501">1501</span>
+<span id="1502">1502</span>
+<span id="1503">1503</span>
+<span id="1504">1504</span>
+<span id="1505">1505</span>
+<span id="1506">1506</span>
+<span id="1507">1507</span>
+<span id="1508">1508</span>
+<span id="1509">1509</span>
+<span id="1510">1510</span>
+<span id="1511">1511</span>
+<span id="1512">1512</span>
+<span id="1513">1513</span>
+<span id="1514">1514</span>
+<span id="1515">1515</span>
+<span id="1516">1516</span>
+<span id="1517">1517</span>
+<span id="1518">1518</span>
+<span id="1519">1519</span>
+<span id="1520">1520</span>
+<span id="1521">1521</span>
+<span id="1522">1522</span>
+<span id="1523">1523</span>
+<span id="1524">1524</span>
+<span id="1525">1525</span>
+<span id="1526">1526</span>
+<span id="1527">1527</span>
+<span id="1528">1528</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Deserializing TOML into Rust structures.</span>
 <span class="doccomment">//!</span>
@@ -1334,15 +1535,18 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">vec</span>;
 
 <span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">de</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">de</span>::<span class="ident">IntoDeserializer</span>;
+<span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">de</span>::<span class="ident">value</span>::<span class="ident">BorrowedStrDeserializer</span>;
 
-<span class="kw">use</span> <span class="ident">tokens</span>::{<span class="ident">Tokenizer</span>, <span class="ident">Token</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">TokenError</span>};
-<span class="kw">use</span> <span class="ident">datetime</span>::{<span class="ident">SERDE_STRUCT_FIELD_NAME</span>, <span class="ident">SERDE_STRUCT_NAME</span>};
+<span class="kw">use</span> <span class="ident">tokens</span>::{<span class="ident">Tokenizer</span>, <span class="ident">Token</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">TokenError</span>, <span class="ident">Span</span>};
+<span class="kw">use</span> <span class="ident">datetime</span>;
+<span class="kw">use</span> <span class="ident">spanned</span>;
 
 <span class="doccomment">/// Deserializes a byte slice into a type.</span>
 <span class="doccomment">///</span>
@@ -1477,12 +1681,18 @@
     <span class="doccomment">/// An empty table key was found.</span>
     <span class="ident">EmptyTableKey</span>,
 
+    <span class="doccomment">/// Multiline strings are not allowed for key</span>
+    <span class="ident">MultilineStringKey</span>,
+
     <span class="doccomment">/// A custom error which could be generated when deserializing a particular</span>
     <span class="doccomment">/// type.</span>
     <span class="ident">Custom</span>,
 
     <span class="doccomment">/// A struct was expected but something else was found</span>
     <span class="ident">ExpectedString</span>,
+
+    <span class="doccomment">/// Dotted key attempted to extend something that is not a table.</span>
+    <span class="ident">DottedKeyInvalidType</span>,
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="ident">__Nonexhaustive</span>,
@@ -1535,7 +1745,7 @@
                     <span class="kw">if</span> <span class="ident">cur_table</span>.<span class="ident">values</span>.<span class="ident">is_none</span>() {
                         <span class="ident">cur_table</span>.<span class="ident">values</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">Vec</span>::<span class="ident">new</span>());
                     }
-                    <span class="ident">cur_table</span>.<span class="ident">values</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>().<span class="ident">push</span>((<span class="ident">key</span>, <span class="ident">value</span>));
+                    <span class="self">self</span>.<span class="ident">add_dotted_key</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">cur_table</span>.<span class="ident">values</span>.<span class="ident">as_mut</span>().<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
                 }
             }
         }
@@ -1566,7 +1776,7 @@
     {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
             <span class="kw">match</span> <span class="ident">next</span> {
-                <span class="ident">Token</span>::<span class="ident">String</span> { <span class="ident">val</span>, .. } <span class="op">=&gt;</span> {
+                (<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">String</span> { <span class="ident">val</span>, .. }) <span class="op">=&gt;</span> {
                     <span class="ident">visitor</span>.<span class="ident">visit_enum</span>(<span class="ident">val</span>.<span class="ident">into_deserializer</span>())
                 },
                 <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">from_kind</span>(<span class="ident">ErrorKind</span>::<span class="ident">ExpectedString</span>))
@@ -1832,23 +2042,23 @@
     <span class="kw">fn</span> <span class="ident">deserialize_any</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">visitor</span>: <span class="ident">V</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">V</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span>
         <span class="kw">where</span> <span class="ident">V</span>: <span class="ident">de</span>::<span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span> {
-            <span class="ident">Value</span>::<span class="ident">Integer</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_i64</span>(<span class="ident">i</span>),
-            <span class="ident">Value</span>::<span class="ident">Boolean</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_bool</span>(<span class="ident">b</span>),
-            <span class="ident">Value</span>::<span class="ident">Float</span>(<span class="ident">f</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_f64</span>(<span class="ident">f</span>),
-            <span class="ident">Value</span>::<span class="ident">String</span>(<span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">s</span>)) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">s</span>),
-            <span class="ident">Value</span>::<span class="ident">String</span>(<span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">s</span>)) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_string</span>(<span class="ident">s</span>),
-            <span class="ident">Value</span>::<span class="ident">Datetime</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_map</span>(<span class="ident">DatetimeDeserializer</span> {
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">e</span> {
+            <span class="ident">E</span>::<span class="ident">Integer</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_i64</span>(<span class="ident">i</span>),
+            <span class="ident">E</span>::<span class="ident">Boolean</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_bool</span>(<span class="ident">b</span>),
+            <span class="ident">E</span>::<span class="ident">Float</span>(<span class="ident">f</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_f64</span>(<span class="ident">f</span>),
+            <span class="ident">E</span>::<span class="ident">String</span>(<span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">s</span>)) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">s</span>),
+            <span class="ident">E</span>::<span class="ident">String</span>(<span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">s</span>)) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_string</span>(<span class="ident">s</span>),
+            <span class="ident">E</span>::<span class="ident">Datetime</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_map</span>(<span class="ident">DatetimeDeserializer</span> {
                 <span class="ident">date</span>: <span class="ident">s</span>,
                 <span class="ident">visited</span>: <span class="bool-val">false</span>,
             }),
-            <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">values</span>) <span class="op">=&gt;</span> {
+            <span class="ident">E</span>::<span class="ident">Array</span>(<span class="ident">values</span>) <span class="op">=&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">de</span>::<span class="ident">value</span>::<span class="ident">SeqDeserializer</span>::<span class="ident">new</span>(<span class="ident">values</span>.<span class="ident">into_iter</span>());
                 <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">visitor</span>.<span class="ident">visit_seq</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>)<span class="question-mark">?</span>;
                 <span class="ident">s</span>.<span class="ident">end</span>()<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
             }
-            <span class="ident">Value</span>::<span class="ident">InlineTable</span>(<span class="ident">values</span>) <span class="op">=&gt;</span> {
+            <span class="ident">E</span>::<span class="ident">InlineTable</span>(<span class="ident">values</span>) <span class="op">|</span> <span class="ident">E</span>::<span class="ident">DottedTable</span>(<span class="ident">values</span>) <span class="op">=&gt;</span> {
                 <span class="ident">visitor</span>.<span class="ident">visit_map</span>(<span class="ident">InlineTableDeserializer</span> {
                     <span class="ident">values</span>: <span class="ident">values</span>.<span class="ident">into_iter</span>(),
                     <span class="ident">next_value</span>: <span class="prelude-val">None</span>,
@@ -1863,13 +2073,24 @@
                              <span class="ident">visitor</span>: <span class="ident">V</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">V</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span>
         <span class="kw">where</span> <span class="ident">V</span>: <span class="ident">de</span>::<span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
-        <span class="kw">if</span> <span class="ident">name</span> <span class="op">==</span> <span class="ident">SERDE_STRUCT_NAME</span> <span class="op">&amp;&amp;</span> <span class="ident">fields</span> <span class="op">==</span> <span class="kw-2">&amp;</span>[<span class="ident">SERDE_STRUCT_FIELD_NAME</span>] {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Value</span>::<span class="ident">Datetime</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span> {
+        <span class="kw">if</span> <span class="ident">name</span> <span class="op">==</span> <span class="ident">datetime</span>::<span class="ident">NAME</span> <span class="op">&amp;&amp;</span> <span class="ident">fields</span> <span class="op">==</span> <span class="kw-2">&amp;</span>[<span class="ident">datetime</span>::<span class="ident">FIELD</span>] {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">E</span>::<span class="ident">Datetime</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">e</span> {
                 <span class="kw">return</span> <span class="ident">visitor</span>.<span class="ident">visit_map</span>(<span class="ident">DatetimeDeserializer</span> {
                     <span class="ident">date</span>: <span class="ident">s</span>,
                     <span class="ident">visited</span>: <span class="bool-val">false</span>,
                 })
             }
+        }
+
+        <span class="kw">if</span> <span class="ident">name</span> <span class="op">==</span> <span class="ident">spanned</span>::<span class="ident">NAME</span> <span class="op">&amp;&amp;</span> <span class="ident">fields</span> <span class="op">==</span> <span class="kw-2">&amp;</span>[<span class="ident">spanned</span>::<span class="ident">START</span>, <span class="ident">spanned</span>::<span class="ident">END</span>, <span class="ident">spanned</span>::<span class="ident">VALUE</span>] {
+            <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">start</span>;
+            <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">end</span>;
+
+            <span class="kw">return</span> <span class="ident">visitor</span>.<span class="ident">visit_map</span>(<span class="ident">SpannedDeserializer</span> {
+                <span class="ident">start</span>: <span class="prelude-val">Some</span>(<span class="ident">start</span>),
+                <span class="ident">value</span>: <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">value</span>),
+                <span class="ident">end</span>: <span class="prelude-val">Some</span>(<span class="ident">end</span>),
+            });
         }
 
         <span class="self">self</span>.<span class="ident">deserialize_any</span>(<span class="ident">visitor</span>)
@@ -1891,8 +2112,8 @@
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">V</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span>
         <span class="kw">where</span> <span class="ident">V</span>: <span class="ident">de</span>::<span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>
     {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span> {
-            <span class="ident">Value</span>::<span class="ident">String</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_enum</span>(<span class="ident">val</span>.<span class="ident">into_deserializer</span>()),
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">e</span> {
+            <span class="ident">E</span>::<span class="ident">String</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">visitor</span>.<span class="ident">visit_enum</span>(<span class="ident">val</span>.<span class="ident">into_deserializer</span>()),
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">from_kind</span>(<span class="ident">ErrorKind</span>::<span class="ident">ExpectedString</span>))
         }
     }
@@ -1919,6 +2140,46 @@
 
     <span class="kw">fn</span> <span class="ident">into_deserializer</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Deserializer</span> {
         <span class="ident">ValueDeserializer</span>::<span class="ident">new</span>(<span class="self">self</span>)
+    }
+}
+
+<span class="kw">struct</span> <span class="ident">SpannedDeserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">start</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
+    <span class="ident">end</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
+    <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">de</span>::<span class="ident">MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SpannedDeserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
+
+    <span class="kw">fn</span> <span class="ident">next_key_seed</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">seed</span>: <span class="ident">K</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">K</span>::<span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">K</span>: <span class="ident">de</span>::<span class="ident">DeserializeSeed</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">is_some</span>() {
+            <span class="ident">seed</span>.<span class="ident">deserialize</span>(<span class="ident">BorrowedStrDeserializer</span>::<span class="ident">new</span>(<span class="ident">spanned</span>::<span class="ident">START</span>)).<span class="ident">map</span>(<span class="prelude-val">Some</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">end</span>.<span class="ident">is_some</span>() {
+            <span class="ident">seed</span>.<span class="ident">deserialize</span>(<span class="ident">BorrowedStrDeserializer</span>::<span class="ident">new</span>(<span class="ident">spanned</span>::<span class="ident">END</span>)).<span class="ident">map</span>(<span class="prelude-val">Some</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">is_some</span>() {
+            <span class="ident">seed</span>.<span class="ident">deserialize</span>(<span class="ident">BorrowedStrDeserializer</span>::<span class="ident">new</span>(<span class="ident">spanned</span>::<span class="ident">VALUE</span>)).<span class="ident">map</span>(<span class="prelude-val">Some</span>)
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">next_value_seed</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">seed</span>: <span class="ident">V</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">V</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">V</span>: <span class="ident">de</span>::<span class="ident">DeserializeSeed</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">start</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">take</span>() {
+            <span class="ident">seed</span>.<span class="ident">deserialize</span>(<span class="ident">start</span>.<span class="ident">into_deserializer</span>())
+        } <span class="kw">else</span> <span class="kw">if</span>  <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">end</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">end</span>.<span class="ident">take</span>() {
+            <span class="ident">seed</span>.<span class="ident">deserialize</span>(<span class="ident">end</span>.<span class="ident">into_deserializer</span>())
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">take</span>() {
+            <span class="ident">seed</span>.<span class="ident">deserialize</span>(<span class="ident">value</span>.<span class="ident">into_deserializer</span>())
+        } <span class="kw">else</span> {
+            <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;next_value_seed called before next_key_seed&quot;</span>)
+        }
     }
 }
 
@@ -1955,7 +2216,7 @@
     <span class="kw">fn</span> <span class="ident">deserialize_any</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">visitor</span>: <span class="ident">V</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">V</span>::<span class="ident">Value</span>, <span class="ident">Error</span><span class="op">&gt;</span>
         <span class="kw">where</span> <span class="ident">V</span>: <span class="ident">de</span>::<span class="ident">Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
-        <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">SERDE_STRUCT_FIELD_NAME</span>)
+        <span class="ident">visitor</span>.<span class="ident">visit_borrowed_str</span>(<span class="ident">datetime</span>::<span class="ident">FIELD</span>)
     }
 
     <span class="macro">forward_to_deserialize_any</span><span class="macro">!</span> {
@@ -2035,7 +2296,7 @@
         }
 
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">peek</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">LeftBracket</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">table_header</span>().<span class="ident">map</span>(<span class="prelude-val">Some</span>),
+            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">LeftBracket</span>)) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">table_header</span>().<span class="ident">map</span>(<span class="prelude-val">Some</span>),
             <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">key_value</span>().<span class="ident">map</span>(<span class="prelude-val">Some</span>),
             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }
@@ -2053,13 +2314,13 @@
         } <span class="kw">else</span> {
             <span class="kw">loop</span> {
                 <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>) <span class="op">=&gt;</span> {
+                    <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">RightBracket</span>)) <span class="op">=&gt;</span> {
                         <span class="kw">if</span> <span class="ident">array</span> {
                             <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>)<span class="question-mark">?</span>;
                         }
                         <span class="kw">break</span>
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Newline</span>) <span class="op">|</span>
+                    <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">Newline</span>)) <span class="op">|</span>
                     <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">break</span>,
                     <span class="kw">_</span> <span class="op">=&gt;</span> {}
                 }
@@ -2070,7 +2331,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">key_value</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">table_key</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dotted_key</span>()<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">expect</span>(<span class="ident">Token</span>::<span class="ident">Equals</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
@@ -2087,17 +2348,35 @@
     <span class="kw">fn</span> <span class="ident">value</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">current</span>();
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">String</span> { <span class="ident">val</span>, .. }) <span class="op">=&gt;</span> <span class="ident">Value</span>::<span class="ident">String</span>(<span class="ident">val</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="string">&quot;true&quot;</span>)) <span class="op">=&gt;</span> <span class="ident">Value</span>::<span class="ident">Boolean</span>(<span class="bool-val">true</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="string">&quot;false&quot;</span>)) <span class="op">=&gt;</span> <span class="ident">Value</span>::<span class="ident">Boolean</span>(<span class="bool-val">false</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">key</span>)) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">number_or_date</span>(<span class="ident">key</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Plus</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">number_leading_plus</span>()<span class="question-mark">?</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">LeftBrace</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">inline_table</span>().<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">InlineTable</span>)<span class="question-mark">?</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">LeftBracket</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">array</span>().<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">Array</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span> }, <span class="ident">Token</span>::<span class="ident">String</span> { <span class="ident">val</span>, .. })) <span class="op">=&gt;</span> {
+                <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">String</span>(<span class="ident">val</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> }
+            }
+            <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span> }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="string">&quot;true&quot;</span>))) <span class="op">=&gt;</span> {
+                <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Boolean</span>(<span class="bool-val">true</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> }
+            }
+            <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span> }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="string">&quot;false&quot;</span>))) <span class="op">=&gt;</span> {
+                <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Boolean</span>(<span class="bool-val">false</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> }
+            }
+            <span class="prelude-val">Some</span>((<span class="ident">span</span>, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">key</span>))) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">number_or_date</span>(<span class="ident">span</span>, <span class="ident">key</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>((<span class="ident">span</span>, <span class="ident">Token</span>::<span class="ident">Plus</span>)) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">number_leading_plus</span>(<span class="ident">span</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">start</span>, .. }, <span class="ident">Token</span>::<span class="ident">LeftBrace</span>)) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">inline_table</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">table</span>)<span class="op">|</span> <span class="ident">Value</span> {
+                    <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">InlineTable</span>(<span class="ident">table</span>),
+                    <span class="ident">start</span>: <span class="ident">start</span>,
+                    <span class="ident">end</span>: <span class="ident">end</span>
+                })<span class="question-mark">?</span>
+            }
+            <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">start</span>, .. }, <span class="ident">Token</span>::<span class="ident">LeftBracket</span>)) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">array</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">array</span>)<span class="op">|</span> <span class="ident">Value</span> {
+                    <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Array</span>(<span class="ident">array</span>),
+                    <span class="ident">start</span>: <span class="ident">start</span>,
+                    <span class="ident">end</span>: <span class="ident">end</span>
+                })<span class="question-mark">?</span>
+            }
             <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=&gt;</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">Wanted</span> {
                     <span class="ident">expected</span>: <span class="string">&quot;a value&quot;</span>,
-                    <span class="ident">found</span>: <span class="ident">token</span>.<span class="ident">describe</span>(),
+                    <span class="ident">found</span>: <span class="ident">token</span>.<span class="number">1</span>.<span class="ident">describe</span>(),
                 }))
             }
             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">eof</span>()),
@@ -2105,57 +2384,89 @@
         <span class="prelude-val">Ok</span>(<span class="ident">value</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">number_or_date</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">number_or_date</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">span</span>: <span class="ident">Span</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)
+        <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span>
+    {
         <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;T&#39;</span>) <span class="op">||</span> (<span class="ident">s</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">s</span>[<span class="number">1</span>..].<span class="ident">contains</span>(<span class="string">&#39;-&#39;</span>)) <span class="op">&amp;&amp;</span>
            <span class="op">!</span><span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&quot;e-&quot;</span>) {
-            <span class="self">self</span>.<span class="ident">datetime</span>(<span class="ident">s</span>, <span class="bool-val">false</span>).<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">Datetime</span>)
+            <span class="self">self</span>.<span class="ident">datetime</span>(<span class="ident">span</span>, <span class="ident">s</span>, <span class="bool-val">false</span>).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span> }, <span class="ident">d</span>)<span class="op">|</span> <span class="ident">Value</span> {
+                <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Datetime</span>(<span class="ident">d</span>),
+                <span class="ident">start</span>: <span class="ident">start</span>,
+                <span class="ident">end</span>: <span class="ident">end</span>
+            })
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Colon</span>)<span class="question-mark">?</span> {
-            <span class="self">self</span>.<span class="ident">datetime</span>(<span class="ident">s</span>, <span class="bool-val">true</span>).<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">Datetime</span>)
+            <span class="self">self</span>.<span class="ident">datetime</span>(<span class="ident">span</span>, <span class="ident">s</span>, <span class="bool-val">true</span>).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span> }, <span class="ident">d</span>)<span class="op">|</span> <span class="ident">Value</span> {
+                <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Datetime</span>(<span class="ident">d</span>),
+                <span class="ident">start</span>: <span class="ident">start</span>,
+                <span class="ident">end</span>: <span class="ident">end</span>
+            })
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">number</span>(<span class="ident">s</span>)
+            <span class="self">self</span>.<span class="ident">number</span>(<span class="ident">span</span>, <span class="ident">s</span>)
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">number</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;e&#39;</span>) <span class="op">||</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;E&#39;</span>) {
-            <span class="self">self</span>.<span class="ident">float</span>(<span class="ident">s</span>, <span class="prelude-val">None</span>).<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">Float</span>)
+    <span class="kw">fn</span> <span class="ident">number</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span>}: <span class="ident">Span</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">to_integer</span> <span class="op">=</span> <span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Integer</span>(<span class="ident">f</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> };
+        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0x&quot;</span>) {
+            <span class="self">self</span>.<span class="ident">integer</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="number">2</span>..], <span class="number">16</span>).<span class="ident">map</span>(<span class="ident">to_integer</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0o&quot;</span>) {
+            <span class="self">self</span>.<span class="ident">integer</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="number">2</span>..], <span class="number">8</span>).<span class="ident">map</span>(<span class="ident">to_integer</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&quot;0b&quot;</span>) {
+            <span class="self">self</span>.<span class="ident">integer</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="number">2</span>..], <span class="number">2</span>).<span class="ident">map</span>(<span class="ident">to_integer</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;e&#39;</span>) <span class="op">||</span> <span class="ident">s</span>.<span class="ident">contains</span>(<span class="string">&#39;E&#39;</span>) {
+            <span class="self">self</span>.<span class="ident">float</span>(<span class="ident">s</span>, <span class="prelude-val">None</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Float</span>(<span class="ident">f</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> })
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Period</span>)<span class="question-mark">?</span> {
             <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">current</span>();
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">after</span>)) <span class="op">=&gt;</span> {
-                    <span class="self">self</span>.<span class="ident">float</span>(<span class="ident">s</span>, <span class="prelude-val">Some</span>(<span class="ident">after</span>)).<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">Float</span>)
+                <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">start</span>, <span class="ident">end</span> }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">after</span>))) <span class="op">=&gt;</span> {
+                    <span class="self">self</span>.<span class="ident">float</span>(<span class="ident">s</span>, <span class="prelude-val">Some</span>(<span class="ident">after</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">Value</span> {
+                        <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Float</span>(<span class="ident">f</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span>
+                    })
                 }
                 <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>)),
             }
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;inf&quot;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Float</span>(<span class="ident">f64</span>::<span class="ident">INFINITY</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> })
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;-inf&quot;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Float</span>(<span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> })
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;nan&quot;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Float</span>(<span class="ident">f64</span>::<span class="ident">NAN</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> })
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot;-nan&quot;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">Float</span>(<span class="op">-</span><span class="ident">f64</span>::<span class="ident">NAN</span>), <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> })
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">integer</span>(<span class="ident">s</span>).<span class="ident">map</span>(<span class="ident">Value</span>::<span class="ident">Integer</span>)
+            <span class="self">self</span>.<span class="ident">integer</span>(<span class="ident">s</span>, <span class="number">10</span>).<span class="ident">map</span>(<span class="ident">to_integer</span>)
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">number_leading_plus</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">current</span>();
+    <span class="kw">fn</span> <span class="ident">number_leading_plus</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">Span</span> { <span class="ident">start</span>, .. }: <span class="ident">Span</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">start_token</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">current</span>();
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">s</span>)) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">number</span>(<span class="ident">s</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>)),
+            <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">s</span>))) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">number</span>(<span class="ident">Span</span> { <span class="ident">start</span>: <span class="ident">start</span>, <span class="ident">end</span>: <span class="ident">end</span> }, <span class="ident">s</span>)
+            },
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start_token</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>)),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">integer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">prefix</span>, <span class="ident">suffix</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">s</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">integer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">radix</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">allow_sign</span> <span class="op">=</span> <span class="ident">radix</span> <span class="op">==</span> <span class="number">10</span>;
+        <span class="kw">let</span> <span class="ident">allow_leading_zeros</span> <span class="op">=</span> <span class="ident">radix</span> <span class="op">!=</span> <span class="number">10</span>;
+        <span class="kw">let</span> (<span class="ident">prefix</span>, <span class="ident">suffix</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">s</span>, <span class="ident">allow_sign</span>, <span class="ident">allow_leading_zeros</span>, <span class="ident">radix</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">substr_offset</span>(<span class="ident">s</span>);
         <span class="kw">if</span> <span class="ident">suffix</span> <span class="op">!=</span> <span class="string">&quot;&quot;</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>))
         }
-        <span class="ident">prefix</span>.<span class="ident">replace</span>(<span class="string">&quot;_&quot;</span>, <span class="string">&quot;&quot;</span>).<span class="ident">trim_left_matches</span>(<span class="string">&#39;+&#39;</span>).<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> {
-            <span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>)
-        })
+        <span class="ident">i64</span>::<span class="ident">from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>.<span class="ident">replace</span>(<span class="string">&quot;_&quot;</span>, <span class="string">&quot;&quot;</span>).<span class="ident">trim_left_matches</span>(<span class="string">&#39;+&#39;</span>), <span class="ident">radix</span>)
+            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">_e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_integer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>,
-                     <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-                     <span class="ident">allow_sign</span>: <span class="ident">bool</span>,
-                     <span class="ident">allow_leading_zeros</span>: <span class="ident">bool</span>)
-                     <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_integer</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+        <span class="ident">allow_sign</span>: <span class="ident">bool</span>,
+        <span class="ident">allow_leading_zeros</span>: <span class="ident">bool</span>,
+        <span class="ident">radix</span>: <span class="ident">u32</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">substr_offset</span>(<span class="ident">s</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -2168,21 +2479,20 @@
                 <span class="kw">continue</span>
             }
 
-            <span class="kw">match</span> <span class="ident">c</span> {
-                <span class="string">&#39;0&#39;</span> <span class="kw">if</span> <span class="ident">first</span> <span class="op">=&gt;</span> <span class="ident">first_zero</span> <span class="op">=</span> <span class="bool-val">true</span>,
-                <span class="string">&#39;0&#39;</span> ... <span class="string">&#39;9&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">first</span> <span class="op">&amp;&amp;</span> <span class="ident">first_zero</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">allow_leading_zeros</span> <span class="op">=&gt;</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>))
+            <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;0&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">first</span> {
+                <span class="ident">first_zero</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">to_digit</span>(<span class="ident">radix</span>).<span class="ident">is_some</span>() {
+                <span class="kw">if</span> <span class="op">!</span><span class="ident">first</span> <span class="op">&amp;&amp;</span> <span class="ident">first_zero</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">allow_leading_zeros</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>));
                 }
-                <span class="string">&#39;0&#39;</span> ... <span class="string">&#39;9&#39;</span> <span class="op">=&gt;</span> <span class="ident">underscore</span> <span class="op">=</span> <span class="bool-val">false</span>,
-                <span class="string">&#39;_&#39;</span> <span class="kw">if</span> <span class="ident">first</span> <span class="op">=&gt;</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>))
-                }
-                <span class="string">&#39;_&#39;</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">underscore</span> <span class="op">=&gt;</span> <span class="ident">underscore</span> <span class="op">=</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=&gt;</span> {
-                    <span class="ident">end</span> <span class="op">=</span> <span class="ident">i</span>;
-                    <span class="kw">break</span>
-                }
-
+                <span class="ident">underscore</span> <span class="op">=</span> <span class="bool-val">false</span>;
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;_&#39;</span> <span class="op">&amp;&amp;</span> <span class="ident">first</span> {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>));
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">c</span> <span class="op">==</span> <span class="string">&#39;_&#39;</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">underscore</span> {
+                <span class="ident">underscore</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            } <span class="kw">else</span> {
+                <span class="ident">end</span> <span class="op">=</span> <span class="ident">i</span>;
+                <span class="kw">break</span>;
             }
             <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">false</span>;
         }
@@ -2194,7 +2504,7 @@
 
     <span class="kw">fn</span> <span class="ident">float</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">after_decimal</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>)
              <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">integral</span>, <span class="kw-2">mut</span> <span class="ident">suffix</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">s</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> (<span class="ident">integral</span>, <span class="kw-2">mut</span> <span class="ident">suffix</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">s</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="number">10</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">substr_offset</span>(<span class="ident">integral</span>);
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fraction</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -2202,7 +2512,7 @@
             <span class="kw">if</span> <span class="ident">suffix</span> <span class="op">!=</span> <span class="string">&quot;&quot;</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>))
             }
-            <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">after</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">after</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="number">10</span>)<span class="question-mark">?</span>;
             <span class="ident">fraction</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">a</span>);
             <span class="ident">suffix</span> <span class="op">=</span> <span class="ident">b</span>;
         }
@@ -2212,13 +2522,13 @@
             <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">suffix</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
                 <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Plus</span>)<span class="question-mark">?</span>;
                 <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">s</span>)) <span class="op">=&gt;</span> {
-                        <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">s</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>
+                    <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="ident">s</span>))) <span class="op">=&gt;</span> {
+                        <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="ident">s</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="number">10</span>)<span class="question-mark">?</span>
                     }
                     <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>)),
                 }
             } <span class="kw">else</span> {
-                <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="kw-2">&amp;</span><span class="ident">suffix</span>[<span class="number">1</span>..], <span class="bool-val">true</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>
+                <span class="self">self</span>.<span class="ident">parse_integer</span>(<span class="kw-2">&amp;</span><span class="ident">suffix</span>[<span class="number">1</span>..], <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="number">10</span>)<span class="question-mark">?</span>
             };
             <span class="kw">if</span> <span class="ident">b</span> <span class="op">!=</span> <span class="string">&quot;&quot;</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">NumberInvalid</span>))
@@ -2249,25 +2559,41 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">datetime</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">date</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">colon_eaten</span>: <span class="ident">bool</span>)
-                <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">datetime</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">span</span>: <span class="ident">Span</span>, <span class="ident">date</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">colon_eaten</span>: <span class="ident">bool</span>)
+                <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Span</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">substr_offset</span>(<span class="ident">date</span>);
+
+        <span class="comment">// Check for space separated date and time.</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">Whitespace</span>(<span class="ident">s</span>))) <span class="op">=</span> <span class="self">self</span>.<span class="ident">peek</span>()<span class="question-mark">?</span> {
+            <span class="kw">if</span> <span class="ident">s</span> <span class="op">==</span> <span class="string">&quot; &quot;</span> {
+                <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
+                <span class="comment">// Skip past the hour.</span>
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>))) <span class="op">=</span> <span class="self">self</span>.<span class="ident">peek</span>()<span class="question-mark">?</span> {
+                    <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
+                }
+            }
+        }
+
         <span class="kw">if</span> <span class="ident">colon_eaten</span> <span class="op">||</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Colon</span>)<span class="question-mark">?</span> {
             <span class="comment">// minutes</span>
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {}
+                <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>))) <span class="op">=&gt;</span> {}
                 <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">DateInvalid</span>)),
             }
             <span class="comment">// Seconds</span>
             <span class="self">self</span>.<span class="ident">expect</span>(<span class="ident">Token</span>::<span class="ident">Colon</span>)<span class="question-mark">?</span>;
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {}
+                <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>))) <span class="op">=&gt;</span> {
+                    <span class="ident">span</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">end</span>;
+                },
                 <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">DateInvalid</span>)),
             }
             <span class="comment">// Fractional seconds</span>
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Period</span>)<span class="question-mark">?</span> {
                 <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {}
+                    <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>))) <span class="op">=&gt;</span> {
+                        <span class="ident">span</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">end</span>;
+                    },
                     <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">DateInvalid</span>)),
                 }
             }
@@ -2275,39 +2601,45 @@
             <span class="comment">// offset</span>
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Plus</span>)<span class="question-mark">?</span> {
                 <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {}
+                    <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>))) <span class="op">=&gt;</span> {
+                        <span class="ident">span</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">end</span>;
+                    },
                     <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">DateInvalid</span>)),
                 }
             }
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Colon</span>)<span class="question-mark">?</span> {
                 <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next</span>()<span class="question-mark">?</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {}
+                    <span class="prelude-val">Some</span>((<span class="ident">Span</span> { <span class="ident">end</span>, .. }, <span class="ident">Token</span>::<span class="ident">Keylike</span>(<span class="kw">_</span>))) <span class="op">=&gt;</span> {
+                        <span class="ident">span</span>.<span class="ident">end</span> <span class="op">=</span> <span class="ident">end</span>;
+                    },
                     <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">DateInvalid</span>)),
                 }
             }
         }
+
         <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">current</span>();
-        <span class="prelude-val">Ok</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">input</span>()[<span class="ident">start</span>..<span class="ident">end</span>])
+        <span class="prelude-val">Ok</span>((<span class="ident">span</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">input</span>()[<span class="ident">start</span>..<span class="ident">end</span>]))
     }
 
     <span class="comment">// TODO(#140): shouldn&#39;t buffer up this entire table in memory, it&#39;d be</span>
     <span class="comment">// great to defer parsing everything until later.</span>
-    <span class="kw">fn</span> <span class="ident">inline_table</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">inline_table</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Span</span>, <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
         <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">RightBrace</span>)<span class="question-mark">?</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">span</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">eat_spanned</span>(<span class="ident">Token</span>::<span class="ident">RightBrace</span>)<span class="question-mark">?</span> {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">span</span>, <span class="ident">ret</span>))
         }
         <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">table_key</span>()<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dotted_key</span>()<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">expect</span>(<span class="ident">Token</span>::<span class="ident">Equals</span>)<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
-            <span class="ident">ret</span>.<span class="ident">push</span>((<span class="ident">key</span>, <span class="self">self</span>.<span class="ident">value</span>()<span class="question-mark">?</span>));
+            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span>()<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">add_dotted_key</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ret</span>)<span class="question-mark">?</span>;
 
             <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">RightBrace</span>)<span class="question-mark">?</span> {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">span</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">eat_spanned</span>(<span class="ident">Token</span>::<span class="ident">RightBrace</span>)<span class="question-mark">?</span> {
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">span</span>, <span class="ident">ret</span>))
             }
             <span class="self">self</span>.<span class="ident">expect</span>(<span class="ident">Token</span>::<span class="ident">Comma</span>)<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
@@ -2316,7 +2648,7 @@
 
     <span class="comment">// TODO(#140): shouldn&#39;t buffer up this entire array in memory, it&#39;d be</span>
     <span class="comment">// great to defer parsing everything until later.</span>
-    <span class="kw">fn</span> <span class="ident">array</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">array</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Span</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
         <span class="kw">let</span> <span class="ident">intermediate</span> <span class="op">=</span> <span class="op">|</span><span class="ident">me</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Deserializer</span><span class="op">|</span> {
@@ -2331,8 +2663,8 @@
 
         <span class="kw">loop</span> {
             <span class="ident">intermediate</span>(<span class="self">self</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>)<span class="question-mark">?</span> {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">span</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">eat_spanned</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>)<span class="question-mark">?</span> {
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">span</span>, <span class="ident">ret</span>))
             }
             <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">current</span>();
             <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">value</span>()<span class="question-mark">?</span>;
@@ -2348,12 +2680,58 @@
             }
         }
         <span class="ident">intermediate</span>(<span class="self">self</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">expect</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+        <span class="kw">let</span> <span class="ident">span</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">expect_spanned</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((<span class="ident">span</span>, <span class="ident">ret</span>))
     }
 
     <span class="kw">fn</span> <span class="ident">table_key</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">table_key</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
+        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">table_key</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="number">1</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
+    }
+
+    <span class="kw">fn</span> <span class="ident">dotted_key</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="ident">result</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">table_key</span>()<span class="question-mark">?</span>);
+        <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
+        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Period</span>)<span class="question-mark">?</span> {
+            <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
+            <span class="ident">result</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">table_key</span>()<span class="question-mark">?</span>);
+            <span class="self">self</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
+        }
+        <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">add_dotted_key</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw-2">mut</span> <span class="ident">key_parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">value</span>: <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+        <span class="ident">values</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">key_parts</span>.<span class="ident">remove</span>(<span class="number">0</span>);
+        <span class="kw">if</span> <span class="ident">key_parts</span>.<span class="ident">is_empty</span>() {
+            <span class="ident">values</span>.<span class="ident">push</span>((<span class="ident">key</span>, <span class="ident">value</span>));
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        }
+        <span class="kw">match</span> <span class="ident">values</span>.<span class="ident">iter_mut</span>().<span class="ident">find</span>(<span class="op">|</span><span class="op">&amp;&amp;</span><span class="kw-2">mut</span> (<span class="kw-2">ref</span> <span class="ident">k</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">k</span> <span class="op">==</span> <span class="ident">key</span>) {
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> (<span class="kw">_</span>, <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">DottedTable</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>), .. })) <span class="op">=&gt;</span> {
+                <span class="kw">return</span> <span class="self">self</span>.<span class="ident">add_dotted_key</span>(<span class="ident">key_parts</span>, <span class="ident">value</span>, <span class="ident">v</span>);
+            }
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> (<span class="kw">_</span>, <span class="ident">Value</span> { <span class="ident">start</span>, .. })) <span class="op">=&gt;</span> {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>.<span class="ident">error</span>(<span class="ident">start</span>, <span class="ident">ErrorKind</span>::<span class="ident">DottedKeyInvalidType</span>));
+            }
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {}
+        }
+        <span class="comment">// The start/end value is somewhat misleading here.</span>
+        <span class="kw">let</span> <span class="ident">inline_table</span> <span class="op">=</span> <span class="ident">Value</span> {
+            <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">DottedTable</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()),
+            <span class="ident">start</span>: <span class="ident">value</span>.<span class="ident">start</span>,
+            <span class="ident">end</span>: <span class="ident">value</span>.<span class="ident">end</span>,
+        };
+        <span class="ident">values</span>.<span class="ident">push</span>((<span class="ident">key</span>, <span class="ident">inline_table</span>));
+        <span class="kw">let</span> <span class="ident">last_i</span> <span class="op">=</span> <span class="ident">values</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>;
+        <span class="kw">if</span> <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">Value</span> { <span class="ident">e</span>: <span class="ident">E</span>::<span class="ident">DottedTable</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">v</span>), .. }) <span class="op">=</span> <span class="ident">values</span>[<span class="ident">last_i</span>] {
+            <span class="self">self</span>.<span class="ident">add_dotted_key</span>(<span class="ident">key_parts</span>, <span class="ident">value</span>, <span class="ident">v</span>)<span class="question-mark">?</span>;
+        }
+        <span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">fn</span> <span class="ident">eat_whitespace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -2372,15 +2750,23 @@
         <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat</span>(<span class="ident">expected</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
     }
 
+    <span class="kw">fn</span> <span class="ident">eat_spanned</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">expected</span>: <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Span</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_spanned</span>(<span class="ident">expected</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
+    }
+
     <span class="kw">fn</span> <span class="ident">expect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">expected</span>: <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">expect</span>(<span class="ident">expected</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">expect_spanned</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">expected</span>: <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Span</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">expect_spanned</span>(<span class="ident">expected</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
+    }
+
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">Span</span>, <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">next</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">peek</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">peek</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">Span</span>, <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">peek</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">token_error</span>(<span class="ident">e</span>))
     }
 
@@ -2419,6 +2805,9 @@
             }
             <span class="ident">TokenError</span>::<span class="ident">EmptyTableKey</span>(<span class="ident">at</span>) <span class="op">=&gt;</span> {
                 <span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">EmptyTableKey</span>)
+            }
+            <span class="ident">TokenError</span>::<span class="ident">MultilineStringKey</span>(<span class="ident">at</span>) <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">error</span>(<span class="ident">at</span>, <span class="ident">ErrorKind</span>::<span class="ident">MultilineStringKey</span>)
             }
         }
     }
@@ -2523,8 +2912,10 @@
             }
             <span class="ident">ErrorKind</span>::<span class="ident">RedefineAsArray</span> <span class="op">=&gt;</span> <span class="string">&quot;table redefined as array&quot;</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">EmptyTableKey</span> <span class="op">=&gt;</span> <span class="string">&quot;empty table key found&quot;</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>,
+            <span class="ident">ErrorKind</span>::<span class="ident">MultilineStringKey</span> <span class="op">=&gt;</span> <span class="string">&quot;multiline strings are not allowed for key&quot;</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">Custom</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">message</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">ExpectedString</span> <span class="op">=&gt;</span> <span class="string">&quot;expected string&quot;</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>,
+            <span class="ident">ErrorKind</span>::<span class="ident">DottedKeyInvalidType</span> <span class="op">=&gt;</span> <span class="string">&quot;dotted key attempted to extend non-table type&quot;</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">__Nonexhaustive</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
         }
 
@@ -2566,8 +2957,10 @@
             <span class="ident">ErrorKind</span>::<span class="ident">DuplicateTable</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;duplicate table&quot;</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">RedefineAsArray</span> <span class="op">=&gt;</span> <span class="string">&quot;table redefined as array&quot;</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">EmptyTableKey</span> <span class="op">=&gt;</span> <span class="string">&quot;empty table key found&quot;</span>,
+            <span class="ident">ErrorKind</span>::<span class="ident">MultilineStringKey</span> <span class="op">=&gt;</span> <span class="string">&quot;invalid multiline string for key&quot;</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">Custom</span> <span class="op">=&gt;</span> <span class="string">&quot;a custom error&quot;</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">ExpectedString</span> <span class="op">=&gt;</span> <span class="string">&quot;expected string&quot;</span>,
+            <span class="ident">ErrorKind</span>::<span class="ident">DottedKeyInvalidType</span> <span class="op">=&gt;</span> <span class="string">&quot;dotted key invalid type&quot;</span>,
             <span class="ident">ErrorKind</span>::<span class="ident">__Nonexhaustive</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(),
         }
     }
@@ -2581,7 +2974,7 @@
 
 <span class="kw">enum</span> <span class="ident">Line</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Table</span> { <span class="ident">at</span>: <span class="ident">usize</span>, <span class="ident">header</span>: <span class="ident">Header</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">array</span>: <span class="ident">bool</span> },
-    <span class="ident">KeyValue</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>),
+    <span class="ident">KeyValue</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>),
 }
 
 <span class="kw">struct</span> <span class="ident">Header</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -2609,7 +3002,7 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">first</span> <span class="op">||</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat</span>(<span class="ident">Token</span>::<span class="ident">Period</span>)<span class="question-mark">?</span> {
             <span class="self">self</span>.<span class="ident">first</span> <span class="op">=</span> <span class="bool-val">false</span>;
             <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">eat_whitespace</span>()<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">table_key</span>().<span class="ident">map</span>(<span class="prelude-val">Some</span>)
+            <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">table_key</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="number">1</span>).<span class="ident">map</span>(<span class="prelude-val">Some</span>)
         } <span class="kw">else</span> {
             <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">expect</span>(<span class="ident">Token</span>::<span class="ident">RightBracket</span>)<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">array</span> {
@@ -2628,7 +3021,14 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">struct</span> <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">e</span>: <span class="ident">E</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">start</span>: <span class="ident">usize</span>,
+    <span class="ident">end</span>: <span class="ident">usize</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">enum</span> <span class="ident">E</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">Integer</span>(<span class="ident">i64</span>),
     <span class="ident">Float</span>(<span class="ident">f64</span>),
     <span class="ident">Boolean</span>(<span class="ident">bool</span>),
@@ -2636,18 +3036,20 @@
     <span class="ident">Datetime</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>),
     <span class="ident">Array</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span>),
     <span class="ident">InlineTable</span>(<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>),
+    <span class="ident">DottedTable</span>(<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>)<span class="op">&gt;</span>),
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">same_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> (<span class="self">self</span>, <span class="ident">other</span>) {
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">String</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">String</span>(..)) <span class="op">|</span>
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Integer</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Integer</span>(..)) <span class="op">|</span>
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Float</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Float</span>(..)) <span class="op">|</span>
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Boolean</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Boolean</span>(..)) <span class="op">|</span>
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Datetime</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Datetime</span>(..)) <span class="op">|</span>
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Array</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">Array</span>(..)) <span class="op">|</span>
-            (<span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">InlineTable</span>(..), <span class="kw-2">&amp;</span><span class="ident">Value</span>::<span class="ident">InlineTable</span>(..)) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
+        <span class="kw">match</span> (<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">e</span>, <span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">e</span>) {
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">String</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">String</span>(..)) <span class="op">|</span>
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Integer</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Integer</span>(..)) <span class="op">|</span>
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Float</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Float</span>(..)) <span class="op">|</span>
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Boolean</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Boolean</span>(..)) <span class="op">|</span>
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Datetime</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Datetime</span>(..)) <span class="op">|</span>
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Array</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">Array</span>(..)) <span class="op">|</span>
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">InlineTable</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">InlineTable</span>(..)) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
+            (<span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">DottedTable</span>(..), <span class="kw-2">&amp;</span><span class="ident">E</span>::<span class="ident">DottedTable</span>(..)) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
 
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
         }
