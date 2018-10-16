@@ -110,6 +110,10 @@ fn actual_main() -> Result<(), i32> {
         out.flush().unwrap();
     }
 
+    let mut success_n_global = 0usize;
+    let mut errored_global = vec![];
+    let mut result_global = None;
+
     if opts.update {
         if !opts.force {
             packages.retain(|p| p.needs_update(configuration.get(&p.name).and_then(|c| c.target_version.as_ref())));
@@ -173,6 +177,8 @@ fn actual_main() -> Result<(), i32> {
                     }
                 });
 
+            success_n_global += success_n;
+
             println!();
             println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
             if !errored.is_empty() && result.is_some() {
@@ -184,7 +190,14 @@ fn actual_main() -> Result<(), i32> {
                     print!("{}", e);
                 }
                 println!(".");
-                return Err(result.unwrap());
+                println!();
+
+                if opts.update_git {
+                    errored_global = errored;
+                    result_global = result;
+                } else {
+                    return Err(result.unwrap());
+                }
             }
         } else {
             println!("No packages need updating.");
@@ -279,6 +292,8 @@ fn actual_main() -> Result<(), i32> {
                         }
                     });
 
+                success_n_global += success_n;
+
                 println!();
                 println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
                 if !errored.is_empty() && result.is_some() {
@@ -290,11 +305,34 @@ fn actual_main() -> Result<(), i32> {
                         print!("{}", e);
                     }
                     println!(".");
-                    return Err(result.unwrap());
+                    println!();
+
+                    errored_global.extend(errored);
+
+                    if result_global.is_none() {
+                        return Err(result.unwrap());
+                    }
                 }
             } else {
                 println!("No git packages need updating.");
             }
+        }
+    }
+
+    if opts.update {
+        println!("Overall updated {} package{}.", success_n_global, if success_n_global == 1 { "" } else { "s" });
+
+        if !errored_global.is_empty() && result_global.is_some() {
+            print!("Overall failed to update ");
+            for (i, e) in errored_global.iter().enumerate() {
+                if i != 0 {
+                    print!(", ");
+                }
+                print!("{}", e);
+            }
+            println!(".");
+
+            return Err(result_global.unwrap());
         }
     }
 
