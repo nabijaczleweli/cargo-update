@@ -291,16 +291,26 @@ fn actual_main() -> Result<(), i32> {
 /// This way the past-current exec will be "replaced" and we'll get no dupes in .cargo.toml
 #[cfg(target_os="windows")]
 fn save_cargo_update_exec<D: Display>(version: &D) {
+    save_cargo_update_exec_impl(format!("exe-v{}", version));
+}
+
+#[cfg(target_os="windows")]
+fn save_cargo_update_exec_impl(extension: String) {
     let cur_exe = env::current_exe().unwrap();
-    fs::rename(&cur_exe, cur_exe.with_extension(format!("exe-v{}", version))).unwrap();
+    fs::rename(&cur_exe, cur_exe.with_extension(extension)).unwrap();
     File::create(cur_exe).unwrap();
 }
 
 #[cfg(target_os="windows")]
 fn restore_cargo_update_exec<D: Display>(version: &D) {
+    restore_cargo_update_exec_impl(format!("exe-v{}", version))
+}
+
+#[cfg(target_os="windows")]
+fn restore_cargo_update_exec_impl(extension: String) {
     let cur_exe = env::current_exe().unwrap();
     fs::remove_file(&cur_exe).unwrap();
-    fs::rename(cur_exe.with_extension(format!("exe-v{}", version)), cur_exe).unwrap();
+    fs::rename(cur_exe.with_extension(extension), cur_exe).unwrap();
 }
 
 

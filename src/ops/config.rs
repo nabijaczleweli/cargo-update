@@ -184,20 +184,24 @@ impl PackageConfig {
     /// ```
     pub fn execute_operations<'o, O: IntoIterator<Item = &'o ConfigOperation>>(&mut self, ops: O) {
         for op in ops {
-            match *op {
-                ConfigOperation::SetToolchain(ref tchn) => self.toolchain = Some(tchn.clone()),
-                ConfigOperation::RemoveToolchain => self.toolchain = None,
-                ConfigOperation::DefaultFeatures(f) => self.default_features = f,
-                ConfigOperation::AddFeature(ref feat) => {
-                    self.features.insert(feat.clone());
-                }
-                ConfigOperation::RemoveFeature(ref feat) => {
-                    self.features.remove(feat);
-                }
-                ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
-                ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
-                ConfigOperation::RemoveTargetVersion => self.target_version = None,
+            self.execute_operation(op)
+        }
+    }
+
+    fn execute_operation(&mut self, op: &ConfigOperation) {
+        match *op {
+            ConfigOperation::SetToolchain(ref tchn) => self.toolchain = Some(tchn.clone()),
+            ConfigOperation::RemoveToolchain => self.toolchain = None,
+            ConfigOperation::DefaultFeatures(f) => self.default_features = f,
+            ConfigOperation::AddFeature(ref feat) => {
+                self.features.insert(feat.clone());
             }
+            ConfigOperation::RemoveFeature(ref feat) => {
+                self.features.remove(feat);
+            }
+            ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
+            ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
+            ConfigOperation::RemoveTargetVersion => self.target_version = None,
         }
     }
 

@@ -352,8 +352,12 @@ impl GitRepoPackage {
 
     /// Clone the repo and check what the latest commit's hash is.
     pub fn pull_version<P: AsRef<Path>>(&mut self, temp_dir: P) {
-        fs::create_dir_all(temp_dir.as_ref()).unwrap();
-        let clone_dir = temp_dir.as_ref().join(&self.name);
+        self.pull_version_impl(temp_dir.as_ref())
+    }
+
+    fn pull_version_impl(&mut self, temp_dir: &Path) {
+        fs::create_dir_all(temp_dir).unwrap();
+        let clone_dir = temp_dir.join(&self.name);
         let repo = if clone_dir.exists() {
             let mut r = git2::Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
@@ -620,7 +624,10 @@ pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, O
 pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
     let mut buf = String::new();
     package_desc.read_to_string(&mut buf).unwrap();
+    crate_versions_impl(buf)
+}
 
+fn crate_versions_impl(buf: String) -> Vec<Semver> {
     buf.lines()
         .map(|p| json::parse(p).unwrap())
         .filter(|j| !j["yanked"].as_bool().unwrap())
