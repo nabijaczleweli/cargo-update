@@ -176,7 +176,14 @@ fn actual_main() -> Result<(), i32> {
             println!();
             println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
             if !errored.is_empty() && result.is_some() {
-                println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
+                print!("Failed to update ");
+                for (i, e) in errored.iter().enumerate() {
+                    if i != 0 {
+                        print!(", ");
+                    }
+                    print!("{}", e);
+                }
+                println!(".");
                 return Err(result.unwrap());
             }
         } else {
@@ -275,7 +282,14 @@ fn actual_main() -> Result<(), i32> {
                 println!();
                 println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
                 if !errored.is_empty() && result.is_some() {
-                    println!("Failed to update {}.", &errored.iter().fold("".to_string(), |s, e| s + ", " + e)[2..]);
+                    print!("Failed to update ");
+                    for (i, e) in errored.iter().enumerate() {
+                        if i != 0 {
+                            print!(", ");
+                        }
+                        print!("{}", e);
+                    }
+                    println!(".");
                     return Err(result.unwrap());
                 }
             } else {
