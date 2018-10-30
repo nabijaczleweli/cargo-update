@@ -29,13 +29,17 @@ Exit values and possible errors:
 
     Update all currently installed executables.
 
-    Exclusive with list of packages. Required if list of packages not given.
+    Required if list of packages not given.
 
   [PACKAGE...]
 
     List of packages to update.
 
-    Exclusive with --all. Required if --all not given.
+    If specified in addition to --all,
+    will add the specified packages to the update list
+    (useful, e.g., in conjunction with --allow-no-update).
+
+    Required if --all not given.
 
   -l --list
 
