@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/proc-macro2-0.4.20/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/proc-macro2-0.4.24/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1097,6 +1097,19 @@
 <span id="1097">1097</span>
 <span id="1098">1098</span>
 <span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! A &quot;shim crate&quot; intended to multiplex the [`proc_macro`] API on to stable</span>
 <span class="doccomment">//! Rust.</span>
@@ -1143,7 +1156,7 @@
 <span class="doccomment">//! [ts]: https://doc.rust-lang.org/proc_macro/struct.TokenStream.html</span>
 
 <span class="comment">// Proc-macro2 types in rustdoc of other crates get linked to here.</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/proc-macro2/0.4.20&quot;</span>)]</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/proc-macro2/0.4.24&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(
     <span class="ident">super_unstable</span>,
     <span class="ident">feature</span>(<span class="ident">proc_macro_raw_ident</span>, <span class="ident">proc_macro_span</span>, <span class="ident">proc_macro_def_site</span>)
@@ -1158,6 +1171,8 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">FromIterator</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">FromStr</span>;
 
@@ -1311,19 +1326,25 @@
     }
 }
 
-<span class="comment">// Returned by reference, so we can&#39;t easily wrap it.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">imp</span>::<span class="ident">FileName</span>;
-
 <span class="doccomment">/// The source file of a given `Span`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This type is semver exempt and not exposed by default.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SourceFile</span>(<span class="ident">imp</span>::<span class="ident">SourceFile</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SourceFile</span> {
+    <span class="ident">inner</span>: <span class="ident">imp</span>::<span class="ident">SourceFile</span>,
+    <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">Rc</span><span class="op">&lt;</span>()<span class="op">&gt;&gt;</span>,
+}
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
 <span class="kw">impl</span> <span class="ident">SourceFile</span> {
+    <span class="kw">fn</span> <span class="ident">_new</span>(<span class="ident">inner</span>: <span class="ident">imp</span>::<span class="ident">SourceFile</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="ident">SourceFile</span> {
+            <span class="ident">inner</span>: <span class="ident">inner</span>,
+            <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
+        }
+    }
+
     <span class="doccomment">/// Get the path to this source file.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// ### Note</span>
@@ -1337,28 +1358,21 @@
     <span class="doccomment">/// may not actually be valid.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`is_real`]: #method.is_real</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">FileName</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">path</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">PathBuf</span> {
+        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">path</span>()
     }
 
     <span class="doccomment">/// Returns `true` if this source file is a real source file, and not</span>
     <span class="doccomment">/// generated by an external macro&#39;s expansion.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_real</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">is_real</span>()
-    }
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
-<span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">FileName</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SourceFile</span> {
-    <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">FileName</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">path</span>()
+        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">is_real</span>()
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">SourceFile</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
+        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
     }
 }
 
@@ -1444,7 +1458,7 @@
     <span class="doccomment">/// This method is semver exempt and not exposed by default.</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">procmacro2_semver_exempt</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">source_file</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SourceFile</span> {
-        <span class="ident">SourceFile</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">source_file</span>())
+        <span class="ident">SourceFile</span>::<span class="ident">_new</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">source_file</span>())
     }
 
     <span class="doccomment">/// Get the starting line/column in the source file for this span.</span>
@@ -1814,11 +1828,11 @@
 <span class="doccomment">/// - A lifetime is not an identifier. Use `syn::Lifetime` instead.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// An identifier constructed with `Ident::new` is permitted to be a Rust</span>
-<span class="doccomment">/// keyword, though parsing one through its [`Synom`] implementation rejects</span>
-<span class="doccomment">/// Rust keywords. Use `call!(Ident::parse_any)` when parsing to match the</span>
+<span class="doccomment">/// keyword, though parsing one through its [`Parse`] implementation rejects</span>
+<span class="doccomment">/// Rust keywords. Use `input.call(Ident::parse_any)` when parsing to match the</span>
 <span class="doccomment">/// behaviour of `Ident::new`.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// [`Synom`]: https://docs.rs/syn/0.14/syn/synom/trait.Synom.html</span>
+<span class="doccomment">/// [`Parse`]: https://docs.rs/syn/0.15/syn/parse/trait.Parse.html</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
@@ -2073,6 +2087,12 @@
         <span class="ident">isize_suffixed</span> <span class="op">=&gt;</span> <span class="ident">isize</span>,
     }
 
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">u128</span>)]</span>
+    <span class="macro">suffixed_int_literals</span><span class="macro">!</span> {
+        <span class="ident">u128_suffixed</span> <span class="op">=&gt;</span> <span class="ident">u128</span>,
+        <span class="ident">i128_suffixed</span> <span class="op">=&gt;</span> <span class="ident">i128</span>,
+    }
+
     <span class="macro">unsuffixed_int_literals</span><span class="macro">!</span> {
         <span class="ident">u8_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">u8</span>,
         <span class="ident">u16_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">u16</span>,
@@ -2084,6 +2104,12 @@
         <span class="ident">i32_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">i32</span>,
         <span class="ident">i64_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">i64</span>,
         <span class="ident">isize_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">isize</span>,
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">u128</span>)]</span>
+    <span class="macro">unsuffixed_int_literals</span><span class="macro">!</span> {
+        <span class="ident">u128_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">u128</span>,
+        <span class="ident">i128_unsuffixed</span> <span class="op">=&gt;</span> <span class="ident">i128</span>,
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">f64_unsuffixed</span>(<span class="ident">f</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">Literal</span> {

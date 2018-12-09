@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.2/src/unicode.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unicode.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.4/src/unicode.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>unicode.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -435,6 +435,24 @@
 <span id="435">435</span>
 <span id="436">436</span>
 <span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">result</span>;
@@ -445,11 +463,14 @@
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">age</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">case_folding_simple</span>::<span class="ident">CASE_FOLDING_SIMPLE</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">general_category</span>;
+<span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">grapheme_cluster_break</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">property_bool</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">property_names</span>::<span class="ident">PROPERTY_NAMES</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">property_values</span>::<span class="ident">PROPERTY_VALUES</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">script</span>;
 <span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">script_extension</span>;
+<span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">sentence_break</span>;
+<span class="kw">use</span> <span class="ident">unicode_tables</span>::<span class="ident">word_break</span>;
 
 <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
 
@@ -685,6 +706,21 @@
         }
         <span class="ident">ByValue</span> { <span class="ident">property_name</span>: <span class="string">&quot;Script_Extensions&quot;</span>, <span class="ident">property_value</span> } <span class="op">=&gt;</span> {
             <span class="ident">property_set</span>(<span class="ident">script_extension</span>::<span class="ident">BY_NAME</span>, <span class="ident">property_value</span>)
+                .<span class="ident">map</span>(<span class="ident">hir_class</span>)
+                .<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">PropertyValueNotFound</span>)
+        }
+        <span class="ident">ByValue</span> { <span class="ident">property_name</span>: <span class="string">&quot;Grapheme_Cluster_Break&quot;</span>, <span class="ident">property_value</span> } <span class="op">=&gt;</span> {
+            <span class="ident">property_set</span>(<span class="ident">grapheme_cluster_break</span>::<span class="ident">BY_NAME</span>, <span class="ident">property_value</span>)
+                .<span class="ident">map</span>(<span class="ident">hir_class</span>)
+                .<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">PropertyValueNotFound</span>)
+        }
+        <span class="ident">ByValue</span> { <span class="ident">property_name</span>: <span class="string">&quot;Sentence_Break&quot;</span>, <span class="ident">property_value</span> } <span class="op">=&gt;</span> {
+            <span class="ident">property_set</span>(<span class="ident">sentence_break</span>::<span class="ident">BY_NAME</span>, <span class="ident">property_value</span>)
+                .<span class="ident">map</span>(<span class="ident">hir_class</span>)
+                .<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">PropertyValueNotFound</span>)
+        }
+        <span class="ident">ByValue</span> { <span class="ident">property_name</span>: <span class="string">&quot;Word_Break&quot;</span>, <span class="ident">property_value</span> } <span class="op">=&gt;</span> {
+            <span class="ident">property_set</span>(<span class="ident">word_break</span>::<span class="ident">BY_NAME</span>, <span class="ident">property_value</span>)
                 .<span class="ident">map</span>(<span class="ident">hir_class</span>)
                 .<span class="ident">ok_or</span>(<span class="ident">Error</span>::<span class="ident">PropertyValueNotFound</span>)
         }

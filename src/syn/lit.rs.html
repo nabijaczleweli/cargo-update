@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.15.16/src/lit.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lit.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.15.22/src/lit.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lit.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1088,15 +1088,6 @@
 <span id="1088">1088</span>
 <span id="1089">1089</span>
 <span id="1090">1090</span>
-<span id="1091">1091</span>
-<span id="1092">1092</span>
-<span id="1093">1093</span>
-<span id="1094">1094</span>
-<span id="1095">1095</span>
-<span id="1096">1096</span>
-<span id="1097">1097</span>
-<span id="1098">1098</span>
-<span id="1099">1099</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -1234,30 +1225,21 @@
     <span class="doccomment">/// # extern crate syn;</span>
     <span class="doccomment">/// #</span>
     <span class="doccomment">/// use proc_macro2::Span;</span>
-    <span class="doccomment">/// use syn::{Attribute, Ident, Lit, Meta, MetaNameValue, Path};</span>
-    <span class="doccomment">/// use syn::parse::{Error, Result};</span>
+    <span class="doccomment">/// use syn::{Attribute, Error, Ident, Lit, Meta, MetaNameValue, Path, Result};</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// // Parses the path from an attribute that looks like:</span>
     <span class="doccomment">/// //</span>
     <span class="doccomment">/// //     #[path = &quot;a::b::c&quot;]</span>
     <span class="doccomment">/// //</span>
-    <span class="doccomment">/// // or returns the path `Self` as a default if the attribute is not of</span>
-    <span class="doccomment">/// // that form.</span>
-    <span class="doccomment">/// fn get_path(attr: &amp;Attribute) -&gt; Result&lt;Path&gt; {</span>
-    <span class="doccomment">///     let default = || Path::from(Ident::new(&quot;Self&quot;, Span::call_site()));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///     let meta = match attr.interpret_meta() {</span>
-    <span class="doccomment">///         Some(meta) =&gt; meta,</span>
-    <span class="doccomment">///         None =&gt; return Ok(default()),</span>
-    <span class="doccomment">///     };</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///     if meta.name() != &quot;path&quot; {</span>
-    <span class="doccomment">///         return Ok(default());</span>
+    <span class="doccomment">/// // or returns `None` if the input is some other attribute.</span>
+    <span class="doccomment">/// fn get_path(attr: &amp;Attribute) -&gt; Result&lt;Option&lt;Path&gt;&gt; {</span>
+    <span class="doccomment">///     if !attr.path.is_ident(&quot;path&quot;) {</span>
+    <span class="doccomment">///         return Ok(None);</span>
     <span class="doccomment">///     }</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">///     match meta {</span>
+    <span class="doccomment">///     match attr.parse_meta()? {</span>
     <span class="doccomment">///         Meta::NameValue(MetaNameValue { lit: Lit::Str(lit_str), .. }) =&gt; {</span>
-    <span class="doccomment">///             lit_str.parse()</span>
+    <span class="doccomment">///             lit_str.parse().map(Some)</span>
     <span class="doccomment">///         }</span>
     <span class="doccomment">///         _ =&gt; {</span>
     <span class="doccomment">///             let error_span = attr.bracket_token.span;</span>

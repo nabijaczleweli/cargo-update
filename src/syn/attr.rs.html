@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.15.16/src/attr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>attr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-0.15.22/src/attr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>attr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -695,6 +695,8 @@
 <span id="695">695</span>
 <span id="696">696</span>
 <span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
 </pre><pre class="rust ">
 <span class="comment">// Copyright 2018 Syn Developers</span>
 <span class="comment">//</span>
@@ -755,11 +757,11 @@
     <span class="doccomment">///    path  tts                   path         tts</span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Use the [`interpret_meta`] method to try parsing the tokens of an</span>
-    <span class="doccomment">/// attribute into the structured representation that is used by convention</span>
-    <span class="doccomment">/// across most Rust libraries.</span>
+    <span class="doccomment">/// Use the [`parse_meta`] method to try parsing the tokens of an attribute</span>
+    <span class="doccomment">/// into the structured representation that is used by convention across</span>
+    <span class="doccomment">/// most Rust libraries.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// [`interpret_meta`]: #method.interpret_meta</span>
+    <span class="doccomment">/// [`parse_meta`]: #method.parse_meta</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Parsing</span>
     <span class="doccomment">///</span>
@@ -779,8 +781,8 @@
     <span class="doccomment">/// #[macro_use]</span>
     <span class="doccomment">/// extern crate syn;</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// use syn::{Attribute, Ident};</span>
-    <span class="doccomment">/// use syn::parse::{Parse, ParseStream, Result};</span>
+    <span class="doccomment">/// use syn::{Attribute, Ident, Result};</span>
+    <span class="doccomment">/// use syn::parse::{Parse, ParseStream};</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// // Parses a unit struct with attributes.</span>
     <span class="doccomment">/// //</span>
@@ -1231,6 +1233,7 @@
     <span class="kw">type</span> <span class="ident">Ret</span> <span class="op">=</span> <span class="ident">iter</span>::<span class="ident">Filter</span><span class="op">&lt;</span><span class="ident">T</span>::<span class="ident">IntoIter</span>, <span class="kw">fn</span>(<span class="op">&amp;&amp;</span><span class="ident">Attribute</span>) <span class="op">-&gt;</span> <span class="ident">bool</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">outer</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ret</span> {
+        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cargo-clippy&quot;</span>, <span class="ident">allow</span>(<span class="ident">trivially_copy_pass_by_ref</span>))]</span>
         <span class="kw">fn</span> <span class="ident">is_outer</span>(<span class="ident">attr</span>: <span class="op">&amp;&amp;</span><span class="ident">Attribute</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
             <span class="kw">match</span> <span class="ident">attr</span>.<span class="ident">style</span> {
                 <span class="ident">AttrStyle</span>::<span class="ident">Outer</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
@@ -1241,6 +1244,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">inner</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ret</span> {
+        <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cargo-clippy&quot;</span>, <span class="ident">allow</span>(<span class="ident">trivially_copy_pass_by_ref</span>))]</span>
         <span class="kw">fn</span> <span class="ident">is_inner</span>(<span class="ident">attr</span>: <span class="op">&amp;&amp;</span><span class="ident">Attribute</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
             <span class="kw">match</span> <span class="ident">attr</span>.<span class="ident">style</span> {
                 <span class="ident">AttrStyle</span>::<span class="ident">Inner</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
