@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-1.0.81/src/internals/attr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>attr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/serde_derive-1.0.82/src/internals/attr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>attr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1698,6 +1698,58 @@
 <span id="1698">1698</span>
 <span id="1699">1699</span>
 <span id="1700">1700</span>
+<span id="1701">1701</span>
+<span id="1702">1702</span>
+<span id="1703">1703</span>
+<span id="1704">1704</span>
+<span id="1705">1705</span>
+<span id="1706">1706</span>
+<span id="1707">1707</span>
+<span id="1708">1708</span>
+<span id="1709">1709</span>
+<span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
+<span id="1714">1714</span>
+<span id="1715">1715</span>
+<span id="1716">1716</span>
+<span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
+<span id="1724">1724</span>
+<span id="1725">1725</span>
+<span id="1726">1726</span>
+<span id="1727">1727</span>
+<span id="1728">1728</span>
+<span id="1729">1729</span>
+<span id="1730">1730</span>
+<span id="1731">1731</span>
+<span id="1732">1732</span>
+<span id="1733">1733</span>
+<span id="1734">1734</span>
+<span id="1735">1735</span>
+<span id="1736">1736</span>
+<span id="1737">1737</span>
+<span id="1738">1738</span>
+<span id="1739">1739</span>
+<span id="1740">1740</span>
+<span id="1741">1741</span>
+<span id="1742">1742</span>
+<span id="1743">1743</span>
+<span id="1744">1744</span>
+<span id="1745">1745</span>
+<span id="1746">1746</span>
+<span id="1747">1747</span>
+<span id="1748">1748</span>
+<span id="1749">1749</span>
+<span id="1750">1750</span>
+<span id="1751">1751</span>
+<span id="1752">1752</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="ident">internals</span>::<span class="ident">Ctxt</span>;
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Group</span>, <span class="ident">Span</span>, <span class="ident">TokenStream</span>, <span class="ident">TokenTree</span>};
@@ -1743,10 +1795,8 @@
         <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="ident">obj</span>.<span class="ident">into_token_stream</span>();
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">value</span>.<span class="ident">is_some</span>() {
-            <span class="self">self</span>.<span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                <span class="ident">tokens</span>,
-                <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;duplicate serde attribute `{}`&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>),
-            );
+            <span class="self">self</span>.<span class="ident">cx</span>
+                .<span class="ident">error_spanned_by</span>(<span class="ident">tokens</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;duplicate serde attribute `{}`&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>));
         } <span class="kw">else</span> {
             <span class="self">self</span>.<span class="ident">tokens</span> <span class="op">=</span> <span class="ident">tokens</span>;
             <span class="self">self</span>.<span class="ident">value</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>);
@@ -1772,7 +1822,7 @@
     <span class="kw">fn</span> <span class="ident">get_with_tokens</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">TokenStream</span>, <span class="ident">T</span>)<span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">value</span> {
             <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>((<span class="self">self</span>.<span class="ident">tokens</span>, <span class="ident">v</span>)),
-            <span class="prelude-val">None</span>    <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         }
     }
 }
@@ -1933,11 +1983,14 @@
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">get_lit_str</span>(<span class="ident">cx</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">lit</span>) {
                             <span class="kw">match</span> <span class="ident">RenameRule</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">value</span>()) {
                                 <span class="prelude-val">Ok</span>(<span class="ident">rename_rule</span>) <span class="op">=&gt;</span> <span class="ident">rename_all</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">rename_rule</span>),
-                                <span class="prelude-val">Err</span>(()) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">s</span>, <span class="macro">format</span><span class="macro">!</span>(
-                                    <span class="string">&quot;unknown rename rule for #[serde(rename_all \
-                                     = {:?})]&quot;</span>,
-                                    <span class="ident">s</span>.<span class="ident">value</span>(),
-                                )),
+                                <span class="prelude-val">Err</span>(()) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                                    <span class="ident">s</span>,
+                                    <span class="macro">format</span><span class="macro">!</span>(
+                                        <span class="string">&quot;unknown rename rule for #[serde(rename_all \
+                                         = {:?})]&quot;</span>,
+                                        <span class="ident">s</span>.<span class="ident">value</span>(),
+                                    ),
+                                ),
                             }
                         }
                     }
@@ -1962,14 +2015,17 @@
                                 <span class="ident">fields</span>,
                                 <span class="string">&quot;#[serde(default)] can only be used on structs \
                                  with named fields&quot;</span>,
-                            )
+                            ),
                         },
-                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">syn</span>::<span class="ident">DataEnum</span> { <span class="kw-2">ref</span> <span class="ident">enum_token</span>, .. }) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                            <span class="ident">enum_token</span>,
-                            <span class="string">&quot;#[serde(default)] can only be used on structs \
-                             with named fields&quot;</span>,
-                        ),
-                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">syn</span>::<span class="ident">DataEnum</span> { <span class="kw-2">ref</span> <span class="ident">enum_token</span>, .. }) <span class="op">=&gt;</span> <span class="ident">cx</span>
+                            .<span class="ident">error_spanned_by</span>(
+                                <span class="ident">enum_token</span>,
+                                <span class="string">&quot;#[serde(default)] can only be used on structs \
+                                 with named fields&quot;</span>,
+                            ),
+                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                            <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+                        }) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                             <span class="ident">union_token</span>,
                             <span class="string">&quot;#[serde(default)] can only be used on structs \
                              with named fields&quot;</span>,
@@ -1980,22 +2036,28 @@
                     <span class="ident">Meta</span>(<span class="ident">NameValue</span>(<span class="kw-2">ref</span> <span class="ident">m</span>)) <span class="kw">if</span> <span class="ident">m</span>.<span class="ident">ident</span> <span class="op">==</span> <span class="string">&quot;default&quot;</span> <span class="op">=&gt;</span> {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">path</span>) <span class="op">=</span> <span class="ident">parse_lit_into_expr_path</span>(<span class="ident">cx</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">lit</span>) {
                             <span class="kw">match</span> <span class="ident">item</span>.<span class="ident">data</span> {
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">fields</span>, .. }) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">fields</span> {
-                                    <span class="ident">syn</span>::<span class="ident">Fields</span>::<span class="ident">Named</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
-                                        <span class="ident">default</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">Default</span>::<span class="ident">Path</span>(<span class="ident">path</span>));
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">fields</span>, .. }) <span class="op">=&gt;</span> {
+                                    <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">fields</span> {
+                                        <span class="ident">syn</span>::<span class="ident">Fields</span>::<span class="ident">Named</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
+                                            <span class="ident">default</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">Default</span>::<span class="ident">Path</span>(<span class="ident">path</span>));
+                                        }
+                                        <span class="ident">syn</span>::<span class="ident">Fields</span>::<span class="ident">Unnamed</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">syn</span>::<span class="ident">Fields</span>::<span class="ident">Unit</span> <span class="op">=&gt;</span> <span class="ident">cx</span>
+                                            .<span class="ident">error_spanned_by</span>(
+                                                <span class="ident">fields</span>,
+                                                <span class="string">&quot;#[serde(default = \&quot;...\&quot;)] can only be used \
+                                                 on structs with named fields&quot;</span>,
+                                            ),
                                     }
-                                    <span class="ident">syn</span>::<span class="ident">Fields</span>::<span class="ident">Unnamed</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">syn</span>::<span class="ident">Fields</span>::<span class="ident">Unit</span> <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                                        <span class="ident">fields</span>,
+                                }
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">syn</span>::<span class="ident">DataEnum</span> { <span class="kw-2">ref</span> <span class="ident">enum_token</span>, .. }) <span class="op">=&gt;</span> <span class="ident">cx</span>
+                                    .<span class="ident">error_spanned_by</span>(
+                                        <span class="ident">enum_token</span>,
                                         <span class="string">&quot;#[serde(default = \&quot;...\&quot;)] can only be used \
                                          on structs with named fields&quot;</span>,
-                                    )
-                                },
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">syn</span>::<span class="ident">DataEnum</span> { <span class="kw-2">ref</span> <span class="ident">enum_token</span>, .. }) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                                    <span class="ident">enum_token</span>,
-                                    <span class="string">&quot;#[serde(default = \&quot;...\&quot;)] can only be used \
-                                     on structs with named fields&quot;</span>,
-                                ),
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                                    ),
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                                    <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+                                }) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                     <span class="ident">union_token</span>,
                                     <span class="string">&quot;#[serde(default = \&quot;...\&quot;)] can only be used \
                                      on structs with named fields&quot;</span>,
@@ -2027,13 +2089,17 @@
                         <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
                             <span class="ident">untagged</span>.<span class="ident">set_true</span>(<span class="ident">word</span>);
                         }
-                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">struct_token</span>, .. }) <span class="op">=&gt;</span> {
+                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> {
+                            <span class="kw-2">ref</span> <span class="ident">struct_token</span>, ..
+                        }) <span class="op">=&gt;</span> {
                             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                 <span class="ident">struct_token</span>,
                                 <span class="string">&quot;#[serde(untagged)] can only be used on enums&quot;</span>,
                             );
                         }
-                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }) <span class="op">=&gt;</span> {
+                        <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                            <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+                        }) <span class="op">=&gt;</span> {
                             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                 <span class="ident">union_token</span>,
                                 <span class="string">&quot;#[serde(untagged)] can only be used on enums&quot;</span>,
@@ -2048,18 +2114,22 @@
                                 <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
                                     <span class="ident">internal_tag</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">s</span>.<span class="ident">value</span>());
                                 }
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">struct_token</span>, .. }) <span class="op">=&gt;</span> {
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> {
+                                    <span class="kw-2">ref</span> <span class="ident">struct_token</span>, ..
+                                }) <span class="op">=&gt;</span> {
                                     <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                         <span class="ident">struct_token</span>,
                                         <span class="string">&quot;#[serde(tag = \&quot;...\&quot;)] can only be used on enums&quot;</span>,
                                     );
-                                },
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }) <span class="op">=&gt;</span> {
+                                }
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                                    <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+                                }) <span class="op">=&gt;</span> {
                                     <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                         <span class="ident">union_token</span>,
                                         <span class="string">&quot;#[serde(tag = \&quot;...\&quot;)] can only be used on enums&quot;</span>,
                                     );
-                                },
+                                }
                             }
                         }
                     }
@@ -2071,18 +2141,22 @@
                                 <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
                                     <span class="ident">content</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">s</span>.<span class="ident">value</span>());
                                 }
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">struct_token</span>, .. }) <span class="op">=&gt;</span> {
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> {
+                                    <span class="kw-2">ref</span> <span class="ident">struct_token</span>, ..
+                                }) <span class="op">=&gt;</span> {
                                     <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                         <span class="ident">struct_token</span>,
                                         <span class="string">&quot;#[serde(content = \&quot;...\&quot;)] can only be used on enums&quot;</span>,
                                     );
-                                },
-                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }) <span class="op">=&gt;</span> {
+                                }
+                                <span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                                    <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+                                }) <span class="op">=&gt;</span> {
                                     <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                                         <span class="ident">union_token</span>,
                                         <span class="string">&quot;#[serde(content = \&quot;...\&quot;)] can only be used on enums&quot;</span>,
                                     );
-                                },
+                                }
                             }
                         }
                     }
@@ -2123,10 +2197,10 @@
                     }
 
                     <span class="ident">Meta</span>(<span class="kw-2">ref</span> <span class="ident">meta_item</span>) <span class="op">=&gt;</span> {
-                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">meta_item</span>.<span class="ident">name</span>(), <span class="macro">format</span><span class="macro">!</span>(
-                            <span class="string">&quot;unknown serde container attribute `{}`&quot;</span>,
-                            <span class="ident">meta_item</span>.<span class="ident">name</span>()
-                        ));
+                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                            <span class="ident">meta_item</span>.<span class="ident">name</span>(),
+                            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;unknown serde container attribute `{}`&quot;</span>, <span class="ident">meta_item</span>.<span class="ident">name</span>()),
+                        );
                     }
 
                     <span class="ident">Literal</span>(<span class="kw-2">ref</span> <span class="ident">lit</span>) <span class="op">=&gt;</span> {
@@ -2220,7 +2294,11 @@
     <span class="ident">internal_tag</span>: <span class="ident">Attr</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">content</span>: <span class="ident">Attr</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 ) <span class="op">-&gt;</span> <span class="ident">EnumTag</span> {
-    <span class="kw">match</span> (<span class="ident">untagged</span>.<span class="number">0</span>.<span class="ident">get_with_tokens</span>(), <span class="ident">internal_tag</span>.<span class="ident">get_with_tokens</span>(), <span class="ident">content</span>.<span class="ident">get_with_tokens</span>()) {
+    <span class="kw">match</span> (
+        <span class="ident">untagged</span>.<span class="number">0</span>.<span class="ident">get_with_tokens</span>(),
+        <span class="ident">internal_tag</span>.<span class="ident">get_with_tokens</span>(),
+        <span class="ident">content</span>.<span class="ident">get_with_tokens</span>(),
+    ) {
         (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="ident">EnumTag</span>::<span class="ident">External</span>,
         (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="ident">EnumTag</span>::<span class="prelude-val">None</span>,
         (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">tag</span>)), <span class="prelude-val">None</span>) <span class="op">=&gt;</span> {
@@ -2301,7 +2379,11 @@
     <span class="ident">field_identifier</span>: <span class="ident">BoolAttr</span>,
     <span class="ident">variant_identifier</span>: <span class="ident">BoolAttr</span>,
 ) <span class="op">-&gt;</span> <span class="ident">Identifier</span> {
-    <span class="kw">match</span> (<span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">data</span>, <span class="ident">field_identifier</span>.<span class="number">0</span>.<span class="ident">get_with_tokens</span>(), <span class="ident">variant_identifier</span>.<span class="number">0</span>.<span class="ident">get_with_tokens</span>()) {
+    <span class="kw">match</span> (
+        <span class="kw-2">&amp;</span><span class="ident">item</span>.<span class="ident">data</span>,
+        <span class="ident">field_identifier</span>.<span class="number">0</span>.<span class="ident">get_with_tokens</span>(),
+        <span class="ident">variant_identifier</span>.<span class="number">0</span>.<span class="ident">get_with_tokens</span>(),
+    ) {
         (<span class="kw">_</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="ident">Identifier</span>::<span class="ident">No</span>,
         (<span class="kw">_</span>, <span class="prelude-val">Some</span>((<span class="ident">field_identifier_tokens</span>, <span class="kw">_</span>)), <span class="prelude-val">Some</span>((<span class="ident">variant_identifier_tokens</span>, <span class="kw">_</span>))) <span class="op">=&gt;</span> {
             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
@@ -2316,28 +2398,52 @@
         }
         (<span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="kw">_</span>), <span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="ident">Identifier</span>::<span class="ident">Field</span>,
         (<span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> <span class="ident">Identifier</span>::<span class="ident">Variant</span>,
-        (<span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">struct_token</span>, .. }), <span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) <span class="op">=&gt;</span> {
+        (
+            <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> {
+                <span class="kw-2">ref</span> <span class="ident">struct_token</span>, ..
+            }),
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>),
+            <span class="prelude-val">None</span>,
+        ) <span class="op">=&gt;</span> {
             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                 <span class="ident">struct_token</span>,
                 <span class="string">&quot;#[serde(field_identifier)] can only be used on an enum&quot;</span>,
             );
             <span class="ident">Identifier</span>::<span class="ident">No</span>
         }
-        (<span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }), <span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) <span class="op">=&gt;</span> {
+        (
+            <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+            }),
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>),
+            <span class="prelude-val">None</span>,
+        ) <span class="op">=&gt;</span> {
             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                 <span class="ident">union_token</span>,
                 <span class="string">&quot;#[serde(field_identifier)] can only be used on an enum&quot;</span>,
             );
             <span class="ident">Identifier</span>::<span class="ident">No</span>
         }
-        (<span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> { <span class="kw-2">ref</span> <span class="ident">struct_token</span>, .. }), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {
+        (
+            <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">syn</span>::<span class="ident">DataStruct</span> {
+                <span class="kw-2">ref</span> <span class="ident">struct_token</span>, ..
+            }),
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>),
+        ) <span class="op">=&gt;</span> {
             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                 <span class="ident">struct_token</span>,
                 <span class="string">&quot;#[serde(variant_identifier)] can only be used on an enum&quot;</span>,
             );
             <span class="ident">Identifier</span>::<span class="ident">No</span>
         }
-        (<span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> { <span class="kw-2">ref</span> <span class="ident">union_token</span>, .. }), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {
+        (
+            <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Data</span>::<span class="ident">Union</span>(<span class="ident">syn</span>::<span class="ident">DataUnion</span> {
+                <span class="kw-2">ref</span> <span class="ident">union_token</span>, ..
+            }),
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>),
+        ) <span class="op">=&gt;</span> {
             <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
                 <span class="ident">union_token</span>,
                 <span class="string">&quot;#[serde(variant_identifier)] can only be used on an enum&quot;</span>,
@@ -2401,11 +2507,14 @@
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">get_lit_str</span>(<span class="ident">cx</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">lit</span>) {
                             <span class="kw">match</span> <span class="ident">RenameRule</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">value</span>()) {
                                 <span class="prelude-val">Ok</span>(<span class="ident">rename_rule</span>) <span class="op">=&gt;</span> <span class="ident">rename_all</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">rename_rule</span>),
-                                <span class="prelude-val">Err</span>(()) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">s</span>, <span class="macro">format</span><span class="macro">!</span>(
-                                    <span class="string">&quot;unknown rename rule for #[serde(rename_all \
-                                     = {:?})]&quot;</span>,
-                                    <span class="ident">s</span>.<span class="ident">value</span>()
-                                )),
+                                <span class="prelude-val">Err</span>(()) <span class="op">=&gt;</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                                    <span class="ident">s</span>,
+                                    <span class="macro">format</span><span class="macro">!</span>(
+                                        <span class="string">&quot;unknown rename rule for #[serde(rename_all \
+                                         = {:?})]&quot;</span>,
+                                        <span class="ident">s</span>.<span class="ident">value</span>()
+                                    ),
+                                ),
                             }
                         }
                     }
@@ -2495,17 +2604,14 @@
                     },
 
                     <span class="ident">Meta</span>(<span class="kw-2">ref</span> <span class="ident">meta_item</span>) <span class="op">=&gt;</span> {
-                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">meta_item</span>.<span class="ident">name</span>(), <span class="macro">format</span><span class="macro">!</span>(
-                            <span class="string">&quot;unknown serde variant attribute `{}`&quot;</span>,
-                            <span class="ident">meta_item</span>.<span class="ident">name</span>()
-                        ));
+                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                            <span class="ident">meta_item</span>.<span class="ident">name</span>(),
+                            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;unknown serde variant attribute `{}`&quot;</span>, <span class="ident">meta_item</span>.<span class="ident">name</span>()),
+                        );
                     }
 
                     <span class="ident">Literal</span>(<span class="kw-2">ref</span> <span class="ident">lit</span>) <span class="op">=&gt;</span> {
-                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                            <span class="ident">lit</span>,
-                            <span class="string">&quot;unexpected literal in serde variant attribute&quot;</span>,
-                        );
+                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="string">&quot;unexpected literal in serde variant attribute&quot;</span>);
                     }
                 }
             }
@@ -2772,10 +2878,13 @@
                             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">borrowable</span>) <span class="op">=</span> <span class="ident">borrowable_lifetimes</span>(<span class="ident">cx</span>, <span class="kw-2">&amp;</span><span class="ident">ident</span>, <span class="ident">field</span>) {
                                 <span class="kw">for</span> <span class="ident">lifetime</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">lifetimes</span> {
                                     <span class="kw">if</span> <span class="op">!</span><span class="ident">borrowable</span>.<span class="ident">contains</span>(<span class="ident">lifetime</span>) {
-                                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">field</span>, <span class="macro">format</span><span class="macro">!</span>(
-                                            <span class="string">&quot;field `{}` does not have lifetime {}&quot;</span>,
-                                            <span class="ident">ident</span>, <span class="ident">lifetime</span>
-                                        ));
+                                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                                            <span class="ident">field</span>,
+                                            <span class="macro">format</span><span class="macro">!</span>(
+                                                <span class="string">&quot;field `{}` does not have lifetime {}&quot;</span>,
+                                                <span class="ident">ident</span>, <span class="ident">lifetime</span>
+                                            ),
+                                        );
                                     }
                                 }
                                 <span class="ident">borrowed_lifetimes</span>.<span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>.<span class="ident">ident</span>, <span class="ident">lifetimes</span>);
@@ -2796,17 +2905,14 @@
                     }
 
                     <span class="ident">Meta</span>(<span class="kw-2">ref</span> <span class="ident">meta_item</span>) <span class="op">=&gt;</span> {
-                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">meta_item</span>.<span class="ident">name</span>(), <span class="macro">format</span><span class="macro">!</span>(
-                            <span class="string">&quot;unknown serde field attribute `{}`&quot;</span>,
-                            <span class="ident">meta_item</span>.<span class="ident">name</span>()
-                        ));
+                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                            <span class="ident">meta_item</span>.<span class="ident">name</span>(),
+                            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;unknown serde field attribute `{}`&quot;</span>, <span class="ident">meta_item</span>.<span class="ident">name</span>()),
+                        );
                     }
 
                     <span class="ident">Literal</span>(<span class="kw-2">ref</span> <span class="ident">lit</span>) <span class="op">=&gt;</span> {
-                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                            <span class="ident">lit</span>,
-                            <span class="string">&quot;unexpected literal in serde field attribute&quot;</span>,
-                        );
+                        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="string">&quot;unexpected literal in serde field attribute&quot;</span>);
                     }
                 }
             }
@@ -3000,11 +3106,14 @@
             }
 
             <span class="kw">_</span> <span class="op">=&gt;</span> {
-                <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">meta</span>, <span class="macro">format</span><span class="macro">!</span>(
-                    <span class="string">&quot;malformed {0} attribute, expected `{0}(serialize = ..., \
-                     deserialize = ...)`&quot;</span>,
-                    <span class="ident">attr_name</span>
-                ));
+                <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+                    <span class="ident">meta</span>,
+                    <span class="macro">format</span><span class="macro">!</span>(
+                        <span class="string">&quot;malformed {0} attribute, expected `{0}(serialize = ..., \
+                         deserialize = ...)`&quot;</span>,
+                        <span class="ident">attr_name</span>
+                    ),
+                );
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(());
             }
         }
@@ -3050,21 +3159,22 @@
     <span class="kw">if</span> <span class="kw">let</span> <span class="ident">syn</span>::<span class="ident">Lit</span>::<span class="ident">Str</span>(<span class="kw-2">ref</span> <span class="ident">lit</span>) <span class="op">=</span> <span class="kw-2">*</span><span class="ident">lit</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">lit</span>)
     } <span class="kw">else</span> {
-        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="macro">format</span><span class="macro">!</span>(
-            <span class="string">&quot;expected serde {} attribute to be a string: `{} = \&quot;...\&quot;`&quot;</span>,
-            <span class="ident">attr_name</span>, <span class="ident">meta_item_name</span>
-        ));
+        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+            <span class="ident">lit</span>,
+            <span class="macro">format</span><span class="macro">!</span>(
+                <span class="string">&quot;expected serde {} attribute to be a string: `{} = \&quot;...\&quot;`&quot;</span>,
+                <span class="ident">attr_name</span>, <span class="ident">meta_item_name</span>
+            ),
+        );
         <span class="prelude-val">Err</span>(())
     }
 }
 
 <span class="kw">fn</span> <span class="ident">parse_lit_into_path</span>(<span class="ident">cx</span>: <span class="kw-2">&amp;</span><span class="ident">Ctxt</span>, <span class="ident">attr_name</span>: <span class="kw-2">&amp;</span><span class="ident">Ident</span>, <span class="ident">lit</span>: <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Lit</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">syn</span>::<span class="ident">Path</span>, ()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">get_lit_str</span>(<span class="ident">cx</span>, <span class="ident">attr_name</span>, <span class="ident">attr_name</span>, <span class="ident">lit</span>));
-    <span class="ident">parse_lit_str</span>(<span class="ident">string</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-            <span class="ident">lit</span>,
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse path: {:?}&quot;</span>, <span class="ident">string</span>.<span class="ident">value</span>()),
-        ))
+    <span class="ident">parse_lit_str</span>(<span class="ident">string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse path: {:?}&quot;</span>, <span class="ident">string</span>.<span class="ident">value</span>()))
+    })
 }
 
 <span class="kw">fn</span> <span class="ident">parse_lit_into_expr_path</span>(
@@ -3073,11 +3183,9 @@
     <span class="ident">lit</span>: <span class="kw-2">&amp;</span><span class="ident">syn</span>::<span class="ident">Lit</span>,
 ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">syn</span>::<span class="ident">ExprPath</span>, ()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">get_lit_str</span>(<span class="ident">cx</span>, <span class="ident">attr_name</span>, <span class="ident">attr_name</span>, <span class="ident">lit</span>));
-    <span class="ident">parse_lit_str</span>(<span class="ident">string</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-            <span class="ident">lit</span>,
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse path: {:?}&quot;</span>, <span class="ident">string</span>.<span class="ident">value</span>()),
-        ))
+    <span class="ident">parse_lit_str</span>(<span class="ident">string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse path: {:?}&quot;</span>, <span class="ident">string</span>.<span class="ident">value</span>()))
+    })
 }
 
 <span class="kw">fn</span> <span class="ident">parse_lit_into_where</span>(
@@ -3102,11 +3210,10 @@
     <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(<span class="ident">get_lit_str</span>(<span class="ident">cx</span>, <span class="ident">attr_name</span>, <span class="ident">attr_name</span>, <span class="ident">lit</span>));
 
     <span class="ident">parse_lit_str</span>(<span class="ident">string</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="macro">format</span><span class="macro">!</span>(
-            <span class="string">&quot;failed to parse type: {} = {:?}&quot;</span>,
-            <span class="ident">attr_name</span>,
-            <span class="ident">string</span>.<span class="ident">value</span>()
-        ))
+        <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+            <span class="ident">lit</span>,
+            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse type: {} = {:?}&quot;</span>, <span class="ident">attr_name</span>, <span class="ident">string</span>.<span class="ident">value</span>()),
+        )
     })
 }
 
@@ -3135,19 +3242,16 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">set</span> <span class="op">=</span> <span class="ident">BTreeSet</span>::<span class="ident">new</span>();
         <span class="kw">for</span> <span class="ident">lifetime</span> <span class="kw">in</span> <span class="ident">lifetimes</span> {
             <span class="kw">if</span> <span class="op">!</span><span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">lifetime</span>.<span class="ident">clone</span>()) {
-                <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
-                    <span class="ident">lit</span>,
-                    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;duplicate borrowed lifetime `{}`&quot;</span>, <span class="ident">lifetime</span>),
-                );
+                <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;duplicate borrowed lifetime `{}`&quot;</span>, <span class="ident">lifetime</span>));
             }
         }
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">set</span>);
     }
 
-    <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(<span class="ident">lit</span>, <span class="macro">format</span><span class="macro">!</span>(
-        <span class="string">&quot;failed to parse borrowed lifetimes: {:?}&quot;</span>,
-        <span class="ident">string</span>.<span class="ident">value</span>()
-    ));
+    <span class="ident">cx</span>.<span class="ident">error_spanned_by</span>(
+        <span class="ident">lit</span>,
+        <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;failed to parse borrowed lifetimes: {:?}&quot;</span>, <span class="ident">string</span>.<span class="ident">value</span>()),
+    );
     <span class="prelude-val">Err</span>(())
 }
 
