@@ -38,7 +38,16 @@ fn actual_main() -> Result<(), i32> {
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
     let configuration = try!(cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")));
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
+    let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
+        cargo_update::ops::installed_git_repo_packages(&crates_file)
+    } else {
+        vec![]
+    };
 
+    if !installed_git_packages.is_empty() {
+        // Don't install registry packages on top of git ones (#103)
+        packages.retain(|p| installed_git_packages.iter().find(|gp| p.name == gp.name).is_none());
+    }
     if !opts.filter.is_empty() {
         packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
     }
@@ -52,8 +61,8 @@ fn actual_main() -> Result<(), i32> {
             }
         }
         (false, true) => {
-            panic!("No packages to update and -a not specified, this should've been caught by option parser (please report to \
-                    http://github.com/nabijaczleweli/cargo-update)")
+            panic!("No packages to update and -a not specified, this should've been caught by option parser \
+                    (please report to http://github.com/nabijaczleweli/cargo-update)")
         }
         (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install),
     }
@@ -205,7 +214,7 @@ fn actual_main() -> Result<(), i32> {
     }
 
     if opts.update_git {
-        let mut packages = cargo_update::ops::installed_git_repo_packages(&crates_file);
+        let mut packages = installed_git_packages;
 
         if !opts.filter.is_empty() {
             packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
