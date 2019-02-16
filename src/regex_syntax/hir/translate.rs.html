@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.4/src/hir/translate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>translate.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.5/src/hir/translate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>translate.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -2530,7 +2530,67 @@
 <span id="2530">2530</span>
 <span id="2531">2531</span>
 <span id="2532">2532</span>
-</pre><pre class="rust ">
+<span id="2533">2533</span>
+<span id="2534">2534</span>
+<span id="2535">2535</span>
+<span id="2536">2536</span>
+<span id="2537">2537</span>
+<span id="2538">2538</span>
+<span id="2539">2539</span>
+<span id="2540">2540</span>
+<span id="2541">2541</span>
+<span id="2542">2542</span>
+<span id="2543">2543</span>
+<span id="2544">2544</span>
+<span id="2545">2545</span>
+<span id="2546">2546</span>
+<span id="2547">2547</span>
+<span id="2548">2548</span>
+<span id="2549">2549</span>
+<span id="2550">2550</span>
+<span id="2551">2551</span>
+<span id="2552">2552</span>
+<span id="2553">2553</span>
+<span id="2554">2554</span>
+<span id="2555">2555</span>
+<span id="2556">2556</span>
+<span id="2557">2557</span>
+<span id="2558">2558</span>
+<span id="2559">2559</span>
+<span id="2560">2560</span>
+<span id="2561">2561</span>
+<span id="2562">2562</span>
+<span id="2563">2563</span>
+<span id="2564">2564</span>
+<span id="2565">2565</span>
+<span id="2566">2566</span>
+<span id="2567">2567</span>
+<span id="2568">2568</span>
+<span id="2569">2569</span>
+<span id="2570">2570</span>
+<span id="2571">2571</span>
+<span id="2572">2572</span>
+<span id="2573">2573</span>
+<span id="2574">2574</span>
+<span id="2575">2575</span>
+<span id="2576">2576</span>
+<span id="2577">2577</span>
+<span id="2578">2578</span>
+<span id="2579">2579</span>
+<span id="2580">2580</span>
+<span id="2581">2581</span>
+<span id="2582">2582</span>
+<span id="2583">2583</span>
+<span id="2584">2584</span>
+<span id="2585">2585</span>
+<span id="2586">2586</span>
+<span id="2587">2587</span>
+<span id="2588">2588</span>
+<span id="2589">2589</span>
+<span id="2590">2590</span>
+<span id="2591">2591</span>
+<span id="2592">2592</span>
+</pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2018 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
 <span class="comment">// http://rust-lang.org/COPYRIGHT.</span>
@@ -4947,40 +5007,68 @@ Defines a translator that converts an `Ast` to an `Hir`.
         <span class="comment">// Positive examples.</span>
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^^&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^$&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^$&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^foo&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;foo$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^foo&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;foo$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^foo|^bar&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;foo$|bar$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^foo|^bar&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;foo$|bar$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^(foo|bar)&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(foo|bar)$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^(foo|bar)&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(foo|bar)$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^+&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$+&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^+&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$+&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^++&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$++&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^++&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$++&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(^)+&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;($)+&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(^)+&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;($)+&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^&quot;</span>).<span class="ident">is_anchored_start</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^&quot;</span>).<span class="ident">is_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^|^$&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^|^$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^|^$&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^|^$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;\b^&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$\b&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;\b^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$\b&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^(?m:^)&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m:$)$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;^(?m:^)&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m:$)$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m:^)^&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$(?m:$)&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m:^)^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$(?m:$)&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="comment">// Negative examples.</span>
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;(?m)^&quot;</span>).<span class="ident">is_anchored_start</span>());
@@ -4992,21 +5080,53 @@ Defines a translator that converts an `Ast` to an `Hir`.
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;a^&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$a&quot;</span>).<span class="ident">is_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;a^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$a&quot;</span>).<span class="ident">is_line_anchored_start</span>());
 
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;a^&quot;</span>).<span class="ident">is_anchored_start</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$a&quot;</span>).<span class="ident">is_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;a^&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$a&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;a^&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$a&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^foo|bar&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;foo|bar$&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^foo|bar&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;foo|bar$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^*&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$*&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^*&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$*&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^*+&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$*+&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^*+&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$*+&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^+*&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$+*&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;^+*&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;$+*&quot;</span>).<span class="ident">is_line_anchored_end</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;(^)*&quot;</span>).<span class="ident">is_anchored_start</span>());
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;($)*&quot;</span>).<span class="ident">is_anchored_end</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;(^)*&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;($)*&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">analysis_is_line_anchored</span>() {
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m)^(foo|bar)&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m)(foo|bar)$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m)^foo|^bar&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m)foo$|bar$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m)^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m)$&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m:^$)|$^&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;(?m:^$)|$^&quot;</span>).<span class="ident">is_line_anchored_end</span>());
+
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^|(?m:^$)&quot;</span>).<span class="ident">is_line_anchored_start</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">t</span>(<span class="string">r&quot;$^|(?m:^$)&quot;</span>).<span class="ident">is_line_anchored_end</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -5063,5 +5183,5 @@ Defines a translator that converts an `Ast` to an `Hir`.
         <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">t</span>(<span class="string">r&quot;(?-u)\b&quot;</span>).<span class="ident">is_match_empty</span>());
     }
 }
-</pre>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../";window.currentCrate = "regex_syntax";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../";window.currentCrate = "regex_syntax";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-files.js"></script><script src="../../../source-script.js"></script><script defer src="../../../search-index.js"></script></body></html>
