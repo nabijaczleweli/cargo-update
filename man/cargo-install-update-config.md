@@ -64,7 +64,7 @@ See cargo-install-update(1) for general information.
 
     Set the directory containing cargo metadata.
 
-    Required. Default: "$CARGO_HOME", then $HOME/.cargo", otherwise manual.
+    Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
 
 ## EXAMPLES
 

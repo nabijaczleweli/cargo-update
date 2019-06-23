@@ -768,3 +768,50 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
         Some(try_opt!(obj.as_blob()).content().into())
     }
 }
+
+/// Check if there's a proxy specified to be used.
+///
+/// Look for `http.proxy` key in the `config` file parallel to the specified crates file.
+///
+/// Then look for `git`'s `http.proxy`.
+///
+/// Then for the `http_proxy`, `HTTP_PROXY`, `https_proxy`, and `HTTPS_PROXY` environment variables, in that order.
+///
+/// Based on Cargo's [`http_proxy_exists()` and
+/// `http_proxy()`](https://github.com/rust-lang/cargo/blob/eebd1da3a89e9c7788d109b3e615e1e25dc2cfcd/src/cargo/ops/registry.rs)
+///
+/// # Examples
+///
+/// ```
+/// # use cargo_update::ops::find_proxy;
+/// # use std::env::temp_dir;
+/// # let crates_file = temp_dir().join(".crates.toml");
+/// match find_proxy(crates_file) {
+///     Some(proxy) => println!("Proxy found at {}", proxy);
+///     None => println!("No proxy detected");
+/// }
+/// ```
+pub fn find_proxy(crates_file: &Path) -> Option<String> {
+    let config_file = crates_file.with_file_name("config");
+    if config_file.exists() {
+        let mut crates = String::new();
+        File::open(&config_file).unwrap().read_to_string(&mut crates).unwrap();
+
+        if let Some(proxy) = toml::from_str::<toml::Value>(&crates)
+            .unwrap()
+            .get("http")
+            .and_then(|t| t.as_table())
+            .and_then(|t| t.get("proxy"))
+            .and_then(|t| t.as_str()) {
+            return Some(proxy);
+        }
+    }
+
+    if let Ok(cfg) = git2::Config::open_default() {
+        if let Ok(s) = cfg.get_str("http.proxy") {
+            return Some(s.to_string());
+        }
+    }
+
+    ["http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"].iter().flat_map(env::var).next()
+}
