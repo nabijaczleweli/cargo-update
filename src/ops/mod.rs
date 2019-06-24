@@ -2,19 +2,19 @@
 //!
 //! Use `installed_main_repo_packages()` to list the installed packages,
 //! then use `intersect_packages()` to confirm which ones should be updated,
-//! poll the packages' latest versions by calling `MainRepoPackage::pull_version` on them,
+//! poll the packages' latest versions by calling `MainRepoPackage::pull_version()` on them,
 //! continue with doing whatever you wish.
 
 
-use git2::{self, Error as GitError, Repository, Tree, Oid};
+use git2::{self, Error as GitError, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
 use std::io::{Write, Read};
 use std::time::SystemTime;
+use std::{cmp, env};
 use regex::Regex;
 use url::Url;
-use std::cmp;
 use toml;
 use json;
 
@@ -351,17 +351,23 @@ impl GitRepoPackage {
     }
 
     /// Clone the repo and check what the latest commit's hash is.
-    pub fn pull_version<P: AsRef<Path>>(&mut self, temp_dir: P) {
-        self.pull_version_impl(temp_dir.as_ref())
+    pub fn pull_version<P: AsRef<Path>>(&mut self, temp_dir: P, http_proxy: Option<&str>) {
+        self.pull_version_impl(temp_dir.as_ref(), http_proxy)
     }
 
-    fn pull_version_impl(&mut self, temp_dir: &Path) {
+    fn pull_version_impl(&mut self, temp_dir: &Path, http_proxy: Option<&str>) {
         fs::create_dir_all(temp_dir).unwrap();
         let clone_dir = temp_dir.join(&self.name);
         let repo = if clone_dir.exists() {
             let mut r = git2::Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
-                r.find_remote("origin").and_then(|mut rm| rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")], None, None)).unwrap();
+                r.find_remote("origin")
+                    .and_then(|mut rm| {
+                        rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
+                                 http_proxy.map(fetch_options_from_proxy_url).as_mut(),
+                                 None)
+                    })
+                    .unwrap();
                 r.set_head("FETCH_HEAD").unwrap();
             }
             r
@@ -667,6 +673,17 @@ pub fn get_index_path(cargo_dir: &Path) -> Result<PathBuf, &'static str> {
         .path())
 }
 
+fn latest_modified(ent: &DirEntry) -> SystemTime {
+    let meta = ent.metadata().unwrap();
+    let mut latest = meta.modified().unwrap();
+    if meta.is_dir() {
+        for ent in fs::read_dir(ent.path()).unwrap() {
+            latest = cmp::max(latest, latest_modified(&ent.unwrap()));
+        }
+    }
+    latest
+}
+
 /// Update the specified index repository from the specified URL.
 ///
 /// Historically, `cargo search` was used, first of an
@@ -707,27 +724,30 @@ pub fn get_index_path(cargo_dir: &Path) -> Result<PathBuf, &'static str> {
 ///
 /// Most of this would have been impossible, of course, without the [`rust-lang` Discord server](https://discord.gg/rust-lang),
 /// so shoutout to whoever convinced people that Discord is actually good.
-pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, out: &mut W) -> Result<(), String> {
+pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_proxy: Option<&str>, out: &mut W) -> Result<(), String> {
     try!(writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string()));
     try!(index_repo.remote_anonymous(repo_url)
-        .and_then(|mut r| r.fetch(&["refs/heads/master:refs/remotes/origin/master"], None, None))
+        .and_then(|mut r| {
+            r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
+                    http_proxy.map(fetch_options_from_proxy_url).as_mut(),
+                    None)
+        })
         .map_err(|e| e.message().to_string()));
     try!(writeln!(out).map_err(|_| "failed to write post-update newline".to_string()));
 
     Ok(())
 }
 
-
-fn latest_modified(ent: &DirEntry) -> SystemTime {
-    let meta = ent.metadata().unwrap();
-    let mut latest = meta.modified().unwrap();
-    if meta.is_dir() {
-        for ent in fs::read_dir(ent.path()).unwrap() {
-            latest = cmp::max(latest, latest_modified(&ent.unwrap()));
-        }
-    }
-    latest
+fn fetch_options_from_proxy_url(proxy_url: &str) -> FetchOptions {
+    let mut ret = FetchOptions::new();
+    ret.proxy_options({
+        let mut prx = ProxyOptions::new();
+        prx.url(proxy_url);
+        prx
+    });
+    ret
 }
+
 
 /// Find package data in the specified cargo index tree.
 pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Vec<u8>> {
@@ -787,8 +807,8 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
 /// # use std::env::temp_dir;
 /// # let crates_file = temp_dir().join(".crates.toml");
 /// match find_proxy(crates_file) {
-///     Some(proxy) => println!("Proxy found at {}", proxy);
-///     None => println!("No proxy detected");
+///     Some(proxy) => println!("Proxy found at {}", proxy),
+///     None => println!("No proxy detected"),
 /// }
 /// ```
 pub fn find_proxy(crates_file: &Path) -> Option<String> {
@@ -803,7 +823,7 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
             .and_then(|t| t.as_table())
             .and_then(|t| t.get("proxy"))
             .and_then(|t| t.as_str()) {
-            return Some(proxy);
+            return Some(proxy.to_string());
         }
     }
 
