@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.48/src/unix/notbsd/linux/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script src="../../../../../storage.js"></script><link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico"></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../libc/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.58/src/unix/notbsd/linux/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../libc/index.html'><img src='../../../../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -2277,15 +2277,405 @@
 <span id="2277">2277</span>
 <span id="2278">2278</span>
 <span id="2279">2279</span>
+<span id="2280">2280</span>
+<span id="2281">2281</span>
+<span id="2282">2282</span>
+<span id="2283">2283</span>
+<span id="2284">2284</span>
+<span id="2285">2285</span>
+<span id="2286">2286</span>
+<span id="2287">2287</span>
+<span id="2288">2288</span>
+<span id="2289">2289</span>
+<span id="2290">2290</span>
+<span id="2291">2291</span>
+<span id="2292">2292</span>
+<span id="2293">2293</span>
+<span id="2294">2294</span>
+<span id="2295">2295</span>
+<span id="2296">2296</span>
+<span id="2297">2297</span>
+<span id="2298">2298</span>
+<span id="2299">2299</span>
+<span id="2300">2300</span>
+<span id="2301">2301</span>
+<span id="2302">2302</span>
+<span id="2303">2303</span>
+<span id="2304">2304</span>
+<span id="2305">2305</span>
+<span id="2306">2306</span>
+<span id="2307">2307</span>
+<span id="2308">2308</span>
+<span id="2309">2309</span>
+<span id="2310">2310</span>
+<span id="2311">2311</span>
+<span id="2312">2312</span>
+<span id="2313">2313</span>
+<span id="2314">2314</span>
+<span id="2315">2315</span>
+<span id="2316">2316</span>
+<span id="2317">2317</span>
+<span id="2318">2318</span>
+<span id="2319">2319</span>
+<span id="2320">2320</span>
+<span id="2321">2321</span>
+<span id="2322">2322</span>
+<span id="2323">2323</span>
+<span id="2324">2324</span>
+<span id="2325">2325</span>
+<span id="2326">2326</span>
+<span id="2327">2327</span>
+<span id="2328">2328</span>
+<span id="2329">2329</span>
+<span id="2330">2330</span>
+<span id="2331">2331</span>
+<span id="2332">2332</span>
+<span id="2333">2333</span>
+<span id="2334">2334</span>
+<span id="2335">2335</span>
+<span id="2336">2336</span>
+<span id="2337">2337</span>
+<span id="2338">2338</span>
+<span id="2339">2339</span>
+<span id="2340">2340</span>
+<span id="2341">2341</span>
+<span id="2342">2342</span>
+<span id="2343">2343</span>
+<span id="2344">2344</span>
+<span id="2345">2345</span>
+<span id="2346">2346</span>
+<span id="2347">2347</span>
+<span id="2348">2348</span>
+<span id="2349">2349</span>
+<span id="2350">2350</span>
+<span id="2351">2351</span>
+<span id="2352">2352</span>
+<span id="2353">2353</span>
+<span id="2354">2354</span>
+<span id="2355">2355</span>
+<span id="2356">2356</span>
+<span id="2357">2357</span>
+<span id="2358">2358</span>
+<span id="2359">2359</span>
+<span id="2360">2360</span>
+<span id="2361">2361</span>
+<span id="2362">2362</span>
+<span id="2363">2363</span>
+<span id="2364">2364</span>
+<span id="2365">2365</span>
+<span id="2366">2366</span>
+<span id="2367">2367</span>
+<span id="2368">2368</span>
+<span id="2369">2369</span>
+<span id="2370">2370</span>
+<span id="2371">2371</span>
+<span id="2372">2372</span>
+<span id="2373">2373</span>
+<span id="2374">2374</span>
+<span id="2375">2375</span>
+<span id="2376">2376</span>
+<span id="2377">2377</span>
+<span id="2378">2378</span>
+<span id="2379">2379</span>
+<span id="2380">2380</span>
+<span id="2381">2381</span>
+<span id="2382">2382</span>
+<span id="2383">2383</span>
+<span id="2384">2384</span>
+<span id="2385">2385</span>
+<span id="2386">2386</span>
+<span id="2387">2387</span>
+<span id="2388">2388</span>
+<span id="2389">2389</span>
+<span id="2390">2390</span>
+<span id="2391">2391</span>
+<span id="2392">2392</span>
+<span id="2393">2393</span>
+<span id="2394">2394</span>
+<span id="2395">2395</span>
+<span id="2396">2396</span>
+<span id="2397">2397</span>
+<span id="2398">2398</span>
+<span id="2399">2399</span>
+<span id="2400">2400</span>
+<span id="2401">2401</span>
+<span id="2402">2402</span>
+<span id="2403">2403</span>
+<span id="2404">2404</span>
+<span id="2405">2405</span>
+<span id="2406">2406</span>
+<span id="2407">2407</span>
+<span id="2408">2408</span>
+<span id="2409">2409</span>
+<span id="2410">2410</span>
+<span id="2411">2411</span>
+<span id="2412">2412</span>
+<span id="2413">2413</span>
+<span id="2414">2414</span>
+<span id="2415">2415</span>
+<span id="2416">2416</span>
+<span id="2417">2417</span>
+<span id="2418">2418</span>
+<span id="2419">2419</span>
+<span id="2420">2420</span>
+<span id="2421">2421</span>
+<span id="2422">2422</span>
+<span id="2423">2423</span>
+<span id="2424">2424</span>
+<span id="2425">2425</span>
+<span id="2426">2426</span>
+<span id="2427">2427</span>
+<span id="2428">2428</span>
+<span id="2429">2429</span>
+<span id="2430">2430</span>
+<span id="2431">2431</span>
+<span id="2432">2432</span>
+<span id="2433">2433</span>
+<span id="2434">2434</span>
+<span id="2435">2435</span>
+<span id="2436">2436</span>
+<span id="2437">2437</span>
+<span id="2438">2438</span>
+<span id="2439">2439</span>
+<span id="2440">2440</span>
+<span id="2441">2441</span>
+<span id="2442">2442</span>
+<span id="2443">2443</span>
+<span id="2444">2444</span>
+<span id="2445">2445</span>
+<span id="2446">2446</span>
+<span id="2447">2447</span>
+<span id="2448">2448</span>
+<span id="2449">2449</span>
+<span id="2450">2450</span>
+<span id="2451">2451</span>
+<span id="2452">2452</span>
+<span id="2453">2453</span>
+<span id="2454">2454</span>
+<span id="2455">2455</span>
+<span id="2456">2456</span>
+<span id="2457">2457</span>
+<span id="2458">2458</span>
+<span id="2459">2459</span>
+<span id="2460">2460</span>
+<span id="2461">2461</span>
+<span id="2462">2462</span>
+<span id="2463">2463</span>
+<span id="2464">2464</span>
+<span id="2465">2465</span>
+<span id="2466">2466</span>
+<span id="2467">2467</span>
+<span id="2468">2468</span>
+<span id="2469">2469</span>
+<span id="2470">2470</span>
+<span id="2471">2471</span>
+<span id="2472">2472</span>
+<span id="2473">2473</span>
+<span id="2474">2474</span>
+<span id="2475">2475</span>
+<span id="2476">2476</span>
+<span id="2477">2477</span>
+<span id="2478">2478</span>
+<span id="2479">2479</span>
+<span id="2480">2480</span>
+<span id="2481">2481</span>
+<span id="2482">2482</span>
+<span id="2483">2483</span>
+<span id="2484">2484</span>
+<span id="2485">2485</span>
+<span id="2486">2486</span>
+<span id="2487">2487</span>
+<span id="2488">2488</span>
+<span id="2489">2489</span>
+<span id="2490">2490</span>
+<span id="2491">2491</span>
+<span id="2492">2492</span>
+<span id="2493">2493</span>
+<span id="2494">2494</span>
+<span id="2495">2495</span>
+<span id="2496">2496</span>
+<span id="2497">2497</span>
+<span id="2498">2498</span>
+<span id="2499">2499</span>
+<span id="2500">2500</span>
+<span id="2501">2501</span>
+<span id="2502">2502</span>
+<span id="2503">2503</span>
+<span id="2504">2504</span>
+<span id="2505">2505</span>
+<span id="2506">2506</span>
+<span id="2507">2507</span>
+<span id="2508">2508</span>
+<span id="2509">2509</span>
+<span id="2510">2510</span>
+<span id="2511">2511</span>
+<span id="2512">2512</span>
+<span id="2513">2513</span>
+<span id="2514">2514</span>
+<span id="2515">2515</span>
+<span id="2516">2516</span>
+<span id="2517">2517</span>
+<span id="2518">2518</span>
+<span id="2519">2519</span>
+<span id="2520">2520</span>
+<span id="2521">2521</span>
+<span id="2522">2522</span>
+<span id="2523">2523</span>
+<span id="2524">2524</span>
+<span id="2525">2525</span>
+<span id="2526">2526</span>
+<span id="2527">2527</span>
+<span id="2528">2528</span>
+<span id="2529">2529</span>
+<span id="2530">2530</span>
+<span id="2531">2531</span>
+<span id="2532">2532</span>
+<span id="2533">2533</span>
+<span id="2534">2534</span>
+<span id="2535">2535</span>
+<span id="2536">2536</span>
+<span id="2537">2537</span>
+<span id="2538">2538</span>
+<span id="2539">2539</span>
+<span id="2540">2540</span>
+<span id="2541">2541</span>
+<span id="2542">2542</span>
+<span id="2543">2543</span>
+<span id="2544">2544</span>
+<span id="2545">2545</span>
+<span id="2546">2546</span>
+<span id="2547">2547</span>
+<span id="2548">2548</span>
+<span id="2549">2549</span>
+<span id="2550">2550</span>
+<span id="2551">2551</span>
+<span id="2552">2552</span>
+<span id="2553">2553</span>
+<span id="2554">2554</span>
+<span id="2555">2555</span>
+<span id="2556">2556</span>
+<span id="2557">2557</span>
+<span id="2558">2558</span>
+<span id="2559">2559</span>
+<span id="2560">2560</span>
+<span id="2561">2561</span>
+<span id="2562">2562</span>
+<span id="2563">2563</span>
+<span id="2564">2564</span>
+<span id="2565">2565</span>
+<span id="2566">2566</span>
+<span id="2567">2567</span>
+<span id="2568">2568</span>
+<span id="2569">2569</span>
+<span id="2570">2570</span>
+<span id="2571">2571</span>
+<span id="2572">2572</span>
+<span id="2573">2573</span>
+<span id="2574">2574</span>
+<span id="2575">2575</span>
+<span id="2576">2576</span>
+<span id="2577">2577</span>
+<span id="2578">2578</span>
+<span id="2579">2579</span>
+<span id="2580">2580</span>
+<span id="2581">2581</span>
+<span id="2582">2582</span>
+<span id="2583">2583</span>
+<span id="2584">2584</span>
+<span id="2585">2585</span>
+<span id="2586">2586</span>
+<span id="2587">2587</span>
+<span id="2588">2588</span>
+<span id="2589">2589</span>
+<span id="2590">2590</span>
+<span id="2591">2591</span>
+<span id="2592">2592</span>
+<span id="2593">2593</span>
+<span id="2594">2594</span>
+<span id="2595">2595</span>
+<span id="2596">2596</span>
+<span id="2597">2597</span>
+<span id="2598">2598</span>
+<span id="2599">2599</span>
+<span id="2600">2600</span>
+<span id="2601">2601</span>
+<span id="2602">2602</span>
+<span id="2603">2603</span>
+<span id="2604">2604</span>
+<span id="2605">2605</span>
+<span id="2606">2606</span>
+<span id="2607">2607</span>
+<span id="2608">2608</span>
+<span id="2609">2609</span>
+<span id="2610">2610</span>
+<span id="2611">2611</span>
+<span id="2612">2612</span>
+<span id="2613">2613</span>
+<span id="2614">2614</span>
+<span id="2615">2615</span>
+<span id="2616">2616</span>
+<span id="2617">2617</span>
+<span id="2618">2618</span>
+<span id="2619">2619</span>
+<span id="2620">2620</span>
+<span id="2621">2621</span>
+<span id="2622">2622</span>
+<span id="2623">2623</span>
+<span id="2624">2624</span>
+<span id="2625">2625</span>
+<span id="2626">2626</span>
+<span id="2627">2627</span>
+<span id="2628">2628</span>
+<span id="2629">2629</span>
+<span id="2630">2630</span>
+<span id="2631">2631</span>
+<span id="2632">2632</span>
+<span id="2633">2633</span>
+<span id="2634">2634</span>
+<span id="2635">2635</span>
+<span id="2636">2636</span>
+<span id="2637">2637</span>
+<span id="2638">2638</span>
+<span id="2639">2639</span>
+<span id="2640">2640</span>
+<span id="2641">2641</span>
+<span id="2642">2642</span>
+<span id="2643">2643</span>
+<span id="2644">2644</span>
+<span id="2645">2645</span>
+<span id="2646">2646</span>
+<span id="2647">2647</span>
+<span id="2648">2648</span>
+<span id="2649">2649</span>
+<span id="2650">2650</span>
+<span id="2651">2651</span>
+<span id="2652">2652</span>
+<span id="2653">2653</span>
+<span id="2654">2654</span>
+<span id="2655">2655</span>
+<span id="2656">2656</span>
+<span id="2657">2657</span>
+<span id="2658">2658</span>
+<span id="2659">2659</span>
+<span id="2660">2660</span>
+<span id="2661">2661</span>
+<span id="2662">2662</span>
+<span id="2663">2663</span>
+<span id="2664">2664</span>
+<span id="2665">2665</span>
+<span id="2666">2666</span>
+<span id="2667">2667</span>
+<span id="2668">2668</span>
+<span id="2669">2669</span>
+<span id="2670">2670</span>
+<span id="2671">2671</span>
+<span id="2672">2672</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Linux-specific definitions for linux-like values</span>
-
-<span class="kw">use</span> <span class="ident">dox</span>::{<span class="ident">mem</span>, <span class="prelude-ty">Option</span>};
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">useconds_t</span> <span class="op">=</span> <span class="ident">u32</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">dev_t</span> <span class="op">=</span> <span class="ident">u64</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">socklen_t</span> <span class="op">=</span> <span class="ident">u32</span>;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">pthread_t</span> <span class="op">=</span> <span class="ident">c_ulong</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">mode_t</span> <span class="op">=</span> <span class="ident">u32</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ino64_t</span> <span class="op">=</span> <span class="ident">u64</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">off64_t</span> <span class="op">=</span> <span class="ident">i64</span>;
@@ -2296,6 +2686,7 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">nl_item</span> <span class="op">=</span> ::<span class="ident">c_int</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">idtype_t</span> <span class="op">=</span> ::<span class="ident">c_uint</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">loff_t</span> <span class="op">=</span> ::<span class="ident">c_longlong</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">pthread_key_t</span> <span class="op">=</span> ::<span class="ident">c_uint</span>;
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__u8</span> <span class="op">=</span> ::<span class="ident">c_uchar</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">__u16</span> <span class="op">=</span> ::<span class="ident">c_ushort</span>;
@@ -2318,25 +2709,14 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Elf32_Section</span> <span class="op">=</span> <span class="ident">u16</span>;
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Elf64_Section</span> <span class="op">=</span> <span class="ident">u16</span>;
 
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;extra_traits&quot;</span>, <span class="ident">derive</span>(<span class="ident">Debug</span>))]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">fpos64_t</span> {} <span class="comment">// TODO: fill this out with a struct</span>
+<span class="kw">impl</span> ::<span class="ident">Copy</span> <span class="kw">for</span> <span class="ident">fpos64_t</span> {}
+<span class="kw">impl</span> ::<span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">fpos64_t</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">fpos64_t</span> { <span class="kw-2">*</span><span class="self">self</span> }
+}
 
 <span class="macro">s</span><span class="macro">!</span> {
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">dirent</span> {
-        <span class="kw">pub</span> <span class="ident">d_ino</span>: ::<span class="ident">ino_t</span>,
-        <span class="kw">pub</span> <span class="ident">d_off</span>: ::<span class="ident">off_t</span>,
-        <span class="kw">pub</span> <span class="ident">d_reclen</span>: ::<span class="ident">c_ushort</span>,
-        <span class="kw">pub</span> <span class="ident">d_type</span>: ::<span class="ident">c_uchar</span>,
-        <span class="kw">pub</span> <span class="ident">d_name</span>: [::<span class="ident">c_char</span>; <span class="number">256</span>],
-    }
-
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">dirent64</span> {
-        <span class="kw">pub</span> <span class="ident">d_ino</span>: ::<span class="ident">ino64_t</span>,
-        <span class="kw">pub</span> <span class="ident">d_off</span>: ::<span class="ident">off64_t</span>,
-        <span class="kw">pub</span> <span class="ident">d_reclen</span>: ::<span class="ident">c_ushort</span>,
-        <span class="kw">pub</span> <span class="ident">d_type</span>: ::<span class="ident">c_uchar</span>,
-        <span class="kw">pub</span> <span class="ident">d_name</span>: [::<span class="ident">c_char</span>; <span class="number">256</span>],
-    }
-
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">rlimit64</span> {
         <span class="kw">pub</span> <span class="ident">rlim_cur</span>: <span class="ident">rlim64_t</span>,
         <span class="kw">pub</span> <span class="ident">rlim_max</span>: <span class="ident">rlim64_t</span>,
@@ -2353,150 +2733,6 @@
         <span class="ident">__unused3</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>,
         <span class="ident">__unused4</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>,
         <span class="ident">__unused5</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>,
-    }
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>,
-                   <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">any</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>,
-                       <span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)))),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">8</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">pthread_mutex_t</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>),
-                  <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                      <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                          <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_long</span>; <span class="number">0</span>],
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                      <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                          <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_longlong</span>; <span class="number">0</span>],
-        <span class="ident">size</span>: [<span class="ident">u8</span>; <span class="ident">__SIZEOF_PTHREAD_MUTEX_T</span>],
-    }
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>,
-                   <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">any</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>,
-                       <span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                               <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)))),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">8</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">pthread_rwlock_t</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>),
-                  <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                      <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                          <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_long</span>; <span class="number">0</span>],
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc&quot;</span>,
-                      <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
-                          <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_longlong</span>; <span class="number">0</span>],
-        <span class="ident">size</span>: [<span class="ident">u8</span>; <span class="ident">__SIZEOF_PTHREAD_RWLOCK_T</span>],
-    }
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">any</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc64&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;s390x&quot;</span>,
-                       <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;sparc64&quot;</span>,
-                       <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>, <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>))),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>,
-                           <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc64&quot;</span>,
-                           <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;s390x&quot;</span>,
-                           <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;sparc64&quot;</span>,
-                           <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>, <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>)))),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">8</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">pthread_mutexattr_t</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">features</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>),
-                  <span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc64&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;s390x&quot;</span>,
-                      <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;sparc64&quot;</span>,
-                      <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>, <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>))))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_int</span>; <span class="number">0</span>],
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">features</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>),
-                  <span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc64&quot;</span>,
-                          <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips64&quot;</span>, <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;s390x&quot;</span>,
-                          <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;sparc64&quot;</span>,
-                          <span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>, <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>)))))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_long</span>; <span class="number">0</span>],
-        <span class="ident">size</span>: [<span class="ident">u8</span>; <span class="ident">__SIZEOF_PTHREAD_MUTEXATTR_T</span>],
-    }
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">any</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">not</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>),
-                   <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">8</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">pthread_rwlockattr_t</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>), <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_int</span>; <span class="number">0</span>],
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>), <span class="ident">not</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>)))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_long</span>; <span class="number">0</span>],
-        <span class="ident">size</span>: [<span class="ident">u8</span>; <span class="ident">__SIZEOF_PTHREAD_RWLOCKATTR_T</span>],
-    }
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>,
-                   <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>,
-                   <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">8</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">not</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>),
-                   <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>,
-                   <span class="ident">not</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>),
-                   <span class="ident">not</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)),
-               <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">8</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">pthread_cond_t</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>), <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>))]</span>
-        <span class="ident">__align</span>: [<span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_void</span>; <span class="number">0</span>],
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>, <span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>)))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_longlong</span>; <span class="number">0</span>],
-        <span class="ident">size</span>: [<span class="ident">u8</span>; <span class="ident">__SIZEOF_PTHREAD_COND_T</span>],
-    }
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>, <span class="ident">repr</span>(<span class="ident">align</span>(<span class="number">4</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">pthread_condattr_t</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;align&quot;</span>))]</span>
-        <span class="ident">__align</span>: [::<span class="ident">c_int</span>; <span class="number">0</span>],
-        <span class="ident">size</span>: [<span class="ident">u8</span>; <span class="ident">__SIZEOF_PTHREAD_CONDATTR_T</span>],
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">passwd</span> {
@@ -2522,40 +2758,40 @@
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">dqblk</span> {
-        <span class="kw">pub</span> <span class="ident">dqb_bhardlimit</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_bsoftlimit</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_curspace</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_ihardlimit</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_isoftlimit</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_curinodes</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_btime</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_itime</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">dqb_valid</span>: ::<span class="ident">uint32_t</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_bhardlimit</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_bsoftlimit</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_curspace</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_ihardlimit</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_isoftlimit</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_curinodes</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_btime</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_itime</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">dqb_valid</span>: <span class="ident">u32</span>,
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">signalfd_siginfo</span> {
-        <span class="kw">pub</span> <span class="ident">ssi_signo</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_errno</span>: ::<span class="ident">int32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_code</span>: ::<span class="ident">int32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_pid</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_uid</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_fd</span>: ::<span class="ident">int32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_tid</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_band</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_overrun</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_trapno</span>: ::<span class="ident">uint32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_status</span>: ::<span class="ident">int32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_int</span>: ::<span class="ident">int32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_ptr</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_utime</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_stime</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_addr</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_addr_lsb</span>: ::<span class="ident">uint16_t</span>,
-        <span class="ident">_pad2</span>: ::<span class="ident">uint16_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_syscall</span>: ::<span class="ident">int32_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_call_addr</span>: ::<span class="ident">uint64_t</span>,
-        <span class="kw">pub</span> <span class="ident">ssi_arch</span>: ::<span class="ident">uint32_t</span>,
-        <span class="ident">_pad</span>: [::<span class="ident">uint8_t</span>; <span class="number">28</span>],
+        <span class="kw">pub</span> <span class="ident">ssi_signo</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_errno</span>: <span class="ident">i32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_code</span>: <span class="ident">i32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_pid</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_uid</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_fd</span>: <span class="ident">i32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_tid</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_band</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_overrun</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_trapno</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_status</span>: <span class="ident">i32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_int</span>: <span class="ident">i32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_ptr</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_utime</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_stime</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_addr</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_addr_lsb</span>: <span class="ident">u16</span>,
+        <span class="ident">_pad2</span>: <span class="ident">u16</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_syscall</span>: <span class="ident">i32</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_call_addr</span>: <span class="ident">u64</span>,
+        <span class="kw">pub</span> <span class="ident">ssi_arch</span>: <span class="ident">u32</span>,
+        <span class="ident">_pad</span>: [<span class="ident">u8</span>; <span class="number">28</span>],
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">itimerspec</span> {
@@ -2565,32 +2801,6 @@
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">fsid_t</span> {
         <span class="ident">__val</span>: [::<span class="ident">c_int</span>; <span class="number">2</span>],
-    }
-
-    <span class="comment">// x32 compatibility</span>
-    <span class="comment">// See https://sourceware.org/bugzilla/show_bug.cgi?id=21279</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">mq_attr</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_flags</span>: <span class="ident">i64</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_maxmsg</span>: <span class="ident">i64</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_msgsize</span>: <span class="ident">i64</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_curmsgs</span>: <span class="ident">i64</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
-        <span class="ident">pad</span>: [<span class="ident">i64</span>; <span class="number">4</span>],
-
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_flags</span>: ::<span class="ident">c_long</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_maxmsg</span>: ::<span class="ident">c_long</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_msgsize</span>: ::<span class="ident">c_long</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
-        <span class="kw">pub</span> <span class="ident">mq_curmsgs</span>: ::<span class="ident">c_long</span>,
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
-        <span class="ident">pad</span>: [::<span class="ident">c_long</span>; <span class="number">4</span>],
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">packet_mreq</span> {
@@ -2624,11 +2834,6 @@
         <span class="kw">pub</span> <span class="ident">msgssz</span>: ::<span class="ident">c_int</span>,
         <span class="kw">pub</span> <span class="ident">msgtql</span>: ::<span class="ident">c_int</span>,
         <span class="kw">pub</span> <span class="ident">msgseg</span>: ::<span class="ident">c_ushort</span>,
-    }
-
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">mmsghdr</span> {
-        <span class="kw">pub</span> <span class="ident">msg_hdr</span>: ::<span class="ident">msghdr</span>,
-        <span class="kw">pub</span> <span class="ident">msg_len</span>: ::<span class="ident">c_uint</span>,
     }
 
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">sembuf</span> {
@@ -2935,6 +3140,351 @@
         <span class="kw">pub</span> <span class="ident">updated</span>: ::<span class="ident">c_ulong</span>,
         <span class="kw">pub</span> <span class="ident">ha</span>: [::<span class="ident">c_uchar</span>; ::<span class="ident">MAX_ADDR_LEN</span>],
     }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">inotify_event</span> {
+        <span class="kw">pub</span> <span class="ident">wd</span>: ::<span class="ident">c_int</span>,
+        <span class="kw">pub</span> <span class="ident">mask</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">cookie</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">len</span>: <span class="ident">u32</span>
+    }
+}
+
+<span class="macro">s_no_extra_traits</span><span class="macro">!</span>{
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">sockaddr_nl</span> {
+        <span class="kw">pub</span> <span class="ident">nl_family</span>: ::<span class="ident">sa_family_t</span>,
+        <span class="ident">nl_pad</span>: ::<span class="ident">c_ushort</span>,
+        <span class="kw">pub</span> <span class="ident">nl_pid</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">nl_groups</span>: <span class="ident">u32</span>
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">dirent</span> {
+        <span class="kw">pub</span> <span class="ident">d_ino</span>: ::<span class="ident">ino_t</span>,
+        <span class="kw">pub</span> <span class="ident">d_off</span>: ::<span class="ident">off_t</span>,
+        <span class="kw">pub</span> <span class="ident">d_reclen</span>: ::<span class="ident">c_ushort</span>,
+        <span class="kw">pub</span> <span class="ident">d_type</span>: ::<span class="ident">c_uchar</span>,
+        <span class="kw">pub</span> <span class="ident">d_name</span>: [::<span class="ident">c_char</span>; <span class="number">256</span>],
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">dirent64</span> {
+        <span class="kw">pub</span> <span class="ident">d_ino</span>: ::<span class="ident">ino64_t</span>,
+        <span class="kw">pub</span> <span class="ident">d_off</span>: ::<span class="ident">off64_t</span>,
+        <span class="kw">pub</span> <span class="ident">d_reclen</span>: ::<span class="ident">c_ushort</span>,
+        <span class="kw">pub</span> <span class="ident">d_type</span>: ::<span class="ident">c_uchar</span>,
+        <span class="kw">pub</span> <span class="ident">d_name</span>: [::<span class="ident">c_char</span>; <span class="number">256</span>],
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">sockaddr_alg</span> {
+        <span class="kw">pub</span> <span class="ident">salg_family</span>: ::<span class="ident">sa_family_t</span>,
+        <span class="kw">pub</span> <span class="ident">salg_type</span>: [::<span class="ident">c_uchar</span>; <span class="number">14</span>],
+        <span class="kw">pub</span> <span class="ident">salg_feat</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">salg_mask</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">salg_name</span>: [::<span class="ident">c_uchar</span>; <span class="number">64</span>],
+    }
+
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">af_alg_iv</span> {
+        <span class="kw">pub</span> <span class="ident">ivlen</span>: <span class="ident">u32</span>,
+        <span class="kw">pub</span> <span class="ident">iv</span>: [::<span class="ident">c_uchar</span>; <span class="number">0</span>],
+    }
+
+    <span class="comment">// x32 compatibility</span>
+    <span class="comment">// See https://sourceware.org/bugzilla/show_bug.cgi?id=21279</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">mq_attr</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_flags</span>: <span class="ident">i64</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_maxmsg</span>: <span class="ident">i64</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_msgsize</span>: <span class="ident">i64</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_curmsgs</span>: <span class="ident">i64</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>))]</span>
+        <span class="ident">pad</span>: [<span class="ident">i64</span>; <span class="number">4</span>],
+
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_flags</span>: ::<span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_maxmsg</span>: ::<span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_msgsize</span>: ::<span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
+        <span class="kw">pub</span> <span class="ident">mq_curmsgs</span>: ::<span class="ident">c_long</span>,
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)))]</span>
+        <span class="ident">pad</span>: [::<span class="ident">c_long</span>; <span class="number">4</span>],
+    }
+}
+
+<span class="macro">cfg_if</span><span class="macro">!</span> {
+    <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;extra_traits&quot;</span>)]</span> {
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">sockaddr_nl</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">sockaddr_nl</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">nl_family</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">nl_family</span> <span class="op">&amp;&amp;</span>
+                    <span class="self">self</span>.<span class="ident">nl_pid</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">nl_pid</span> <span class="op">&amp;&amp;</span>
+                    <span class="self">self</span>.<span class="ident">nl_groups</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">nl_groups</span>
+            }
+        }
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">sockaddr_nl</span> {}
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">sockaddr_nl</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;sockaddr_nl&quot;</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;nl_family&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nl_family</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;nl_pid&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nl_pid</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;nl_groups&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nl_groups</span>)
+                    .<span class="ident">finish</span>()
+            }
+        }
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">sockaddr_nl</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">nl_family</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">nl_pid</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">nl_groups</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">dirent</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">dirent</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">d_ino</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_ino</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">d_off</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_off</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">d_reclen</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_reclen</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">d_type</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_type</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>
+                    .<span class="ident">d_name</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">d_name</span>.<span class="ident">iter</span>())
+                    .<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>,<span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">dirent</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">dirent</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;dirent&quot;</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_ino&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_ino</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_off&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_off</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_reclen&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_reclen</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_type&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_type</span>)
+                <span class="comment">// FIXME: .field(&quot;d_name&quot;, &amp;self.d_name)</span>
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">dirent</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">d_ino</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_off</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_reclen</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_type</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_name</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">dirent64</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">dirent64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">d_ino</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_ino</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">d_off</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_off</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">d_reclen</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_reclen</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">d_type</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">d_type</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>
+                    .<span class="ident">d_name</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">d_name</span>.<span class="ident">iter</span>())
+                    .<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>,<span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">dirent64</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">dirent64</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;dirent64&quot;</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_ino&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_ino</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_off&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_off</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_reclen&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_reclen</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;d_type&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">d_type</span>)
+                <span class="comment">// FIXME: .field(&quot;d_name&quot;, &amp;self.d_name)</span>
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">dirent64</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">d_ino</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_off</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_reclen</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_type</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">d_name</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">pthread_cond_t</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">pthread_cond_t</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">size</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">size</span>.<span class="ident">iter</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>,<span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">pthread_cond_t</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">pthread_cond_t</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;pthread_cond_t&quot;</span>)
+                <span class="comment">// FIXME: .field(&quot;size&quot;, &amp;self.size)</span>
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">pthread_cond_t</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">size</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">pthread_mutex_t</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">pthread_mutex_t</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">size</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">size</span>.<span class="ident">iter</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>,<span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">pthread_mutex_t</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">pthread_mutex_t</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;pthread_mutex_t&quot;</span>)
+                <span class="comment">// FIXME: .field(&quot;size&quot;, &amp;self.size)</span>
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">pthread_mutex_t</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">size</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">pthread_rwlock_t</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">pthread_rwlock_t</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">size</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">size</span>.<span class="ident">iter</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>,<span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">pthread_rwlock_t</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">pthread_rwlock_t</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;pthread_rwlock_t&quot;</span>)
+                <span class="comment">// FIXME: .field(&quot;size&quot;, &amp;self.size)</span>
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">pthread_rwlock_t</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">size</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">sockaddr_alg</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">sockaddr_alg</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">salg_family</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">salg_family</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>
+                    .<span class="ident">salg_type</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">salg_type</span>.<span class="ident">iter</span>())
+                    .<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">salg_feat</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">salg_feat</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">salg_mask</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">salg_mask</span>
+                    <span class="op">&amp;&amp;</span> <span class="self">self</span>
+                    .<span class="ident">salg_name</span>
+                    .<span class="ident">iter</span>()
+                    .<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">salg_name</span>.<span class="ident">iter</span>())
+                    .<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>)
+           }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">sockaddr_alg</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">sockaddr_alg</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;sockaddr_alg&quot;</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;salg_family&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">salg_family</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;salg_type&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">salg_type</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;salg_feat&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">salg_feat</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;salg_mask&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">salg_mask</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;salg_name&quot;</span>, <span class="op">&amp;&amp;</span><span class="self">self</span>.<span class="ident">salg_name</span>[..])
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">sockaddr_alg</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">salg_family</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">salg_type</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">salg_feat</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">salg_mask</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">salg_name</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">af_alg_iv</span> {
+            <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
+                <span class="kw">unsafe</span> {
+                    ::<span class="ident">core</span>::<span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(
+                        <span class="self">self</span>.<span class="ident">iv</span>.<span class="ident">as_ptr</span>(),
+                        <span class="self">self</span>.<span class="ident">ivlen</span> <span class="kw">as</span> <span class="ident">usize</span>
+                    )
+                }
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">af_alg_iv</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">af_alg_iv</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">as_slice</span>() <span class="op">==</span> <span class="kw-2">*</span><span class="ident">other</span>.<span class="ident">as_slice</span>()
+           }
+        }
+
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">af_alg_iv</span> {}
+
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">af_alg_iv</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;af_alg_iv&quot;</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;iv&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_slice</span>())
+                    .<span class="ident">finish</span>()
+            }
+        }
+
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">af_alg_iv</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">as_slice</span>().<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+
+        <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">mq_attr</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">mq_attr</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+                <span class="self">self</span>.<span class="ident">mq_flags</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">mq_flags</span> <span class="op">&amp;&amp;</span>
+                <span class="self">self</span>.<span class="ident">mq_maxmsg</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">mq_maxmsg</span> <span class="op">&amp;&amp;</span>
+                <span class="self">self</span>.<span class="ident">mq_msgsize</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">mq_msgsize</span> <span class="op">&amp;&amp;</span>
+                <span class="self">self</span>.<span class="ident">mq_curmsgs</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">mq_curmsgs</span>
+            }
+        }
+        <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">mq_attr</span> {}
+        <span class="kw">impl</span> ::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">mq_attr</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+                <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;mq_attr&quot;</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;mq_flags&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">mq_flags</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;mq_maxmsg&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">mq_maxmsg</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;mq_msgsize&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">mq_msgsize</span>)
+                    .<span class="ident">field</span>(<span class="string">&quot;mq_curmsgs&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">mq_curmsgs</span>)
+                    .<span class="ident">finish</span>()
+            }
+        }
+        <span class="kw">impl</span> ::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">mq_attr</span> {
+            <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: ::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+                <span class="self">self</span>.<span class="ident">mq_flags</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">mq_maxmsg</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">mq_msgsize</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+                <span class="self">self</span>.<span class="ident">mq_curmsgs</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+            }
+        }
+    }
 }
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ABDAY_1</span>: ::<span class="ident">nl_item</span> <span class="op">=</span> <span class="number">0x20000</span>;
@@ -3031,6 +3581,8 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">_PC_ALLOC_SIZE_MIN</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">18</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">_PC_SYMLINK_MAX</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">19</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">_PC_2_SYMLINKS</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">20</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">MS_NOUSER</span>: ::<span class="ident">c_ulong</span> <span class="op">=</span> <span class="number">0xffffffff80000000</span>;
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">_SC_ARG_MAX</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">_SC_CHILD_MAX</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">1</span>;
@@ -3203,30 +3755,62 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_TLOCK</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">2</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_ULOCK</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0</span>;
 
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">F_SEAL_FUTURE_WRITE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x0010</span>;
+
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_LOWER_UP</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x10000</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_DORMANT</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x20000</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_ECHO</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x40000</span>;
 
+<span class="comment">// linux/if_addr.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_UNSPEC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_ADDRESS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_LOCAL</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_LABEL</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_BROADCAST</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_ANYCAST</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_CACHEINFO</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_MULTICAST</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">7</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_SECONDARY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_TEMPORARY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_NODAD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x02</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_OPTIMISTIC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x04</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_DADFAILED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x08</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_HOMEADDRESS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_DEPRECATED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x20</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_TENTATIVE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x40</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFA_F_PERMANENT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x80</span>;
+
+<span class="comment">// linux/if_link.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_UNSPEC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_ADDRESS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_BROADCAST</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_IFNAME</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_MTU</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_LINK</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_QDISC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFLA_STATS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">7</span>;
+
 <span class="comment">// linux/if_tun.h</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_TUN</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x0001</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_TAP</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x0002</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_NO_PI</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x1000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_TUN</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x0001</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_TAP</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x0002</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_NO_PI</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x1000</span>;
 <span class="comment">// Read queue size</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TUN_READQ_SIZE</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">500</span>;
 <span class="comment">// TUN device type flags: deprecated. Use IFF_TUN/IFF_TAP instead.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TUN_TUN_DEV</span>: ::<span class="ident">c_short</span>   <span class="op">=</span> ::<span class="ident">IFF_TUN</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TUN_TAP_DEV</span>: ::<span class="ident">c_short</span>   <span class="op">=</span> ::<span class="ident">IFF_TAP</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TUN_TUN_DEV</span>: ::<span class="ident">c_short</span>   <span class="op">=</span> ::<span class="ident">IFF_TUN</span> <span class="kw">as</span> ::<span class="ident">c_short</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TUN_TAP_DEV</span>: ::<span class="ident">c_short</span>   <span class="op">=</span> ::<span class="ident">IFF_TAP</span> <span class="kw">as</span> ::<span class="ident">c_short</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TUN_TYPE_MASK</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x000f</span>;
 <span class="comment">// This flag has no real effect</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_ONE_QUEUE</span>: ::<span class="ident">c_short</span>    <span class="op">=</span> <span class="number">0x2000</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_VNET_HDR</span>: ::<span class="ident">c_short</span>     <span class="op">=</span> <span class="number">0x4000</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_TUN_EXCL</span>: ::<span class="ident">c_short</span>     <span class="op">=</span> <span class="number">0x8000</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_MULTI_QUEUE</span>: ::<span class="ident">c_short</span>  <span class="op">=</span> <span class="number">0x0100</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_ATTACH_QUEUE</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x0200</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_DETACH_QUEUE</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x0400</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_ONE_QUEUE</span>: ::<span class="ident">c_int</span>    <span class="op">=</span> <span class="number">0x2000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_VNET_HDR</span>: ::<span class="ident">c_int</span>     <span class="op">=</span> <span class="number">0x4000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_TUN_EXCL</span>: ::<span class="ident">c_int</span>     <span class="op">=</span> <span class="number">0x8000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_MULTI_QUEUE</span>: ::<span class="ident">c_int</span>  <span class="op">=</span> <span class="number">0x0100</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_ATTACH_QUEUE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x0200</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_DETACH_QUEUE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x0400</span>;
 <span class="comment">// read-only flag</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_PERSIST</span>: ::<span class="ident">c_short</span>  <span class="op">=</span> <span class="number">0x0800</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_NOFILTER</span>: ::<span class="ident">c_short</span> <span class="op">=</span> <span class="number">0x1000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_PERSIST</span>: ::<span class="ident">c_int</span>  <span class="op">=</span> <span class="number">0x0800</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IFF_NOFILTER</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x1000</span>;
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ST_RDONLY</span>: ::<span class="ident">c_ulong</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ST_NOSUID</span>: ::<span class="ident">c_ulong</span> <span class="op">=</span> <span class="number">2</span>;
@@ -3589,12 +4173,22 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FALLOC_FL_INSERT_RANGE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x20</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FALLOC_FL_UNSHARE_RANGE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x40</span>;
 
-<span class="comment">// On Linux, libc doesn&#39;t define this constant, libattr does instead.</span>
-<span class="comment">// We still define it for Linux as it&#39;s defined by libc on other platforms,</span>
-<span class="comment">// and it&#39;s mentioned in the man pages for getxattr and setxattr.</span>
+<span class="attribute">#[<span class="ident">deprecated</span>(
+    <span class="ident">since</span> <span class="op">=</span> <span class="string">&quot;0.2.55&quot;</span>,
+    <span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;ENOATTR is not available on Linux; use ENODATA instead&quot;</span>
+)]</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ENOATTR</span>: ::<span class="ident">c_int</span> <span class="op">=</span> ::<span class="ident">ENODATA</span>;
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SO_ORIGINAL_DST</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">80</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IP_ORIGDSTADDR</span> : ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">20</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IP_RECVORIGDSTADDR</span> : ::<span class="ident">c_int</span> <span class="op">=</span> <span class="ident">IP_ORIGDSTADDR</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_ORIGDSTADDR</span> : ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">74</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_RECVORIGDSTADDR</span> : ::<span class="ident">c_int</span> <span class="op">=</span> <span class="ident">IPV6_ORIGDSTADDR</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_FLOWINFO</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">11</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_FLOWLABEL_MGR</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">32</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_FLOWINFO_SEND</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">33</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_FLOWINFO_FLOWLABEL</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x000fffff</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IPV6_FLOWINFO_PRIORITY</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0x0ff00000</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IUTF8</span>: ::<span class="ident">tcflag_t</span> <span class="op">=</span> <span class="number">0x00004000</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CMSPAR</span>: ::<span class="ident">tcflag_t</span> <span class="op">=</span> <span class="number">0o10000000000</span>;
 
@@ -3941,6 +4535,99 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_CLASS_LOCAL</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">255</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_CLASS_MAX</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">255</span>;
 
+<span class="comment">// linux/neighbor.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_NONE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x00</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_INCOMPLETE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_REACHABLE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x02</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_STALE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x04</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_DELAY</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x08</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_PROBE</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_FAILED</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x20</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_NOARP</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x40</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NUD_PERMANENT</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x80</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NTF_USE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x01</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NTF_SELF</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x02</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NTF_MASTER</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x04</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NTF_PROXY</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x08</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NTF_ROUTER</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x80</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_UNSPEC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_DST</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_LLADDR</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_CACHEINFO</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_PROBES</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_VLAN</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_PORT</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_VNI</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NDA_IFINDEX</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">8</span>;
+
+<span class="comment">// linux/rtnetlink.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_UNSPEC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_KIND</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_OPTIONS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_STATS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_XSTATS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_RATE</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_FCNT</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_STATS2</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TCA_STAB</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">8</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTM_F_NOTIFY</span>: ::<span class="ident">c_uint</span> <span class="op">=</span> <span class="number">0x100</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTM_F_CLONED</span>: ::<span class="ident">c_uint</span> <span class="op">=</span> <span class="number">0x200</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTM_F_EQUALIZE</span>: ::<span class="ident">c_uint</span> <span class="op">=</span> <span class="number">0x400</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTM_F_PREFIX</span>: ::<span class="ident">c_uint</span> <span class="op">=</span> <span class="number">0x800</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_UNSPEC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_DST</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_SRC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_IIF</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_OIF</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_GATEWAY</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_PRIORITY</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_PREFSRC</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_METRICS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_MULTIPATH</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">9</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_PROTOINFO</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">10</span>; <span class="comment">// No longer used</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_FLOW</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">11</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_CACHEINFO</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">12</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_SESSION</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">13</span>; <span class="comment">// No longer used</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_MP_ALGO</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">14</span>; <span class="comment">// No longer used</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_TABLE</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">15</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_MARK</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">16</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTA_MFC_STATS</span>: ::<span class="ident">c_ushort</span> <span class="op">=</span> <span class="number">17</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_UNSPEC</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_UNICAST</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_LOCAL</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_BROADCAST</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_ANYCAST</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_MULTICAST</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_BLACKHOLE</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_UNREACHABLE</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_PROHIBIT</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_THROW</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">9</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_NAT</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTN_XRESOLVE</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">11</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTPROT_UNSPEC</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTPROT_REDIRECT</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTPROT_KERNEL</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTPROT_BOOT</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTPROT_STATIC</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">4</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_SCOPE_UNIVERSE</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_SCOPE_SITE</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">200</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_SCOPE_LINK</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">253</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_SCOPE_HOST</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">254</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_SCOPE_NOWHERE</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">255</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_TABLE_UNSPEC</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_TABLE_COMPAT</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">252</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_TABLE_DEFAULT</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">253</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_TABLE_MAIN</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">254</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RT_TABLE_LOCAL</span>: ::<span class="ident">c_uchar</span> <span class="op">=</span> <span class="number">255</span>;
+
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTMSG_OVERRUN</span>: <span class="ident">u32</span> <span class="op">=</span> ::<span class="ident">NLMSG_OVERRUN</span> <span class="kw">as</span> <span class="ident">u32</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTMSG_NEWDEVICE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x11</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RTMSG_DELDEVICE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x12</span>;
@@ -3976,7 +4663,92 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SOF_TIMESTAMPING_SYS_HARDWARE</span>: ::<span class="ident">c_uint</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">5</span>;
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SOF_TIMESTAMPING_RAW_HARDWARE</span>: ::<span class="ident">c_uint</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">6</span>;
 
+<span class="comment">// linux/if_alg.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_SET_KEY</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_SET_IV</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_SET_OP</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_SET_AEAD_ASSOCLEN</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_SET_AEAD_AUTHSIZE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">5</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_OP_DECRYPT</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ALG_OP_ENCRYPT</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">1</span>;
+
+<span class="comment">// uapi/linux/inotify.h</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_ACCESS</span>:        <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0001</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_MODIFY</span>:        <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0002</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_ATTRIB</span>:        <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0004</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_CLOSE_WRITE</span>:   <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0008</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_CLOSE_NOWRITE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0010</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_CLOSE</span>:         <span class="ident">u32</span> <span class="op">=</span> (<span class="ident">IN_CLOSE_WRITE</span> <span class="op">|</span> <span class="ident">IN_CLOSE_NOWRITE</span>);
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_OPEN</span>:          <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0020</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_MOVED_FROM</span>:    <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0040</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_MOVED_TO</span>:      <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0080</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_MOVE</span>:          <span class="ident">u32</span> <span class="op">=</span> (<span class="ident">IN_MOVED_FROM</span> <span class="op">|</span> <span class="ident">IN_MOVED_TO</span>);
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_CREATE</span>:        <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0100</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_DELETE</span>:        <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0200</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_DELETE_SELF</span>:   <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0400</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_MOVE_SELF</span>:     <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_0800</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_UNMOUNT</span>:       <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_2000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_Q_OVERFLOW</span>:    <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_4000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_IGNORED</span>:       <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0000_8000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_ONLYDIR</span>:       <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0100_0000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_DONT_FOLLOW</span>:   <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0200_0000</span>;
+<span class="comment">// pub const IN_EXCL_UNLINK:   u32 = 0x0400_0000;</span>
+
+<span class="comment">// pub const IN_MASK_CREATE:   u32 = 0x1000_0000;</span>
+<span class="comment">// pub const IN_MASK_ADD:      u32 = 0x2000_0000;</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_ISDIR</span>:         <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x4000_0000</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_ONESHOT</span>:       <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x8000_0000</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_ALL_EVENTS</span>:    <span class="ident">u32</span> <span class="op">=</span> (
+  <span class="ident">IN_ACCESS</span> <span class="op">|</span> <span class="ident">IN_MODIFY</span> <span class="op">|</span> <span class="ident">IN_ATTRIB</span> <span class="op">|</span> <span class="ident">IN_CLOSE_WRITE</span> <span class="op">|</span>
+  <span class="ident">IN_CLOSE_NOWRITE</span> <span class="op">|</span> <span class="ident">IN_OPEN</span> <span class="op">|</span> <span class="ident">IN_MOVED_FROM</span> <span class="op">|</span>
+  <span class="ident">IN_MOVED_TO</span> <span class="op">|</span> <span class="ident">IN_DELETE</span> <span class="op">|</span> <span class="ident">IN_CREATE</span> <span class="op">|</span> <span class="ident">IN_DELETE_SELF</span> <span class="op">|</span>
+  <span class="ident">IN_MOVE_SELF</span>
+);
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_CLOEXEC</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="ident">O_CLOEXEC</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">IN_NONBLOCK</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="ident">O_NONBLOCK</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_WAIT</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_WAKE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_FD</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_REQUEUE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_CMP_REQUEUE</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_WAKE_OP</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_LOCK_PI</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_UNLOCK_PI</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_TRYLOCK_PI</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_WAIT_BITSET</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">9</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_WAKE_BITSET</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_WAIT_REQUEUE_PI</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">11</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_CMP_REQUEUE_PI</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">12</span>;
+
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_PRIVATE_FLAG</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">128</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_CLOCK_REALTIME</span>: ::<span class="ident">c_int</span> <span class="op">=</span> <span class="number">256</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">FUTEX_CMD_MASK</span>: ::<span class="ident">c_int</span> <span class="op">=</span>
+    <span class="op">!</span>(<span class="ident">FUTEX_PRIVATE_FLAG</span> <span class="op">|</span> <span class="ident">FUTEX_CLOCK_REALTIME</span>);
+
 <span class="macro">f</span><span class="macro">!</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CMSG_NXTHDR</span>(<span class="ident">mhdr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">msghdr</span>,
+                       <span class="ident">cmsg</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">cmsghdr</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">cmsghdr</span> {
+        <span class="kw">if</span> ((<span class="kw-2">*</span><span class="ident">cmsg</span>).<span class="ident">cmsg_len</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">&lt;</span> ::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">cmsghdr</span><span class="op">&gt;</span>() {
+            <span class="kw">return</span> <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">cmsghdr</span>;
+        };
+        <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> (<span class="ident">cmsg</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span>
+                    <span class="kw">super</span>::<span class="ident">CMSG_ALIGN</span>((<span class="kw-2">*</span><span class="ident">cmsg</span>).<span class="ident">cmsg_len</span> <span class="kw">as</span> <span class="ident">usize</span>))
+            <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">cmsghdr</span>;
+        <span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">mhdr</span>).<span class="ident">msg_control</span> <span class="kw">as</span> <span class="ident">usize</span>
+            <span class="op">+</span> (<span class="kw-2">*</span><span class="ident">mhdr</span>).<span class="ident">msg_controllen</span> <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="kw">if</span> (<span class="ident">next</span>.<span class="ident">offset</span>(<span class="number">1</span>)) <span class="kw">as</span> <span class="ident">usize</span> <span class="op">&gt;</span> <span class="ident">max</span> <span class="op">||</span>
+            <span class="ident">next</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="kw">super</span>::<span class="ident">CMSG_ALIGN</span>((<span class="kw-2">*</span><span class="ident">next</span>).<span class="ident">cmsg_len</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">&gt;</span> <span class="ident">max</span>
+        {
+            <span class="number">0</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">cmsghdr</span>
+        } <span class="kw">else</span> {
+            <span class="ident">next</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">cmsghdr</span>
+        }
+    }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CPU_ZERO</span>(<span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cpu_set_t</span>) <span class="op">-&gt;</span> () {
         <span class="kw">for</span> <span class="ident">slot</span> <span class="kw">in</span> <span class="ident">cpuset</span>.<span class="ident">bits</span>.<span class="ident">iter_mut</span>() {
             <span class="kw-2">*</span><span class="ident">slot</span> <span class="op">=</span> <span class="number">0</span>;
@@ -3984,21 +4756,23 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CPU_SET</span>(<span class="ident">cpu</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cpu_set_t</span>) <span class="op">-&gt;</span> () {
-        <span class="kw">let</span> <span class="ident">size_in_bits</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]); <span class="comment">// 32, 64 etc</span>
+        <span class="kw">let</span> <span class="ident">size_in_bits</span>
+            <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> ::<span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]); <span class="comment">// 32, 64 etc</span>
         <span class="kw">let</span> (<span class="ident">idx</span>, <span class="ident">offset</span>) <span class="op">=</span> (<span class="ident">cpu</span> <span class="op">/</span> <span class="ident">size_in_bits</span>, <span class="ident">cpu</span> <span class="op">%</span> <span class="ident">size_in_bits</span>);
         <span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="ident">idx</span>] <span class="op">|=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="ident">offset</span>;
         ()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CPU_CLR</span>(<span class="ident">cpu</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cpu_set_t</span>) <span class="op">-&gt;</span> () {
-        <span class="kw">let</span> <span class="ident">size_in_bits</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]); <span class="comment">// 32, 64 etc</span>
+        <span class="kw">let</span> <span class="ident">size_in_bits</span>
+            <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> ::<span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]); <span class="comment">// 32, 64 etc</span>
         <span class="kw">let</span> (<span class="ident">idx</span>, <span class="ident">offset</span>) <span class="op">=</span> (<span class="ident">cpu</span> <span class="op">/</span> <span class="ident">size_in_bits</span>, <span class="ident">cpu</span> <span class="op">%</span> <span class="ident">size_in_bits</span>);
         <span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="ident">idx</span>] <span class="op">&amp;=</span> <span class="op">!</span>(<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="ident">offset</span>);
         ()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CPU_ISSET</span>(<span class="ident">cpu</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="ident">cpu_set_t</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="ident">size_in_bits</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]);
+        <span class="kw">let</span> <span class="ident">size_in_bits</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> ::<span class="ident">mem</span>::<span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]);
         <span class="kw">let</span> (<span class="ident">idx</span>, <span class="ident">offset</span>) <span class="op">=</span> (<span class="ident">cpu</span> <span class="op">/</span> <span class="ident">size_in_bits</span>, <span class="ident">cpu</span> <span class="op">%</span> <span class="ident">size_in_bits</span>);
         <span class="number">0</span> <span class="op">!=</span> (<span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="ident">idx</span>] <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="ident">offset</span>))
     }
@@ -4054,6 +4828,11 @@
 }
 
 <span class="kw">extern</span> {
+    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">target_env</span> <span class="op">=</span> <span class="string">&quot;musl&quot;</span>),
+               <span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;__xpg_strerror_r&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strerror_r</span>(<span class="ident">errnum</span>: ::<span class="ident">c_int</span>, <span class="ident">buf</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span>,
+                      <span class="ident">buflen</span>: ::<span class="ident">size_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abs</span>(<span class="ident">i</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">atof</span>(<span class="ident">s</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>) <span class="op">-&gt;</span> ::<span class="ident">c_double</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">labs</span>(<span class="ident">i</span>: ::<span class="ident">c_long</span>) <span class="op">-&gt;</span> ::<span class="ident">c_long</span>;
@@ -4221,12 +5000,6 @@
                        <span class="ident">flags</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pthread_setschedprio</span>(<span class="ident">native</span>: ::<span class="ident">pthread_t</span>,
                                 <span class="ident">priority</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prlimit</span>(<span class="ident">pid</span>: ::<span class="ident">pid_t</span>, <span class="ident">resource</span>: ::<span class="ident">c_int</span>, <span class="ident">new_limit</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">rlimit</span>,
-                   <span class="ident">old_limit</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">rlimit</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prlimit64</span>(<span class="ident">pid</span>: ::<span class="ident">pid_t</span>,
-                     <span class="ident">resource</span>: ::<span class="ident">c_int</span>,
-                     <span class="ident">new_limit</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">rlimit64</span>,
-                     <span class="ident">old_limit</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">rlimit64</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getloadavg</span>(<span class="ident">loadavg</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_double</span>, <span class="ident">nelem</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process_vm_readv</span>(<span class="ident">pid</span>: ::<span class="ident">pid_t</span>,
                             <span class="ident">local_iov</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">iovec</span>,
@@ -4259,7 +5032,7 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">glob</span>(<span class="ident">pattern</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
                 <span class="ident">flags</span>: ::<span class="ident">c_int</span>,
-                <span class="ident">errfunc</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="kw">fn</span>(<span class="ident">epath</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
+                <span class="ident">errfunc</span>: ::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="kw">fn</span>(<span class="ident">epath</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
                                           <span class="ident">errno</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span><span class="op">&gt;</span>,
                 <span class="ident">pglob</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">glob_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">globfree</span>(<span class="ident">pglob</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">glob_t</span>);
@@ -4288,10 +5061,6 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getdomainname</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>, <span class="ident">len</span>: ::<span class="ident">size_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">setdomainname</span>(<span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>, <span class="ident">len</span>: ::<span class="ident">size_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vhangup</span>() <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sendmmsg</span>(<span class="ident">sockfd</span>: ::<span class="ident">c_int</span>, <span class="ident">msgvec</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mmsghdr</span>, <span class="ident">vlen</span>: ::<span class="ident">c_uint</span>,
-                    <span class="ident">flags</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recvmmsg</span>(<span class="ident">sockfd</span>: ::<span class="ident">c_int</span>, <span class="ident">msgvec</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">mmsghdr</span>, <span class="ident">vlen</span>: ::<span class="ident">c_uint</span>,
-                    <span class="ident">flags</span>: ::<span class="ident">c_int</span>, <span class="ident">timeout</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">timespec</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync</span>();
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">syscall</span>(<span class="ident">num</span>: ::<span class="ident">c_long</span>, ...) <span class="op">-&gt;</span> ::<span class="ident">c_long</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sched_getaffinity</span>(<span class="ident">pid</span>: ::<span class="ident">pid_t</span>,
@@ -4384,7 +5153,7 @@
                     <span class="ident">count</span>: ::<span class="ident">size_t</span>) <span class="op">-&gt;</span> ::<span class="ident">ssize_t</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sigsuspend</span>(<span class="ident">mask</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">sigset_t</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;solaris&quot;</span>, <span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;__posix_getgrgid_r&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getgrgid_r</span>(<span class="ident">uid</span>: ::<span class="ident">uid_t</span>,
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getgrgid_r</span>(<span class="ident">gid</span>: ::<span class="ident">gid_t</span>,
                       <span class="ident">grp</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">group</span>,
                       <span class="ident">buf</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_char</span>,
                       <span class="ident">buflen</span>: ::<span class="ident">size_t</span>,
@@ -4432,9 +5201,9 @@
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;solaris&quot;</span>, <span class="ident">link_name</span> <span class="op">=</span> <span class="string">&quot;__posix_sigwait&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sigwait</span>(<span class="ident">set</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">sigset_t</span>,
                    <span class="ident">sig</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pthread_atfork</span>(<span class="ident">prepare</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>()<span class="op">&gt;</span>,
-                          <span class="ident">parent</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>()<span class="op">&gt;</span>,
-                          <span class="ident">child</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>()<span class="op">&gt;</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pthread_atfork</span>(<span class="ident">prepare</span>: ::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>()<span class="op">&gt;</span>,
+                          <span class="ident">parent</span>: ::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>()<span class="op">&gt;</span>,
+                          <span class="ident">child</span>: ::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>()<span class="op">&gt;</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getgrgid</span>(<span class="ident">gid</span>: ::<span class="ident">gid_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">group</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getgrouplist</span>(<span class="ident">user</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>,
                         <span class="ident">group</span>: ::<span class="ident">gid_t</span>,
@@ -4453,7 +5222,7 @@
                           <span class="ident">f</span>: <span class="kw">extern</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>,
                           <span class="ident">value</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dl_iterate_phdr</span>(
-        <span class="ident">callback</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>(
+        <span class="ident">callback</span>: ::<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">unsafe</span> <span class="kw">extern</span> <span class="kw">fn</span>(
             <span class="ident">info</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">dl_phdr_info</span>,
             <span class="ident">size</span>: ::<span class="ident">size_t</span>,
             <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">c_void</span>
@@ -4539,6 +5308,12 @@
         <span class="ident">nobj</span>: ::<span class="ident">size_t</span>,
         <span class="ident">stream</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">FILE</span>
     ) <span class="op">-&gt;</span> ::<span class="ident">size_t</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inotify_rm_watch</span>(<span class="ident">fd</span>: ::<span class="ident">c_int</span>, <span class="ident">wd</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inotify_init</span>() <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inotify_init1</span>(<span class="ident">flags</span>: ::<span class="ident">c_int</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inotify_add_watch</span>(<span class="ident">fd</span>: ::<span class="ident">c_int</span>,
+                             <span class="ident">path</span>: <span class="kw-2">*</span><span class="kw">const</span> ::<span class="ident">c_char</span>,
+                             <span class="ident">mask</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> ::<span class="ident">c_int</span>;
 }
 
 <span class="macro">cfg_if</span><span class="macro">!</span> {
@@ -4557,5 +5332,16 @@
         <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">other</span>::<span class="kw-2">*</span>;
     }
 }
+
+<span class="macro">cfg_if</span><span class="macro">!</span> {
+    <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">libc_align</span>)]</span> {
+        <span class="attribute">#[<span class="ident">macro_use</span>]</span>
+        <span class="kw">mod</span> <span class="ident">align</span>;
+    } <span class="kw">else</span> {
+        <span class="attribute">#[<span class="ident">macro_use</span>]</span>
+        <span class="kw">mod</span> <span class="ident">no_align</span>;
+    }
+}
+<span class="macro">expand_align</span><span class="macro">!</span>();
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../../../";window.currentCrate = "libc";</script><script src="../../../../../aliases.js"></script><script src="../../../../../main.js"></script><script src="../../../../../source-files.js"></script><script src="../../../../../source-script.js"></script><script defer src="../../../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../../../";window.currentCrate = "libc";</script><script src="../../../../../aliases.js"></script><script src="../../../../../main.js"></script><script src="../../../../../source-script.js"></script><script src="../../../../../source-files.js"></script><script defer src="../../../../../search-index.js"></script></body></html>
