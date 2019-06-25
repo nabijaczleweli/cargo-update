@@ -374,6 +374,9 @@ impl GitRepoPackage {
         } else {
             let mut bldr = git2::build::RepoBuilder::new();
             bldr.bare(true);
+            if let Some(proxy_url) = http_proxy {
+                bldr.fetch_options(fetch_options_from_proxy_url(proxy_url));
+            }
             if let Some(ref b) = self.branch.as_ref() {
                 bldr.branch(b);
             }
@@ -806,7 +809,7 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
 /// # use cargo_update::ops::find_proxy;
 /// # use std::env::temp_dir;
 /// # let crates_file = temp_dir().join(".crates.toml");
-/// match find_proxy(crates_file) {
+/// match find_proxy(&crates_file) {
 ///     Some(proxy) => println!("Proxy found at {}", proxy),
 ///     None => println!("No proxy detected"),
 /// }

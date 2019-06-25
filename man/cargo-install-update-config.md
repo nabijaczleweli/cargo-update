@@ -95,6 +95,12 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;
        and Daniel Holbert &lt;<dholbert@cs.stanford.edu>&gt;
 
+## SPECIAL THANKS
+
+To all who support further development, in particular:
+
+  * ThePhD
+
 ## REPORTING BUGS
 
 &lt;<https://github.com/nabijaczleweli/cargo-update/issues>&gt;

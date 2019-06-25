@@ -40,3 +40,9 @@ On Windows the following strategy is applied:
   * Check for old versions, remove them
   * Add the current version to the current executable's extension
   * Create an empty file in place of the just-renamed file (this way `cargo install` will "replace" it and not duplicate the entry in `.crates.toml`)
+
+## Special thanks
+
+To all who support further development on Patreon, in particular:
+
+  * ThePhD
