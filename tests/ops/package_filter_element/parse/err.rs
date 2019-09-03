@@ -9,5 +9,6 @@ fn no_separator() {
 
 #[test]
 fn unrecognised() {
-    assert_eq!(PackageFilterElement::parse("henlo=benlo"), Err(r#"Unrecognised filter key "henlo""#.to_string()));
+    assert_eq!(PackageFilterElement::parse("henlo=benlo"),
+               Err(r#"Unrecognised filter key "henlo""#.to_string()));
 }

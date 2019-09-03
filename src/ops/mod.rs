@@ -592,7 +592,8 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
     }
 }
 
-/// Filter out the installed packages not specified to be updated.
+/// Filter out the installed packages not specified to be updated and add the packages you specify to install,
+/// if they aren't already installed via git.
 ///
 /// List installed packages with `installed_main_repo_packages()`.
 ///
@@ -608,24 +609,27 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
 /// #     vec![MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()];
-/// installed_packages = intersect_packages(&installed_packages, &packages_to_update, false);
+/// installed_packages = intersect_packages(&installed_packages, &packages_to_update, false, &[]);
 /// # assert_eq!(&installed_packages,
 /// #   &[MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #     MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
 /// ```
-pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, Option<Semver>)], allow_installs: bool) -> Vec<MainRepoPackage> {
+pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, Option<Semver>)], allow_installs: bool, installed_git: &[GitRepoPackage])
+                          -> Vec<MainRepoPackage> {
     installed.iter()
         .filter(|p| to_update.iter().any(|u| p.name == u.0))
         .cloned()
         .map(|p| MainRepoPackage { max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()), ..p })
-        .chain(to_update.iter().filter(|p| allow_installs && installed.iter().find(|i| i.name == p.0).is_none()).map(|p| {
-            MainRepoPackage {
-                name: p.0.clone(),
-                version: None,
-                newest_version: None,
-                max_version: p.1.clone(),
-            }
-        }))
+        .chain(to_update.iter()
+            .filter(|p| allow_installs && installed.iter().find(|i| i.name == p.0).is_none() && installed_git.iter().find(|i| i.name == p.0).is_none())
+            .map(|p| {
+                MainRepoPackage {
+                    name: p.0.clone(),
+                    version: None,
+                    newest_version: None,
+                    max_version: p.1.clone(),
+                }
+            }))
         .collect()
 }
 

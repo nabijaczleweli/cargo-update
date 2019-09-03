@@ -45,17 +45,13 @@ fn actual_main() -> Result<(), i32> {
         vec![]
     };
 
-    if !installed_git_packages.is_empty() {
-        // Don't install registry packages on top of git ones (#103)
-        packages.retain(|p| installed_git_packages.iter().find(|gp| p.name == gp.name).is_none());
-    }
     if !opts.filter.is_empty() {
         packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
     }
     match (opts.all, opts.to_update.is_empty()) {
         (true, true) => {}
         (true, false) => {
-            for pkg in cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install).into_iter() {
+            for pkg in cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install, &installed_git_packages).into_iter() {
                 if packages.iter().find(|p| p.name == pkg.name).is_none() {
                     packages.push(pkg);
                 }
@@ -65,7 +61,7 @@ fn actual_main() -> Result<(), i32> {
             panic!("No packages to update and -a not specified, this should've been caught by option parser \
                     (please report to http://github.com/nabijaczleweli/cargo-update)")
         }
-        (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install),
+        (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install, &installed_git_packages),
     }
 
     let registry_url = cargo_update::ops::get_index_url(&crates_file);
@@ -77,10 +73,7 @@ fn actual_main() -> Result<(), i32> {
             println!("Failed to open registry repository at {}.", registry.display());
             2
         })?;
-    cargo_update::ops::update_index(&mut registry_repo,
-                                    &registry_url,
-                                    http_proxy.as_ref().map(String::as_str),
-                                    &mut stdout()).map_err(|e| {
+    cargo_update::ops::update_index(&mut registry_repo, &registry_url, http_proxy.as_ref().map(String::as_str), &mut stdout()).map_err(|e| {
             println!("Failed to update index repository: {}.", e);
             2
         })?;
