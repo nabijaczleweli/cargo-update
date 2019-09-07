@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.7.5/src/remote.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>remote.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../git2/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.10.0/src/remote.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>remote.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../git2/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -751,20 +751,73 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">libc</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">CString</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Range</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Range</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
-<span class="kw">use</span> <span class="ident">libc</span>;
 
-<span class="kw">use</span> {<span class="ident">raw</span>, <span class="ident">Direction</span>, <span class="ident">Error</span>, <span class="ident">Refspec</span>, <span class="ident">Oid</span>, <span class="ident">FetchPrune</span>, <span class="ident">ProxyOptions</span>};
-<span class="kw">use</span> {<span class="ident">RemoteCallbacks</span>, <span class="ident">Progress</span>, <span class="ident">Repository</span>, <span class="ident">AutotagOption</span>};
-<span class="kw">use</span> <span class="ident">string_array</span>::<span class="ident">StringArray</span>;
-<span class="kw">use</span> <span class="ident">util</span>::<span class="ident">Binding</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">string_array</span>::<span class="ident">StringArray</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="ident">Binding</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">raw</span>, <span class="ident">Direction</span>, <span class="ident">Error</span>, <span class="ident">FetchPrune</span>, <span class="ident">Oid</span>, <span class="ident">ProxyOptions</span>, <span class="ident">Refspec</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">AutotagOption</span>, <span class="ident">Progress</span>, <span class="ident">RemoteCallbacks</span>, <span class="ident">Repository</span>};
 
 <span class="doccomment">/// A structure representing a [remote][1] of a git repository.</span>
 <span class="doccomment">///</span>
@@ -807,22 +860,22 @@
 }
 
 <span class="doccomment">/// Holds callbacks for a connection to a `Remote`. Disconnects when dropped</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RemoteConnection</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span>, <span class="lifetime">&#39;connection</span>, <span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="lifetime">&#39;repo</span>: <span class="lifetime">&#39;connection</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RemoteConnection</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span>, <span class="lifetime">&#39;connection</span>, <span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
     <span class="ident">_callbacks</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">RemoteCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;&gt;</span>,
     <span class="ident">_proxy</span>: <span class="ident">ProxyOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span>,
     <span class="ident">remote</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;connection</span> <span class="kw-2">mut</span> <span class="ident">Remote</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remote_into_raw</span>(<span class="ident">remote</span>: <span class="ident">Remote</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remote_into_raw</span>(<span class="ident">remote</span>: <span class="ident">Remote</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span> {
     <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">remote</span>.<span class="ident">raw</span>;
     <span class="ident">mem</span>::<span class="ident">forget</span>(<span class="ident">remote</span>);
-    <span class="kw">return</span> <span class="ident">ret</span>
+    <span class="kw">return</span> <span class="ident">ret</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">Remote</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Ensure the remote name is well-formed.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_name</span>(<span class="ident">remote_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        ::<span class="ident">init</span>();
+        <span class="kw">crate</span>::<span class="ident">init</span>();
         <span class="kw">let</span> <span class="ident">remote_name</span> <span class="op">=</span> <span class="ident">CString</span>::<span class="ident">new</span>(<span class="ident">remote_name</span>).<span class="ident">unwrap</span>();
         <span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_remote_is_valid_name</span>(<span class="ident">remote_name</span>.<span class="ident">as_ptr</span>()) <span class="op">==</span> <span class="number">1</span> }
     }
@@ -839,7 +892,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Returns `None` if this remote has not yet been named</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> { ::<span class="ident">opt_bytes</span>(<span class="self">self</span>, <span class="ident">raw</span>::<span class="ident">git_remote_name</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>)) }
+        <span class="kw">unsafe</span> { <span class="kw">crate</span>::<span class="ident">opt_bytes</span>(<span class="self">self</span>, <span class="ident">raw</span>::<span class="ident">git_remote_name</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>)) }
     }
 
     <span class="doccomment">/// Get the remote&#39;s url.</span>
@@ -851,7 +904,7 @@
 
     <span class="doccomment">/// Get the remote&#39;s url as a byte array.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">url_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
-        <span class="kw">unsafe</span> { ::<span class="ident">opt_bytes</span>(<span class="self">self</span>, <span class="ident">raw</span>::<span class="ident">git_remote_url</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>)).<span class="ident">unwrap</span>() }
+        <span class="kw">unsafe</span> { <span class="kw">crate</span>::<span class="ident">opt_bytes</span>(<span class="self">self</span>, <span class="ident">raw</span>::<span class="ident">git_remote_url</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>)).<span class="ident">unwrap</span>() }
     }
 
     <span class="doccomment">/// Get the remote&#39;s pushurl.</span>
@@ -863,17 +916,20 @@
 
     <span class="doccomment">/// Get the remote&#39;s pushurl as a byte array.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pushurl_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> { ::<span class="ident">opt_bytes</span>(<span class="self">self</span>, <span class="ident">raw</span>::<span class="ident">git_remote_pushurl</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>)) }
+        <span class="kw">unsafe</span> { <span class="kw">crate</span>::<span class="ident">opt_bytes</span>(<span class="self">self</span>, <span class="ident">raw</span>::<span class="ident">git_remote_pushurl</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>)) }
     }
 
     <span class="doccomment">/// Open a connection to a remote.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">dir</span>: <span class="ident">Direction</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="comment">// TODO: can callbacks be exposed safely?</span>
         <span class="kw">unsafe</span> {
-            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_connect</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">dir</span>,
-                                              <span class="ident">ptr</span>::<span class="ident">null</span>(),
-                                              <span class="ident">ptr</span>::<span class="ident">null</span>(),
-                                              <span class="ident">ptr</span>::<span class="ident">null</span>()));
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_connect</span>(
+                <span class="self">self</span>.<span class="ident">raw</span>,
+                <span class="ident">dir</span>,
+                <span class="ident">ptr</span>::<span class="ident">null</span>(),
+                <span class="ident">ptr</span>::<span class="ident">null</span>(),
+                <span class="ident">ptr</span>::<span class="ident">null</span>()
+            ));
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -881,19 +937,22 @@
     <span class="doccomment">/// Open a connection to a remote with callbacks and proxy settings</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Returns a `RemoteConnection` that will disconnect once dropped</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">connect_auth</span><span class="op">&lt;</span><span class="lifetime">&#39;connection</span>, <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;connection</span> <span class="kw-2">mut</span> <span class="self">self</span>,
-                                          <span class="ident">dir</span>: <span class="ident">Direction</span>,
-                                          <span class="ident">cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RemoteCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;&gt;</span>,
-                                          <span class="ident">proxy_options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ProxyOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;&gt;</span>)
-                    <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">RemoteConnection</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span>, <span class="lifetime">&#39;connection</span>, <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">connect_auth</span><span class="op">&lt;</span><span class="lifetime">&#39;connection</span>, <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;connection</span> <span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">dir</span>: <span class="ident">Direction</span>,
+        <span class="ident">cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RemoteCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">proxy_options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ProxyOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">RemoteConnection</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span>, <span class="lifetime">&#39;connection</span>, <span class="lifetime">&#39;cb</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">cb</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">cb</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">RemoteCallbacks</span>::<span class="ident">new</span>));
         <span class="kw">let</span> <span class="ident">proxy_options</span> <span class="op">=</span> <span class="ident">proxy_options</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">ProxyOptions</span>::<span class="ident">new</span>);
         <span class="kw">unsafe</span> {
-            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_connect</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">dir</span>,
-                                              <span class="kw-2">&amp;</span><span class="ident">cb</span>.<span class="ident">raw</span>(),
-                                              <span class="kw-2">&amp;</span><span class="ident">proxy_options</span>.<span class="ident">raw</span>(),
-                                              <span class="ident">ptr</span>::<span class="ident">null</span>()));
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_connect</span>(
+                <span class="self">self</span>.<span class="ident">raw</span>,
+                <span class="ident">dir</span>,
+                <span class="kw-2">&amp;</span><span class="ident">cb</span>.<span class="ident">raw</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">proxy_options</span>.<span class="ident">raw</span>(),
+                <span class="ident">ptr</span>::<span class="ident">null</span>()
+            ));
         }
 
         <span class="prelude-val">Ok</span>(<span class="ident">RemoteConnection</span> {
@@ -923,9 +982,12 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The `specs` argument is a list of refspecs to use for this negotiation</span>
     <span class="doccomment">/// and download. Use an empty array to use the base refspecs.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">specs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>], <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FetchOptions</span><span class="op">&gt;</span>)
-                    <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">_a</span>, <span class="ident">_b</span>, <span class="ident">arr</span>) <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">util</span>::<span class="ident">iter2cstrs</span>(<span class="ident">specs</span>.<span class="ident">iter</span>()));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">specs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
+        <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FetchOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> (<span class="ident">_a</span>, <span class="ident">_b</span>, <span class="ident">arr</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="ident">iter2cstrs</span>(<span class="ident">specs</span>.<span class="ident">iter</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">raw</span>());
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_download</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="kw-2">&amp;</span><span class="ident">arr</span>, <span class="ident">raw</span>.<span class="ident">as_ref</span>()));
@@ -934,9 +996,12 @@
     }
 
     <span class="doccomment">/// Get the number of refspecs for a remote</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">refspecs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Refspecs</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">refspecs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Refspecs</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">cnt</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_remote_refspec_count</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>) <span class="kw">as</span> <span class="ident">usize</span> };
-        <span class="ident">Refspecs</span> { <span class="ident">range</span>: <span class="number">0</span>..<span class="ident">cnt</span>, <span class="ident">remote</span>: <span class="self">self</span> }
+        <span class="ident">Refspecs</span> {
+            <span class="ident">range</span>: <span class="number">0</span>..<span class="ident">cnt</span>,
+            <span class="ident">remote</span>: <span class="self">self</span>,
+        }
     }
 
     <span class="doccomment">/// Get the `nth` refspec from this remote.</span>
@@ -944,8 +1009,7 @@
     <span class="doccomment">/// The `refspecs` iterator can be used to iterate over all refspecs.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_refspec</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Refspec</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;&gt;</span> {
         <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_remote_get_refspec</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>,
-                                                  <span class="ident">i</span> <span class="kw">as</span> <span class="ident">libc</span>::<span class="ident">size_t</span>);
+            <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_remote_get_refspec</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">i</span> <span class="kw">as</span> <span class="ident">libc</span>::<span class="ident">size_t</span>);
             <span class="ident">Binding</span>::<span class="ident">from_raw_opt</span>(<span class="ident">ptr</span>)
         }
     }
@@ -967,12 +1031,14 @@
     <span class="doccomment">/// let repo = git2::Repository::discover(&quot;rust&quot;).unwrap();</span>
     <span class="doccomment">/// fetch_origin_master(repo).unwrap();</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fetch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-                 <span class="ident">refspecs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
-                 <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FetchOptions</span><span class="op">&gt;</span>,
-                 <span class="ident">reflog_msg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">_a</span>, <span class="ident">_b</span>, <span class="ident">arr</span>) <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">util</span>::<span class="ident">iter2cstrs</span>(<span class="ident">refspecs</span>.<span class="ident">iter</span>()));
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">opt_cstr</span>(<span class="ident">reflog_msg</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fetch</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">refspecs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
+        <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FetchOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">reflog_msg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> (<span class="ident">_a</span>, <span class="ident">_b</span>, <span class="ident">arr</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="ident">iter2cstrs</span>(<span class="ident">refspecs</span>.<span class="ident">iter</span>())<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">opt_cstr</span>(<span class="ident">reflog_msg</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">raw</span>());
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_fetch</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="kw-2">&amp;</span><span class="ident">arr</span>, <span class="ident">raw</span>.<span class="ident">as_ref</span>(), <span class="ident">msg</span>));
@@ -981,17 +1047,23 @@
     }
 
     <span class="doccomment">/// Update the tips to the new state</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_tips</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-                       <span class="ident">callbacks</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RemoteCallbacks</span><span class="op">&gt;</span>,
-                       <span class="ident">update_fetchhead</span>: <span class="ident">bool</span>,
-                       <span class="ident">download_tags</span>: <span class="ident">AutotagOption</span>,
-                       <span class="ident">msg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">opt_cstr</span>(<span class="ident">msg</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_tips</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">callbacks</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">RemoteCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">update_fetchhead</span>: <span class="ident">bool</span>,
+        <span class="ident">download_tags</span>: <span class="ident">AutotagOption</span>,
+        <span class="ident">msg</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">opt_cstr</span>(<span class="ident">msg</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">callbacks</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">cb</span><span class="op">|</span> <span class="ident">cb</span>.<span class="ident">raw</span>());
         <span class="kw">unsafe</span> {
-            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_update_tips</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">cbs</span>.<span class="ident">as_ref</span>(),
-                                                  <span class="ident">update_fetchhead</span>,
-                                                  <span class="ident">download_tags</span>, <span class="ident">msg</span>));
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_update_tips</span>(
+                <span class="self">self</span>.<span class="ident">raw</span>,
+                <span class="ident">cbs</span>.<span class="ident">as_ref</span>(),
+                <span class="ident">update_fetchhead</span>,
+                <span class="ident">download_tags</span>,
+                <span class="ident">msg</span>
+            ));
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -1004,10 +1076,12 @@
     <span class="doccomment">/// Note that you&#39;ll likely want to use `RemoteCallbacks` and set</span>
     <span class="doccomment">/// `push_update_reference` to test whether all the references were pushed</span>
     <span class="doccomment">/// successfully.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-                <span class="ident">refspecs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
-                <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PushOptions</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">_a</span>, <span class="ident">_b</span>, <span class="ident">arr</span>) <span class="op">=</span> <span class="macro">try</span><span class="macro">!</span>(::<span class="ident">util</span>::<span class="ident">iter2cstrs</span>(<span class="ident">refspecs</span>.<span class="ident">iter</span>()));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">refspecs</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>],
+        <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PushOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> (<span class="ident">_a</span>, <span class="ident">_b</span>, <span class="ident">arr</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="ident">iter2cstrs</span>(<span class="ident">refspecs</span>.<span class="ident">iter</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <span class="ident">o</span>.<span class="ident">raw</span>());
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_push</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="kw-2">&amp;</span><span class="ident">arr</span>, <span class="ident">raw</span>.<span class="ident">as_ref</span>()));
@@ -1016,10 +1090,8 @@
     }
 
     <span class="doccomment">/// Get the statistics structure that is filled in by the fetch operation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stats</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Progress</span> {
-        <span class="kw">unsafe</span> {
-            <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>::<span class="ident">git_remote_stats</span>(<span class="self">self</span>.<span class="ident">raw</span>))
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stats</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Progress</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="kw">unsafe</span> { <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">raw</span>::<span class="ident">git_remote_stats</span>(<span class="self">self</span>.<span class="ident">raw</span>)) }
     }
 
     <span class="doccomment">/// Get the remote repository&#39;s reference advertisement list.</span>
@@ -1030,16 +1102,20 @@
     <span class="doccomment">/// The remote (or more exactly its transport) must have connected to the</span>
     <span class="doccomment">/// remote repository. This list is available as soon as the connection to</span>
     <span class="doccomment">/// the remote is initiated and it remains available after disconnecting.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RemoteHead</span>], <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RemoteHead</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>], <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">ptr</span>::<span class="ident">null_mut</span>();
         <span class="kw">unsafe</span> {
             <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_remote_ls</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">base</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">size</span>, <span class="self">self</span>.<span class="ident">raw</span>));
-            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">RemoteHead</span><span class="op">&gt;</span>(),
-                       <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_remote_head</span><span class="op">&gt;</span>());
+            <span class="macro">assert_eq</span><span class="macro">!</span>(
+                <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">RemoteHead</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>(),
+                <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_remote_head</span><span class="op">&gt;</span>()
+            );
             <span class="kw">let</span> <span class="ident">slice</span> <span class="op">=</span> <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(<span class="ident">base</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="ident">size</span> <span class="kw">as</span> <span class="ident">usize</span>);
-            <span class="prelude-val">Ok</span>(<span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_remote_head</span>],
-                                <span class="kw-2">&amp;</span>[<span class="ident">RemoteHead</span>]<span class="op">&gt;</span>(<span class="ident">slice</span>))
+            <span class="prelude-val">Ok</span>(<span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span>
+                <span class="kw-2">&amp;</span>[<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_remote_head</span>],
+                <span class="kw-2">&amp;</span>[<span class="ident">RemoteHead</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>],
+            <span class="op">&gt;</span>(<span class="ident">slice</span>))
         }
     }
 
@@ -1083,7 +1159,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_remote</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Remote</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
@@ -1097,11 +1175,15 @@
     <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Refspec</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;&gt;</span> {
         <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">remote</span>.<span class="ident">get_refspec</span>(<span class="ident">i</span>))
     }
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) { <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">size_hint</span>() }
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">size_hint</span>()
+    }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">DoubleEndedIterator</span> <span class="kw">for</span> <span class="ident">Refspecs</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Refspec</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;&gt;</span> {
-        <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">next_back</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">remote</span>.<span class="ident">get_refspec</span>(<span class="ident">i</span>))
+        <span class="self">self</span>.<span class="ident">range</span>
+            .<span class="ident">next_back</span>()
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">remote</span>.<span class="ident">get_refspec</span>(<span class="ident">i</span>))
     }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Refspecs</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {}
@@ -1121,12 +1203,12 @@
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="kw">unsafe</span> { ::<span class="ident">opt_bytes</span>(<span class="self">self</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">name</span>).<span class="ident">unwrap</span>() };
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw">crate</span>::<span class="ident">opt_bytes</span>(<span class="self">self</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">name</span>).<span class="ident">unwrap</span>() };
         <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">b</span>).<span class="ident">unwrap</span>()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symref_target</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="kw">unsafe</span> { ::<span class="ident">opt_bytes</span>(<span class="self">self</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">symref_target</span>) };
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw">crate</span>::<span class="ident">opt_bytes</span>(<span class="self">self</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">symref_target</span>) };
         <span class="ident">b</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">b</span>).<span class="ident">unwrap</span>())
     }
 }
@@ -1194,13 +1276,19 @@
     <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">raw</span>::<span class="ident">git_fetch_options</span> {
         <span class="ident">raw</span>::<span class="ident">git_fetch_options</span> {
             <span class="ident">version</span>: <span class="number">1</span>,
-            <span class="ident">callbacks</span>: <span class="self">self</span>.<span class="ident">callbacks</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
-                           .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">RemoteCallbacks</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
-            <span class="ident">proxy_opts</span>: <span class="self">self</span>.<span class="ident">proxy</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
-                            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">ProxyOptions</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
-            <span class="ident">prune</span>: ::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prune</span>),
-            <span class="ident">update_fetchhead</span>: ::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">update_fetchhead</span>),
-            <span class="ident">download_tags</span>: ::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">download_tags</span>),
+            <span class="ident">callbacks</span>: <span class="self">self</span>
+                .<span class="ident">callbacks</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
+                .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">RemoteCallbacks</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
+            <span class="ident">proxy_opts</span>: <span class="self">self</span>
+                .<span class="ident">proxy</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
+                .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">ProxyOptions</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
+            <span class="ident">prune</span>: <span class="kw">crate</span>::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prune</span>),
+            <span class="ident">update_fetchhead</span>: <span class="kw">crate</span>::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">update_fetchhead</span>),
+            <span class="ident">download_tags</span>: <span class="kw">crate</span>::<span class="ident">call</span>::<span class="ident">convert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">download_tags</span>),
             <span class="comment">// TODO: expose this as a builder option</span>
             <span class="ident">custom_headers</span>: <span class="ident">raw</span>::<span class="ident">git_strarray</span> {
                 <span class="ident">count</span>: <span class="number">0</span>,
@@ -1209,7 +1297,6 @@
         }
     }
 }
-
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">PushOptions</span><span class="op">&lt;</span><span class="lifetime">&#39;cb</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
@@ -1260,11 +1347,16 @@
     <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">raw</span>::<span class="ident">git_push_options</span> {
         <span class="ident">raw</span>::<span class="ident">git_push_options</span> {
             <span class="ident">version</span>: <span class="number">1</span>,
-            <span class="ident">callbacks</span>: <span class="self">self</span>.<span class="ident">callbacks</span>.<span class="ident">as_ref</span>()
-                           .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
-                           .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">RemoteCallbacks</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
-            <span class="ident">proxy_opts</span>: <span class="self">self</span>.<span class="ident">proxy</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
-                            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">ProxyOptions</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
+            <span class="ident">callbacks</span>: <span class="self">self</span>
+                .<span class="ident">callbacks</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
+                .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">RemoteCallbacks</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
+            <span class="ident">proxy_opts</span>: <span class="self">self</span>
+                .<span class="ident">proxy</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">raw</span>())
+                .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">ProxyOptions</span>::<span class="ident">new</span>().<span class="ident">raw</span>()),
             <span class="ident">pb_parallelism</span>: <span class="self">self</span>.<span class="ident">pb_parallelism</span> <span class="kw">as</span> <span class="ident">libc</span>::<span class="ident">c_uint</span>,
             <span class="comment">// TODO: expose this as a builder option</span>
             <span class="ident">custom_headers</span>: <span class="ident">raw</span>::<span class="ident">git_strarray</span> {
@@ -1285,7 +1377,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This list is available as soon as the connection to</span>
     <span class="doccomment">/// the remote is initiated and it remains available after disconnecting.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RemoteHead</span>], <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">RemoteHead</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>], <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">remote</span>.<span class="ident">list</span>()
     }
 }
@@ -1298,14 +1390,14 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">AutotagOption</span>, <span class="ident">PushOptions</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Direction</span>, <span class="ident">FetchOptions</span>, <span class="ident">Remote</span>, <span class="ident">RemoteCallbacks</span>, <span class="ident">Repository</span>};
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cell</span>::<span class="ident">Cell</span>;
-    <span class="kw">use</span> <span class="ident">tempdir</span>::<span class="ident">TempDir</span>;
-    <span class="kw">use</span> {<span class="ident">Repository</span>, <span class="ident">Remote</span>, <span class="ident">RemoteCallbacks</span>, <span class="ident">Direction</span>, <span class="ident">FetchOptions</span>};
-    <span class="kw">use</span> {<span class="ident">AutotagOption</span>, <span class="ident">PushOptions</span>};
+    <span class="kw">use</span> <span class="ident">tempfile</span>::<span class="ident">TempDir</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">smoke</span>() {
-        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">remote</span>(<span class="string">&quot;origin&quot;</span>, <span class="string">&quot;/path/to/nowhere&quot;</span>));
         <span class="ident">drop</span>(<span class="ident">repo</span>);
 
@@ -1324,16 +1416,18 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_remote</span>() {
-        <span class="kw">let</span> <span class="ident">td</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>(<span class="string">&quot;test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">td</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">remote</span> <span class="op">=</span> <span class="ident">td</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="string">&quot;remote&quot;</span>);
         <span class="ident">Repository</span>::<span class="ident">init_bare</span>(<span class="kw-2">&amp;</span><span class="ident">remote</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">unix</span>) {
             <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;file://{}&quot;</span>, <span class="ident">remote</span>.<span class="ident">display</span>())
         } <span class="kw">else</span> {
-            <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;file:///{}&quot;</span>, <span class="ident">remote</span>.<span class="ident">display</span>().<span class="ident">to_string</span>()
-                                        .<span class="ident">replace</span>(<span class="string">&quot;\\&quot;</span>, <span class="string">&quot;/&quot;</span>))
+            <span class="macro">format</span><span class="macro">!</span>(
+                <span class="string">&quot;file:///{}&quot;</span>,
+                <span class="ident">remote</span>.<span class="ident">display</span>().<span class="ident">to_string</span>().<span class="ident">replace</span>(<span class="string">&quot;\\&quot;</span>, <span class="string">&quot;/&quot;</span>)
+            )
         };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">origin</span> <span class="op">=</span> <span class="ident">repo</span>.<span class="ident">remote</span>(<span class="string">&quot;origin&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">url</span>).<span class="ident">unwrap</span>();
@@ -1382,8 +1476,12 @@
 
         <span class="ident">origin</span>.<span class="ident">fetch</span>(<span class="kw-2">&amp;</span>[], <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="ident">origin</span>.<span class="ident">fetch</span>(<span class="kw-2">&amp;</span>[], <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>)).<span class="ident">unwrap</span>();
-        <span class="ident">origin</span>.<span class="ident">update_tips</span>(<span class="prelude-val">None</span>, <span class="bool-val">true</span>, <span class="ident">AutotagOption</span>::<span class="ident">Unspecified</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-        <span class="ident">origin</span>.<span class="ident">update_tips</span>(<span class="prelude-val">None</span>, <span class="bool-val">true</span>, <span class="ident">AutotagOption</span>::<span class="ident">All</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>)).<span class="ident">unwrap</span>();
+        <span class="ident">origin</span>
+            .<span class="ident">update_tips</span>(<span class="prelude-val">None</span>, <span class="bool-val">true</span>, <span class="ident">AutotagOption</span>::<span class="ident">Unspecified</span>, <span class="prelude-val">None</span>)
+            .<span class="ident">unwrap</span>();
+        <span class="ident">origin</span>
+            .<span class="ident">update_tips</span>(<span class="prelude-val">None</span>, <span class="bool-val">true</span>, <span class="ident">AutotagOption</span>::<span class="ident">All</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;foo&quot;</span>))
+            .<span class="ident">unwrap</span>();
 
         <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">remote_add_fetch</span>(<span class="string">&quot;origin&quot;</span>, <span class="string">&quot;foo&quot;</span>));
         <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">remote_add_fetch</span>(<span class="string">&quot;origin&quot;</span>, <span class="string">&quot;bar&quot;</span>));
@@ -1391,7 +1489,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">rename_remote</span>() {
-        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="ident">repo</span>.<span class="ident">remote</span>(<span class="string">&quot;origin&quot;</span>, <span class="string">&quot;foo&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">repo</span>.<span class="ident">remote_rename</span>(<span class="string">&quot;origin&quot;</span>, <span class="string">&quot;foo&quot;</span>));
         <span class="ident">drop</span>(<span class="ident">repo</span>.<span class="ident">remote_delete</span>(<span class="string">&quot;foo&quot;</span>));
@@ -1399,7 +1497,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">create_remote_anonymous</span>() {
-        <span class="kw">let</span> <span class="ident">td</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>(<span class="string">&quot;test&quot;</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">td</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="ident">Repository</span>::<span class="ident">init</span>(<span class="ident">td</span>.<span class="ident">path</span>()).<span class="ident">unwrap</span>();
 
         <span class="kw">let</span> <span class="ident">origin</span> <span class="op">=</span> <span class="ident">repo</span>.<span class="ident">remote_anonymous</span>(<span class="string">&quot;/path/to/nowhere&quot;</span>).<span class="ident">unwrap</span>();
@@ -1415,9 +1513,9 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">transfer_cb</span>() {
-        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">_repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
-        <span class="kw">let</span> <span class="ident">td2</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>(<span class="string">&quot;git&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">path2url</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>());
+        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">_repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> <span class="ident">td2</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">path2url</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>());
 
         <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="ident">Repository</span>::<span class="ident">init</span>(<span class="ident">td2</span>.<span class="ident">path</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">progress_hit</span> <span class="op">=</span> <span class="ident">Cell</span>::<span class="ident">new</span>(<span class="bool-val">false</span>);
@@ -1429,9 +1527,13 @@
                 <span class="ident">progress_hit</span>.<span class="ident">set</span>(<span class="bool-val">true</span>);
                 <span class="bool-val">true</span>
             });
-            <span class="ident">origin</span>.<span class="ident">fetch</span>(<span class="kw-2">&amp;</span>[],
-                         <span class="prelude-val">Some</span>(<span class="ident">FetchOptions</span>::<span class="ident">new</span>().<span class="ident">remote_callbacks</span>(<span class="ident">callbacks</span>)),
-                         <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+            <span class="ident">origin</span>
+                .<span class="ident">fetch</span>(
+                    <span class="kw-2">&amp;</span>[],
+                    <span class="prelude-val">Some</span>(<span class="ident">FetchOptions</span>::<span class="ident">new</span>().<span class="ident">remote_callbacks</span>(<span class="ident">callbacks</span>)),
+                    <span class="prelude-val">None</span>,
+                )
+                .<span class="ident">unwrap</span>();
 
             <span class="kw">let</span> <span class="ident">list</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">origin</span>.<span class="ident">list</span>());
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">list</span>.<span class="ident">len</span>(), <span class="number">2</span>);
@@ -1447,9 +1549,9 @@
     <span class="doccomment">/// segfaults</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">connect_list</span>() {
-        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">_repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
-        <span class="kw">let</span> <span class="ident">td2</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>(<span class="string">&quot;git&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">path2url</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>());
+        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">_repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> <span class="ident">td2</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">path2url</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>());
 
         <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="ident">Repository</span>::<span class="ident">init</span>(<span class="ident">td2</span>.<span class="ident">path</span>()).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">callbacks</span> <span class="op">=</span> <span class="ident">RemoteCallbacks</span>::<span class="ident">new</span>();
@@ -1461,7 +1563,9 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">origin</span> <span class="op">=</span> <span class="ident">repo</span>.<span class="ident">remote</span>(<span class="string">&quot;origin&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">url</span>).<span class="ident">unwrap</span>();
 
         {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">origin</span>.<span class="ident">connect_auth</span>(<span class="ident">Direction</span>::<span class="ident">Fetch</span>, <span class="prelude-val">Some</span>(<span class="ident">callbacks</span>), <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">origin</span>
+                .<span class="ident">connect_auth</span>(<span class="ident">Direction</span>::<span class="ident">Fetch</span>, <span class="prelude-val">Some</span>(<span class="ident">callbacks</span>), <span class="prelude-val">None</span>)
+                .<span class="ident">unwrap</span>();
             <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">connection</span>.<span class="ident">connected</span>());
 
             <span class="kw">let</span> <span class="ident">list</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">connection</span>.<span class="ident">list</span>());
@@ -1476,10 +1580,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">push</span>() {
-        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
-        <span class="kw">let</span> <span class="ident">td2</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>(<span class="string">&quot;git1&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">td3</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>(<span class="string">&quot;git2&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">path2url</span>(<span class="kw-2">&amp;</span><span class="ident">td2</span>.<span class="ident">path</span>());
+        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> <span class="ident">td2</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">td3</span> <span class="op">=</span> <span class="ident">TempDir</span>::<span class="ident">new</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">path2url</span>(<span class="kw-2">&amp;</span><span class="ident">td2</span>.<span class="ident">path</span>());
 
         <span class="ident">Repository</span>::<span class="ident">init_bare</span>(<span class="ident">td2</span>.<span class="ident">path</span>()).<span class="ident">unwrap</span>();
         <span class="comment">// git push</span>
@@ -1495,7 +1599,9 @@
             });
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">options</span> <span class="op">=</span> <span class="ident">PushOptions</span>::<span class="ident">new</span>();
             <span class="ident">options</span>.<span class="ident">remote_callbacks</span>(<span class="ident">callbacks</span>);
-            <span class="ident">remote</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;refs/heads/master&quot;</span>], <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">options</span>)).<span class="ident">unwrap</span>();
+            <span class="ident">remote</span>
+                .<span class="ident">push</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;refs/heads/master&quot;</span>], <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">options</span>))
+                .<span class="ident">unwrap</span>();
         }
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">updated</span>);
 

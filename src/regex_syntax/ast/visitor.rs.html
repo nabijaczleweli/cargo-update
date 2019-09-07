@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.7/src/ast/visitor.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>visitor.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../regex_syntax/index.html'><img src='../../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.12/src/ast/visitor.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>visitor.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../regex_syntax/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -517,55 +517,7 @@
 <span id="517">517</span>
 <span id="518">518</span>
 <span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
-<span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
-<span id="549">549</span>
-<span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2018 The Rust Project Developers. See the COPYRIGHT</span>
-<span class="comment">// file at the top-level directory of this distribution and at</span>
-<span class="comment">// http://rust-lang.org/COPYRIGHT.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
-
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 
 <span class="kw">use</span> <span class="ident">ast</span>::{<span class="self">self</span>, <span class="ident">Ast</span>};
@@ -739,9 +691,7 @@
         <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">ast</span>::<span class="ident">ClassSetItem</span>],
     },
     <span class="doccomment">/// The stack frame used while a binary class operation.</span>
-    <span class="ident">Binary</span> {
-        <span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOp</span>,
-    },
+    <span class="ident">Binary</span> { <span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOp</span> },
     <span class="doccomment">/// A stack frame allocated just before descending into a binary operator&#39;s</span>
     <span class="doccomment">/// left hand child node.</span>
     <span class="ident">BinaryLHS</span> {
@@ -751,10 +701,7 @@
     },
     <span class="doccomment">/// A stack frame allocated just before descending into a binary operator&#39;s</span>
     <span class="doccomment">/// right hand child node.</span>
-    <span class="ident">BinaryRHS</span> {
-        <span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOp</span>,
-        <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ast</span>::<span class="ident">ClassSet</span>,
-    },
+    <span class="ident">BinaryRHS</span> { <span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOp</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ast</span>::<span class="ident">ClassSet</span> },
 }
 
 <span class="doccomment">/// A representation of the inductive step when performing structural induction</span>
@@ -807,7 +754,7 @@
                 <span class="comment">// If this is a concat/alternate, then we might have additional</span>
                 <span class="comment">// inductive steps to process.</span>
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">pop</span>(<span class="ident">frame</span>) {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Frame</span>::<span class="ident">Alternation</span> {..} <span class="op">=</span> <span class="ident">x</span> {
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Frame</span>::<span class="ident">Alternation</span> { .. } <span class="op">=</span> <span class="ident">x</span> {
                         <span class="ident">visitor</span>.<span class="ident">visit_alternation_in</span>()<span class="question-mark">?</span>;
                     }
                     <span class="ident">ast</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">child</span>();
@@ -840,18 +787,13 @@
             <span class="ident">Ast</span>::<span class="ident">Group</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Group</span>(<span class="ident">x</span>)),
             <span class="ident">Ast</span>::<span class="ident">Concat</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">asts</span>.<span class="ident">is_empty</span>() <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
             <span class="ident">Ast</span>::<span class="ident">Concat</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Concat</span> {
-                    <span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">0</span>],
-                    <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">1</span>..],
-                })
+                <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Concat</span> { <span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">0</span>], <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">1</span>..] })
             }
             <span class="ident">Ast</span>::<span class="ident">Alternation</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">asts</span>.<span class="ident">is_empty</span>() <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-            <span class="ident">Ast</span>::<span class="ident">Alternation</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Alternation</span> {
-                    <span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">0</span>],
-                    <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">1</span>..],
-                })
-            }
+            <span class="ident">Ast</span>::<span class="ident">Alternation</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Alternation</span> {
+                <span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">0</span>],
+                <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">asts</span>[<span class="number">1</span>..],
+            }),
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         })
     }
@@ -866,10 +808,7 @@
                 <span class="kw">if</span> <span class="ident">tail</span>.<span class="ident">is_empty</span>() {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Concat</span> {
-                        <span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="ident">tail</span>[<span class="number">0</span>],
-                        <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="ident">tail</span>[<span class="number">1</span>..],
-                    })
+                    <span class="prelude-val">Some</span>(<span class="ident">Frame</span>::<span class="ident">Concat</span> { <span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="ident">tail</span>[<span class="number">0</span>], <span class="ident">tail</span>: <span class="kw-2">&amp;</span><span class="ident">tail</span>[<span class="number">1</span>..] })
                 }
             }
             <span class="ident">Frame</span>::<span class="ident">Alternation</span> { <span class="ident">tail</span>, .. } <span class="op">=&gt;</span> {
@@ -961,18 +900,12 @@
 
     <span class="doccomment">/// Build a stack frame for the given class node if one is needed (which</span>
     <span class="doccomment">/// occurs if and only if there are child nodes). Otherwise, return None.</span>
-    <span class="kw">fn</span> <span class="ident">induct_class</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">ast</span>: <span class="kw-2">&amp;</span><span class="ident">ClassInduct</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ClassFrame</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">induct_class</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ast</span>: <span class="kw-2">&amp;</span><span class="ident">ClassInduct</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ClassFrame</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">ast</span> {
             <span class="ident">ClassInduct</span>::<span class="ident">Item</span>(<span class="kw-2">&amp;</span><span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Bracketed</span>(<span class="kw-2">ref</span> <span class="ident">x</span>)) <span class="op">=&gt;</span> {
                 <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">kind</span> {
                     <span class="ident">ast</span>::<span class="ident">ClassSet</span>::<span class="ident">Item</span>(<span class="kw-2">ref</span> <span class="ident">item</span>) <span class="op">=&gt;</span> {
-                        <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">Union</span> {
-                            <span class="ident">head</span>: <span class="ident">item</span>,
-                            <span class="ident">tail</span>: <span class="kw-2">&amp;</span>[],
-                        })
+                        <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">Union</span> { <span class="ident">head</span>: <span class="ident">item</span>, <span class="ident">tail</span>: <span class="kw-2">&amp;</span>[] })
                     }
                     <span class="ident">ast</span>::<span class="ident">ClassSet</span>::<span class="ident">BinaryOp</span>(<span class="kw-2">ref</span> <span class="ident">op</span>) <span class="op">=&gt;</span> {
                         <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">Binary</span> { <span class="ident">op</span>: <span class="ident">op</span> })
@@ -989,13 +922,11 @@
                     })
                 }
             }
-            <span class="ident">ClassInduct</span>::<span class="ident">BinaryOp</span>(<span class="ident">op</span>) <span class="op">=&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">BinaryLHS</span> {
-                    <span class="ident">op</span>: <span class="ident">op</span>,
-                    <span class="ident">lhs</span>: <span class="kw-2">&amp;</span><span class="ident">op</span>.<span class="ident">lhs</span>,
-                    <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">op</span>.<span class="ident">rhs</span>,
-                })
-            }
+            <span class="ident">ClassInduct</span>::<span class="ident">BinaryOp</span>(<span class="ident">op</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">BinaryLHS</span> {
+                <span class="ident">op</span>: <span class="ident">op</span>,
+                <span class="ident">lhs</span>: <span class="kw-2">&amp;</span><span class="ident">op</span>.<span class="ident">lhs</span>,
+                <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">op</span>.<span class="ident">rhs</span>,
+            }),
             <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         }
     }
@@ -1014,14 +945,11 @@
                     })
                 }
             }
-            <span class="ident">ClassFrame</span>::<span class="ident">Binary</span> {..} <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">ClassFrame</span>::<span class="ident">Binary</span> { .. } <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
             <span class="ident">ClassFrame</span>::<span class="ident">BinaryLHS</span> { <span class="ident">op</span>, <span class="ident">rhs</span>, .. } <span class="op">=&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">BinaryRHS</span> {
-                    <span class="ident">op</span>: <span class="ident">op</span>,
-                    <span class="ident">rhs</span>: <span class="ident">rhs</span>,
-                })
+                <span class="prelude-val">Some</span>(<span class="ident">ClassFrame</span>::<span class="ident">BinaryRHS</span> { <span class="ident">op</span>: <span class="ident">op</span>, <span class="ident">rhs</span>: <span class="ident">rhs</span> })
             }
-            <span class="ident">ClassFrame</span>::<span class="ident">BinaryRHS</span> {..} <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">ClassFrame</span>::<span class="ident">BinaryRHS</span> { .. } <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
         }
     }
 }
@@ -1072,10 +1000,10 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ClassFrame</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">ClassFrame</span>::<span class="ident">Union</span>{..} <span class="op">=&gt;</span> <span class="string">&quot;Union&quot;</span>,
-            <span class="ident">ClassFrame</span>::<span class="ident">Binary</span>{..} <span class="op">=&gt;</span> <span class="string">&quot;Binary&quot;</span>,
-            <span class="ident">ClassFrame</span>::<span class="ident">BinaryLHS</span>{..} <span class="op">=&gt;</span> <span class="string">&quot;BinaryLHS&quot;</span>,
-            <span class="ident">ClassFrame</span>::<span class="ident">BinaryRHS</span>{..} <span class="op">=&gt;</span> <span class="string">&quot;BinaryRHS&quot;</span>,
+            <span class="ident">ClassFrame</span>::<span class="ident">Union</span> { .. } <span class="op">=&gt;</span> <span class="string">&quot;Union&quot;</span>,
+            <span class="ident">ClassFrame</span>::<span class="ident">Binary</span> { .. } <span class="op">=&gt;</span> <span class="string">&quot;Binary&quot;</span>,
+            <span class="ident">ClassFrame</span>::<span class="ident">BinaryLHS</span> { .. } <span class="op">=&gt;</span> <span class="string">&quot;BinaryLHS&quot;</span>,
+            <span class="ident">ClassFrame</span>::<span class="ident">BinaryRHS</span> { .. } <span class="op">=&gt;</span> <span class="string">&quot;BinaryRHS&quot;</span>,
         };
         <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>)
     }
@@ -1084,31 +1012,27 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ClassInduct</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">ClassInduct</span>::<span class="ident">Item</span>(<span class="ident">it</span>) <span class="op">=&gt;</span> {
-                <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">it</span> {
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Empty</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Empty)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Literal</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Literal)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Range</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Range)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Ascii</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Ascii)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Perl</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Perl)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Unicode</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Unicode)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Bracketed</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Bracketed)&quot;</span>,
-                    <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Union</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Union)&quot;</span>,
+            <span class="ident">ClassInduct</span>::<span class="ident">Item</span>(<span class="ident">it</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">it</span> {
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Empty</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Empty)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Literal</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Literal)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Range</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Range)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Ascii</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Ascii)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Perl</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Perl)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Unicode</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Unicode)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Bracketed</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Bracketed)&quot;</span>,
+                <span class="ident">ast</span>::<span class="ident">ClassSetItem</span>::<span class="ident">Union</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="string">&quot;Item(Union)&quot;</span>,
+            },
+            <span class="ident">ClassInduct</span>::<span class="ident">BinaryOp</span>(<span class="ident">it</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">kind</span> {
+                <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOpKind</span>::<span class="ident">Intersection</span> <span class="op">=&gt;</span> {
+                    <span class="string">&quot;BinaryOp(Intersection)&quot;</span>
                 }
-            }
-            <span class="ident">ClassInduct</span>::<span class="ident">BinaryOp</span>(<span class="ident">it</span>) <span class="op">=&gt;</span> {
-                <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">kind</span> {
-                    <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOpKind</span>::<span class="ident">Intersection</span> <span class="op">=&gt;</span> {
-                        <span class="string">&quot;BinaryOp(Intersection)&quot;</span>
-                    }
-                    <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOpKind</span>::<span class="ident">Difference</span> <span class="op">=&gt;</span> {
-                        <span class="string">&quot;BinaryOp(Difference)&quot;</span>
-                    }
-                    <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOpKind</span>::<span class="ident">SymmetricDifference</span> <span class="op">=&gt;</span> {
-                        <span class="string">&quot;BinaryOp(SymmetricDifference)&quot;</span>
-                    }
+                <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOpKind</span>::<span class="ident">Difference</span> <span class="op">=&gt;</span> {
+                    <span class="string">&quot;BinaryOp(Difference)&quot;</span>
                 }
-            }
+                <span class="ident">ast</span>::<span class="ident">ClassSetBinaryOpKind</span>::<span class="ident">SymmetricDifference</span> <span class="op">=&gt;</span> {
+                    <span class="string">&quot;BinaryOp(SymmetricDifference)&quot;</span>
+                }
+            },
         };
         <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">x</span>)
     }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/percent-encoding-1.0.1/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../percent_encoding/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/percent-encoding-2.1.0/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../percent_encoding/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -449,164 +449,169 @@
 <span class="comment">// option. This file may not be copied, modified, or distributed</span>
 <span class="comment">// except according to those terms.</span>
 
-<span class="doccomment">//! URLs use special chacters to indicate the parts of the request.  For example, a forward slash</span>
-<span class="doccomment">//! indicates a path.  In order for that charcter to exist outside of a path separator, that</span>
-<span class="doccomment">//! charcter would need to be encoded.</span>
+<span class="doccomment">//! URLs use special chacters to indicate the parts of the request.</span>
+<span class="doccomment">//! For example, a `?` question mark marks the end of a path and the start of a query string.</span>
+<span class="doccomment">//! In order for that character to exist inside a path, it needs to be encoded differently.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Percent encoding replaces reserved charcters with the `%` escape charcter followed by hexidecimal</span>
-<span class="doccomment">//! ASCII representaton.  For non-ASCII charcters that are percent encoded, a UTF-8 byte sequence</span>
-<span class="doccomment">//! becomes percent encoded.  A simple example can be seen when the space literal is replaced with</span>
-<span class="doccomment">//! `%20`.</span>
+<span class="doccomment">//! Percent encoding replaces reserved characters with the `%` escape character</span>
+<span class="doccomment">//! followed by a byte value as two hexadecimal digits.</span>
+<span class="doccomment">//! For example, an ASCII space is replaced with `%20`.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Percent encoding is further complicated by the fact that different parts of an URL have</span>
-<span class="doccomment">//! different encoding requirements.  In order to support the variety of encoding requirements,</span>
-<span class="doccomment">//! `url::percent_encoding` includes different *encode sets*.</span>
-<span class="doccomment">//! See [URL Standard](https://url.spec.whatwg.org/#percent-encoded-bytes) for details.</span>
+<span class="doccomment">//! When encoding, the set of characters that can (and should, for readability) be left alone</span>
+<span class="doccomment">//! depends on the context.</span>
+<span class="doccomment">//! The `?` question mark mentioned above is not a separator when used literally</span>
+<span class="doccomment">//! inside of a query string, and therefore does not need to be encoded.</span>
+<span class="doccomment">//! The [`AsciiSet`] parameter of [`percent_encode`] and [`utf8_percent_encode`]</span>
+<span class="doccomment">//! lets callers configure this.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides some `*_ENCODE_SET` constants.</span>
-<span class="doccomment">//! If a different set is required, it can be created with</span>
-<span class="doccomment">//! the [`define_encode_set!`](../macro.define_encode_set!.html) macro.</span>
+<span class="doccomment">//! This crate delibarately does not provide many different sets.</span>
+<span class="doccomment">//! Users should consider in what context the encoded string will be used,</span>
+<span class="doccomment">//! real relevant specifications, and define their own set.</span>
+<span class="doccomment">//! This is done by using the `add` method of an existing set.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # Examples</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```</span>
-<span class="doccomment">//! use url::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};</span>
+<span class="doccomment">//! use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(utf8_percent_encode(&quot;foo bar?&quot;, DEFAULT_ENCODE_SET).to_string(), &quot;foo%20bar%3F&quot;);</span>
+<span class="doccomment">//! /// https://url.spec.whatwg.org/#fragment-percent-encode-set</span>
+<span class="doccomment">//! const FRAGMENT: &amp;AsciiSet = &amp;CONTROLS.add(b&#39; &#39;).add(b&#39;&quot;&#39;).add(b&#39;&lt;&#39;).add(b&#39;&gt;&#39;).add(b&#39;`&#39;);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! assert_eq!(utf8_percent_encode(&quot;foo &lt;bar&gt;&quot;, FRAGMENT).to_string(), &quot;foo%20%3Cbar%3E&quot;);</span>
 <span class="doccomment">//! ```</span>
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ascii</span>::<span class="ident">AsciiExt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>;
 
-<span class="doccomment">/// Represents a set of characters / bytes that should be percent-encoded.</span>
+<span class="doccomment">/// Represents a set of characters or bytes in the ASCII range.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// See [encode sets specification](http://url.spec.whatwg.org/#simple-encode-set).</span>
+<span class="doccomment">/// This used in [`percent_encode`] and [`utf8_percent_encode`].</span>
+<span class="doccomment">/// This is simlar to [percent-encode sets](https://url.spec.whatwg.org/#percent-encoded-bytes).</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// Different characters need to be encoded in different parts of an URL.</span>
-<span class="doccomment">/// For example, a literal `?` question mark in an URL’s path would indicate</span>
-<span class="doccomment">/// the start of the query string.</span>
-<span class="doccomment">/// A question mark meant to be part of the path therefore needs to be percent-encoded.</span>
-<span class="doccomment">/// In the query string however, a question mark does not have any special meaning</span>
-<span class="doccomment">/// and does not need to be percent-encoded.</span>
+<span class="doccomment">/// Use the `add` method of an existing set to define a new set. For example:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// A few sets are defined in this module.</span>
-<span class="doccomment">/// Use the [`define_encode_set!`](../macro.define_encode_set!.html) macro to define different ones.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">EncodeSet</span>: <span class="ident">Clone</span> {
-    <span class="doccomment">/// Called with UTF-8 bytes rather than code points.</span>
-    <span class="doccomment">/// Should return true for all non-ASCII bytes.</span>
-    <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use percent_encoding::{AsciiSet, CONTROLS};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// /// https://url.spec.whatwg.org/#fragment-percent-encode-set</span>
+<span class="doccomment">/// const FRAGMENT: &amp;AsciiSet = &amp;CONTROLS.add(b&#39; &#39;).add(b&#39;&quot;&#39;).add(b&#39;&lt;&#39;).add(b&#39;&gt;&#39;).add(b&#39;`&#39;);</span>
+<span class="doccomment">/// ```</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AsciiSet</span> {
+    <span class="ident">mask</span>: [<span class="ident">Chunk</span>; <span class="ident">ASCII_RANGE_LEN</span> <span class="op">/</span> <span class="ident">BITS_PER_CHUNK</span>],
 }
 
-<span class="doccomment">/// Define a new struct</span>
-<span class="doccomment">/// that implements the [`EncodeSet`](percent_encoding/trait.EncodeSet.html) trait,</span>
-<span class="doccomment">/// for use in [`percent_decode()`](percent_encoding/fn.percent_encode.html)</span>
-<span class="doccomment">/// and related functions.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Parameters are characters to include in the set in addition to those of the base set.</span>
-<span class="doccomment">/// See [encode sets specification](http://url.spec.whatwg.org/#simple-encode-set).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Example</span>
-<span class="doccomment">/// =======</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// #[macro_use] extern crate percent_encoding;</span>
-<span class="doccomment">/// use percent_encoding::{utf8_percent_encode, SIMPLE_ENCODE_SET};</span>
-<span class="doccomment">/// define_encode_set! {</span>
-<span class="doccomment">///     /// This encode set is used in the URL parser for query strings.</span>
-<span class="doccomment">///     pub QUERY_ENCODE_SET = [SIMPLE_ENCODE_SET] | {&#39; &#39;, &#39;&quot;&#39;, &#39;#&#39;, &#39;&lt;&#39;, &#39;&gt;&#39;}</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// # fn main() {</span>
-<span class="doccomment">/// assert_eq!(utf8_percent_encode(&quot;foo bar&quot;, QUERY_ENCODE_SET).collect::&lt;String&gt;(), &quot;foo%20bar&quot;);</span>
-<span class="doccomment">/// # }</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">define_encode_set</span> {
-    ($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>: <span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="kw">pub</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>: <span class="ident">ident</span> <span class="op">=</span> [<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base_set</span>: <span class="ident">expr</span>] <span class="op">|</span> {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ch</span>: <span class="ident">pat</span>),<span class="kw-2">*</span>}) <span class="op">=&gt;</span> {
-        $(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>]</span>)<span class="op">*</span>
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">struct</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>;
+<span class="kw">type</span> <span class="ident">Chunk</span> <span class="op">=</span> <span class="ident">u32</span>;
 
-        <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">EncodeSet</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span> {
-            <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-                <span class="kw">match</span> <span class="ident">byte</span> <span class="kw">as</span> <span class="ident">char</span> {
-                    $(
-                        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ch</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-                    )<span class="op">*</span>
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base_set</span>.<span class="ident">contains</span>(<span class="ident">byte</span>)
-                }
-            }
+<span class="kw">const</span> <span class="ident">ASCII_RANGE_LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0x80</span>;
+
+<span class="kw">const</span> <span class="ident">BITS_PER_CHUNK</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Chunk</span><span class="op">&gt;</span>();
+
+<span class="kw">impl</span> <span class="ident">AsciiSet</span> {
+    <span class="doccomment">/// Called with UTF-8 bytes rather than code points.</span>
+    <span class="doccomment">/// Not used for non-ASCII bytes.</span>
+    <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">let</span> <span class="ident">chunk</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mask</span>[<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">/</span> <span class="ident">BITS_PER_CHUNK</span>];
+        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> (<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">%</span> <span class="ident">BITS_PER_CHUNK</span>);
+        (<span class="ident">chunk</span> <span class="op">&amp;</span> <span class="ident">mask</span>) <span class="op">!=</span> <span class="number">0</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">should_percent_encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="op">!</span><span class="ident">byte</span>.<span class="ident">is_ascii</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident">byte</span>)
+    }
+
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mask</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mask</span>;
+        <span class="ident">mask</span>[<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">/</span> <span class="ident">BITS_PER_CHUNK</span>] <span class="op">|=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> (<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">%</span> <span class="ident">BITS_PER_CHUNK</span>);
+        <span class="ident">AsciiSet</span> { <span class="ident">mask</span> }
+    }
+
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mask</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mask</span>;
+        <span class="ident">mask</span>[<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">/</span> <span class="ident">BITS_PER_CHUNK</span>] <span class="op">&amp;=</span> <span class="op">!</span>(<span class="number">1</span> <span class="op">&lt;&lt;</span> (<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">%</span> <span class="ident">BITS_PER_CHUNK</span>));
+        <span class="ident">AsciiSet</span> { <span class="ident">mask</span> }
+    }
+}
+
+<span class="doccomment">/// The set of 0x00 to 0x1F (C0 controls), and 0x7F (DEL).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that this includes the newline and tab characters, but not the space 0x20.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// &lt;https://url.spec.whatwg.org/#c0-control-percent-encode-set&gt;</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CONTROLS</span>: <span class="kw-2">&amp;</span><span class="ident">AsciiSet</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">AsciiSet</span> {
+    <span class="ident">mask</span>: [
+        <span class="op">!</span><span class="number">0_u32</span>, <span class="comment">// C0: 0x00 to 0x1F (32 bits set)</span>
+        <span class="number">0</span>,
+        <span class="number">0</span>,
+        <span class="number">1</span> <span class="op">&lt;&lt;</span> (<span class="number">0x7F_u32</span> <span class="op">%</span> <span class="number">32</span>), <span class="comment">// DEL: 0x7F (one bit set)</span>
+    ],
+};
+
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">static_assert</span> {
+    ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bool</span>: <span class="ident">expr</span>, )<span class="op">+</span>) <span class="op">=&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">_static_assert</span>() {
+            $(
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">transmute</span>::<span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bool</span> <span class="kw">as</span> <span class="ident">usize</span>], <span class="ident">u8</span><span class="op">&gt;</span>;
+            )<span class="op">+</span>
         }
     }
 }
 
-<span class="doccomment">/// This encode set is used for the path of cannot-be-a-base URLs.</span>
+<span class="macro">static_assert</span><span class="macro">!</span> {
+    <span class="ident">CONTROLS</span>.<span class="ident">contains</span>(<span class="number">0x00</span>),
+    <span class="ident">CONTROLS</span>.<span class="ident">contains</span>(<span class="number">0x1F</span>),
+    <span class="op">!</span><span class="ident">CONTROLS</span>.<span class="ident">contains</span>(<span class="number">0x20</span>),
+    <span class="op">!</span><span class="ident">CONTROLS</span>.<span class="ident">contains</span>(<span class="number">0x7E</span>),
+    <span class="ident">CONTROLS</span>.<span class="ident">contains</span>(<span class="number">0x7F</span>),
+}
+
+<span class="doccomment">/// Everything that is not an ASCII letter or digit.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// All ASCII charcters less than hexidecimal 20 and greater than 7E are encoded.  This includes</span>
-<span class="doccomment">/// special charcters such as line feed, carriage return, NULL, etc.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SIMPLE_ENCODE_SET</span>;
+<span class="doccomment">/// This is probably more eager than necessary in any context.</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NON_ALPHANUMERIC</span>: <span class="kw-2">&amp;</span><span class="ident">AsciiSet</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">CONTROLS</span>
+    .<span class="ident">add</span>(<span class="string">b&#39; &#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;!&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;&quot;&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;#&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;$&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;%&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;&amp;&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;\&#39;&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;(&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;)&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;*&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;+&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;,&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;-&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;.&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;/&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;:&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;;&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;&lt;&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;=&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;&gt;&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;?&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;@&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;[&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;\\&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;]&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;^&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;_&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;`&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;{&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;|&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;}&#39;</span>)
+    .<span class="ident">add</span>(<span class="string">b&#39;~&#39;</span>);
 
-<span class="kw">impl</span> <span class="ident">EncodeSet</span> <span class="kw">for</span> <span class="ident">SIMPLE_ENCODE_SET</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">byte</span> <span class="op">&lt;</span> <span class="number">0x20</span> <span class="op">||</span> <span class="ident">byte</span> <span class="op">&gt;</span> <span class="number">0x7E</span>
-    }
-}
-
-<span class="macro">define_encode_set</span><span class="macro">!</span> {
-    <span class="doccomment">/// This encode set is used in the URL parser for query strings.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Aside from special chacters defined in the [`SIMPLE_ENCODE_SET`](struct.SIMPLE_ENCODE_SET.html),</span>
-    <span class="doccomment">/// space, double quote (&quot;), hash (#), and inequality qualifiers (&lt;), (&gt;) are encoded.</span>
-    <span class="kw">pub</span> <span class="ident">QUERY_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">SIMPLE_ENCODE_SET</span>] <span class="op">|</span> {<span class="string">&#39; &#39;</span>, <span class="string">&#39;&quot;&#39;</span>, <span class="string">&#39;#&#39;</span>, <span class="string">&#39;&lt;&#39;</span>, <span class="string">&#39;&gt;&#39;</span>}
-}
-
-<span class="macro">define_encode_set</span><span class="macro">!</span> {
-    <span class="doccomment">/// This encode set is used for path components.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Aside from special chacters defined in the [`SIMPLE_ENCODE_SET`](struct.SIMPLE_ENCODE_SET.html),</span>
-    <span class="doccomment">/// space, double quote (&quot;), hash (#), inequality qualifiers (&lt;), (&gt;), backtick (`),</span>
-    <span class="doccomment">/// question mark (?), and curly brackets ({), (}) are encoded.</span>
-    <span class="kw">pub</span> <span class="ident">DEFAULT_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">QUERY_ENCODE_SET</span>] <span class="op">|</span> {<span class="string">&#39;`&#39;</span>, <span class="string">&#39;?&#39;</span>, <span class="string">&#39;{&#39;</span>, <span class="string">&#39;}&#39;</span>}
-}
-
-<span class="macro">define_encode_set</span><span class="macro">!</span> {
-    <span class="doccomment">/// This encode set is used for on &#39;/&#39;-separated path segment</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Aside from special chacters defined in the [`SIMPLE_ENCODE_SET`](struct.SIMPLE_ENCODE_SET.html),</span>
-    <span class="doccomment">/// space, double quote (&quot;), hash (#), inequality qualifiers (&lt;), (&gt;), backtick (`),</span>
-    <span class="doccomment">/// question mark (?), and curly brackets ({), (}), percent sign (%), forward slash (/) are</span>
-    <span class="doccomment">/// encoded.</span>
-    <span class="kw">pub</span> <span class="ident">PATH_SEGMENT_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">DEFAULT_ENCODE_SET</span>] <span class="op">|</span> {<span class="string">&#39;%&#39;</span>, <span class="string">&#39;/&#39;</span>}
-}
-
-<span class="macro">define_encode_set</span><span class="macro">!</span> {
-    <span class="doccomment">/// This encode set is used for username and password.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Aside from special chacters defined in the [`SIMPLE_ENCODE_SET`](struct.SIMPLE_ENCODE_SET.html),</span>
-    <span class="doccomment">/// space, double quote (&quot;), hash (#), inequality qualifiers (&lt;), (&gt;), backtick (`),</span>
-    <span class="doccomment">/// question mark (?), and curly brackets ({), (}), forward slash (/), colon (:), semi-colon (;),</span>
-    <span class="doccomment">/// equality (=), at (@), backslash (\\), square brackets ([), (]), caret (\^), and pipe (|) are</span>
-    <span class="doccomment">/// encoded.</span>
-    <span class="kw">pub</span> <span class="ident">USERINFO_ENCODE_SET</span> <span class="op">=</span> [<span class="ident">DEFAULT_ENCODE_SET</span>] <span class="op">|</span> {
-        <span class="string">&#39;/&#39;</span>, <span class="string">&#39;:&#39;</span>, <span class="string">&#39;;&#39;</span>, <span class="string">&#39;=&#39;</span>, <span class="string">&#39;@&#39;</span>, <span class="string">&#39;[&#39;</span>, <span class="string">&#39;\\&#39;</span>, <span class="string">&#39;]&#39;</span>, <span class="string">&#39;^&#39;</span>, <span class="string">&#39;|&#39;</span>
-    }
-}
-
-<span class="doccomment">/// Return the percent-encoding of the given bytes.</span>
+<span class="doccomment">/// Return the percent-encoding of the given byte.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// This is unconditional, unlike `percent_encode()` which uses an encode set.</span>
+<span class="doccomment">/// This is unconditional, unlike `percent_encode()` which has an `AsciiSet` parameter.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use url::percent_encoding::percent_encode_byte;</span>
+<span class="doccomment">/// use percent_encoding::percent_encode_byte;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// assert_eq!(&quot;foo bar&quot;.bytes().map(percent_encode_byte).collect::&lt;String&gt;(),</span>
 <span class="doccomment">///            &quot;%66%6F%6F%20%62%61%72&quot;);</span>
@@ -614,93 +619,88 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_encode_byte</span>(<span class="ident">byte</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
     <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">usize</span>::<span class="ident">from</span>(<span class="ident">byte</span>) <span class="op">*</span> <span class="number">3</span>;
     <span class="kw-2">&amp;</span><span class="string">&quot;\
-        %00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F\
-        %10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F\
-        %20%21%22%23%24%25%26%27%28%29%2A%2B%2C%2D%2E%2F\
-        %30%31%32%33%34%35%36%37%38%39%3A%3B%3C%3D%3E%3F\
-        %40%41%42%43%44%45%46%47%48%49%4A%4B%4C%4D%4E%4F\
-        %50%51%52%53%54%55%56%57%58%59%5A%5B%5C%5D%5E%5F\
-        %60%61%62%63%64%65%66%67%68%69%6A%6B%6C%6D%6E%6F\
-        %70%71%72%73%74%75%76%77%78%79%7A%7B%7C%7D%7E%7F\
-        %80%81%82%83%84%85%86%87%88%89%8A%8B%8C%8D%8E%8F\
-        %90%91%92%93%94%95%96%97%98%99%9A%9B%9C%9D%9E%9F\
-        %A0%A1%A2%A3%A4%A5%A6%A7%A8%A9%AA%AB%AC%AD%AE%AF\
-        %B0%B1%B2%B3%B4%B5%B6%B7%B8%B9%BA%BB%BC%BD%BE%BF\
-        %C0%C1%C2%C3%C4%C5%C6%C7%C8%C9%CA%CB%CC%CD%CE%CF\
-        %D0%D1%D2%D3%D4%D5%D6%D7%D8%D9%DA%DB%DC%DD%DE%DF\
-        %E0%E1%E2%E3%E4%E5%E6%E7%E8%E9%EA%EB%EC%ED%EE%EF\
-        %F0%F1%F2%F3%F4%F5%F6%F7%F8%F9%FA%FB%FC%FD%FE%FF\
-    &quot;</span>[<span class="ident">index</span>..<span class="ident">index</span> <span class="op">+</span> <span class="number">3</span>]
+      %00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F\
+      %10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F\
+      %20%21%22%23%24%25%26%27%28%29%2A%2B%2C%2D%2E%2F\
+      %30%31%32%33%34%35%36%37%38%39%3A%3B%3C%3D%3E%3F\
+      %40%41%42%43%44%45%46%47%48%49%4A%4B%4C%4D%4E%4F\
+      %50%51%52%53%54%55%56%57%58%59%5A%5B%5C%5D%5E%5F\
+      %60%61%62%63%64%65%66%67%68%69%6A%6B%6C%6D%6E%6F\
+      %70%71%72%73%74%75%76%77%78%79%7A%7B%7C%7D%7E%7F\
+      %80%81%82%83%84%85%86%87%88%89%8A%8B%8C%8D%8E%8F\
+      %90%91%92%93%94%95%96%97%98%99%9A%9B%9C%9D%9E%9F\
+      %A0%A1%A2%A3%A4%A5%A6%A7%A8%A9%AA%AB%AC%AD%AE%AF\
+      %B0%B1%B2%B3%B4%B5%B6%B7%B8%B9%BA%BB%BC%BD%BE%BF\
+      %C0%C1%C2%C3%C4%C5%C6%C7%C8%C9%CA%CB%CC%CD%CE%CF\
+      %D0%D1%D2%D3%D4%D5%D6%D7%D8%D9%DA%DB%DC%DD%DE%DF\
+      %E0%E1%E2%E3%E4%E5%E6%E7%E8%E9%EA%EB%EC%ED%EE%EF\
+      %F0%F1%F2%F3%F4%F5%F6%F7%F8%F9%FA%FB%FC%FD%FE%FF\
+      &quot;</span>[<span class="ident">index</span>..<span class="ident">index</span> <span class="op">+</span> <span class="number">3</span>]
 }
 
-<span class="doccomment">/// Percent-encode the given bytes with the given encode set.</span>
+<span class="doccomment">/// Percent-encode the given bytes with the given set.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The encode set define which bytes (in addition to non-ASCII and controls)</span>
-<span class="doccomment">/// need to be percent-encoded.</span>
-<span class="doccomment">/// The choice of this set depends on context.</span>
-<span class="doccomment">/// For example, `?` needs to be encoded in an URL path but not in a query string.</span>
+<span class="doccomment">/// Non-ASCII bytes and bytes in `ascii_set` are encoded.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The return value is an iterator of `&amp;str` slices (so it has a `.collect::&lt;String&gt;()` method)</span>
-<span class="doccomment">/// that also implements `Display` and `Into&lt;Cow&lt;str&gt;&gt;`.</span>
-<span class="doccomment">/// The latter returns `Cow::Borrowed` when none of the bytes in `input`</span>
-<span class="doccomment">/// are in the given encode set.</span>
+<span class="doccomment">/// The return type:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * Implements `Iterator&lt;Item = &amp;str&gt;` and therefore has a `.collect::&lt;String&gt;()` method,</span>
+<span class="doccomment">/// * Implements `Display` and therefore has a `.to_string()` method,</span>
+<span class="doccomment">/// * Implements `Into&lt;Cow&lt;str&gt;&gt;` borrowing `input` when none of its bytes are encoded.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use url::percent_encoding::{percent_encode, DEFAULT_ENCODE_SET};</span>
+<span class="doccomment">/// use percent_encoding::{percent_encode, NON_ALPHANUMERIC};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(percent_encode(b&quot;foo bar?&quot;, DEFAULT_ENCODE_SET).to_string(), &quot;foo%20bar%3F&quot;);</span>
+<span class="doccomment">/// assert_eq!(percent_encode(b&quot;foo bar?&quot;, NON_ALPHANUMERIC).to_string(), &quot;foo%20bar%3F&quot;);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_encode</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">encode_set</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_encode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">ascii_set</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">AsciiSet</span>) <span class="op">-&gt;</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">PercentEncode</span> {
         <span class="ident">bytes</span>: <span class="ident">input</span>,
-        <span class="ident">encode_set</span>: <span class="ident">encode_set</span>,
+        <span class="ident">ascii_set</span>,
     }
 }
 
 <span class="doccomment">/// Percent-encode the UTF-8 encoding of the given string.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// See `percent_encode()` for how to use the return value.</span>
+<span class="doccomment">/// See [`percent_encode`] regarding the return type.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use url::percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};</span>
+<span class="doccomment">/// use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(utf8_percent_encode(&quot;foo bar?&quot;, DEFAULT_ENCODE_SET).to_string(), &quot;foo%20bar%3F&quot;);</span>
+<span class="doccomment">/// assert_eq!(utf8_percent_encode(&quot;foo bar?&quot;, NON_ALPHANUMERIC).to_string(), &quot;foo%20bar%3F&quot;);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">utf8_percent_encode</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">encode_set</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="ident">percent_encode</span>(<span class="ident">input</span>.<span class="ident">as_bytes</span>(), <span class="ident">encode_set</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">utf8_percent_encode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">ascii_set</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">AsciiSet</span>) <span class="op">-&gt;</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="ident">percent_encode</span>(<span class="ident">input</span>.<span class="ident">as_bytes</span>(), <span class="ident">ascii_set</span>)
 }
 
-<span class="doccomment">/// The return type of `percent_encode()` and `utf8_percent_encode()`.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> {
+<span class="doccomment">/// The return type of [`percent_encode`] and [`utf8_percent_encode`].</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">bytes</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
-    <span class="ident">encode_set</span>: <span class="ident">E</span>,
+    <span class="ident">ascii_set</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">AsciiSet</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
 
     <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span><span class="ident">first_byte</span>, <span class="ident">remaining</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">split_first</span>() {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">encode_set</span>.<span class="ident">contains</span>(<span class="ident">first_byte</span>) {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ascii_set</span>.<span class="ident">should_percent_encode</span>(<span class="ident">first_byte</span>) {
                 <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">=</span> <span class="ident">remaining</span>;
                 <span class="prelude-val">Some</span>(<span class="ident">percent_encode_byte</span>(<span class="ident">first_byte</span>))
             } <span class="kw">else</span> {
-                <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">first_byte</span>.<span class="ident">is_ascii</span>());
                 <span class="kw">for</span> (<span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">byte</span>) <span class="kw">in</span> <span class="ident">remaining</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">encode_set</span>.<span class="ident">contains</span>(<span class="ident">byte</span>) {
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ascii_set</span>.<span class="ident">should_percent_encode</span>(<span class="ident">byte</span>) {
                         <span class="comment">// 1 for first_byte + i for previous iterations of this loop</span>
                         <span class="kw">let</span> (<span class="ident">unchanged_slice</span>, <span class="ident">remaining</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">split_at</span>(<span class="number">1</span> <span class="op">+</span> <span class="ident">i</span>);
                         <span class="self">self</span>.<span class="ident">bytes</span> <span class="op">=</span> <span class="ident">remaining</span>;
-                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">str</span>::<span class="ident">from_utf8_unchecked</span>(<span class="ident">unchanged_slice</span>) })
-                    } <span class="kw">else</span> {
-                        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">byte</span>.<span class="ident">is_ascii</span>());
+                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="ident">str</span>::<span class="ident">from_utf8_unchecked</span>(<span class="ident">unchanged_slice</span>) });
                     }
                 }
                 <span class="kw">let</span> <span class="ident">unchanged_slice</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>;
@@ -721,7 +721,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> (<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">clone</span>() {
             <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="ident">c</span>)<span class="question-mark">?</span>
@@ -730,62 +730,70 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span>: <span class="ident">EncodeSet</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw-2">mut</span> <span class="ident">iter</span>: <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw-2">mut</span> <span class="ident">iter</span>: <span class="ident">PercentEncode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="string">&quot;&quot;</span>.<span class="ident">into</span>(),
-            <span class="prelude-val">Some</span>(<span class="ident">first</span>) <span class="op">=&gt;</span> {
-                <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">first</span>.<span class="ident">into</span>(),
-                    <span class="prelude-val">Some</span>(<span class="ident">second</span>) <span class="op">=&gt;</span> {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">first</span>.<span class="ident">to_owned</span>();
-                        <span class="ident">string</span>.<span class="ident">push_str</span>(<span class="ident">second</span>);
-                        <span class="ident">string</span>.<span class="ident">extend</span>(<span class="ident">iter</span>);
-                        <span class="ident">string</span>.<span class="ident">into</span>()
-                    }
+            <span class="prelude-val">Some</span>(<span class="ident">first</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">iter</span>.<span class="ident">next</span>() {
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">first</span>.<span class="ident">into</span>(),
+                <span class="prelude-val">Some</span>(<span class="ident">second</span>) <span class="op">=&gt;</span> {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">first</span>.<span class="ident">to_owned</span>();
+                    <span class="ident">string</span>.<span class="ident">push_str</span>(<span class="ident">second</span>);
+                    <span class="ident">string</span>.<span class="ident">extend</span>(<span class="ident">iter</span>);
+                    <span class="ident">string</span>.<span class="ident">into</span>()
                 }
-            }
+            },
         }
     }
 }
 
+<span class="doccomment">/// Percent-decode the given string.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// &lt;https://url.spec.whatwg.org/#string-percent-decode&gt;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`percent_decode`] regarding the return type.</span>
+<span class="attribute">#[<span class="ident">inline</span>]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_decode_str</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">PercentDecode</span> {
+    <span class="ident">percent_decode</span>(<span class="ident">input</span>.<span class="ident">as_bytes</span>())
+}
+
 <span class="doccomment">/// Percent-decode the given bytes.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The return value is an iterator of decoded `u8` bytes</span>
-<span class="doccomment">/// that also implements `Into&lt;Cow&lt;u8&gt;&gt;`</span>
-<span class="doccomment">/// (which returns `Cow::Borrowed` when `input` contains no percent-encoded sequence)</span>
-<span class="doccomment">/// and has `decode_utf8()` and `decode_utf8_lossy()` methods.</span>
+<span class="doccomment">/// &lt;https://url.spec.whatwg.org/#percent-decode&gt;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Any sequence of `%` followed by two hexadecimal digits is decoded.</span>
+<span class="doccomment">/// The return type:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * Implements `Into&lt;Cow&lt;u8&gt;&gt;` borrowing `input` when it contains no percent-encoded sequence,</span>
+<span class="doccomment">/// * Implements `Iterator&lt;Item = u8&gt;` and therefore has a `.collect::&lt;Vec&lt;u8&gt;&gt;()` method,</span>
+<span class="doccomment">/// * Has `decode_utf8()` and `decode_utf8_lossy()` methods.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// use url::percent_encoding::percent_decode;</span>
+<span class="doccomment">/// use percent_encoding::percent_decode;</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(percent_decode(b&quot;foo%20bar%3F&quot;).decode_utf8().unwrap(), &quot;foo bar?&quot;);</span>
+<span class="doccomment">/// assert_eq!(percent_decode(b&quot;foo%20bar%3f&quot;).decode_utf8().unwrap(), &quot;foo bar?&quot;);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">percent_decode</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="ident">PercentDecode</span> {
     <span class="ident">PercentDecode</span> {
-        <span class="ident">bytes</span>: <span class="ident">input</span>.<span class="ident">iter</span>()
+        <span class="ident">bytes</span>: <span class="ident">input</span>.<span class="ident">iter</span>(),
     }
 }
 
-<span class="doccomment">/// The return type of `percent_decode()`.</span>
+<span class="doccomment">/// The return type of [`percent_decode`].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">bytes</span>: <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">u8</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">fn</span> <span class="ident">after_percent_sign</span>(<span class="ident">iter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">initial_iter</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">clone</span>();
-    <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">to_digit</span>(<span class="number">16</span>));
-    <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>).<span class="ident">to_digit</span>(<span class="number">16</span>));
-    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">h</span>), <span class="prelude-val">Some</span>(<span class="ident">l</span>)) <span class="op">=</span> (<span class="ident">h</span>, <span class="ident">l</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">h</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">*</span> <span class="number">0x10</span> <span class="op">+</span> <span class="ident">l</span> <span class="kw">as</span> <span class="ident">u8</span>)
-    } <span class="kw">else</span> {
-        <span class="kw-2">*</span><span class="ident">iter</span> <span class="op">=</span> <span class="ident">initial_iter</span>;
-        <span class="prelude-val">None</span>
-    }
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cloned_iter</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">char</span>::<span class="ident">from</span>(<span class="kw-2">*</span><span class="ident">cloned_iter</span>.<span class="ident">next</span>()<span class="question-mark">?</span>).<span class="ident">to_digit</span>(<span class="number">16</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="ident">char</span>::<span class="ident">from</span>(<span class="kw-2">*</span><span class="ident">cloned_iter</span>.<span class="ident">next</span>()<span class="question-mark">?</span>).<span class="ident">to_digit</span>(<span class="number">16</span>)<span class="question-mark">?</span>;
+    <span class="kw-2">*</span><span class="ident">iter</span> <span class="op">=</span> <span class="ident">cloned_iter</span>;
+    <span class="prelude-val">Some</span>(<span class="ident">h</span> <span class="kw">as</span> <span class="ident">u8</span> <span class="op">*</span> <span class="number">0x10</span> <span class="op">+</span> <span class="ident">l</span> <span class="kw">as</span> <span class="ident">u8</span>)
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -818,7 +826,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">PercentDecode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="doccomment">/// If the percent-decoding is different from the input, return it as a new bytes vector.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">if_any</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">if_any</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes_iter</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bytes</span>.<span class="ident">clone</span>();
         <span class="kw">while</span> <span class="ident">bytes_iter</span>.<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span> <span class="op">==</span> <span class="string">b&#39;%&#39;</span>) {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">decoded_byte</span>) <span class="op">=</span> <span class="ident">after_percent_sign</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes_iter</span>) {
@@ -826,10 +834,8 @@
                 <span class="kw">let</span> <span class="ident">unchanged_bytes_len</span> <span class="op">=</span> <span class="ident">initial_bytes</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">bytes_iter</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">3</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">decoded</span> <span class="op">=</span> <span class="ident">initial_bytes</span>[..<span class="ident">unchanged_bytes_len</span>].<span class="ident">to_owned</span>();
                 <span class="ident">decoded</span>.<span class="ident">push</span>(<span class="ident">decoded_byte</span>);
-                <span class="ident">decoded</span>.<span class="ident">extend</span>(<span class="ident">PercentDecode</span> {
-                    <span class="ident">bytes</span>: <span class="ident">bytes_iter</span>
-                });
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">decoded</span>)
+                <span class="ident">decoded</span>.<span class="ident">extend</span>(<span class="ident">PercentDecode</span> { <span class="ident">bytes</span>: <span class="ident">bytes_iter</span> });
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">decoded</span>);
             }
         }
         <span class="comment">// Nothing to decode</span>
@@ -841,18 +847,14 @@
     <span class="doccomment">/// This is return `Err` when the percent-decoded bytes are not well-formed in UTF-8.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode_utf8</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">str</span>::<span class="ident">Utf8Error</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">into</span>() {
-            <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">bytes</span>) <span class="op">=&gt;</span> {
-                <span class="kw">match</span> <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">bytes</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">into</span>()),
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
-                }
-            }
-            <span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">bytes</span>) <span class="op">=&gt;</span> {
-                <span class="kw">match</span> <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">bytes</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">into</span>()),
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">utf8_error</span>()),
-                }
-            }
+            <span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="ident">bytes</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">bytes</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">into</span>()),
+                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
+            },
+            <span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">bytes</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">bytes</span>) {
+                <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">into</span>()),
+                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">utf8_error</span>()),
+            },
         }
     }
 
@@ -881,7 +883,5 @@
         }
     }
 }
-
-
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "percent_encoding";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

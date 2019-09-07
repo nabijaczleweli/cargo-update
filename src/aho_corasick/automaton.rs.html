@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/aho-corasick-0.7.3/src/automaton.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>automaton.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../aho_corasick/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/aho-corasick-0.7.6/src/automaton.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>automaton.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../aho_corasick/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -399,18 +399,224 @@
 <span id="399">399</span>
 <span id="400">400</span>
 <span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">ahocorasick</span>::<span class="ident">MatchKind</span>;
-<span class="kw">use</span> <span class="ident">prefilter</span>::{<span class="ident">Prefilter</span>, <span class="ident">PrefilterState</span>};
-<span class="kw">use</span> <span class="ident">state_id</span>::{<span class="ident">StateID</span>, <span class="ident">dead_id</span>, <span class="ident">fail_id</span>};
+<span class="kw">use</span> <span class="ident">prefilter</span>::{<span class="self">self</span>, <span class="ident">Candidate</span>, <span class="ident">Prefilter</span>, <span class="ident">PrefilterState</span>};
+<span class="kw">use</span> <span class="ident">state_id</span>::{<span class="ident">dead_id</span>, <span class="ident">fail_id</span>, <span class="ident">StateID</span>};
 <span class="kw">use</span> <span class="ident">Match</span>;
 
-<span class="comment">// NOTE: This trait was essentially copied from regex-automata, with some</span>
-<span class="comment">// wording changed since we use this trait for NFAs in addition to DFAs in this</span>
-<span class="comment">// crate. Additionally, we do not export this trait. It&#39;s only used internally</span>
-<span class="comment">// to reduce code duplication. The regex-automata crate needs to expose it</span>
-<span class="comment">// because its Regex type is generic over implementations of this trait. In</span>
-<span class="comment">// this crate, we can encapsulate everything behind the AhoCorasick type.</span>
+<span class="comment">// NOTE: This trait essentially started as a copy of the same trait from from</span>
+<span class="comment">// regex-automata, with some wording changed since we use this trait for</span>
+<span class="comment">// NFAs in addition to DFAs in this crate. Additionally, we do not export</span>
+<span class="comment">// this trait. It&#39;s only used internally to reduce code duplication. The</span>
+<span class="comment">// regex-automata crate needs to expose it because its Regex type is generic</span>
+<span class="comment">// over implementations of this trait. In this crate, we encapsulate everything</span>
+<span class="comment">// behind the AhoCorasick type.</span>
+<span class="comment">//</span>
+<span class="comment">// This trait is a bit of a mess, but it&#39;s not quite clear how to fix it.</span>
+<span class="comment">// Basically, there are several competing concerns:</span>
+<span class="comment">//</span>
+<span class="comment">// * We need performance, so everything effectively needs to get monomorphized.</span>
+<span class="comment">// * There are several variations on searching Aho-Corasick automatons:</span>
+<span class="comment">//   overlapping, standard and leftmost. Overlapping and standard are somewhat</span>
+<span class="comment">//   combined together below, but there is no real way to combine standard with</span>
+<span class="comment">//   leftmost. Namely, leftmost requires continuing a search even after a match</span>
+<span class="comment">//   is found, in order to correctly disambiguate a match.</span>
+<span class="comment">// * On top of that, *sometimes* callers want to know which state the automaton</span>
+<span class="comment">//   is in after searching. This is principally useful for overlapping and</span>
+<span class="comment">//   stream searches. However, when callers don&#39;t care about this, we really</span>
+<span class="comment">//   do not want to be forced to compute it, since it sometimes requires extra</span>
+<span class="comment">//   work. Thus, there are effectively two copies of leftmost searching: one</span>
+<span class="comment">//   for tracking the state ID and one that doesn&#39;t. We should ideally do the</span>
+<span class="comment">//   same for standard searching, but my sanity stopped me.</span>
 
 <span class="doccomment">/// A trait describing the interface of an Aho-Corasick finite state machine.</span>
 <span class="doccomment">///</span>
@@ -434,6 +640,9 @@
     <span class="doccomment">/// The type of matching that should be done.</span>
     <span class="kw">fn</span> <span class="ident">match_kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">MatchKind</span>;
 
+    <span class="doccomment">/// Returns true if and only if this automaton uses anchored searches.</span>
+    <span class="kw">fn</span> <span class="ident">anchored</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
+
     <span class="doccomment">/// An optional prefilter for quickly skipping to the next candidate match.</span>
     <span class="doccomment">/// A prefilter must report at least every match, although it may report</span>
     <span class="doccomment">/// positions that do not correspond to a match. That is, it must not allow</span>
@@ -442,7 +651,7 @@
     <span class="doccomment">/// Currently, a prefilter only runs when the automaton is in the start</span>
     <span class="doccomment">/// state. That is, the position reported by a prefilter should always</span>
     <span class="doccomment">/// correspond to the start of a potential match.</span>
-    <span class="kw">fn</span> <span class="ident">prefilter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Prefilter</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">prefilter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">Prefilter</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Return the identifier of this automaton&#39;s start state.</span>
     <span class="kw">fn</span> <span class="ident">start_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">ID</span>;
@@ -544,12 +753,14 @@
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">prefilter</span>() {
             <span class="self">self</span>.<span class="ident">standard_find_at_imp</span>(
-                <span class="ident">prestate</span>, <span class="prelude-val">Some</span>(<span class="ident">pre</span>), <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>,
+                <span class="ident">prestate</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">pre</span>),
+                <span class="ident">haystack</span>,
+                <span class="ident">at</span>,
+                <span class="ident">state_id</span>,
             )
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">standard_find_at_imp</span>(
-                <span class="ident">prestate</span>, <span class="prelude-val">None</span>, <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>,
-            )
+            <span class="self">self</span>.<span class="ident">standard_find_at_imp</span>(<span class="ident">prestate</span>, <span class="prelude-val">None</span>, <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>)
         }
     }
 
@@ -560,7 +771,7 @@
     <span class="kw">fn</span> <span class="ident">standard_find_at_imp</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">prestate</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrefilterState</span>,
-        <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Prefilter</span><span class="op">&gt;</span>,
+        <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">Prefilter</span><span class="op">&gt;</span>,
         <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
         <span class="ident">at</span>: <span class="ident">usize</span>,
         <span class="ident">state_id</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">ID</span>,
@@ -579,14 +790,15 @@
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">haystack</span>[<span class="ident">at</span>..].<span class="ident">as_ptr</span>();
             <span class="kw">while</span> <span class="ident">ptr</span> <span class="op">&lt;</span> <span class="ident">end</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="ident">prefilter</span> {
-                    <span class="kw">if</span> <span class="ident">prestate</span>.<span class="ident">is_effective</span>()
+                    <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                    <span class="kw">if</span> <span class="ident">prestate</span>.<span class="ident">is_effective</span>(<span class="ident">at</span>)
                         <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_state</span>()
                     {
-                        <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
-                        <span class="kw">match</span> <span class="ident">pre</span>.<span class="ident">next_candidate</span>(<span class="ident">haystack</span>, <span class="ident">at</span>) {
+                        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">prefilter</span>::<span class="ident">next</span>(<span class="ident">prestate</span>, <span class="ident">pre</span>, <span class="ident">haystack</span>, <span class="ident">at</span>)
+                            .<span class="ident">into_option</span>();
+                        <span class="kw">match</span> <span class="ident">c</span> {
                             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
                             <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> {
-                                <span class="ident">prestate</span>.<span class="ident">update</span>(<span class="ident">i</span> <span class="op">-</span> <span class="ident">at</span>);
                                 <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">start</span>.<span class="ident">offset</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>);
                             }
                         }
@@ -602,15 +814,21 @@
                 <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">ptr</span>.<span class="ident">offset</span>(<span class="number">1</span>);
                 <span class="comment">// This routine always quits immediately after seeing a</span>
                 <span class="comment">// match, and since dead states can only come after seeing</span>
-                <span class="comment">// a match, seeing a dead state here is impossible.</span>
+                <span class="comment">// a match, seeing a dead state here is impossible. (Unless</span>
+                <span class="comment">// we have an anchored automaton, in which case, dead states</span>
+                <span class="comment">// are used to stop a search.)</span>
                 <span class="macro">debug_assert</span><span class="macro">!</span>(
-                    <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">!=</span> <span class="ident">dead_id</span>(),
+                    <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">!=</span> <span class="ident">dead_id</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">anchored</span>(),
                     <span class="string">&quot;standard find should never see a dead state&quot;</span>
                 );
 
-                <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="kw-2">*</span><span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">end</span>) {
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>);
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_match_or_dead_state</span>(<span class="kw-2">*</span><span class="ident">state_id</span>) {
+                    <span class="kw">return</span> <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">==</span> <span class="ident">dead_id</span>() {
+                        <span class="prelude-val">None</span>
+                    } <span class="kw">else</span> {
+                        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                        <span class="self">self</span>.<span class="ident">get_match</span>(<span class="kw-2">*</span><span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">end</span>)
+                    };
                 }
             }
             <span class="prelude-val">None</span>
@@ -637,12 +855,14 @@
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">prefilter</span>() {
             <span class="self">self</span>.<span class="ident">leftmost_find_at_imp</span>(
-                <span class="ident">prestate</span>, <span class="prelude-val">Some</span>(<span class="ident">pre</span>), <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>,
+                <span class="ident">prestate</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">pre</span>),
+                <span class="ident">haystack</span>,
+                <span class="ident">at</span>,
+                <span class="ident">state_id</span>,
             )
         } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">leftmost_find_at_imp</span>(
-                <span class="ident">prestate</span>, <span class="prelude-val">None</span>, <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>,
-            )
+            <span class="self">self</span>.<span class="ident">leftmost_find_at_imp</span>(<span class="ident">prestate</span>, <span class="prelude-val">None</span>, <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>)
         }
     }
 
@@ -653,7 +873,7 @@
     <span class="kw">fn</span> <span class="ident">leftmost_find_at_imp</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">prestate</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrefilterState</span>,
-        <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Prefilter</span><span class="op">&gt;</span>,
+        <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">Prefilter</span><span class="op">&gt;</span>,
         <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
         <span class="ident">at</span>: <span class="ident">usize</span>,
         <span class="ident">state_id</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">ID</span>,
@@ -667,6 +887,9 @@
             <span class="string">&quot;{} is not a valid state ID&quot;</span>,
             <span class="ident">state_id</span>.<span class="ident">to_usize</span>()
         );
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">anchored</span>() <span class="op">&amp;&amp;</span> <span class="ident">at</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_state</span>() {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        }
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">haystack</span>.<span class="ident">as_ptr</span>();
             <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">haystack</span>[<span class="ident">haystack</span>.<span class="ident">len</span>()..].<span class="ident">as_ptr</span>();
@@ -675,14 +898,15 @@
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_match</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="kw-2">*</span><span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">at</span>);
             <span class="kw">while</span> <span class="ident">ptr</span> <span class="op">&lt;</span> <span class="ident">end</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="ident">prefilter</span> {
-                    <span class="kw">if</span> <span class="ident">prestate</span>.<span class="ident">is_effective</span>()
+                    <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                    <span class="kw">if</span> <span class="ident">prestate</span>.<span class="ident">is_effective</span>(<span class="ident">at</span>)
                         <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_state</span>()
                     {
-                        <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
-                        <span class="kw">match</span> <span class="ident">pre</span>.<span class="ident">next_candidate</span>(<span class="ident">haystack</span>, <span class="ident">at</span>) {
+                        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">prefilter</span>::<span class="ident">next</span>(<span class="ident">prestate</span>, <span class="ident">pre</span>, <span class="ident">haystack</span>, <span class="ident">at</span>)
+                            .<span class="ident">into_option</span>();
+                        <span class="kw">match</span> <span class="ident">c</span> {
                             <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
                             <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> {
-                                <span class="ident">prestate</span>.<span class="ident">update</span>(<span class="ident">i</span> <span class="op">-</span> <span class="ident">at</span>);
                                 <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">start</span>.<span class="ident">offset</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>);
                             }
                         }
@@ -706,14 +930,141 @@
                         <span class="comment">// has already been found). For Aho-Corasick, it is</span>
                         <span class="comment">// built so that we can match at any position, so the</span>
                         <span class="comment">// possibility of a match always exists.</span>
+                        <span class="comment">//</span>
+                        <span class="comment">// (Unless we have an anchored automaton, in which</span>
+                        <span class="comment">// case, dead states are used to stop a search.)</span>
                         <span class="macro">debug_assert</span><span class="macro">!</span>(
-                            <span class="ident">last_match</span>.<span class="ident">is_some</span>(),
+                            <span class="ident">last_match</span>.<span class="ident">is_some</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">anchored</span>(),
                             <span class="string">&quot;failure state should only be seen after match&quot;</span>
                         );
                         <span class="kw">return</span> <span class="ident">last_match</span>;
                     }
                     <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
                     <span class="ident">last_match</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="kw-2">*</span><span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">end</span>);
+                }
+            }
+            <span class="ident">last_match</span>
+        }
+    }
+
+    <span class="doccomment">/// This is like leftmost_find_at, but does not need to track a caller</span>
+    <span class="doccomment">/// provided state id. In other words, the only output of this routine is a</span>
+    <span class="doccomment">/// match, if one exists.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// It is regrettable that we need to effectively copy a chunk of</span>
+    <span class="doccomment">/// implementation twice, but when we don&#39;t need to track the state ID, we</span>
+    <span class="doccomment">/// can allow the prefilter to report matches immediately without having</span>
+    <span class="doccomment">/// to re-confirm them with the automaton. The re-confirmation step is</span>
+    <span class="doccomment">/// necessary in leftmost_find_at because tracing through the automaton is</span>
+    <span class="doccomment">/// the only way to correctly set the state ID. (Perhaps an alternative</span>
+    <span class="doccomment">/// would be to keep a map from pattern ID to matching state ID, but that</span>
+    <span class="doccomment">/// complicates the code and still doesn&#39;t permit us to defer to the</span>
+    <span class="doccomment">/// prefilter entirely when possible.)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// I did try a few things to avoid the code duplication here, but nothing</span>
+    <span class="doccomment">/// optimized as well as this approach. (In microbenchmarks, there was</span>
+    <span class="doccomment">/// about a 25% difference.)</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">never</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">leftmost_find_at_no_state</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">prestate</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrefilterState</span>,
+        <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+        <span class="ident">at</span>: <span class="ident">usize</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">prefilter</span>() {
+            <span class="self">self</span>.<span class="ident">leftmost_find_at_no_state_imp</span>(
+                <span class="ident">prestate</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">pre</span>),
+                <span class="ident">haystack</span>,
+                <span class="ident">at</span>,
+            )
+        } <span class="kw">else</span> {
+            <span class="self">self</span>.<span class="ident">leftmost_find_at_no_state_imp</span>(<span class="ident">prestate</span>, <span class="prelude-val">None</span>, <span class="ident">haystack</span>, <span class="ident">at</span>)
+        }
+    }
+
+    <span class="comment">// It&#39;s important for this to always be inlined. Namely, it&#39;s only caller</span>
+    <span class="comment">// is leftmost_find_at_no_state, and the inlining should remove the case</span>
+    <span class="comment">// analysis for prefilter scanning when there is no prefilter available.</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">leftmost_find_at_no_state_imp</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">prestate</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrefilterState</span>,
+        <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">Prefilter</span><span class="op">&gt;</span>,
+        <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+        <span class="ident">at</span>: <span class="ident">usize</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
+        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">match_kind</span>().<span class="ident">is_leftmost</span>());
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">anchored</span>() <span class="op">&amp;&amp;</span> <span class="ident">at</span> <span class="op">&gt;</span> <span class="number">0</span> {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        }
+        <span class="comment">// If our prefilter handles confirmation of matches 100% of the</span>
+        <span class="comment">// time, and since we don&#39;t need to track state IDs, we can avoid</span>
+        <span class="comment">// Aho-Corasick completely.</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="ident">prefilter</span> {
+            <span class="comment">// We should never have a prefilter during an anchored search.</span>
+            <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="op">!</span><span class="self">self</span>.<span class="ident">anchored</span>());
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">pre</span>.<span class="ident">reports_false_positives</span>() {
+                <span class="kw">return</span> <span class="kw">match</span> <span class="ident">pre</span>.<span class="ident">next_candidate</span>(<span class="ident">prestate</span>, <span class="ident">haystack</span>, <span class="ident">at</span>) {
+                    <span class="ident">Candidate</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="ident">Candidate</span>::<span class="ident">Match</span>(<span class="ident">m</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>),
+                    <span class="ident">Candidate</span>::<span class="ident">PossibleStartOfMatch</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+                };
+            }
+        }
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start_state</span>();
+        <span class="kw">unsafe</span> {
+            <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">haystack</span>.<span class="ident">as_ptr</span>();
+            <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">haystack</span>[<span class="ident">haystack</span>.<span class="ident">len</span>()..].<span class="ident">as_ptr</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">haystack</span>[<span class="ident">at</span>..].<span class="ident">as_ptr</span>();
+
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_match</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">at</span>);
+            <span class="kw">while</span> <span class="ident">ptr</span> <span class="op">&lt;</span> <span class="ident">end</span> {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pre</span>) <span class="op">=</span> <span class="ident">prefilter</span> {
+                    <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                    <span class="kw">if</span> <span class="ident">prestate</span>.<span class="ident">is_effective</span>(<span class="ident">at</span>)
+                        <span class="op">&amp;&amp;</span> <span class="ident">state_id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_state</span>()
+                    {
+                        <span class="kw">match</span> <span class="ident">prefilter</span>::<span class="ident">next</span>(<span class="ident">prestate</span>, <span class="ident">pre</span>, <span class="ident">haystack</span>, <span class="ident">at</span>) {
+                            <span class="ident">Candidate</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+                            <span class="comment">// Since we aren&#39;t tracking a state ID, we can</span>
+                            <span class="comment">// quit early once we know we have a match.</span>
+                            <span class="ident">Candidate</span>::<span class="ident">Match</span>(<span class="ident">m</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>),
+                            <span class="ident">Candidate</span>::<span class="ident">PossibleStartOfMatch</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> {
+                                <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">start</span>.<span class="ident">offset</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>);
+                            }
+                        }
+                    }
+                }
+                <span class="comment">// SAFETY: next_state is safe for all possible u8 values,</span>
+                <span class="comment">// so the only thing we&#39;re concerned about is the validity</span>
+                <span class="comment">// of `state_id`. `state_id` either comes from the caller</span>
+                <span class="comment">// (in which case, we assert above that it is valid), or it</span>
+                <span class="comment">// comes from the return value of next_state, which is also</span>
+                <span class="comment">// guaranteed to be valid.</span>
+                <span class="ident">state_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_state_unchecked_no_fail</span>(<span class="ident">state_id</span>, <span class="kw-2">*</span><span class="ident">ptr</span>);
+                <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">ptr</span>.<span class="ident">offset</span>(<span class="number">1</span>);
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_match_or_dead_state</span>(<span class="ident">state_id</span>) {
+                    <span class="kw">if</span> <span class="ident">state_id</span> <span class="op">==</span> <span class="ident">dead_id</span>() {
+                        <span class="comment">// The only way to enter into a dead state is if a</span>
+                        <span class="comment">// match has been found, so we assert as much. This</span>
+                        <span class="comment">// is different from normal automata, where you might</span>
+                        <span class="comment">// enter a dead state if you know a subsequent match</span>
+                        <span class="comment">// will never be found (regardless of whether a match</span>
+                        <span class="comment">// has already been found). For Aho-Corasick, it is</span>
+                        <span class="comment">// built so that we can match at any position, so the</span>
+                        <span class="comment">// possibility of a match always exists.</span>
+                        <span class="comment">//</span>
+                        <span class="comment">// (Unless we have an anchored automaton, in which</span>
+                        <span class="comment">// case, dead states are used to stop a search.)</span>
+                        <span class="macro">debug_assert</span><span class="macro">!</span>(
+                            <span class="ident">last_match</span>.<span class="ident">is_some</span>() <span class="op">||</span> <span class="self">self</span>.<span class="ident">anchored</span>(),
+                            <span class="string">&quot;failure state should only be seen after match&quot;</span>
+                        );
+                        <span class="kw">return</span> <span class="ident">last_match</span>;
+                    }
+                    <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">ptr</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="ident">start</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                    <span class="ident">last_match</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">end</span>);
                 }
             }
             <span class="ident">last_match</span>
@@ -735,15 +1086,15 @@
         <span class="ident">state_id</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">ID</span>,
         <span class="ident">match_index</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">usize</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">anchored</span>() <span class="op">&amp;&amp;</span> <span class="ident">at</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_state</span>() {
+            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        }
+
         <span class="kw">let</span> <span class="ident">match_count</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">match_count</span>(<span class="kw-2">*</span><span class="ident">state_id</span>);
         <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">match_index</span> <span class="op">&lt;</span> <span class="ident">match_count</span> {
             <span class="comment">// This is guaranteed to return a match since</span>
             <span class="comment">// match_index &lt; match_count.</span>
-            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(
-                <span class="kw-2">*</span><span class="ident">state_id</span>,
-                <span class="kw-2">*</span><span class="ident">match_index</span>,
-                <span class="ident">at</span>,
-            );
+            <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="kw-2">*</span><span class="ident">state_id</span>, <span class="kw-2">*</span><span class="ident">match_index</span>, <span class="ident">at</span>);
             <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">is_some</span>(), <span class="string">&quot;must be a match&quot;</span>);
             <span class="kw-2">*</span><span class="ident">match_index</span> <span class="op">+=</span> <span class="number">1</span>;
             <span class="kw">return</span> <span class="ident">result</span>;
@@ -772,6 +1123,9 @@
         <span class="ident">state_id</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">ID</span>,
     ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">state_id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_state</span>() {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">anchored</span>() <span class="op">&amp;&amp;</span> <span class="ident">at</span> <span class="op">&gt;</span> <span class="number">0</span> {
+                <span class="kw">return</span> <span class="prelude-val">None</span>;
+            }
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_match</span>(<span class="kw-2">*</span><span class="ident">state_id</span>, <span class="number">0</span>, <span class="ident">at</span>) {
                 <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>);
             }
@@ -796,6 +1150,28 @@
             }
             <span class="ident">MatchKind</span>::<span class="ident">LeftmostFirst</span> <span class="op">|</span> <span class="ident">MatchKind</span>::<span class="ident">LeftmostLongest</span> <span class="op">=&gt;</span> {
                 <span class="self">self</span>.<span class="ident">leftmost_find_at</span>(<span class="ident">prestate</span>, <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="ident">state_id</span>)
+            }
+            <span class="ident">MatchKind</span>::<span class="ident">__Nonexhaustive</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+        }
+    }
+
+    <span class="doccomment">/// Like find_at, but does not track state identifiers. This permits some</span>
+    <span class="doccomment">/// optimizations when a prefilter that confirms its own matches is</span>
+    <span class="doccomment">/// present.</span>
+    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">find_at_no_state</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">prestate</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrefilterState</span>,
+        <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+        <span class="ident">at</span>: <span class="ident">usize</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">match_kind</span>() {
+            <span class="ident">MatchKind</span>::<span class="ident">Standard</span> <span class="op">=&gt;</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start_state</span>();
+                <span class="self">self</span>.<span class="ident">earliest_find_at</span>(<span class="ident">prestate</span>, <span class="ident">haystack</span>, <span class="ident">at</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">state</span>)
+            }
+            <span class="ident">MatchKind</span>::<span class="ident">LeftmostFirst</span> <span class="op">|</span> <span class="ident">MatchKind</span>::<span class="ident">LeftmostLongest</span> <span class="op">=&gt;</span> {
+                <span class="self">self</span>.<span class="ident">leftmost_find_at_no_state</span>(<span class="ident">prestate</span>, <span class="ident">haystack</span>, <span class="ident">at</span>)
             }
             <span class="ident">MatchKind</span>::<span class="ident">__Nonexhaustive</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
         }

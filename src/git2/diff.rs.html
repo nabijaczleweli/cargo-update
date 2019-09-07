@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.7.5/src/diff.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>diff.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../git2/index.html'><img src='../../rust-logo.png' alt='logo' width='100'></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/git2-0.10.0/src/diff.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>diff.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../git2/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1256,7 +1256,86 @@
 <span id="1256">1256</span>
 <span id="1257">1257</span>
 <span id="1258">1258</span>
+<span id="1259">1259</span>
+<span id="1260">1260</span>
+<span id="1261">1261</span>
+<span id="1262">1262</span>
+<span id="1263">1263</span>
+<span id="1264">1264</span>
+<span id="1265">1265</span>
+<span id="1266">1266</span>
+<span id="1267">1267</span>
+<span id="1268">1268</span>
+<span id="1269">1269</span>
+<span id="1270">1270</span>
+<span id="1271">1271</span>
+<span id="1272">1272</span>
+<span id="1273">1273</span>
+<span id="1274">1274</span>
+<span id="1275">1275</span>
+<span id="1276">1276</span>
+<span id="1277">1277</span>
+<span id="1278">1278</span>
+<span id="1279">1279</span>
+<span id="1280">1280</span>
+<span id="1281">1281</span>
+<span id="1282">1282</span>
+<span id="1283">1283</span>
+<span id="1284">1284</span>
+<span id="1285">1285</span>
+<span id="1286">1286</span>
+<span id="1287">1287</span>
+<span id="1288">1288</span>
+<span id="1289">1289</span>
+<span id="1290">1290</span>
+<span id="1291">1291</span>
+<span id="1292">1292</span>
+<span id="1293">1293</span>
+<span id="1294">1294</span>
+<span id="1295">1295</span>
+<span id="1296">1296</span>
+<span id="1297">1297</span>
+<span id="1298">1298</span>
+<span id="1299">1299</span>
+<span id="1300">1300</span>
+<span id="1301">1301</span>
+<span id="1302">1302</span>
+<span id="1303">1303</span>
+<span id="1304">1304</span>
+<span id="1305">1305</span>
+<span id="1306">1306</span>
+<span id="1307">1307</span>
+<span id="1308">1308</span>
+<span id="1309">1309</span>
+<span id="1310">1310</span>
+<span id="1311">1311</span>
+<span id="1312">1312</span>
+<span id="1313">1313</span>
+<span id="1314">1314</span>
+<span id="1315">1315</span>
+<span id="1316">1316</span>
+<span id="1317">1317</span>
+<span id="1318">1318</span>
+<span id="1319">1319</span>
+<span id="1320">1320</span>
+<span id="1321">1321</span>
+<span id="1322">1322</span>
+<span id="1323">1323</span>
+<span id="1324">1324</span>
+<span id="1325">1325</span>
+<span id="1326">1326</span>
+<span id="1327">1327</span>
+<span id="1328">1328</span>
+<span id="1329">1329</span>
+<span id="1330">1330</span>
+<span id="1331">1331</span>
+<span id="1332">1332</span>
+<span id="1333">1333</span>
+<span id="1334">1334</span>
+<span id="1335">1335</span>
+<span id="1336">1336</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">c_int</span>, <span class="ident">c_void</span>, <span class="ident">size_t</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">CString</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
@@ -1264,11 +1343,10 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
-<span class="kw">use</span> <span class="ident">libc</span>::{<span class="ident">c_char</span>, <span class="ident">size_t</span>, <span class="ident">c_void</span>, <span class="ident">c_int</span>};
 
-<span class="kw">use</span> {<span class="ident">raw</span>, <span class="ident">panic</span>, <span class="ident">Buf</span>, <span class="ident">Delta</span>, <span class="ident">Oid</span>, <span class="ident">Repository</span>, <span class="ident">Error</span>, <span class="ident">DiffFormat</span>};
-<span class="kw">use</span> {<span class="ident">DiffStatsFormat</span>, <span class="ident">IntoCString</span>};
-<span class="kw">use</span> <span class="ident">util</span>::{<span class="self">self</span>, <span class="ident">Binding</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">util</span>::{<span class="self">self</span>, <span class="ident">Binding</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">panic</span>, <span class="ident">raw</span>, <span class="ident">Buf</span>, <span class="ident">Delta</span>, <span class="ident">DiffFormat</span>, <span class="ident">Error</span>, <span class="ident">Oid</span>, <span class="ident">Repository</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">DiffStatsFormat</span>, <span class="ident">IntoCString</span>};
 
 <span class="doccomment">/// The diff object that contains all individual file deltas.</span>
 <span class="doccomment">///</span>
@@ -1361,14 +1439,14 @@
     <span class="ident">Delta</span>,
 }
 
-<span class="kw">type</span> <span class="ident">PrintCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffHunk</span><span class="op">&gt;</span>, <span class="ident">DiffLine</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
+<span class="kw">type</span> <span class="ident">PrintCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffHunk</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>, <span class="ident">DiffLine</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">FileCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span>, <span class="ident">f32</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">BinaryCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span>, <span class="ident">DiffBinary</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">HunkCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span>, <span class="ident">DiffHunk</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">LineCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffHunk</span><span class="op">&gt;</span>, <span class="ident">DiffLine</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">FileCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">f32</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">BinaryCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">DiffBinary</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">HunkCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">DiffHunk</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">LineCb</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffHunk</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>, <span class="ident">DiffLine</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>;
 
-<span class="kw">struct</span> <span class="ident">ForeachCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>: <span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;c</span>, <span class="lifetime">&#39;d</span>: <span class="lifetime">&#39;c</span>, <span class="lifetime">&#39;e</span>, <span class="lifetime">&#39;f</span>: <span class="lifetime">&#39;e</span>, <span class="lifetime">&#39;g</span>, <span class="lifetime">&#39;h</span>: <span class="lifetime">&#39;g</span><span class="op">&gt;</span> {
+<span class="kw">struct</span> <span class="ident">ForeachCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;c</span>, <span class="lifetime">&#39;d</span>, <span class="lifetime">&#39;e</span>, <span class="lifetime">&#39;f</span>, <span class="lifetime">&#39;g</span>, <span class="lifetime">&#39;h</span><span class="op">&gt;</span> {
     <span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">FileCb</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>,
     <span class="ident">binary</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;c</span> <span class="kw-2">mut</span> <span class="ident">BinaryCb</span><span class="op">&lt;</span><span class="lifetime">&#39;d</span><span class="op">&gt;&gt;</span>,
     <span class="ident">hunk</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;e</span> <span class="kw-2">mut</span> <span class="ident">HunkCb</span><span class="op">&lt;</span><span class="lifetime">&#39;f</span><span class="op">&gt;&gt;</span>,
@@ -1385,18 +1463,23 @@
     <span class="doccomment">/// is from the &quot;from&quot; list (with the exception that if the item has a</span>
     <span class="doccomment">/// pending DELETE in the middle, then it will show as deleted).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">merge</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">from</span>: <span class="kw-2">&amp;</span><span class="ident">Diff</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> { <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_merge</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">from</span>.<span class="ident">raw</span>)); }
+        <span class="kw">unsafe</span> {
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_merge</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">from</span>.<span class="ident">raw</span>));
+        }
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Returns an iterator over the deltas in this diff.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deltas</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Deltas</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deltas</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Deltas</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">num_deltas</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_diff_num_deltas</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>) };
-        <span class="ident">Deltas</span> { <span class="ident">range</span>: <span class="number">0</span>..(<span class="ident">num_deltas</span> <span class="kw">as</span> <span class="ident">usize</span>), <span class="ident">diff</span>: <span class="self">self</span> }
+        <span class="ident">Deltas</span> {
+            <span class="ident">range</span>: <span class="number">0</span>..(<span class="ident">num_deltas</span> <span class="kw">as</span> <span class="ident">usize</span>),
+            <span class="ident">diff</span>: <span class="self">self</span>,
+        }
     }
 
     <span class="doccomment">/// Return the diff delta for an entry in the diff list.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_delta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffDelta</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_delta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">raw</span>::<span class="ident">git_diff_get_delta</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">i</span> <span class="kw">as</span> <span class="ident">size_t</span>);
             <span class="ident">Binding</span>::<span class="ident">from_raw_opt</span>(<span class="ident">ptr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>)
@@ -1413,14 +1496,18 @@
     <span class="doccomment">/// Returning `false` from the callback will terminate the iteration and</span>
     <span class="doccomment">/// return an error from this function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">print</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">format</span>: <span class="ident">DiffFormat</span>, <span class="kw-2">mut</span> <span class="ident">cb</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span>
-                    <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span>,
-                                   <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffHunk</span><span class="op">&gt;</span>,
-                                   <span class="ident">DiffLine</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cb</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrintCb</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cb</span>;
+    <span class="kw">where</span>
+        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffHunk</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>, <span class="ident">DiffLine</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>,
+    {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cb</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrintCb</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cb</span>;
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cb</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>;
         <span class="kw">unsafe</span> {
-            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_print</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">format</span>, <span class="ident">print_cb</span>,
-                                          <span class="ident">ptr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>));
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_print</span>(
+                <span class="self">self</span>.<span class="ident">raw</span>,
+                <span class="ident">format</span>,
+                <span class="ident">print_cb</span>,
+                <span class="ident">ptr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>
+            ));
             <span class="prelude-val">Ok</span>(())
         }
     }
@@ -1429,11 +1516,13 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Returning `false` from any callback will terminate the iteration and</span>
     <span class="doccomment">/// return an error from this function.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">foreach</span>(<span class="kw-2">&amp;</span><span class="self">self</span>,
-                   <span class="ident">file_cb</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FileCb</span>,
-                   <span class="ident">binary_cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BinaryCb</span><span class="op">&gt;</span>,
-                   <span class="ident">hunk_cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HunkCb</span><span class="op">&gt;</span>,
-                   <span class="ident">line_cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">LineCb</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">foreach</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">file_cb</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">FileCb</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
+        <span class="ident">binary_cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BinaryCb</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">hunk_cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HunkCb</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">line_cb</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">LineCb</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">ForeachCallbacks</span> {
             <span class="ident">file</span>: <span class="ident">file_cb</span>,
             <span class="ident">binary</span>: <span class="ident">binary_cb</span>,
@@ -1457,9 +1546,14 @@
             } <span class="kw">else</span> {
                 <span class="prelude-val">None</span>
             };
-            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_foreach</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">file_cb_c</span>, <span class="ident">binary_cb_c</span>,
-                                            <span class="ident">hunk_cb_c</span>, <span class="ident">line_cb_c</span>,
-                                            <span class="ident">ptr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>));
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_foreach</span>(
+                <span class="self">self</span>.<span class="ident">raw</span>,
+                <span class="ident">file_cb_c</span>,
+                <span class="ident">binary_cb_c</span>,
+                <span class="ident">hunk_cb_c</span>,
+                <span class="ident">line_cb_c</span>,
+                <span class="ident">ptr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>
+            ));
             <span class="prelude-val">Ok</span>(())
         }
     }
@@ -1479,113 +1573,145 @@
     <span class="doccomment">/// renames or copies with new entries reflecting those changes. This also</span>
     <span class="doccomment">/// will, if requested, break modified files into add/remove pairs if the</span>
     <span class="doccomment">/// amount of change is above a threshold.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_similar</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span><span class="op">&gt;</span>)
-                        <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_similar</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">opts</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">opts</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">opts</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">opts</span>.<span class="ident">raw</span>);
-        <span class="kw">unsafe</span> { <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_find_similar</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">opts</span>)); }
+        <span class="kw">unsafe</span> {
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_find_similar</span>(<span class="self">self</span>.<span class="ident">raw</span>, <span class="ident">opts</span>));
+        }
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="comment">// TODO: num_deltas_of_type, format_email, find_similar</span>
 }
 
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="kw">fn</span> <span class="ident">print_cb</span>(<span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
-                   <span class="ident">hunk</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span>,
-                   <span class="ident">line</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_line</span>,
-                   <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">print_cb</span>(
+    <span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
+    <span class="ident">hunk</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span>,
+    <span class="ident">line</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_line</span>,
+    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">delta</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>);
         <span class="kw">let</span> <span class="ident">hunk</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw_opt</span>(<span class="ident">hunk</span>);
         <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">line</span>);
 
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">wrap</span>(<span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrintCb</span>;
+            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PrintCb</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>;
             (<span class="kw-2">*</span><span class="ident">data</span>)(<span class="ident">delta</span>, <span class="ident">hunk</span>, <span class="ident">line</span>)
         });
-        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {<span class="number">0</span>} <span class="kw">else</span> {<span class="op">-</span><span class="number">1</span>}
+        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="op">-</span><span class="number">1</span>
+        }
     }
 }
 
-<span class="kw">extern</span> <span class="kw">fn</span> <span class="ident">file_cb_c</span>(<span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
-                    <span class="ident">progress</span>: <span class="ident">f32</span>,
-                    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">file_cb_c</span>(
+    <span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
+    <span class="ident">progress</span>: <span class="ident">f32</span>,
+    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">delta</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>);
 
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">wrap</span>(<span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span>;
+            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span><span class="op">&gt;</span>;
             ((<span class="kw-2">*</span><span class="ident">cbs</span>).<span class="ident">file</span>)(<span class="ident">delta</span>, <span class="ident">progress</span>)
         });
-        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {<span class="number">0</span>} <span class="kw">else</span> {<span class="op">-</span><span class="number">1</span>}
+        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="op">-</span><span class="number">1</span>
+        }
     }
 }
 
-<span class="kw">extern</span> <span class="kw">fn</span> <span class="ident">binary_cb_c</span>(<span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
-                      <span class="ident">binary</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_binary</span>,
-                      <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">binary_cb_c</span>(
+    <span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
+    <span class="ident">binary</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_binary</span>,
+    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">delta</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>);
         <span class="kw">let</span> <span class="ident">binary</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">binary</span>);
 
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">wrap</span>(<span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span>;
+            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span><span class="op">&gt;</span>;
             <span class="kw">match</span> (<span class="kw-2">*</span><span class="ident">cbs</span>).<span class="ident">binary</span> {
                 <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cb</span>) <span class="op">=&gt;</span> <span class="ident">cb</span>(<span class="ident">delta</span>, <span class="ident">binary</span>),
                 <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
             }
         });
-        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {<span class="number">0</span>} <span class="kw">else</span> {<span class="op">-</span><span class="number">1</span>}
+        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="op">-</span><span class="number">1</span>
+        }
     }
 }
 
-<span class="kw">extern</span> <span class="kw">fn</span> <span class="ident">hunk_cb_c</span>(<span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
-                    <span class="ident">hunk</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span>,
-                    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">hunk_cb_c</span>(
+    <span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
+    <span class="ident">hunk</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span>,
+    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">delta</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>);
         <span class="kw">let</span> <span class="ident">hunk</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">hunk</span>);
 
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">wrap</span>(<span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span>;
+            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span><span class="op">&gt;</span>;
             <span class="kw">match</span> (<span class="kw-2">*</span><span class="ident">cbs</span>).<span class="ident">hunk</span> {
                 <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cb</span>) <span class="op">=&gt;</span> <span class="ident">cb</span>(<span class="ident">delta</span>, <span class="ident">hunk</span>),
                 <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
             }
         });
-        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {<span class="number">0</span>} <span class="kw">else</span> {<span class="op">-</span><span class="number">1</span>}
+        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="op">-</span><span class="number">1</span>
+        }
     }
 }
 
-<span class="kw">extern</span> <span class="kw">fn</span> <span class="ident">line_cb_c</span>(<span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
-                    <span class="ident">hunk</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span>,
-                    <span class="ident">line</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_line</span>,
-                    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
+<span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">line_cb_c</span>(
+    <span class="ident">delta</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span>,
+    <span class="ident">hunk</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span>,
+    <span class="ident">line</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_line</span>,
+    <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+) <span class="op">-&gt;</span> <span class="ident">c_int</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">delta</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>);
         <span class="kw">let</span> <span class="ident">hunk</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw_opt</span>(<span class="ident">hunk</span>);
         <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">Binding</span>::<span class="ident">from_raw</span>(<span class="ident">line</span>);
 
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">wrap</span>(<span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span>;
+            <span class="kw">let</span> <span class="ident">cbs</span> <span class="op">=</span> <span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ForeachCallbacks</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span><span class="op">&gt;</span>;
             <span class="kw">match</span> (<span class="kw-2">*</span><span class="ident">cbs</span>).<span class="ident">line</span> {
                 <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">cb</span>) <span class="op">=&gt;</span> <span class="ident">cb</span>(<span class="ident">delta</span>, <span class="ident">hunk</span>, <span class="ident">line</span>),
                 <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
             }
         });
-        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {<span class="number">0</span>} <span class="kw">else</span> {<span class="op">-</span><span class="number">1</span>}
+        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+            <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="op">-</span><span class="number">1</span>
+        }
     }
 }
-
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">Binding</span> <span class="kw">for</span> <span class="ident">Diff</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Raw</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>;
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span>) <span class="op">-&gt;</span> <span class="ident">Diff</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
         <span class="ident">Diff</span> {
-          <span class="ident">raw</span>: <span class="ident">raw</span>,
-          <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
+            <span class="ident">raw</span>: <span class="ident">raw</span>,
+            <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Diff</span><span class="op">&lt;</span><span class="lifetime">&#39;repo</span><span class="op">&gt;</span> {
@@ -1650,7 +1776,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff_delta</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DiffFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -1666,7 +1794,7 @@
     <span class="doccomment">/// directory of the repository.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> {
         <span class="kw">static</span> <span class="ident">FOO</span>: () <span class="op">=</span> ();
-        <span class="kw">unsafe</span> { ::<span class="ident">opt_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">FOO</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">path</span>) }
+        <span class="kw">unsafe</span> { <span class="kw">crate</span>::<span class="ident">opt_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">FOO</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">path</span>) }
     }
 
     <span class="doccomment">/// Returns the path of the entry relative to the working directory of the</span>
@@ -1676,7 +1804,9 @@
     }
 
     <span class="doccomment">/// Returns the size of this entry, in bytes</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> { <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">size</span> <span class="kw">as</span> <span class="ident">u64</span> } }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+        <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">size</span> <span class="kw">as</span> <span class="ident">u64</span> }
+    }
 
     <span class="comment">// TODO: expose flags/mode</span>
 }
@@ -1689,7 +1819,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_file</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_file</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">DiffOptions</span> {
@@ -1711,9 +1843,7 @@
             <span class="ident">old_prefix</span>: <span class="prelude-val">None</span>,
             <span class="ident">new_prefix</span>: <span class="prelude-val">None</span>,
         };
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">unsafe</span> {
-            <span class="ident">raw</span>::<span class="ident">git_diff_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>.<span class="ident">raw</span>, <span class="number">1</span>)
-        }, <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_diff_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>.<span class="ident">raw</span>, <span class="number">1</span>) }, <span class="number">0</span>);
         <span class="ident">opts</span>
     }
 
@@ -1808,8 +1938,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This flag turns off that scan and immediately labels an untracked</span>
     <span class="doccomment">/// directory as untracked (changing the behavior to not match core git).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_fast_untracked_dirs</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enable</span>: <span class="ident">bool</span>)
-                                      <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_fast_untracked_dirs</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enable</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span> {
         <span class="self">self</span>.<span class="ident">flag</span>(<span class="ident">raw</span>::<span class="ident">GIT_DIFF_ENABLE_FAST_UNTRACKED_DIRS</span>, <span class="ident">enable</span>)
     }
 
@@ -1827,8 +1956,7 @@
     }
 
     <span class="doccomment">/// Include unreadable files in the diff</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_unreadable_as_untracked</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">include</span>: <span class="ident">bool</span>)
-                                           <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">include_unreadable_as_untracked</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">include</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span> {
         <span class="self">self</span>.<span class="ident">flag</span>(<span class="ident">raw</span>::<span class="ident">GIT_DIFF_INCLUDE_UNREADABLE_AS_UNTRACKED</span>, <span class="ident">include</span>)
     }
 
@@ -1949,8 +2077,7 @@
     }
 
     <span class="doccomment">/// Add to the array of paths/fnmatch patterns to constrain the diff.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pathspec</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IntoCString</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">pathspec</span>: <span class="ident">T</span>)
-                                       <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pathspec</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IntoCString</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">pathspec</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffOptions</span> {
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">pathspec</span>.<span class="ident">into_c_string</span>().<span class="ident">unwrap</span>();
         <span class="self">self</span>.<span class="ident">pathspec_ptrs</span>.<span class="ident">push</span>(<span class="ident">s</span>.<span class="ident">as_ptr</span>());
         <span class="self">self</span>.<span class="ident">pathspec</span>.<span class="ident">push</span>(<span class="ident">s</span>);
@@ -1962,10 +2089,16 @@
     <span class="doccomment">/// This function is unsafe as the pointer is only valid so long as this</span>
     <span class="doccomment">/// structure is not moved, modified, or used elsewhere.</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_options</span> {
-        <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">old_prefix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">old_prefix</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ptr</span>())
-                                  .<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>());
-        <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">new_prefix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_prefix</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ptr</span>())
-                                  .<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>());
+        <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">old_prefix</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">old_prefix</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ptr</span>())
+            .<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>());
+        <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">new_prefix</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">new_prefix</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ptr</span>())
+            .<span class="ident">unwrap_or</span>(<span class="ident">ptr</span>::<span class="ident">null</span>());
         <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">pathspec</span>.<span class="ident">count</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pathspec_ptrs</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">size_t</span>;
         <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">pathspec</span>.<span class="ident">strings</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pathspec_ptrs</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>;
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">raw</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>
@@ -1979,7 +2112,9 @@
     <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;diff</span><span class="op">&gt;&gt;</span> {
         <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">diff</span>.<span class="ident">get_delta</span>(<span class="ident">i</span>))
     }
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) { <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">size_hint</span>() }
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+        <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">size_hint</span>()
+    }
 }
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;diff</span><span class="op">&gt;</span> <span class="ident">DoubleEndedIterator</span> <span class="kw">for</span> <span class="ident">Deltas</span><span class="op">&lt;</span><span class="lifetime">&#39;diff</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DiffDelta</span><span class="op">&lt;</span><span class="lifetime">&#39;diff</span><span class="op">&gt;&gt;</span> {
@@ -2018,8 +2153,10 @@
     <span class="doccomment">/// Content of this line as bytes.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">content</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
         <span class="kw">unsafe</span> {
-            <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>((<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">content</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
-                                  (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">content_len</span> <span class="kw">as</span> <span class="ident">usize</span>)
+            <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(
+                (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">content</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
+                (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">content_len</span> <span class="kw">as</span> <span class="ident">usize</span>,
+            )
         }
     }
 
@@ -2058,7 +2195,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_line</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_line</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DiffHunk</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -2085,8 +2224,10 @@
     <span class="doccomment">/// Header text</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
         <span class="kw">unsafe</span> {
-            <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>((<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">header</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
-                                  (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">header_len</span> <span class="kw">as</span> <span class="ident">usize</span>)
+            <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(
+                (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">header</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
+                (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">header_len</span> <span class="kw">as</span> <span class="ident">usize</span>,
+            )
         }
     }
 }
@@ -2099,7 +2240,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_hunk</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">DiffStats</span> {
@@ -2119,13 +2262,15 @@
     }
 
     <span class="doccomment">/// Print diff statistics to a Buf</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_buf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">format</span>: <span class="ident">DiffStatsFormat</span>, <span class="ident">width</span>: <span class="ident">usize</span>)
-                  <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Buf</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_buf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">format</span>: <span class="ident">DiffStatsFormat</span>, <span class="ident">width</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Buf</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Buf</span>::<span class="ident">new</span>();
         <span class="kw">unsafe</span> {
-            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_stats_to_buf</span>(<span class="ident">buf</span>.<span class="ident">raw</span>(), <span class="self">self</span>.<span class="ident">raw</span>,
-                                                 <span class="ident">format</span>.<span class="ident">bits</span>(),
-                                                 <span class="ident">width</span> <span class="kw">as</span> <span class="ident">size_t</span>));
+            <span class="macro">try_call</span><span class="macro">!</span>(<span class="ident">raw</span>::<span class="ident">git_diff_stats_to_buf</span>(
+                <span class="ident">buf</span>.<span class="ident">raw</span>(),
+                <span class="self">self</span>.<span class="ident">raw</span>,
+                <span class="ident">format</span>.<span class="ident">bits</span>(),
+                <span class="ident">width</span> <span class="kw">as</span> <span class="ident">size_t</span>
+            ));
         }
         <span class="prelude-val">Ok</span>(<span class="ident">buf</span>)
     }
@@ -2137,7 +2282,9 @@
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff_stats</span>) <span class="op">-&gt;</span> <span class="ident">DiffStats</span> {
         <span class="ident">DiffStats</span> { <span class="ident">raw</span>: <span class="ident">raw</span> }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff_stats</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">raw</span>::<span class="ident">git_diff_stats</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">DiffStats</span> {
@@ -2176,7 +2323,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_binary</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_binary</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">DiffBinaryFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -2188,8 +2337,7 @@
     <span class="doccomment">/// The binary data, deflated</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
         <span class="kw">unsafe</span> {
-            <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>((<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
-                                  (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">datalen</span> <span class="kw">as</span> <span class="ident">usize</span>)
+            <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>((<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">datalen</span> <span class="kw">as</span> <span class="ident">usize</span>)
         }
     }
 
@@ -2197,7 +2345,6 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inflated_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="kw">unsafe</span> { (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">raw</span>).<span class="ident">inflatedlen</span> <span class="kw">as</span> <span class="ident">usize</span> }
     }
-
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Binding</span> <span class="kw">for</span> <span class="ident">DiffBinaryFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -2208,7 +2355,9 @@
             <span class="ident">_marker</span>: <span class="ident">marker</span>::<span class="ident">PhantomData</span>,
         }
     }
-    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_binary_file</span> { <span class="self">self</span>.<span class="ident">raw</span> }
+    <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">raw</span>::<span class="ident">git_diff_binary_file</span> {
+        <span class="self">self</span>.<span class="ident">raw</span>
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Binding</span> <span class="kw">for</span> <span class="ident">DiffBinaryKind</span> {
@@ -2245,9 +2394,10 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">DiffFindOptions</span> {
             <span class="ident">raw</span>: <span class="kw">unsafe</span> { <span class="ident">mem</span>::<span class="ident">zeroed</span>() },
         };
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">unsafe</span> {
-            <span class="ident">raw</span>::<span class="ident">git_diff_find_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>.<span class="ident">raw</span>, <span class="number">1</span>)
-        }, <span class="number">0</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="kw">unsafe</span> { <span class="ident">raw</span>::<span class="ident">git_diff_find_init_options</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>.<span class="ident">raw</span>, <span class="number">1</span>) },
+            <span class="number">0</span>
+        );
         <span class="ident">opts</span>
     }
 
@@ -2286,8 +2436,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// For this to work correctly, use `include_unmodified` when the initial</span>
     <span class="doccomment">/// diff is being generated.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copies_from_unmodified</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">find</span>: <span class="ident">bool</span>)
-                                  <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copies_from_unmodified</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">find</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
         <span class="self">self</span>.<span class="ident">flag</span>(<span class="ident">raw</span>::<span class="ident">GIT_DIFF_FIND_COPIES_FROM_UNMODIFIED</span>, <span class="ident">find</span>)
     }
 
@@ -2320,8 +2469,7 @@
     }
 
     <span class="doccomment">/// Measure similarity ignoring leading whitespace (default)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ignore_leading_whitespace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ignore</span>: <span class="ident">bool</span>)
-                                     <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ignore_leading_whitespace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ignore</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
         <span class="self">self</span>.<span class="ident">flag</span>(<span class="ident">raw</span>::<span class="ident">GIT_DIFF_FIND_IGNORE_LEADING_WHITESPACE</span>, <span class="ident">ignore</span>)
     }
 
@@ -2350,8 +2498,7 @@
     <span class="doccomment">/// If you add this flag in and the split pair is not used for an actual</span>
     <span class="doccomment">/// rename or copy, then the modified record will be restored to a regular</span>
     <span class="doccomment">/// modified record instead of being split.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_rewrites_for_renames_only</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">bool</span>)
-                                           <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_rewrites_for_renames_only</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
         <span class="self">self</span>.<span class="ident">flag</span>(<span class="ident">raw</span>::<span class="ident">GIT_DIFF_BREAK_REWRITES_FOR_RENAMES_ONLY</span>, <span class="ident">b</span>)
     }
 
@@ -2372,8 +2519,7 @@
     }
 
     <span class="doccomment">/// Similarity of modified to be glegible rename source (default 50)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rename_from_rewrite_threshold</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">thresh</span>: <span class="ident">u16</span>)
-                                         <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rename_from_rewrite_threshold</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">thresh</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
         <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">rename_from_rewrite_threshold</span> <span class="op">=</span> <span class="ident">thresh</span>;
         <span class="self">self</span>
     }
@@ -2385,8 +2531,7 @@
     }
 
     <span class="doccomment">/// Similarity to split modify into delete/add pair (default 60)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_rewrite_threshold</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">thresh</span>: <span class="ident">u16</span>)
-                                   <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">break_rewrite_threshold</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">thresh</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DiffFindOptions</span> {
         <span class="self">self</span>.<span class="ident">raw</span>.<span class="ident">break_rewrite_threshold</span> <span class="op">=</span> <span class="ident">thresh</span>;
         <span class="self">self</span>
     }
@@ -2405,15 +2550,15 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">DiffOptions</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
-    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">DiffOptions</span>;
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Borrow</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Write</span>;
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">smoke</span>() {
-        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="ident">repo</span>.<span class="ident">diff_tree_to_workdir</span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">diff</span>.<span class="ident">deltas</span>().<span class="ident">len</span>(), <span class="number">0</span>);
         <span class="kw">let</span> <span class="ident">stats</span> <span class="op">=</span> <span class="ident">diff</span>.<span class="ident">stats</span>().<span class="ident">unwrap</span>();
@@ -2424,29 +2569,41 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">foreach_smoke</span>() {
-        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">_td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">diff_tree_to_workdir</span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="macro">t</span><span class="macro">!</span>(<span class="ident">diff</span>.<span class="ident">foreach</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">_file</span>, <span class="ident">_progress</span><span class="op">|</span> { <span class="ident">count</span> <span class="op">=</span> <span class="ident">count</span> <span class="op">+</span> <span class="number">1</span>; <span class="bool-val">true</span> },
-                        <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
+        <span class="macro">t</span><span class="macro">!</span>(<span class="ident">diff</span>.<span class="ident">foreach</span>(
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">_file</span>, <span class="ident">_progress</span><span class="op">|</span> {
+                <span class="ident">count</span> <span class="op">=</span> <span class="ident">count</span> <span class="op">+</span> <span class="number">1</span>;
+                <span class="bool-val">true</span>
+            },
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>
+        ));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">count</span>, <span class="number">0</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">foreach_file_only</span>() {
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="string">&quot;foo&quot;</span>);
-        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="macro">t</span><span class="macro">!</span>(<span class="macro">t</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="ident">path</span>))).<span class="ident">write_all</span>(<span class="string">b&quot;bar&quot;</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">DiffOptions</span>::<span class="ident">new</span>();
         <span class="ident">opts</span>.<span class="ident">include_untracked</span>(<span class="bool-val">true</span>);
         <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">diff_tree_to_workdir</span>(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>)));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="macro">t</span><span class="macro">!</span>(<span class="ident">diff</span>.<span class="ident">foreach</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">file</span>, <span class="ident">_progress</span><span class="op">|</span> {
-            <span class="ident">count</span> <span class="op">=</span> <span class="ident">count</span> <span class="op">+</span> <span class="number">1</span>;
-            <span class="ident">result</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">new_file</span>().<span class="ident">path</span>().<span class="ident">map</span>(<span class="ident">ToOwned</span>::<span class="ident">to_owned</span>);
-            <span class="bool-val">true</span>
-        }, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
+        <span class="macro">t</span><span class="macro">!</span>(<span class="ident">diff</span>.<span class="ident">foreach</span>(
+            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">file</span>, <span class="ident">_progress</span><span class="op">|</span> {
+                <span class="ident">count</span> <span class="op">=</span> <span class="ident">count</span> <span class="op">+</span> <span class="number">1</span>;
+                <span class="ident">result</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">new_file</span>().<span class="ident">path</span>().<span class="ident">map</span>(<span class="ident">ToOwned</span>::<span class="ident">to_owned</span>);
+                <span class="bool-val">true</span>
+            },
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>,
+            <span class="prelude-val">None</span>
+        ));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">result</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">Borrow</span>::<span class="ident">borrow</span>), <span class="prelude-val">Some</span>(<span class="ident">path</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">count</span>, <span class="number">1</span>);
     }
@@ -2454,14 +2611,13 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">foreach_file_and_hunk</span>() {
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="string">&quot;foo&quot;</span>);
-        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="macro">t</span><span class="macro">!</span>(<span class="macro">t</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="ident">path</span>))).<span class="ident">write_all</span>(<span class="string">b&quot;bar&quot;</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">index</span>());
         <span class="macro">t</span><span class="macro">!</span>(<span class="ident">index</span>.<span class="ident">add_path</span>(<span class="ident">path</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">DiffOptions</span>::<span class="ident">new</span>();
         <span class="ident">opts</span>.<span class="ident">include_untracked</span>(<span class="bool-val">true</span>);
-        <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">diff_tree_to_index</span>(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>),
-                                              <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>)));
+        <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">diff_tree_to_index</span>(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>)));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_lines</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="macro">t</span><span class="macro">!</span>(<span class="ident">diff</span>.<span class="ident">foreach</span>(
             <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">_file</span>, <span class="ident">_progress</span><span class="op">|</span> { <span class="bool-val">true</span> },
@@ -2470,7 +2626,8 @@
                 <span class="ident">new_lines</span> <span class="op">=</span> <span class="ident">hunk</span>.<span class="ident">new_lines</span>();
                 <span class="bool-val">true</span>
             }),
-            <span class="prelude-val">None</span>));
+            <span class="prelude-val">None</span>
+        ));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">new_lines</span>, <span class="number">1</span>);
     }
 
@@ -2479,11 +2636,10 @@
         <span class="kw">let</span> <span class="ident">fib</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">8</span>];
         <span class="comment">// Verified with a node implementation of deflate, might be worth</span>
         <span class="comment">// adding a deflate lib to do this inline here.</span>
-        <span class="kw">let</span> <span class="ident">deflated_fib</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">120</span>, <span class="number">156</span>, <span class="number">99</span>, <span class="number">96</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">98</span>, <span class="number">102</span>, <span class="number">229</span>, <span class="number">0</span>, <span class="number">0</span>,
-                                <span class="number">0</span>, <span class="number">53</span>, <span class="number">0</span>, <span class="number">21</span>];
+        <span class="kw">let</span> <span class="ident">deflated_fib</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">120</span>, <span class="number">156</span>, <span class="number">99</span>, <span class="number">96</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">98</span>, <span class="number">102</span>, <span class="number">229</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">53</span>, <span class="number">0</span>, <span class="number">21</span>];
         <span class="kw">let</span> <span class="ident">foo_path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="string">&quot;foo&quot;</span>);
         <span class="kw">let</span> <span class="ident">bin_path</span> <span class="op">=</span> <span class="ident">Path</span>::<span class="ident">new</span>(<span class="string">&quot;bin&quot;</span>);
-        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> ::<span class="ident">test</span>::<span class="ident">repo_init</span>();
+        <span class="kw">let</span> (<span class="ident">td</span>, <span class="ident">repo</span>) <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">test</span>::<span class="ident">repo_init</span>();
         <span class="macro">t</span><span class="macro">!</span>(<span class="macro">t</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="ident">foo_path</span>))).<span class="ident">write_all</span>(<span class="string">b&quot;bar\n&quot;</span>));
         <span class="macro">t</span><span class="macro">!</span>(<span class="macro">t</span><span class="macro">!</span>(<span class="ident">File</span>::<span class="ident">create</span>(<span class="kw-2">&amp;</span><span class="ident">td</span>.<span class="ident">path</span>().<span class="ident">join</span>(<span class="ident">bin_path</span>))).<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">fib</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">index</span>());
@@ -2491,8 +2647,7 @@
         <span class="macro">t</span><span class="macro">!</span>(<span class="ident">index</span>.<span class="ident">add_path</span>(<span class="ident">bin_path</span>));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">DiffOptions</span>::<span class="ident">new</span>();
         <span class="ident">opts</span>.<span class="ident">include_untracked</span>(<span class="bool-val">true</span>).<span class="ident">show_binary</span>(<span class="bool-val">true</span>);
-        <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">diff_tree_to_index</span>(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>),
-                                              <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>)));
+        <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="macro">t</span><span class="macro">!</span>(<span class="ident">repo</span>.<span class="ident">diff_tree_to_index</span>(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>), <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">opts</span>)));
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bin_content</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_lines</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line_content</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -2509,7 +2664,8 @@
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="op">|</span><span class="ident">_file</span>, <span class="ident">_hunk</span>, <span class="ident">line</span><span class="op">|</span> {
                 <span class="ident">line_content</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">line</span>.<span class="ident">content</span>().<span class="ident">into</span>()).<span class="ident">ok</span>();
                 <span class="bool-val">true</span>
-            })));
+            })
+        ));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">bin_content</span>, <span class="prelude-val">Some</span>(<span class="ident">deflated_fib</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">new_lines</span>, <span class="number">1</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">line_content</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;bar\n&quot;</span>.<span class="ident">to_string</span>()));
