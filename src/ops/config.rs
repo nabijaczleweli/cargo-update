@@ -243,9 +243,9 @@ impl PackageConfig {
     pub fn read(p: &Path) -> Result<BTreeMap<String, PackageConfig>, i32> {
         if p.exists() {
             let mut buf = String::new();
-            try!(try!(File::open(p).map_err(|_| 1))
+            File::open(p).map_err(|_| 1)?
                 .read_to_string(&mut buf)
-                .map_err(|_| 1));
+                .map_err(|_| 1)?;
 
             toml::from_str(&buf).map_err(|_| 2)
         } else {
@@ -289,8 +289,9 @@ impl PackageConfig {
     ///                   features = [\"serde\"]\n");
     /// ```
     pub fn write(configuration: &BTreeMap<String, PackageConfig>, p: &Path) -> Result<(), i32> {
-        try!(File::create(p).map_err(|_| 3))
-            .write_all(&try!(toml::to_vec(configuration).map_err(|_| 2)))
+        File::create(p)
+            .map_err(|_| 3)?
+            .write_all(&toml::to_vec(configuration).map_err(|_| 2)?)
             .map_err(|_| 3)
     }
 }

@@ -15,7 +15,7 @@ fn actual_main() -> Result<(), i32> {
     let opts = cargo_update::ConfigOptions::parse();
     let config_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1).with_file_name(".install_config.toml");
 
-    let mut configuration = try!(cargo_update::ops::PackageConfig::read(&config_file));
+    let mut configuration = cargo_update::ops::PackageConfig::read(&config_file)?;
     if !opts.ops.is_empty() {
         let mut changed = false;
         if let Some(ref mut cfg) = configuration.get_mut(&opts.package) {
@@ -26,7 +26,7 @@ fn actual_main() -> Result<(), i32> {
             configuration.insert(opts.package.clone(), cargo_update::ops::PackageConfig::from(&opts.ops));
         }
 
-        try!(cargo_update::ops::PackageConfig::write(&configuration, &config_file));
+        cargo_update::ops::PackageConfig::write(&configuration, &config_file)?;
     }
 
     if let Some(cfg) = configuration.get(&opts.package) {

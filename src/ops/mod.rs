@@ -728,15 +728,15 @@ fn latest_modified(ent: &DirEntry) -> SystemTime {
 /// Most of this would have been impossible, of course, without the [`rust-lang` Discord server](https://discord.gg/rust-lang),
 /// so shoutout to whoever convinced people that Discord is actually good.
 pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_proxy: Option<&str>, out: &mut W) -> Result<(), String> {
-    try!(writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string()));
-    try!(index_repo.remote_anonymous(repo_url)
+    writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string())?;
+    index_repo.remote_anonymous(repo_url)
         .and_then(|mut r| {
             r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
                     http_proxy.map(fetch_options_from_proxy_url).as_mut(),
                     None)
         })
-        .map_err(|e| e.message().to_string()));
-    try!(writeln!(out).map_err(|_| "failed to write post-update newline".to_string()));
+        .map_err(|e| e.message().to_string())?;
+    writeln!(out).map_err(|_| "failed to write post-update newline".to_string())?;
 
     Ok(())
 }
@@ -754,15 +754,6 @@ fn fetch_options_from_proxy_url(proxy_url: &str) -> FetchOptions {
 
 /// Find package data in the specified cargo index tree.
 pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Vec<u8>> {
-    macro_rules! try_opt {
-        ($expr:expr) => {
-            match $expr {
-                Some(e) => e,
-                None => return None,
-            }
-        }
-    }
-
     let clen = cratename.len().to_string();
     let mut elems = Vec::new();
     if cratename.len() <= 3 {
@@ -779,16 +770,16 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
     }
     elems.push(cratename);
 
-    let ent = try_opt!(registry.get_name(elems[0]));
-    let obj = try_opt!(ent.to_object(registry_parent).ok());
-    let ent = try_opt!(try_opt!(obj.as_tree()).get_name(elems[1]));
-    let obj = try_opt!(ent.to_object(registry_parent).ok());
+    let ent = registry.get_name(elems[0])?;
+    let obj = ent.to_object(registry_parent).ok()?;
+    let ent = obj.as_tree()?.get_name(elems[1])?;
+    let obj = ent.to_object(registry_parent).ok()?;
     if elems.len() == 3 {
-        let ent = try_opt!(try_opt!(obj.as_tree()).get_name(elems[2]));
-        let obj = try_opt!(ent.to_object(registry_parent).ok());
-        Some(try_opt!(obj.as_blob()).content().into())
+        let ent = obj.as_tree()?.get_name(elems[2])?;
+        let obj = ent.to_object(registry_parent).ok()?;
+        Some(obj.as_blob()?.content().into())
     } else {
-        Some(try_opt!(obj.as_blob()).content().into())
+        Some(obj.as_blob()?.content().into())
     }
 }
 

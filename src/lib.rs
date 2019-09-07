@@ -1,6 +1,12 @@
 //! A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo-subcommands) for checking and applying
 //! updates to installed executables
 //!
+//! # Special thanks
+//!
+//! To all who support further development on [Patreon](https://patreon.com/nabijaczleweli), in particular:
+//!
+//!   * ThePhD
+//!
 //! # Library doc
 //!
 //! This library is used by `cargo-update` itself for all its function and is therefore contains all necessary functions.

@@ -37,7 +37,7 @@ fn actual_main() -> Result<(), i32> {
 
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
-    let configuration = try!(cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")));
+    let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml"))?;
     let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
     let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
         cargo_update::ops::installed_git_repo_packages(&crates_file)
@@ -68,26 +68,26 @@ fn actual_main() -> Result<(), i32> {
         (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install),
     }
 
-    let registry = try!(cargo_update::ops::get_index_path(&opts.cargo_dir.1).map_err(|e| {
-        println!("Couldn't get package repository: {}.", e);
-        2
-    }));
-    let mut registry_repo = try!(Repository::open(&registry).map_err(|_| {
-        println!("Failed to open registry repository at {}.", registry.display());
-        2
-    }));
-    try!(cargo_update::ops::update_index(&mut registry_repo,
-                                         "https://github.com/rust-lang/crates.io-index",
-                                         http_proxy.as_ref().map(String::as_str),
-                                         &mut stdout())
-        .map_err(|e| {
+    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1).map_err(|e| {
+            println!("Couldn't get package repository: {}.", e);
+            2
+        })?;
+    let mut registry_repo = Repository::open(&registry).map_err(|_| {
+            println!("Failed to open registry repository at {}.", registry.display());
+            2
+        })?;
+    cargo_update::ops::update_index(&mut registry_repo,
+                                    "https://github.com/rust-lang/crates.io-index",
+                                    http_proxy.as_ref().map(String::as_str),
+                                    &mut stdout()).map_err(|e| {
             println!("Failed to update index repository: {}.", e);
             2
-        }));
-    let latest_registry = try!(registry_repo.revparse_single("origin/master").map_err(|_| {
-        println!("Failed to read master branch of registry repository at {}.", registry.display());
-        2
-    }));
+        })?;
+    let latest_registry = registry_repo.revparse_single("origin/master")
+        .map_err(|_| {
+            println!("Failed to read master branch of registry repository at {}.", registry.display());
+            2
+        })?;
 
     for package in &mut packages {
         package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(), &registry_repo);

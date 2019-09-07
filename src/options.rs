@@ -242,7 +242,7 @@ fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
 fn package_parse(s: String) -> Result<(String, Option<Semver>), String> {
     if let Some(idx) = s.find(':') {
         Ok((s[0..idx].to_string(),
-            Some(try!(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))))))
+            Some(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))?)))
     } else {
         Ok((s, None))
     }
