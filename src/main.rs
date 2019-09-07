@@ -228,8 +228,9 @@ fn actual_main() -> Result<(), i32> {
             packages.retain(|p| opts.to_update.iter().any(|u| p.name == u.0));
         }
 
+        let git_db_dir = crates_file.with_file_name("git").join("db");
         for package in &mut packages {
-            package.pull_version(&opts.temp_dir.1, http_proxy.as_ref().map(String::as_str));
+            package.pull_version(&opts.temp_dir.1, &git_db_dir, http_proxy.as_ref().map(String::as_str));
         }
 
         {

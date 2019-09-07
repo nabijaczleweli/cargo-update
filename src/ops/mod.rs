@@ -351,17 +351,21 @@ impl GitRepoPackage {
     }
 
     /// Clone the repo and check what the latest commit's hash is.
-    pub fn pull_version<P: AsRef<Path>>(&mut self, temp_dir: P, http_proxy: Option<&str>) {
-        self.pull_version_impl(temp_dir.as_ref(), http_proxy)
+    pub fn pull_version<Pt: AsRef<Path>, Pg: AsRef<Path>>(&mut self, temp_dir: Pt, git_db_dir: Pg, http_proxy: Option<&str>) {
+        self.pull_version_impl(temp_dir.as_ref(), git_db_dir.as_ref(), http_proxy)
     }
 
-    fn pull_version_impl(&mut self, temp_dir: &Path, http_proxy: Option<&str>) {
-        fs::create_dir_all(temp_dir).unwrap();
-        let clone_dir = temp_dir.join(&self.name);
+    fn pull_version_impl(&mut self, temp_dir: &Path, git_db_dir: &Path, http_proxy: Option<&str>) {
+        let clone_dir = find_git_db_repo(git_db_dir, &self.name).unwrap_or_else(|| {
+            fs::create_dir_all(temp_dir).unwrap();
+            temp_dir.join(&self.name)
+        });
+
         let repo = if clone_dir.exists() {
             let mut r = Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
-                r.find_remote("origin")
+                let rm = r.find_remote("origin")
+                    .or_else(|_| r.remote_anonymous(&self.url))
                     .and_then(|mut rm| {
                         with_authentication(&self.url, |creds| {
                             let mut cb = RemoteCallbacks::new();
@@ -870,4 +874,13 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
     }
 
     ["http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"].iter().flat_map(env::var).next()
+}
+
+/// Find the bare git repository in the specified directory for the specified crate
+///
+/// The db directory is usually `$HOME/.cargo/git/db/`
+///
+/// The resulting paths are children of this directory in the format `cratename-hash`
+pub fn find_git_db_repo(git_db_dir: &Path, cratename: &str) -> Option<PathBuf> {
+    fs::read_dir(git_db_dir).ok()?.flatten().find(|de| de.file_name().to_str().map(|n| n.starts_with(cratename)).unwrap_or(false)).map(|de| de.path())
 }
