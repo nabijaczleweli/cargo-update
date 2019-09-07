@@ -6,7 +6,7 @@
 //! continue with doing whatever you wish.
 
 
-use git2::{self, Error as GitError, FetchOptions, ProxyOptions, Repository, Tree, Oid};
+use git2::{self, Error as GitError, Config as GitConfig, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
@@ -359,28 +359,37 @@ impl GitRepoPackage {
         fs::create_dir_all(temp_dir).unwrap();
         let clone_dir = temp_dir.join(&self.name);
         let repo = if clone_dir.exists() {
-            let mut r = git2::Repository::open(clone_dir);
+            let mut r = Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
                 r.find_remote("origin")
                     .and_then(|mut rm| {
-                        rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
-                                 http_proxy.map(fetch_options_from_proxy_url).as_mut(),
-                                 None)
+                        with_authentication(&self.url, |creds| {
+                            let mut cb = RemoteCallbacks::new();
+                            cb.credentials(|a, b, c| creds(a, b, c));
+
+                            rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
+                                     Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
+                                     None)
+                        })
                     })
                     .unwrap();
                 r.set_head("FETCH_HEAD").unwrap();
             }
             r
         } else {
-            let mut bldr = git2::build::RepoBuilder::new();
-            bldr.bare(true);
-            if let Some(proxy_url) = http_proxy {
-                bldr.fetch_options(fetch_options_from_proxy_url(proxy_url));
-            }
-            if let Some(ref b) = self.branch.as_ref() {
-                bldr.branch(b);
-            }
-            bldr.clone(&self.url, &clone_dir)
+            with_authentication(&self.url, |creds| {
+                let mut bldr = git2::build::RepoBuilder::new();
+
+                let mut cb = RemoteCallbacks::new();
+                cb.credentials(|a, b, c| creds(a, b, c));
+                bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(http_proxy, cb));
+                if let Some(ref b) = self.branch.as_ref() {
+                    bldr.branch(b);
+                }
+
+                bldr.bare(true);
+                bldr.clone(&self.url, &clone_dir)
+            })
         };
 
         self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
@@ -731,9 +740,14 @@ pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_
     writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string())?;
     index_repo.remote_anonymous(repo_url)
         .and_then(|mut r| {
-            r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
-                    http_proxy.map(fetch_options_from_proxy_url).as_mut(),
-                    None)
+            with_authentication(repo_url, |creds| {
+                let mut cb = RemoteCallbacks::new();
+                cb.credentials(|a, b, c| creds(a, b, c));
+
+                r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
+                        Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
+                        None)
+            })
         })
         .map_err(|e| e.message().to_string())?;
     writeln!(out).map_err(|_| "failed to write post-update newline".to_string())?;
@@ -741,14 +755,42 @@ pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_
     Ok(())
 }
 
-fn fetch_options_from_proxy_url(proxy_url: &str) -> FetchOptions {
+fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callbacks: RemoteCallbacks<'a>) -> FetchOptions<'a> {
     let mut ret = FetchOptions::new();
-    ret.proxy_options({
-        let mut prx = ProxyOptions::new();
-        prx.url(proxy_url);
-        prx
-    });
+    if let Some(proxy_url) = proxy_url {
+        ret.proxy_options({
+            let mut prx = ProxyOptions::new();
+            prx.url(proxy_url);
+            prx
+        });
+    }
+    ret.remote_callbacks(callbacks);
     ret
+}
+
+/// Based on
+/// https://github.com/rust-lang/cargo/blob/bb28e71202260180ecff658cd0fa0c7ba86d0296/src/cargo/sources/git/utils.rs#L344
+/// and
+/// https://github.com/rust-lang/cargo/blob/5102de2b7de997b03181063417f20874a06a67c0/src/cargo/sources/git/utils.rs#L644
+fn with_authentication<T, F>(url: &str, mut f: F) -> T
+    where F: FnMut(&mut git2::Credentials) -> T
+{
+    let cfg = GitConfig::open_default().unwrap();
+
+    let mut cred_helper = git2::CredentialHelper::new(url);
+    cred_helper.config(&cfg);
+    f(&mut |url, username, allowed| if allowed.contains(CredentialType::SSH_KEY) {
+        let user = username.map(|s| s.to_string())
+            .or_else(|| cred_helper.username.clone())
+            .unwrap_or("git".to_string());
+        GitCred::ssh_key_from_agent(&user)
+    } else if allowed.contains(CredentialType::USER_PASS_PLAINTEXT) {
+        GitCred::credential_helper(&cfg, url, username)
+    } else if allowed.contains(CredentialType::DEFAULT) {
+        GitCred::default()
+    } else {
+        Err(GitError::from_str("no authentication available")).unwrap()
+    })
 }
 
 
@@ -821,7 +863,7 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
         }
     }
 
-    if let Ok(cfg) = git2::Config::open_default() {
+    if let Ok(cfg) = GitConfig::open_default() {
         if let Ok(s) = cfg.get_str("http.proxy") {
             return Some(s.to_string());
         }
