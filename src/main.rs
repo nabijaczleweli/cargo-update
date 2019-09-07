@@ -77,7 +77,7 @@ fn actual_main() -> Result<(), i32> {
             2
         })?;
     cargo_update::ops::update_index(&mut registry_repo,
-                                    "https://github.com/rust-lang/crates.io-index",
+                                    &cargo_update::ops::get_index_url(&crates_file),
                                     http_proxy.as_ref().map(String::as_str),
                                     &mut stdout()).map_err(|e| {
             println!("Failed to update index repository: {}.", e);

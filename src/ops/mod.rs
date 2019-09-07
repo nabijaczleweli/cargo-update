@@ -12,6 +12,7 @@ use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
 use std::io::{Write, Read};
 use std::time::SystemTime;
+use std::borrow::Cow;
 use std::{cmp, env};
 use regex::Regex;
 use url::Url;
@@ -364,7 +365,7 @@ impl GitRepoPackage {
         let repo = if clone_dir.exists() {
             let mut r = Repository::open(clone_dir);
             if let Ok(ref mut r) = r.as_mut() {
-                let rm = r.find_remote("origin")
+                r.find_remote("origin")
                     .or_else(|_| r.remote_anonymous(&self.url))
                     .and_then(|mut rm| {
                         with_authentication(&self.url, |creds| {
@@ -770,6 +771,34 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callb
     }
     ret.remote_callbacks(callbacks);
     ret
+}
+
+/// Get the URL to update index from the config file parallel to the specified crates file
+///
+/// Get `source.crates-io.registry` or follow `source.crates-io.replace-with`,
+/// to `source.$SRCNAME.registry` or follow `source.$SRCNAME.replace-with`,
+/// et caetera.
+///
+/// Defaults to `https://github.com/rust-lang/crates.io-index`
+///
+/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) for details
+pub fn get_index_url(crates_file: &Path) -> Cow<'static, str> {
+    get_index_url_impl(crates_file).map(Cow::from).unwrap_or(Cow::from("https://github.com/rust-lang/crates.io-index"))
+}
+
+fn get_index_url_impl(crates_file: &Path) -> Option<String> {
+    let config = fs::read_to_string(crates_file.with_file_name("config")).ok()?;
+    let config = toml::from_str::<toml::Value>(&config).ok()?;
+
+    let sources = config.get("source")?;
+
+    let mut cur_source = sources.get("crates-io")?;
+    loop {
+        match cur_source.get("replace-with") {
+            Some(redir) => cur_source = sources.get(redir.as_str()?)?,
+            None => return Some(cur_source.get("registry")?.as_str()?.to_string()),
+        }
+    }
 }
 
 /// Based on
