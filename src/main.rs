@@ -68,7 +68,8 @@ fn actual_main() -> Result<(), i32> {
         (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install),
     }
 
-    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1).map_err(|e| {
+    let registry_url = cargo_update::ops::get_index_url(&crates_file);
+    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1, Some(&registry_url)).map_err(|e| {
             println!("Couldn't get package repository: {}.", e);
             2
         })?;
@@ -77,7 +78,7 @@ fn actual_main() -> Result<(), i32> {
             2
         })?;
     cargo_update::ops::update_index(&mut registry_repo,
-                                    &cargo_update::ops::get_index_url(&crates_file),
+                                    &registry_url,
                                     http_proxy.as_ref().map(String::as_str),
                                     &mut stdout()).map_err(|e| {
             println!("Failed to update index repository: {}.", e);
