@@ -10,7 +10,7 @@ use std::env::temp_dir;
 fn nonexistant() {
     let indices = prep_indices("nonexistant");
 
-    assert_eq!(get_index_path(&indices), Err("index directory nonexistant"));
+    assert_eq!(get_index_path(&indices, None), Err("index directory nonexistant"));
 }
 
 #[test]
@@ -19,7 +19,7 @@ fn empty() {
 
     prepare_indices(&indices, &[]);
 
-    assert_eq!(get_index_path(&indices), Err("empty index directory"));
+    assert_eq!(get_index_path(&indices, None), Err("empty index directory"));
 }
 
 #[test]
@@ -28,7 +28,7 @@ fn single() {
 
     prepare_indices(&indices, &["1ecc6299db9ec823"]);
 
-    assert_eq!(get_index_path(&indices),
+    assert_eq!(get_index_path(&indices, None),
                Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
 }
 
@@ -38,7 +38,7 @@ fn double() {
 
     prepare_indices(&indices, &["1ecc6299db9ec823", "48ad6e4054423464"]);
 
-    assert_eq!(get_index_path(&indices),
+    assert_eq!(get_index_path(&indices, None),
                Ok(indices.join("registry").join("index").join("github.com-48ad6e4054423464")));
 }
 
@@ -48,7 +48,7 @@ fn triple() {
 
     prepare_indices(&indices, &["1ecc6299db9ec823", "88ac128001ac3a9a", "48ad6e4054423464"]);
 
-    assert_eq!(get_index_path(&indices),
+    assert_eq!(get_index_path(&indices, None),
                Ok(indices.join("registry").join("index").join("github.com-48ad6e4054423464")));
 }
 
@@ -59,7 +59,7 @@ fn with_file() {
     prepare_indices(&indices, &["1ecc6299db9ec823", "88ac128001ac3a9a"]);
     File::create(indices.join("registry").join("index").join("I-am-a-random-file-yes")).unwrap();
 
-    assert_eq!(get_index_path(&indices),
+    assert_eq!(get_index_path(&indices, None),
                Ok(indices.join("registry").join("index").join("github.com-88ac128001ac3a9a")));
 }
 
