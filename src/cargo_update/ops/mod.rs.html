@@ -884,6 +884,44 @@
 <span id="884">884</span>
 <span id="885">885</span>
 <span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
@@ -899,6 +937,7 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::{<span class="ident">PathBuf</span>, <span class="ident">Path</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Write</span>, <span class="ident">Read</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">SystemTime</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cmp</span>, <span class="ident">env</span>};
 <span class="kw">use</span> <span class="ident">regex</span>::<span class="ident">Regex</span>;
 <span class="kw">use</span> <span class="ident">url</span>::<span class="ident">Url</span>;
@@ -1251,7 +1290,7 @@
         <span class="kw">let</span> <span class="ident">repo</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">clone_dir</span>.<span class="ident">exists</span>() {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">r</span> <span class="op">=</span> <span class="ident">Repository</span>::<span class="ident">open</span>(<span class="ident">clone_dir</span>);
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">r</span>) <span class="op">=</span> <span class="ident">r</span>.<span class="ident">as_mut</span>() {
-                <span class="kw">let</span> <span class="ident">rm</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">find_remote</span>(<span class="string">&quot;origin&quot;</span>)
+                <span class="ident">r</span>.<span class="ident">find_remote</span>(<span class="string">&quot;origin&quot;</span>)
                     .<span class="ident">or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">remote_anonymous</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">url</span>))
                     .<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">rm</span><span class="op">|</span> {
                         <span class="ident">with_authentication</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">url</span>, <span class="op">|</span><span class="ident">creds</span><span class="op">|</span> {
@@ -1544,7 +1583,8 @@
         .<span class="ident">collect</span>()
 }
 
-<span class="doccomment">/// Get the location of the latest registry index in the specified cargo directory.</span>
+<span class="doccomment">/// Get the location of the latest registry index whose name optionally starts with the registry URL&#39;s domain name in the</span>
+<span class="doccomment">/// specified cargo directory.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If no indices exist, an appropriate `Err` is returned.</span>
 <span class="doccomment">///</span>
@@ -1562,15 +1602,23 @@
 <span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
 <span class="doccomment">/// # let idx_dir = cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;);</span>
 <span class="doccomment">/// # let _ = fs::create_dir_all(&amp;idx_dir);</span>
-<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir).unwrap();</span>
+<span class="doccomment">/// // These are equivalent for most users,</span>
+<span class="doccomment">/// // but you might need to specify the URL to find the right checkout if you use more than one registry</span>
+<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir, None).unwrap();</span>
+<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir, Some(&quot;https://github.com/rust-lang/crates.io-index&quot;)).unwrap();</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// // Use find_package_data() to look for packages</span>
 <span class="doccomment">/// # assert_eq!(index, idx_dir);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_path</span>(<span class="ident">cargo_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_path</span>(<span class="ident">cargo_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">registry_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">registry_url</span> <span class="op">=</span> <span class="ident">registry_url</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="ident">u</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;registry URL not an URL&quot;</span>)).<span class="ident">transpose</span>()<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">registry_host</span> <span class="op">=</span> <span class="ident">registry_url</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">host_str</span>());
+
     <span class="prelude-val">Ok</span>(<span class="ident">fs</span>::<span class="ident">read_dir</span>(<span class="ident">cargo_dir</span>.<span class="ident">join</span>(<span class="string">&quot;registry&quot;</span>).<span class="ident">join</span>(<span class="string">&quot;index&quot;</span>))
         .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;index directory nonexistant&quot;</span>)<span class="question-mark">?</span>
         .<span class="ident">map</span>(<span class="prelude-ty">Result</span>::<span class="ident">unwrap</span>)
         .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">file_type</span>().<span class="ident">unwrap</span>().<span class="ident">is_dir</span>())
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">registry_host</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">rh</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">file_name</span>().<span class="ident">to_string_lossy</span>().<span class="ident">starts_with</span>(<span class="ident">rh</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>))
         .<span class="ident">max_by_key</span>(<span class="ident">latest_modified</span>)
         .<span class="ident">ok_or</span>(<span class="string">&quot;empty index directory&quot;</span>)<span class="question-mark">?</span>
         .<span class="ident">path</span>())
@@ -1657,6 +1705,34 @@
     }
     <span class="ident">ret</span>.<span class="ident">remote_callbacks</span>(<span class="ident">callbacks</span>);
     <span class="ident">ret</span>
+}
+
+<span class="doccomment">/// Get the URL to update index from the config file parallel to the specified crates file</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Get `source.crates-io.registry` or follow `source.crates-io.replace-with`,</span>
+<span class="doccomment">/// to `source.$SRCNAME.registry` or follow `source.$SRCNAME.replace-with`,</span>
+<span class="doccomment">/// et caetera.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Defaults to `https://github.com/rust-lang/crates.io-index`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) for details</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_url</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="ident">get_index_url_impl</span>(<span class="ident">crates_file</span>).<span class="ident">map</span>(<span class="ident">Cow</span>::<span class="ident">from</span>).<span class="ident">unwrap_or</span>(<span class="ident">Cow</span>::<span class="ident">from</span>(<span class="string">&quot;https://github.com/rust-lang/crates.io-index&quot;</span>))
+}
+
+<span class="kw">fn</span> <span class="ident">get_index_url_impl</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="ident">crates_file</span>.<span class="ident">with_file_name</span>(<span class="string">&quot;config&quot;</span>)).<span class="ident">ok</span>()<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>).<span class="ident">ok</span>()<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="ident">sources</span> <span class="op">=</span> <span class="ident">config</span>.<span class="ident">get</span>(<span class="string">&quot;source&quot;</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cur_source</span> <span class="op">=</span> <span class="ident">sources</span>.<span class="ident">get</span>(<span class="string">&quot;crates-io&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">loop</span> {
+        <span class="kw">match</span> <span class="ident">cur_source</span>.<span class="ident">get</span>(<span class="string">&quot;replace-with&quot;</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">redir</span>) <span class="op">=&gt;</span> <span class="ident">cur_source</span> <span class="op">=</span> <span class="ident">sources</span>.<span class="ident">get</span>(<span class="ident">redir</span>.<span class="ident">as_str</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>,
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">cur_source</span>.<span class="ident">get</span>(<span class="string">&quot;registry&quot;</span>)<span class="question-mark">?</span>.<span class="ident">as_str</span>()<span class="question-mark">?</span>.<span class="ident">to_string</span>()),
+        }
+    }
 }
 
 <span class="doccomment">/// Based on</span>
