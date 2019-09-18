@@ -817,26 +817,103 @@ fn get_index_url_impl(crates_file: &Path) -> Option<String> {
 /// Based on
 /// https://github.com/rust-lang/cargo/blob/bb28e71202260180ecff658cd0fa0c7ba86d0296/src/cargo/sources/git/utils.rs#L344
 /// and
-/// https://github.com/rust-lang/cargo/blob/5102de2b7de997b03181063417f20874a06a67c0/src/cargo/sources/git/utils.rs#L644
-fn with_authentication<T, F>(url: &str, mut f: F) -> T
-    where F: FnMut(&mut git2::Credentials) -> T
+/// https://github.com/rust-lang/cargo/blob/5102de2b7de997b03181063417f20874a06a67c0/src/cargo/sources/git/utils.rs#L644,
+/// then
+/// https://github.com/rust-lang/cargo/blob/5102de2b7de997b03181063417f20874a06a67c0/src/cargo/sources/git/utils.rs#L437
+/// (see that link for full comments)
+fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
+    where F: FnMut(&mut git2::Credentials) -> Result<T, GitError>
 {
     let cfg = GitConfig::open_default().unwrap();
 
     let mut cred_helper = git2::CredentialHelper::new(url);
     cred_helper.config(&cfg);
-    f(&mut |url, username, allowed| if allowed.contains(CredentialType::SSH_KEY) {
-        let user = username.map(|s| s.to_string())
-            .or_else(|| cred_helper.username.clone())
-            .unwrap_or("git".to_string());
-        GitCred::ssh_key_from_agent(&user)
-    } else if allowed.contains(CredentialType::USER_PASS_PLAINTEXT) {
-        GitCred::credential_helper(&cfg, url, username)
-    } else if allowed.contains(CredentialType::DEFAULT) {
-        GitCred::default()
+
+    let mut ssh_username_requested = false;
+    let mut cred_helper_bad = None;
+    let mut ssh_agent_attempts = Vec::new();
+    let mut any_attempts = false;
+    let mut tried_ssh_key = false;
+
+    let mut res = f(&mut |url, username, allowed| {
+        any_attempts = true;
+
+        if allowed.contains(CredentialType::USERNAME) {
+            ssh_username_requested = true;
+
+            Err(GitError::from_str("username to be tried later"))
+        } else if allowed.contains(CredentialType::SSH_KEY) && !tried_ssh_key {
+            tried_ssh_key = true;
+
+            let username = username.unwrap();
+            ssh_agent_attempts.push(username.to_string());
+
+            GitCred::ssh_key_from_agent(username)
+        } else if allowed.contains(CredentialType::USER_PASS_PLAINTEXT) && cred_helper_bad.is_none() {
+            let ret = GitCred::credential_helper(&cfg, url, username);
+            cred_helper_bad = Some(ret.is_err());
+            ret
+        } else if allowed.contains(CredentialType::DEFAULT) {
+            GitCred::default()
+        } else {
+            Err(GitError::from_str("no authentication available"))
+        }
+    });
+
+    if ssh_username_requested {
+        for uname in cred_helper.username.into_iter().chain(["USER", "USERNAME"].into_iter().flat_map(env::var)).chain(Some("git".to_string())) {
+            let mut ssh_attempts = 0;
+
+            res = f(&mut |_, _, allowed| {
+                if allowed.contains(CredentialType::USERNAME) {
+                    return GitCred::username(&uname);
+                } else if allowed.contains(CredentialType::SSH_KEY) {
+                    ssh_attempts += 1;
+                    if ssh_attempts == 1 {
+                        ssh_agent_attempts.push(uname.to_string());
+                        return git2::Cred::ssh_key_from_agent(&uname);
+                    }
+                }
+
+                Err(GitError::from_str("no authentication available"))
+            });
+
+            if ssh_attempts == 2 {
+                break;
+            }
+        }
+    }
+
+    if res.is_ok() || !any_attempts {
+        res
     } else {
-        Err(GitError::from_str("no authentication available")).unwrap()
-    })
+        let err = res.err().map(|e| format!("{}: ", e)).unwrap_or(String::new());
+
+        let mut msg = format!("{}failed to authenticate when downloading repository {}", err, url);
+        if !ssh_agent_attempts.is_empty() {
+            msg.push_str(" (tried ssh-agent, but none of the following usernames worked: ");
+            for (i, uname) in ssh_agent_attempts.into_iter().enumerate() {
+                if i != 0 {
+                    msg.push_str(", ");
+                }
+                msg.push('\"');
+                msg.push_str(&uname);
+                msg.push('\"');
+            }
+            msg.push(')');
+        }
+
+        if let Some(failed_cred_helper) = cred_helper_bad {
+            msg.push_str(" (tried to find username+password via ");
+            if failed_cred_helper {
+                msg.push_str("git's credential.helper support, but failed)");
+            } else {
+                msg.push_str("credential.helper, but found credentials were incorrect)");
+            }
+        }
+
+        Err(GitError::from_str(&msg)).unwrap()
+    }
 }
 
 
