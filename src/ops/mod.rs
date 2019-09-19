@@ -965,6 +965,8 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
 /// Based on Cargo's [`http_proxy_exists()` and
 /// `http_proxy()`](https://github.com/rust-lang/cargo/blob/eebd1da3a89e9c7788d109b3e615e1e25dc2cfcd/src/cargo/ops/registry.rs)
 ///
+/// If a proxy is specified, but an empty string, treat it as unspecified.
+///
 /// # Examples
 ///
 /// ```
@@ -988,17 +990,21 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
             .and_then(|t| t.as_table())
             .and_then(|t| t.get("proxy"))
             .and_then(|t| t.as_str()) {
-            return Some(proxy.to_string());
+            if !proxy.is_empty() {
+                return Some(proxy.to_string());
+            }
         }
     }
 
     if let Ok(cfg) = GitConfig::open_default() {
-        if let Ok(s) = cfg.get_str("http.proxy") {
-            return Some(s.to_string());
+        if let Ok(proxy) = cfg.get_str("http.proxy") {
+            if !proxy.is_empty() {
+                return Some(proxy.to_string());
+            }
         }
     }
 
-    ["http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"].iter().flat_map(env::var).next()
+    ["http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"].iter().flat_map(env::var).filter(|proxy| !proxy.is_empty()).next()
 }
 
 /// Find the bare git repository in the specified directory for the specified crate
