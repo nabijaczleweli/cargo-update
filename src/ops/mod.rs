@@ -884,7 +884,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
                 Err(GitError::from_str("no authentication available"))
             });
 
-            if ssh_attempts == 2 {
+            if ssh_attempts != 2 {
                 break;
             }
         }
