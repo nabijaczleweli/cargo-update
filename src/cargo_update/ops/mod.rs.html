@@ -1009,6 +1009,12 @@
 <span id="1009">1009</span>
 <span id="1010">1010</span>
 <span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
@@ -1977,6 +1983,8 @@
 <span class="doccomment">/// Based on Cargo&#39;s [`http_proxy_exists()` and</span>
 <span class="doccomment">/// `http_proxy()`](https://github.com/rust-lang/cargo/blob/eebd1da3a89e9c7788d109b3e615e1e25dc2cfcd/src/cargo/ops/registry.rs)</span>
 <span class="doccomment">///</span>
+<span class="doccomment">/// If a proxy is specified, but an empty string, treat it as unspecified.</span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
@@ -2000,17 +2008,21 @@
             .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">as_table</span>())
             .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">get</span>(<span class="string">&quot;proxy&quot;</span>))
             .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">as_str</span>()) {
-            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">proxy</span>.<span class="ident">to_string</span>());
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">proxy</span>.<span class="ident">is_empty</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">proxy</span>.<span class="ident">to_string</span>());
+            }
         }
     }
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">cfg</span>) <span class="op">=</span> <span class="ident">GitConfig</span>::<span class="ident">open_default</span>() {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">cfg</span>.<span class="ident">get_str</span>(<span class="string">&quot;http.proxy&quot;</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>.<span class="ident">to_string</span>());
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">proxy</span>) <span class="op">=</span> <span class="ident">cfg</span>.<span class="ident">get_str</span>(<span class="string">&quot;http.proxy&quot;</span>) {
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">proxy</span>.<span class="ident">is_empty</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">proxy</span>.<span class="ident">to_string</span>());
+            }
         }
     }
 
-    [<span class="string">&quot;http_proxy&quot;</span>, <span class="string">&quot;HTTP_PROXY&quot;</span>, <span class="string">&quot;https_proxy&quot;</span>, <span class="string">&quot;HTTPS_PROXY&quot;</span>].<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">env</span>::<span class="ident">var</span>).<span class="ident">next</span>()
+    [<span class="string">&quot;http_proxy&quot;</span>, <span class="string">&quot;HTTP_PROXY&quot;</span>, <span class="string">&quot;https_proxy&quot;</span>, <span class="string">&quot;HTTPS_PROXY&quot;</span>].<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">env</span>::<span class="ident">var</span>).<span class="ident">filter</span>(<span class="op">|</span><span class="ident">proxy</span><span class="op">|</span> <span class="op">!</span><span class="ident">proxy</span>.<span class="ident">is_empty</span>()).<span class="ident">next</span>()
 }
 
 <span class="doccomment">/// Find the bare git repository in the specified directory for the specified crate</span>
