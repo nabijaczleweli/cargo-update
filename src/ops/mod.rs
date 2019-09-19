@@ -877,7 +877,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
                     ssh_attempts += 1;
                     if ssh_attempts == 1 {
                         ssh_agent_attempts.push(uname.to_string());
-                        return git2::Cred::ssh_key_from_agent(&uname);
+                        return GitCred::ssh_key_from_agent(&uname);
                     }
                 }
 
