@@ -861,7 +861,13 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
     });
 
     if ssh_username_requested {
-        for uname in cred_helper.username.into_iter().chain(["USER", "USERNAME"].into_iter().flat_map(env::var)).chain(Some("git".to_string())) {
+        // NOTE: this is the only divergence from the original cargo code: we also try cfg["user.name"]
+        //       see https://github.com/nabijaczleweli/cargo-update/issues/110#issuecomment-533091965 for explanation
+        for uname in cred_helper.username
+            .into_iter()
+            .chain(cfg.get_string("user.name"))
+            .chain(["USERNAME", "USER"].into_iter().flat_map(env::var))
+            .chain(Some("git").into_iter().map(str::to_string)) {
             let mut ssh_attempts = 0;
 
             res = f(&mut |_, _, allowed| {
