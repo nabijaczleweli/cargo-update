@@ -65,8 +65,7 @@ pub struct ConfigOptions {
 impl Options {
     /// Parse `env`-wide command-line arguments into an `Options` instance
     pub fn parse() -> Options {
-        let matches = App::new("cargo-install-update")
-            .bin_name("cargo")
+        let matches = App::new("cargo")
             .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
             .subcommand(SubCommand::with_name("install-update")
                 .version(crate_version!())
@@ -148,8 +147,7 @@ impl Options {
 impl ConfigOptions {
     /// Parse `env`-wide command-line arguments into a `ConfigOptions` instance
     pub fn parse() -> ConfigOptions {
-        let matches = App::new("cargo-install-update-config")
-            .bin_name("cargo")
+        let matches = App::new("cargo")
             .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
             .subcommand(SubCommand::with_name("install-update-config")
                 .version(crate_version!())
