@@ -208,25 +208,25 @@ impl MainRepoPackage {
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update(None));
+    ///         }.needs_update(None, None));
     /// assert!(MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update(None));
+    ///         }.needs_update(None, None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update(None));
+    ///         }.needs_update(None, None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: None,
     ///             max_version: None,
-    ///         }.needs_update(None));
+    ///         }.needs_update(None, None));
     ///
     /// let req = SemverReq::from_str("^1.7").unwrap();
     /// assert!(MainRepoPackage {
@@ -234,19 +234,32 @@ impl MainRepoPackage {
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("1.7.3").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update(Some(&req)));
+    ///         }.needs_update(Some(&req), None));
     /// assert!(MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update(Some(&req)));
+    ///         }.needs_update(Some(&req), None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             max_version: None,
-    ///         }.needs_update(Some(&req)));
+    ///         }.needs_update(Some(&req), None));
+    ///
+    /// assert!(!MainRepoPackage {
+    ///             name: "cargo-audit".to_string(),
+    ///             version: None,
+    ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
+    ///             max_version: None,
+    ///         }.needs_update(Some(&req), None));
+    /// assert!(MainRepoPackage {
+    ///             name: "cargo-audit".to_string(),
+    ///             version: None,
+    ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
+    ///             max_version: None,
+    ///         }.needs_update(Some(&req), Some(true)));
     /// # }
     /// ```
     pub fn needs_update(&self, req: Option<&SemverReq>, install_prereleases: Option<bool>) -> bool {

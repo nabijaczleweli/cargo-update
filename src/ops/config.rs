@@ -84,6 +84,7 @@ impl PackageConfig {
     ///                                  ConfigOperation::DefaultFeatures(false),
     ///                                  ConfigOperation::AddFeature("rustc-serialize".to_string()),
     ///                                  ConfigOperation::SetDebugMode(true),
+    ///                                  ConfigOperation::SetInstallPrereleases(false),
     ///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(">=0.1").unwrap())]),
     ///            PackageConfig {
     ///                toolchain: Some("nightly".to_string()),
@@ -94,6 +95,7 @@ impl PackageConfig {
     ///                    feats
     ///                },
     ///                debug: Some(true),
+    ///                install_prereleases: Some(false),
     ///                target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     ///            });
     /// # }
@@ -165,6 +167,7 @@ impl PackageConfig {
     ///         feats
     ///     },
     ///     debug: None,
+    ///     install_prereleases: None,
     ///     target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
@@ -182,6 +185,7 @@ impl PackageConfig {
     ///                    feats
     ///                },
     ///                debug: Some(true),
+    ///                install_prereleases: None,
     ///                target_version: None,
     ///            });
     /// # }
@@ -240,6 +244,7 @@ impl PackageConfig {
     ///             feats
     ///         },
     ///         debug: None,
+    ///         install_prereleases: None,
     ///         target_version: None,
     ///     });
     ///     pkgs
@@ -282,6 +287,7 @@ impl PackageConfig {
     ///             feats
     ///         },
     ///         debug: None,
+    ///         install_prereleases: None,
     ///         target_version: None,
     ///     });
     ///     pkgs
