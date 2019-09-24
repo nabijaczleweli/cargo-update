@@ -249,10 +249,14 @@ impl MainRepoPackage {
     ///         }.needs_update(Some(&req)));
     /// # }
     /// ```
-    pub fn needs_update(&self, req: Option<&SemverReq>) -> bool {
+    pub fn needs_update(&self, req: Option<&SemverReq>, install_prereleases: Option<bool>) -> bool {
         (req.into_iter().zip(self.version.as_ref()).map(|(sr, cv)| !sr.matches(cv)).next().unwrap_or(true) ||
          req.into_iter().zip(self.update_to_version()).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
-        self.update_to_version().map(|upd_v| self.version.is_none() || (*self.version.as_ref().unwrap() < *upd_v)).unwrap_or(false)
+        self.update_to_version()
+            .map(|upd_v| {
+                (!upd_v.is_prerelease() || install_prereleases.unwrap_or(false)) && (self.version.is_none() || (*self.version.as_ref().unwrap() < *upd_v))
+            })
+            .unwrap_or(false)
     }
 
     /// Get package version to update to, or `None` if the crate has no newest version (was yanked)

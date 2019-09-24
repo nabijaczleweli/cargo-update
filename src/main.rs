@@ -90,10 +90,15 @@ fn actual_main() -> Result<(), i32> {
     {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-        for (package, package_target_version) in
+        for (package, package_target_version, package_install_prereleases) in
             packages.iter()
-                .map(|p| (p, configuration.get(&p.name).and_then(|c| c.target_version.as_ref())))
-                .sorted_by(|&(ref lhs, lhstv), &(ref rhs, rhstv)| (!lhs.needs_update(lhstv), &lhs.name).cmp(&(!rhs.needs_update(rhstv), &rhs.name))) {
+                .map(|p| {
+                    let cfg = configuration.get(&p.name);
+                    (p, cfg.as_ref().and_then(|c| c.target_version.as_ref()), cfg.as_ref().and_then(|c| c.install_prereleases))
+                })
+                .sorted_by(|&(ref lhs, lhstv, lhsip), &(ref rhs, rhstv, rhsip)| {
+                    (!lhs.needs_update(lhstv, lhsip), &lhs.name).cmp(&(!rhs.needs_update(rhstv, rhsip), &rhs.name))
+                }) {
             write!(out, "{}\t", package.name).unwrap();
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
@@ -107,7 +112,7 @@ fn actual_main() -> Result<(), i32> {
             }
             writeln!(out,
                      "\t{}",
-                     if package.needs_update(package_target_version) {
+                     if package.needs_update(package_target_version, package_install_prereleases) {
                          "Yes"
                      } else {
                          "No"
@@ -124,7 +129,11 @@ fn actual_main() -> Result<(), i32> {
 
     if opts.update {
         if !opts.force {
-            packages.retain(|p| p.needs_update(configuration.get(&p.name).and_then(|c| c.target_version.as_ref())));
+            packages.retain(|p| {
+                let cfg = configuration.get(&p.name);
+                p.needs_update(cfg.as_ref().and_then(|c| c.target_version.as_ref()),
+                               cfg.as_ref().and_then(|c| c.install_prereleases))
+            });
         }
 
         packages.retain(|pkg| pkg.update_to_version().is_some());

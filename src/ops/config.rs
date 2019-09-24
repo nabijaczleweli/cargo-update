@@ -23,6 +23,8 @@ pub enum ConfigOperation {
     RemoveFeature(String),
     /// Set debug mode being enabled to the specified value.
     SetDebugMode(bool),
+    /// Set allowing to install prereleases to the specified value.
+    SetInstallPrereleases(bool),
     /// Constrain the installed to the specified one.
     SetTargetVersion(VersionReq),
     /// Always install latest package version.
@@ -58,7 +60,9 @@ pub struct PackageConfig {
     pub features: BTreeSet<String>,
     /// Whether to compile in debug mode.
     pub debug: Option<bool>,
-    /// Whether to compile in debug mode.
+    /// Whether to install pre-release versions.
+    pub install_prereleases: Option<bool>,
+    /// Versions to constrain to.
     pub target_version: Option<VersionReq>,
 }
 
@@ -200,6 +204,7 @@ impl PackageConfig {
                 self.features.remove(feat);
             }
             ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
+            ConfigOperation::SetInstallPrereleases(pr) => self.install_prereleases = Some(pr),
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
         }
@@ -303,6 +308,7 @@ impl Default for PackageConfig {
             default_features: true,
             features: BTreeSet::new(),
             debug: None,
+            install_prereleases: None,
             target_version: None,
         }
     }

@@ -163,6 +163,8 @@ impl ConfigOptions {
                             .hide_possible_values(true),
                         Arg::from_usage("--debug 'Compile the package in debug mode'").conflicts_with("release"),
                         Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug"),
+                        Arg::from_usage("--install-prereleases 'Install prerelease versions'").conflicts_with("no-install-prereleases"),
+                        Arg::from_usage("--no-install-prereleases 'Filter out prerelease versions'").conflicts_with("install-prereleases"),
                         Arg::from_usage("-v --version=[VERSION_REQ] 'Require a cargo-compatible version range'")
                             .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
                             .conflicts_with("any-version"),
@@ -194,17 +196,20 @@ impl ConfigOptions {
                 .chain(matches.values_of("no-feature").into_iter().flat_map(|f| f).map(str::to_string).map(ConfigOperation::RemoveFeature))
                 .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
                 .chain(match (matches.is_present("debug"), matches.is_present("release")) {
-                        (true, _) => Some(ConfigOperation::SetDebugMode(true)),
-                        (_, true) => Some(ConfigOperation::SetDebugMode(false)),
-                        _ => None,
-                    }
-                    .into_iter())
+                    (true, _) => Some(ConfigOperation::SetDebugMode(true)),
+                    (_, true) => Some(ConfigOperation::SetDebugMode(false)),
+                    _ => None,
+                })
+                .chain(match (matches.is_present("install-prereleases"), matches.is_present("no-install-prereleases")) {
+                    (true, _) => Some(ConfigOperation::SetInstallPrereleases(true)),
+                    (_, true) => Some(ConfigOperation::SetInstallPrereleases(false)),
+                    _ => None,
+                })
                 .chain(match (matches.is_present("any-version"), matches.value_of("version")) {
-                        (true, _) => Some(ConfigOperation::RemoveTargetVersion),
-                        (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
-                        _ => None,
-                    }
-                    .into_iter())
+                    (true, _) => Some(ConfigOperation::RemoveTargetVersion),
+                    (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
+                    _ => None,
+                })
                 .collect(),
         }
     }
