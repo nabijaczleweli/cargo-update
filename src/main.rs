@@ -156,13 +156,13 @@ fn actual_main() -> Result<(), i32> {
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
                             Command::new("cargo")
                                 .args(&cfg.cargo_args()[..])
-                                .arg(&package.name)
                                 .arg("--vers")
                                 .arg(if let Some(tv) = cfg.target_version.as_ref() {
                                     tv.to_string()
                                 } else {
                                     package.update_to_version().unwrap().to_string()
                                 })
+                                .arg(&package.name)
                                 .status()
                         } else {
                             Command::new("cargo")
