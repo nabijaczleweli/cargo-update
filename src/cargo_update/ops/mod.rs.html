@@ -1015,6 +1015,10 @@
 <span id="1015">1015</span>
 <span id="1016">1016</span>
 <span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
@@ -1267,10 +1271,14 @@
     <span class="doccomment">///         }.needs_update(Some(&amp;req)));</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">needs_update</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">req</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">SemverReq</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">needs_update</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">req</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">SemverReq</span><span class="op">&gt;</span>, <span class="ident">install_prereleases</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         (<span class="ident">req</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="self">self</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>()).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">sr</span>, <span class="ident">cv</span>)<span class="op">|</span> <span class="op">!</span><span class="ident">sr</span>.<span class="ident">matches</span>(<span class="ident">cv</span>)).<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>) <span class="op">||</span>
          <span class="ident">req</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="self">self</span>.<span class="ident">update_to_version</span>()).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">sr</span>, <span class="ident">uv</span>)<span class="op">|</span> <span class="ident">sr</span>.<span class="ident">matches</span>(<span class="ident">uv</span>)).<span class="ident">next</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>)) <span class="op">&amp;&amp;</span>
-        <span class="self">self</span>.<span class="ident">update_to_version</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">upd_v</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">version</span>.<span class="ident">is_none</span>() <span class="op">||</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">upd_v</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
+        <span class="self">self</span>.<span class="ident">update_to_version</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">upd_v</span><span class="op">|</span> {
+                (<span class="op">!</span><span class="ident">upd_v</span>.<span class="ident">is_prerelease</span>() <span class="op">||</span> <span class="ident">install_prereleases</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)) <span class="op">&amp;&amp;</span> (<span class="self">self</span>.<span class="ident">version</span>.<span class="ident">is_none</span>() <span class="op">||</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">upd_v</span>))
+            })
+            .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
     }
 
     <span class="doccomment">/// Get package version to update to, or `None` if the crate has no newest version (was yanked)</span>

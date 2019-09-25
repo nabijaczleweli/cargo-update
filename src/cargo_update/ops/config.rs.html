@@ -307,6 +307,12 @@
 <span id="307">307</span>
 <span id="308">308</span>
 <span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Write</span> <span class="kw">as</span> <span class="ident">FWrite</span>;
@@ -333,6 +339,8 @@
     <span class="ident">RemoveFeature</span>(<span class="ident">String</span>),
     <span class="doccomment">/// Set debug mode being enabled to the specified value.</span>
     <span class="ident">SetDebugMode</span>(<span class="ident">bool</span>),
+    <span class="doccomment">/// Set allowing to install prereleases to the specified value.</span>
+    <span class="ident">SetInstallPrereleases</span>(<span class="ident">bool</span>),
     <span class="doccomment">/// Constrain the installed to the specified one.</span>
     <span class="ident">SetTargetVersion</span>(<span class="ident">VersionReq</span>),
     <span class="doccomment">/// Always install latest package version.</span>
@@ -368,7 +376,9 @@
     <span class="kw">pub</span> <span class="ident">features</span>: <span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Whether to compile in debug mode.</span>
     <span class="kw">pub</span> <span class="ident">debug</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Whether to compile in debug mode.</span>
+    <span class="doccomment">/// Whether to install pre-release versions.</span>
+    <span class="kw">pub</span> <span class="ident">install_prereleases</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Versions to constrain to.</span>
     <span class="kw">pub</span> <span class="ident">target_version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VersionReq</span><span class="op">&gt;</span>,
 }
 
@@ -510,6 +520,7 @@
                 <span class="self">self</span>.<span class="ident">features</span>.<span class="ident">remove</span>(<span class="ident">feat</span>);
             }
             <span class="ident">ConfigOperation</span>::<span class="ident">SetDebugMode</span>(<span class="ident">d</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">debug</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">d</span>),
+            <span class="ident">ConfigOperation</span>::<span class="ident">SetInstallPrereleases</span>(<span class="ident">pr</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">install_prereleases</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">pr</span>),
             <span class="ident">ConfigOperation</span>::<span class="ident">SetTargetVersion</span>(<span class="kw-2">ref</span> <span class="ident">vr</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">target_version</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">vr</span>.<span class="ident">clone</span>()),
             <span class="ident">ConfigOperation</span>::<span class="ident">RemoveTargetVersion</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">target_version</span> <span class="op">=</span> <span class="prelude-val">None</span>,
         }
@@ -613,6 +624,7 @@
             <span class="ident">default_features</span>: <span class="bool-val">true</span>,
             <span class="ident">features</span>: <span class="ident">BTreeSet</span>::<span class="ident">new</span>(),
             <span class="ident">debug</span>: <span class="prelude-val">None</span>,
+            <span class="ident">install_prereleases</span>: <span class="prelude-val">None</span>,
             <span class="ident">target_version</span>: <span class="prelude-val">None</span>,
         }
     }
