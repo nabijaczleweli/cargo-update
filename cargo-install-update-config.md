@@ -50,6 +50,14 @@ See cargo-install-update(1) for general information.
 
     Compile in release mode (default).
 
+  --install-prereleases
+
+    Install version even if it's a prerelease.
+
+  --no-install-prereleases
+
+    Don't update to prerelease versions (default).
+
   -v --version [VERSION_REQ]
 
     Require a cargo-compatible version range not to update beyond.
