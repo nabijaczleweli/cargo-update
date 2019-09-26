@@ -251,6 +251,10 @@
 <span id="251">251</span>
 <span id="252">252</span>
 <span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Option parsing and management.</span>
 <span class="doccomment">//!</span>
@@ -292,6 +296,8 @@
     <span class="kw">pub</span> <span class="ident">force</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Update git packages too (it&#39;s expensive). Default: `false`</span>
     <span class="kw">pub</span> <span class="ident">update_git</span>: <span class="ident">bool</span>,
+    <span class="doccomment">/// Don&#39;t output messages and pass --quiet to `cargo` subprocesses. Default: `false`</span>
+    <span class="kw">pub</span> <span class="ident">quiet</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Update all packages. Default: empty</span>
     <span class="kw">pub</span> <span class="ident">filter</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PackageFilterElement</span><span class="op">&gt;</span>,
     <span class="doccomment">/// The `.crates.toml` file in the `cargo` home directory.</span>
@@ -335,6 +341,7 @@
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-f --force &#39;Update all packages regardless if they need updating&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-i --allow-no-update &#39;Allow for fresh-installing packages&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-g --git &#39;Also update git packages&#39;&quot;</span>),
+                        <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-q --quiet &#39;No output printed to stdout&#39;&quot;</span>),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;-s --filter=[PACKAGE_FILTER]... &#39;Specify a filter a package must match to be considered&#39;&quot;</span>)
                             .<span class="ident">validator</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">PackageFilterElement</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())),
                         <span class="ident">Arg</span>::<span class="ident">from_usage</span>(<span class="string">&quot;[PACKAGE]... &#39;Packages to update&#39;&quot;</span>)
@@ -368,6 +375,7 @@
             <span class="ident">install</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;allow-no-update&quot;</span>),
             <span class="ident">force</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;force&quot;</span>),
             <span class="ident">update_git</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;git&quot;</span>),
+            <span class="ident">quiet</span>: <span class="ident">matches</span>.<span class="ident">is_present</span>(<span class="string">&quot;quiet&quot;</span>),
             <span class="ident">filter</span>: <span class="ident">matches</span>.<span class="ident">values_of</span>(<span class="string">&quot;filter&quot;</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">pfs</span><span class="op">|</span> <span class="ident">pfs</span>.<span class="ident">flat_map</span>(<span class="ident">PackageFilterElement</span>::<span class="ident">parse</span>).<span class="ident">collect</span>()).<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="macro">vec</span><span class="macro">!</span>[]),
             <span class="ident">crates_file</span>: <span class="kw">match</span> <span class="ident">matches</span>.<span class="ident">value_of</span>(<span class="string">&quot;cargo-dir&quot;</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">dir</span>) <span class="op">=&gt;</span> (<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}/.crates.toml&quot;</span>, <span class="ident">dir</span>), <span class="ident">fs</span>::<span class="ident">canonicalize</span>(<span class="ident">dir</span>).<span class="ident">unwrap</span>().<span class="ident">join</span>(<span class="string">&quot;.crates.toml&quot;</span>)),
