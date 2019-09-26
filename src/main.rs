@@ -68,20 +68,20 @@ fn actual_main() -> Result<(), i32> {
 
     let registry_url = cargo_update::ops::get_index_url(&crates_file);
     let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1, Some(&registry_url)).map_err(|e| {
-            println!("Couldn't get package repository: {}.", e);
+            eprintln!("Couldn't get package repository: {}.", e);
             2
         })?;
     let mut registry_repo = Repository::open(&registry).map_err(|_| {
-            println!("Failed to open registry repository at {}.", registry.display());
+            eprintln!("Failed to open registry repository at {}.", registry.display());
             2
         })?;
     cargo_update::ops::update_index(&mut registry_repo, &registry_url, http_proxy.as_ref().map(String::as_str), &mut stdout()).map_err(|e| {
-            println!("Failed to update index repository: {}.", e);
+            eprintln!("Failed to update index repository: {}.", e);
             2
         })?;
     let latest_registry = registry_repo.revparse_single("origin/master")
         .map_err(|_| {
-            println!("Failed to read master branch of registry repository at {}.", registry.display());
+            eprintln!("Failed to read master branch of registry repository at {}.", registry.display());
             2
         })?;
 
@@ -89,7 +89,7 @@ fn actual_main() -> Result<(), i32> {
         package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(), &registry_repo);
     }
 
-    {
+    if !opts.quiet {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
         for (package, package_target_version, package_install_prereleases) in
@@ -143,13 +143,15 @@ fn actual_main() -> Result<(), i32> {
         if !packages.is_empty() {
             let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
                 .map(|package| -> Result<(), (i32, String)> {
-                    println!("{} {}",
-                             if package.version.is_some() {
-                                 "Updating"
-                             } else {
-                                 "Installing"
-                             },
-                             package.name);
+                    if !opts.quiet {
+                        println!("{} {}",
+                                 if package.version.is_some() {
+                                     "Updating"
+                                 } else {
+                                     "Installing"
+                                 },
+                                 package.name);
+                    }
 
                     if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
                         save_cargo_update_exec(package.version.as_ref().unwrap());
@@ -158,6 +160,7 @@ fn actual_main() -> Result<(), i32> {
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
                             Command::new("cargo")
                                 .args(&cfg.cargo_args()[..])
+                                .args(if opts.quiet { Some("--quiet") } else { None })
                                 .arg("--vers")
                                 .arg(if let Some(tv) = cfg.target_version.as_ref() {
                                     tv.to_string()
@@ -170,6 +173,7 @@ fn actual_main() -> Result<(), i32> {
                             Command::new("cargo")
                                 .arg("install")
                                 .arg("-f")
+                                .args(if opts.quiet { Some("--quiet") } else { None })
                                 .arg("--vers")
                                 .arg(package.update_to_version().unwrap().to_string())
                                 .arg(&package.name)
@@ -198,18 +202,20 @@ fn actual_main() -> Result<(), i32> {
 
             success_n_global += success_n;
 
-            println!();
-            println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
+            if !opts.quiet {
+                println!();
+                println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
+            }
             if !errored.is_empty() && result.is_some() {
-                print!("Failed to update ");
+                eprint!("Failed to update ");
                 for (i, e) in errored.iter().enumerate() {
                     if i != 0 {
-                        print!(", ");
+                        eprint!(", ");
                     }
-                    print!("{}", e);
+                    eprint!("{}", e);
                 }
-                println!(".");
-                println!();
+                eprintln!(".");
+                eprintln!();
 
                 if opts.update_git {
                     errored_global = errored;
@@ -219,7 +225,9 @@ fn actual_main() -> Result<(), i32> {
                 }
             }
         } else {
-            println!("No packages need updating.");
+            if !opts.quiet {
+                println!("No packages need updating.");
+            }
         }
     }
 
@@ -238,7 +246,7 @@ fn actual_main() -> Result<(), i32> {
             package.pull_version(&opts.temp_dir.1, &git_db_dir, http_proxy.as_ref().map(String::as_str));
         }
 
-        {
+        if !opts.quiet {
             let mut out = TabWriter::new(stdout());
             writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
             for package in packages.iter()
@@ -263,7 +271,9 @@ fn actual_main() -> Result<(), i32> {
             if !packages.is_empty() {
                 let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
                     .map(|package| -> Result<(), (i32, String)> {
-                        println!("Updating {} from {}", package.name, package.url);
+                        if !opts.quiet {
+                            println!("Updating {} from {}", package.name, package.url);
+                        }
 
                         if cfg!(target_os = "windows") && package.name == "cargo-update" {
                             save_cargo_update_exec(&package.id.to_string());
@@ -272,6 +282,7 @@ fn actual_main() -> Result<(), i32> {
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
                                 let mut cmd = Command::new("cargo");
                                 cmd.args(&cfg.cargo_args()[..])
+                                    .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
                                     .arg(&package.name);
@@ -283,6 +294,7 @@ fn actual_main() -> Result<(), i32> {
                                 let mut cmd = Command::new("cargo");
                                 cmd.arg("install")
                                     .arg("-f")
+                                    .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
                                     .arg(&package.name);
@@ -314,18 +326,20 @@ fn actual_main() -> Result<(), i32> {
 
                 success_n_global += success_n;
 
-                println!();
-                println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
+                if !opts.quiet {
+                    println!();
+                    println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
+                }
                 if !errored.is_empty() && result.is_some() {
-                    print!("Failed to update ");
+                    eprint!("Failed to update ");
                     for (i, e) in errored.iter().enumerate() {
                         if i != 0 {
-                            print!(", ");
+                            eprint!(", ");
                         }
-                        print!("{}", e);
+                        eprint!("{}", e);
                     }
-                    println!(".");
-                    println!();
+                    eprintln!(".");
+                    eprintln!();
 
                     errored_global.extend(errored);
 
@@ -334,23 +348,27 @@ fn actual_main() -> Result<(), i32> {
                     }
                 }
             } else {
-                println!("No git packages need updating.");
+                if !opts.quiet {
+                    println!("No git packages need updating.");
+                }
             }
         }
     }
 
     if opts.update {
-        println!("Overall updated {} package{}.", success_n_global, if success_n_global == 1 { "" } else { "s" });
+        if !opts.quiet {
+            println!("Overall updated {} package{}.", success_n_global, if success_n_global == 1 { "" } else { "s" });
+        }
 
         if !errored_global.is_empty() && result_global.is_some() {
-            print!("Overall failed to update ");
+            eprint!("Overall failed to update ");
             for (i, e) in errored_global.iter().enumerate() {
                 if i != 0 {
-                    print!(", ");
+                    eprint!(", ");
                 }
-                print!("{}", e);
+                eprint!("{}", e);
             }
-            println!(".");
+            eprintln!(".");
 
             return Err(result_global.unwrap());
         }
