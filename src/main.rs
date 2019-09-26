@@ -58,8 +58,10 @@ fn actual_main() -> Result<(), i32> {
             }
         }
         (false, true) => {
-            panic!("No packages to update and -a not specified, this should've been caught by option parser \
-                    (please report to http://github.com/nabijaczleweli/cargo-update)")
+            if opts.update {
+                panic!("No packages to update and neither --list nor --all specified, this should've been caught by option parser\
+                        (please report to http://github.com/nabijaczleweli/cargo-update)")
+            }
         }
         (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install, &installed_git_packages),
     }
@@ -168,9 +170,9 @@ fn actual_main() -> Result<(), i32> {
                             Command::new("cargo")
                                 .arg("install")
                                 .arg("-f")
-                                .arg(&package.name)
                                 .arg("--vers")
                                 .arg(package.update_to_version().unwrap().to_string())
+                                .arg(&package.name)
                                 .status()
                         }
                         .unwrap();

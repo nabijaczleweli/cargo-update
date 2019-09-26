@@ -45,6 +45,8 @@ Exit values and possible errors:
 
     Don't update any packages, just list them.
 
+    If PACKAGE is empty, act as if --all was specified.
+
   -f --force
 
     Update all packages, regardless of whether they need to be version-wise.

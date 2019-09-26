@@ -77,7 +77,7 @@ impl Options {
                         Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
                             .validator(|s| existing_dir_validator("Temporary", &s)),
                         Arg::from_usage("-a --all 'Update all packages'"),
-                        Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update'"),
+                        Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update (all packages by default)'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
                         Arg::from_usage("-g --git 'Also update git packages'"),
@@ -91,9 +91,10 @@ impl Options {
         let matches = matches.subcommand_matches("install-update").unwrap();
 
         let all = matches.is_present("all");
+        let update = !matches.is_present("list");
         let cdir = cargo_dir();
         Options {
-            to_update: match (all, matches.values_of("PACKAGE")) {
+            to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
                     let packages: Vec<_> = pkgs.map(String::from).map(package_parse).map(Result::unwrap).collect();
                     packages.unique_via(|l, r| l.0 == r.0)
@@ -109,7 +110,7 @@ impl Options {
                 }
             },
             all: all,
-            update: !matches.is_present("list"),
+            update: update,
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
             update_git: matches.is_present("git"),
