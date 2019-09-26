@@ -98,10 +98,11 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Tatsuyuki Ishi &lt;<ishitatsuyuki@gmail.com>&gt;,
            Tom Prince &lt;<tom.prince@twistedmatrix.com>&gt;,
            Mateusz Mikuła &lt;<mati865@gmail.com>&gt;,
-           sinkuu &lt;<sinkuupump@gmail.com>&gt;
-           Alex Burka &lt;<aburka@seas.upenn.edu>&gt;
-           Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;
-       and Daniel Holbert &lt;<dholbert@cs.stanford.edu>&gt;
+           sinkuu &lt;<sinkuupump@gmail.com>&gt;,
+           Alex Burka &lt;<aburka@seas.upenn.edu>&gt;,
+           Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;,
+           Daniel Holbert &lt;<dholbert@cs.stanford.edu>&gt;,
+       and Jonas Bushart &lt;<jonas@bushart.org>&gt;
 
 ## SPECIAL THANKS
 
