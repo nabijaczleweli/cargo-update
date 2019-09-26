@@ -65,6 +65,11 @@ Exit values and possible errors:
 
     Off by default, because it's expensive.
 
+  -q --quiet
+
+    Don't print status messages to stdout
+    and pass down --quiet to cargo subprocesses.
+
   -s --filter <PACKAGE_FILTER>...
 
     Only consider packages matching all filters.
