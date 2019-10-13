@@ -4,8 +4,8 @@ extern crate lazysort;
 extern crate regex;
 extern crate git2;
 
+use std::io::{Write, stdout, sink};
 use std::process::{Command, exit};
-use std::io::{Write, stdout};
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
@@ -75,7 +75,14 @@ fn actual_main() -> Result<(), i32> {
             eprintln!("Failed to open registry repository at {}.", registry.display());
             2
         })?;
-    cargo_update::ops::update_index(&mut registry_repo, &registry_url, http_proxy.as_ref().map(String::as_str), &mut stdout()).map_err(|e| {
+    cargo_update::ops::update_index(&mut registry_repo,
+                                    &registry_url,
+                                    http_proxy.as_ref().map(String::as_str),
+                                    &mut if !opts.quiet {
+                                        Box::new(stdout()) as Box<dyn Write>
+                                    } else {
+                                        Box::new(sink()) as Box<dyn Write>
+                                    }).map_err(|e| {
             eprintln!("Failed to update index repository: {}.", e);
             2
         })?;
@@ -183,7 +190,9 @@ fn actual_main() -> Result<(), i32> {
                         }
                         .unwrap();
 
-                    println!();
+                    if !opts.quiet {
+                        println!();
+                    }
                     if !install_res.success() {
                         if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
                             restore_cargo_update_exec(package.version.as_ref().unwrap());
@@ -307,7 +316,9 @@ fn actual_main() -> Result<(), i32> {
                             }
                             .unwrap();
 
-                        println!();
+                        if !opts.quiet {
+                            println!();
+                        }
                         if !install_res.success() {
                             if cfg!(target_os = "windows") && package.name == "cargo-update" {
                                 restore_cargo_update_exec(&package.id.to_string());
