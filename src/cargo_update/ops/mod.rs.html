@@ -1032,6 +1032,10 @@
 <span id="1032">1032</span>
 <span id="1033">1033</span>
 <span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
@@ -1219,11 +1223,12 @@
     }
 
     <span class="doccomment">/// Download the version list for this crate off the specified repository tree.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pull_version</span><span class="op">&lt;</span><span class="lifetime">&#39;t</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">registry</span>: <span class="kw-2">&amp;</span><span class="ident">Tree</span><span class="op">&lt;</span><span class="lifetime">&#39;t</span><span class="op">&gt;</span>, <span class="ident">registry_parent</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;t</span> <span class="ident">Repository</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pull_version</span><span class="op">&lt;</span><span class="lifetime">&#39;t</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">registry</span>: <span class="kw-2">&amp;</span><span class="ident">Tree</span><span class="op">&lt;</span><span class="lifetime">&#39;t</span><span class="op">&gt;</span>, <span class="ident">registry_parent</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;t</span> <span class="ident">Repository</span>, <span class="ident">install_prereleases</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">vers</span> <span class="op">=</span> <span class="ident">crate_versions</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">&amp;</span><span class="ident">find_package_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>, <span class="ident">registry</span>, <span class="ident">registry_parent</span>)
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;package {} not found&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>))
-            .<span class="ident">unwrap</span>()
-                                            [..]);
+                                      .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;package {} not found&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>))
+                                      .<span class="ident">unwrap</span>()
+                                            [..],
+                                  <span class="ident">install_prereleases</span>);
         <span class="self">self</span>.<span class="ident">newest_version</span> <span class="op">=</span> <span class="ident">vers</span>.<span class="ident">into_iter</span>().<span class="ident">max</span>();
     }
 
@@ -1693,24 +1698,27 @@
 <span class="doccomment">/// # use cargo_update::ops::crate_versions;</span>
 <span class="doccomment">/// # use std::fs::File;</span>
 <span class="doccomment">/// # let desc_path = &quot;test-data/checksums-versions.json&quot;;</span>
-<span class="doccomment">/// let versions = crate_versions(&amp;mut File::open(desc_path).unwrap());</span>
+<span class="doccomment">/// let versions = crate_versions(&amp;mut File::open(desc_path).unwrap(), None);</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// println!(&quot;Released versions of checksums:&quot;);</span>
 <span class="doccomment">/// for ver in &amp;versions {</span>
 <span class="doccomment">///     println!(&quot;  {}&quot;, ver);</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crate_versions</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">package_desc</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crate_versions</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">package_desc</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">install_prereleases</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
     <span class="ident">package_desc</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>).<span class="ident">unwrap</span>();
-    <span class="ident">crate_versions_impl</span>(<span class="ident">buf</span>)
+    <span class="ident">crate_versions_impl</span>(<span class="ident">buf</span>, <span class="ident">install_prereleases</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">crate_versions_impl</span>(<span class="ident">buf</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">crate_versions_impl</span>(<span class="ident">buf</span>: <span class="ident">String</span>, <span class="ident">install_prereleases</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">install_prereleases</span> <span class="op">=</span> <span class="ident">install_prereleases</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>);
+
     <span class="ident">buf</span>.<span class="ident">lines</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">json</span>::<span class="ident">parse</span>(<span class="ident">p</span>).<span class="ident">unwrap</span>())
         .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">j</span><span class="op">|</span> <span class="op">!</span><span class="ident">j</span>[<span class="string">&quot;yanked&quot;</span>].<span class="ident">as_bool</span>().<span class="ident">unwrap</span>())
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">j</span><span class="op">|</span> <span class="ident">Semver</span>::<span class="ident">parse</span>(<span class="ident">j</span>[<span class="string">&quot;vers&quot;</span>].<span class="ident">as_str</span>().<span class="ident">unwrap</span>()).<span class="ident">unwrap</span>())
+        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="op">!</span><span class="ident">v</span>.<span class="ident">is_prerelease</span>() <span class="op">||</span> <span class="ident">install_prereleases</span>)
         .<span class="ident">collect</span>()
 }
 
