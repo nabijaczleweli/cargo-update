@@ -86,7 +86,9 @@ fn actual_main() -> Result<(), i32> {
         })?;
 
     for package in &mut packages {
-        package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(), &registry_repo);
+        package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(),
+                             &registry_repo,
+                             configuration.get(&package.name).and_then(|c| c.install_prereleases));
     }
 
     if !opts.quiet {

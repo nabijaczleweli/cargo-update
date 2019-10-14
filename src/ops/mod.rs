@@ -184,11 +184,12 @@ impl MainRepoPackage {
     }
 
     /// Download the version list for this crate off the specified repository tree.
-    pub fn pull_version<'t>(&mut self, registry: &Tree<'t>, registry_parent: &'t Repository) {
+    pub fn pull_version<'t>(&mut self, registry: &Tree<'t>, registry_parent: &'t Repository, install_prereleases: Option<bool>) {
         let vers = crate_versions(&mut &find_package_data(&self.name, registry, registry_parent)
-            .ok_or_else(|| format!("package {} not found", self.name))
-            .unwrap()
-                                            [..]);
+                                      .ok_or_else(|| format!("package {} not found", self.name))
+                                      .unwrap()
+                                            [..],
+                                  install_prereleases);
         self.newest_version = vers.into_iter().max();
     }
 
@@ -658,24 +659,27 @@ pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, O
 /// # use cargo_update::ops::crate_versions;
 /// # use std::fs::File;
 /// # let desc_path = "test-data/checksums-versions.json";
-/// let versions = crate_versions(&mut File::open(desc_path).unwrap());
+/// let versions = crate_versions(&mut File::open(desc_path).unwrap(), None);
 ///
 /// println!("Released versions of checksums:");
 /// for ver in &versions {
 ///     println!("  {}", ver);
 /// }
 /// ```
-pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
+pub fn crate_versions<R: Read>(package_desc: &mut R, install_prereleases: Option<bool>) -> Vec<Semver> {
     let mut buf = String::new();
     package_desc.read_to_string(&mut buf).unwrap();
-    crate_versions_impl(buf)
+    crate_versions_impl(buf, install_prereleases)
 }
 
-fn crate_versions_impl(buf: String) -> Vec<Semver> {
+fn crate_versions_impl(buf: String, install_prereleases: Option<bool>) -> Vec<Semver> {
+    let install_prereleases = install_prereleases.unwrap_or(false);
+
     buf.lines()
         .map(|p| json::parse(p).unwrap())
         .filter(|j| !j["yanked"].as_bool().unwrap())
         .map(|j| Semver::parse(j["vers"].as_str().unwrap()).unwrap())
+        .filter(|v| !v.is_prerelease() || install_prereleases)
         .collect()
 }
 

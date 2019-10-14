@@ -22,7 +22,7 @@ fn intersect_packages() {
 
 #[test]
 fn crate_versions() {
-    assert_eq!(ops::crate_versions(&mut File::open("test-data/checksums-versions.json").unwrap()),
+    assert_eq!(ops::crate_versions(&mut File::open("test-data/checksums-versions.json").unwrap(), None),
                vec![Semver::parse("0.2.0").unwrap(),
                     Semver::parse("0.2.1").unwrap(),
                     Semver::parse("0.3.0").unwrap(),
