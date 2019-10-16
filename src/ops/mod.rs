@@ -12,8 +12,8 @@ use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
 use std::io::{Write, Read};
 use std::time::SystemTime;
+use std::{cmp, env, mem};
 use std::borrow::Cow;
-use std::{cmp, env};
 use regex::Regex;
 use url::Url;
 use toml;
@@ -51,6 +51,7 @@ lazy_static! {
 ///                name: "racer".to_string(),
 ///                version: Some(Semver::parse("1.2.10").unwrap()),
 ///                newest_version: None,
+///                alternative_version: None,
 ///                max_version: None,
 ///            });
 ///
@@ -73,6 +74,8 @@ pub struct MainRepoPackage {
     ///
     /// `None` by default, acquire via `MainRepoPackage::pull_version()`.
     pub newest_version: Option<Semver>,
+    /// If present, the alternative newest version not chosen because of unfulfilled requirements like (not) being a prerelease.
+    pub alternative_version: Option<Semver>,
     /// User-bounded maximum version to update up to.
     pub max_version: Option<Semver>,
 }
@@ -151,6 +154,7 @@ impl MainRepoPackage {
     ///                name: "racer".to_string(),
     ///                version: Some(Semver::parse("1.2.10").unwrap()),
     ///                newest_version: None,
+    ///                alternative_version: None,
     ///                max_version: None,
     ///            });
     ///
@@ -160,6 +164,7 @@ impl MainRepoPackage {
     ///                name: "cargo-outdated".to_string(),
     ///                version: Some(Semver::parse("0.2.0").unwrap()),
     ///                newest_version: None,
+    ///                alternative_version: None,
     ///                max_version: None,
     ///            });
     /// # }
@@ -178,19 +183,33 @@ impl MainRepoPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
                 version: Some(Semver::parse(c.get(2).unwrap().as_str()).unwrap()),
                 newest_version: None,
+                alternative_version: None,
                 max_version: None,
             }
         })
     }
 
-    /// Download the version list for this crate off the specified repository tree.
+    /// Download the version list for this crate off the specified repository tree and set the latest and alternative versions.
     pub fn pull_version<'t>(&mut self, registry: &Tree<'t>, registry_parent: &'t Repository, install_prereleases: Option<bool>) {
-        let vers = crate_versions(&mut &find_package_data(&self.name, registry, registry_parent)
-                                      .ok_or_else(|| format!("package {} not found", self.name))
-                                      .unwrap()
-                                            [..],
-                                  install_prereleases);
-        self.newest_version = vers.into_iter().max();
+        let mut vers =
+            crate_versions(&mut &find_package_data(&self.name, registry, registry_parent).ok_or_else(|| format!("package {} not found", self.name)).unwrap()
+                                     [..]);
+        vers.sort();
+
+        self.newest_version = None;
+        self.alternative_version = None;
+
+        let mut vers = vers.into_iter().rev();
+        if let Some(newest) = vers.next() {
+            self.newest_version = Some(newest);
+
+            if self.newest_version.as_ref().unwrap().is_prerelease() && !install_prereleases.unwrap_or(false) {
+                if let Some(newest_nonpre) = vers.find(|v| !v.is_prerelease()) {
+                    mem::swap(&mut self.alternative_version, &mut self.newest_version);
+                    self.newest_version = Some(newest_nonpre);
+                }
+            }
+        }
     }
 
     /// Check whether this package needs to be installed
@@ -208,24 +227,28 @@ impl MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(None, None));
     /// assert!(MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(None, None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(None, None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: None,
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(None, None));
     ///
@@ -234,18 +257,21 @@ impl MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("1.7.3").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(Some(&req), None));
     /// assert!(MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(Some(&req), None));
     /// assert!(!MainRepoPackage {
     ///             name: "racer".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(Some(&req), None));
     ///
@@ -253,21 +279,24 @@ impl MainRepoPackage {
     ///             name: "cargo-audit".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(Some(&req), None));
     /// assert!(MainRepoPackage {
     ///             name: "cargo-audit".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
+    ///             alternative_version: None,
     ///             max_version: None,
     ///         }.needs_update(Some(&req), Some(true)));
     /// # }
     /// ```
     pub fn needs_update(&self, req: Option<&SemverReq>, install_prereleases: Option<bool>) -> bool {
+        let update_to_version = self.update_to_version();
+
         (req.into_iter().zip(self.version.as_ref()).map(|(sr, cv)| !sr.matches(cv)).next().unwrap_or(true) ||
-         req.into_iter().zip(self.update_to_version()).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
-        self.update_to_version()
-            .map(|upd_v| {
+         req.into_iter().zip(update_to_version).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
+        update_to_version.map(|upd_v| {
                 (!upd_v.is_prerelease() || install_prereleases.unwrap_or(false)) && (self.version.is_none() || (*self.version.as_ref().unwrap() < *upd_v))
             })
             .unwrap_or(false)
@@ -287,6 +316,7 @@ impl MainRepoPackage {
     ///                name: "racer".to_string(),
     ///                version: Some(Semver::parse("1.7.2").unwrap()),
     ///                newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///                alternative_version: None,
     ///                max_version: Some(Semver::parse("2.0.5").unwrap()),
     ///            }.update_to_version(),
     ///            Some(&Semver::parse("2.0.5").unwrap()));
@@ -294,6 +324,7 @@ impl MainRepoPackage {
     ///                name: "gutenberg".to_string(),
     ///                version: Some(Semver::parse("0.0.7").unwrap()),
     ///                newest_version: None,
+    ///                alternative_version: None,
     ///                max_version: None,
     ///            }.update_to_version(),
     ///            None);
@@ -645,6 +676,7 @@ pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, O
                     name: p.0.clone(),
                     version: None,
                     newest_version: None,
+                    alternative_version: None,
                     max_version: p.1.clone(),
                 }
             }))
@@ -659,27 +691,24 @@ pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, O
 /// # use cargo_update::ops::crate_versions;
 /// # use std::fs::File;
 /// # let desc_path = "test-data/checksums-versions.json";
-/// let versions = crate_versions(&mut File::open(desc_path).unwrap(), None);
+/// let versions = crate_versions(&mut File::open(desc_path).unwrap());
 ///
 /// println!("Released versions of checksums:");
 /// for ver in &versions {
 ///     println!("  {}", ver);
 /// }
 /// ```
-pub fn crate_versions<R: Read>(package_desc: &mut R, install_prereleases: Option<bool>) -> Vec<Semver> {
+pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
     let mut buf = String::new();
     package_desc.read_to_string(&mut buf).unwrap();
-    crate_versions_impl(buf, install_prereleases)
+    crate_versions_impl(buf)
 }
 
-fn crate_versions_impl(buf: String, install_prereleases: Option<bool>) -> Vec<Semver> {
-    let install_prereleases = install_prereleases.unwrap_or(false);
-
+fn crate_versions_impl(buf: String) -> Vec<Semver> {
     buf.lines()
         .map(|p| json::parse(p).unwrap())
         .filter(|j| !j["yanked"].as_bool().unwrap())
         .map(|j| Semver::parse(j["vers"].as_str().unwrap()).unwrap())
-        .filter(|v| !v.is_prerelease() || install_prereleases)
         .collect()
 }
 

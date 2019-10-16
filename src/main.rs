@@ -111,16 +111,24 @@ fn actual_main() -> Result<(), i32> {
                     (!lhs.needs_update(lhstv, lhsip), &lhs.name).cmp(&(!rhs.needs_update(rhstv, rhsip), &rhs.name))
                 }) {
             write!(out, "{}\t", package.name).unwrap();
+
             if let Some(ref v) = package.version {
                 write!(out, "v{}", v).unwrap();
+            } else {
+                write!(out, "No").unwrap();
             }
+
             if let Some(tv) = package_target_version {
                 write!(out, "\t{}", tv).unwrap();
             } else if let Some(upd_v) = package.update_to_version() {
                 write!(out, "\tv{}", upd_v).unwrap();
+                if let Some(alt_v) = package.alternative_version.as_ref() {
+                    write!(out, " (v{} available)", alt_v).unwrap();
+                }
             } else {
                 write!(out, "\tN/A").unwrap();
             }
+
             writeln!(out,
                      "\t{}",
                      if package.needs_update(package_target_version, package_install_prereleases) {

@@ -9,6 +9,7 @@ fn main_repository() {
                    name: "cargo-count".to_string(),
                    version: Some(Semver::parse("0.2.2").unwrap()),
                    newest_version: None,
+                   alternative_version: None,
                    max_version: None,
                }));
 }
