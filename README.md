@@ -41,6 +41,40 @@ On Windows the following strategy is applied:
   * Add the current version to the current executable's extension
   * Create an empty file in place of the just-renamed file (this way `cargo install` will "replace" it and not duplicate the entry in `.crates.toml`)
 
+### Troubleshooting
+
+Some crates, like `clippy` and `rustfmt`, have moved from Crates.io to being a `rustup` component.
+If you'd installed them beforehand, then added them via `rustup component`, they might not have been removed from the list of crates installed via `cargo install`,
+  and you [might come across errors](https://github.com/nabijaczleweli/cargo-update/issues/118) such as
+```
+$ cargo install-update -a
+Updating registry 'https://github.com/rust-lang/crates.io-index'
+
+Package          Installed  Latest    Needs update
+clippy           v0.0.179   v0.0.302  Yes
+.....
+
+Updating clippy
+    Updating crates.io index
+  Installing clippy v0.0.302
+   Compiling clippy v0.0.302
+error: failed to compile `clippy v0.0.302`, intermediate artifacts can be found at `/tmp/cargo-installxHfj2y`
+
+Caused by:
+  failed to run custom build command for `clippy v0.0.302`
+
+Caused by:
+  process didn't exit successfully: `/tmp/cargo-installxHfj2y/release/build/clippy-ffeedc2f188020a4/build-script-build` (exit code: 1)
+--- stderr
+
+error: Clippy is no longer available via crates.io
+
+help: please run `rustup component add clippy-preview` instead
+```
+
+In that case, run `cargo install --list` to verify that they're still there and `cargo uninstall` them,
+  which will deregister the `cargo` versions and leave you with the `rustup` ones.
+
 ## Special thanks
 
 To all who support further development on Patreon, in particular:
