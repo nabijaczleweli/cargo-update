@@ -93,9 +93,10 @@ fn actual_main() -> Result<(), i32> {
         })?;
 
     for package in &mut packages {
+        let package_name = &package.name.clone();
         package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(),
                              &registry_repo,
-                             configuration.get(&package.name).and_then(|c| c.install_prereleases));
+                             configuration.get(package_name).and_then(|c| c.install_prereleases));
     }
 
     if !opts.quiet {
