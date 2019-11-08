@@ -41,5 +41,4 @@ implementors["vec_map"] = [{text:"impl&lt;V&gt; Freeze for <a class=\"struct\" h
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

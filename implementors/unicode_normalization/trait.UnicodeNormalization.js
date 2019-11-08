@@ -6,5 +6,4 @@ implementors["unicode_normalization"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

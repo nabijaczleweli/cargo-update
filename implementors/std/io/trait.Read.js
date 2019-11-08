@@ -6,5 +6,4 @@ implementors["git2"] = [{text:"impl&lt;'repo&gt; <a class=\"trait\" href=\"https
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

@@ -6,5 +6,4 @@ implementors["unicode_width"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

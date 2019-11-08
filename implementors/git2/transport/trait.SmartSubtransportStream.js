@@ -6,5 +6,4 @@ implementors["git2"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

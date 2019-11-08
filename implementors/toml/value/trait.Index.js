@@ -6,5 +6,4 @@ implementors["toml"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

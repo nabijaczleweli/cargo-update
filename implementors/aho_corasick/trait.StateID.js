@@ -6,5 +6,4 @@ implementors["aho_corasick"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

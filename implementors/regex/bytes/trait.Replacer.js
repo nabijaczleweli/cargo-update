@@ -6,5 +6,4 @@ implementors["regex"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

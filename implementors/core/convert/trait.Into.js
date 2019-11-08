@@ -7,5 +7,4 @@ implementors["unicode_bidi"] = [{text:"impl <a class=\"trait\" href=\"https://do
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

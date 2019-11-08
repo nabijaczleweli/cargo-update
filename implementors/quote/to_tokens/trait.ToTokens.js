@@ -6,5 +6,4 @@ implementors["syn"] = [{text:"impl <a class=\"trait\" href=\"quote/to_tokens/tra
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

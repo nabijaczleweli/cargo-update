@@ -8,5 +8,4 @@ implementors["tabwriter"] = [{text:"impl&lt;W:&nbsp;<a class=\"trait\" href=\"ht
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

@@ -27,5 +27,4 @@ implementors["vec_map"] = [{text:"impl&lt;V:&nbsp;<a class=\"trait\" href=\"http
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

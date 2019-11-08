@@ -6,5 +6,4 @@ implementors["smallvec"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

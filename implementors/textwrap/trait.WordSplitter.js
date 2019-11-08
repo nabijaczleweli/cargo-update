@@ -6,5 +6,4 @@ implementors["textwrap"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

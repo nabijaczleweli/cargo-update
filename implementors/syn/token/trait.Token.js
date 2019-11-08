@@ -6,5 +6,4 @@ implementors["syn"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()

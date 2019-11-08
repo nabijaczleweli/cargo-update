@@ -6,5 +6,4 @@ implementors["array_tool"] = [];
             } else {
                 window.pending_implementors = implementors;
             }
-        
-})()
+        })()
