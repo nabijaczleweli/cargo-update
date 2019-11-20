@@ -16,6 +16,11 @@ Updates packages from the main repository and git repositories.
 
 See cargo-install-update-config(1) for further configuring updates.
 
+The `CARGO_INSTALL_OPTS` environment variable can be set,
+containing options to forward to the end of `cargo install` invocations'
+argument lists.
+Note, that cargo-install-update-config(1) is preferred in the general case.
+
 Exit values and possible errors:
 
     -1 - cargo subprocess was terminated by a signal (Linux-only)
