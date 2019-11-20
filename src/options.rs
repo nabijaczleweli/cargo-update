@@ -15,12 +15,12 @@
 use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{self, AppSettings, SubCommand, App, Arg};
+use std::ffi::{OsString, OsStr};
 use array_tool::vec::Uniq;
 use std::path::PathBuf;
 use std::str::FromStr;
 use dirs::home_dir;
-use std::env;
-use std::fs;
+use std::{env, fs};
 
 
 /// Representation of the application's all configurable values.
@@ -49,6 +49,8 @@ pub struct Options {
     pub cargo_dir: (String, PathBuf),
     /// The temporary directory to clone git repositories to. Default: `"$TEMP/cargo-update"`
     pub temp_dir: (String, PathBuf),
+    /// Arbitrary arguments to forward to `cargo install`, acquired from `$CARGO_INSTALL_OPTS`. Default: `[]`
+    pub cargo_install_args: Vec<OsString>,
 }
 
 /// Representation of the config application's all configurable values.
@@ -86,6 +88,13 @@ impl Options {
                         Arg::from_usage("-q --quiet 'No output printed to stdout'"),
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
+                        Arg::with_name("cargo_install_opts")
+                            .long("__cargo_install_opts")
+                            .env("CARGO_INSTALL_OPTS")
+                            .empty_values(false)
+                            .multiple(true)
+                            .value_delimiter(" ")
+                            .hidden(true),
                         Arg::from_usage("[PACKAGE]... 'Packages to update'")
                             .empty_values(false)
                             .min_values(1)
@@ -145,6 +154,7 @@ impl Options {
                          }),
                  temp_pb.join("cargo-update"))
             },
+            cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
         }
     }
 }

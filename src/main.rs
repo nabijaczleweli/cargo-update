@@ -59,7 +59,7 @@ fn actual_main() -> Result<(), i32> {
         }
         (false, true) => {
             if opts.update {
-                panic!("No packages to update and neither --list nor --all specified, this should've been caught by option parser\
+                panic!("No packages to update and neither --list nor --all specified, this should've been caught by option parser \
                         (please report to http://github.com/nabijaczleweli/cargo-update)")
             }
         }
@@ -184,6 +184,7 @@ fn actual_main() -> Result<(), i32> {
                                     package.update_to_version().unwrap().to_string()
                                 })
                                 .arg(&package.name)
+                                .args(&opts.cargo_install_args)
                                 .status()
                         } else {
                             Command::new("cargo")
@@ -193,6 +194,7 @@ fn actual_main() -> Result<(), i32> {
                                 .arg("--vers")
                                 .arg(package.update_to_version().unwrap().to_string())
                                 .arg(&package.name)
+                                .args(&opts.cargo_install_args)
                                 .status()
                         }
                         .unwrap();
@@ -307,7 +309,7 @@ fn actual_main() -> Result<(), i32> {
                                 if let Some(ref b) = package.branch.as_ref() {
                                     cmd.arg("--branch").arg(b);
                                 }
-                                cmd.status()
+                                cmd.args(&opts.cargo_install_args).status()
                             } else {
                                 let mut cmd = Command::new("cargo");
                                 cmd.arg("install")
@@ -319,7 +321,7 @@ fn actual_main() -> Result<(), i32> {
                                 if let Some(ref b) = package.branch.as_ref() {
                                     cmd.arg("--branch").arg(b);
                                 }
-                                cmd.status()
+                                cmd.args(&opts.cargo_install_args).status()
                             }
                             .unwrap();
 
