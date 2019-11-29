@@ -141,7 +141,7 @@ fn actual_main() -> Result<(), i32> {
         out.flush().unwrap();
     }
 
-    let mut success_n_global = 0usize;
+    let mut success_global = vec![];
     let mut errored_global = vec![];
     let mut result_global = None;
 
@@ -157,8 +157,8 @@ fn actual_main() -> Result<(), i32> {
         packages.retain(|pkg| pkg.update_to_version().is_some());
 
         if !packages.is_empty() {
-            let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
-                .map(|package| -> Result<(), (i32, String)> {
+            let (success, errored, result): (Vec<String>, Vec<String>, Option<i32>) = packages.into_iter()
+                .map(|package| -> (String, Result<(), i32>) {
                     if !opts.quiet {
                         println!("{} {}",
                                  if package.version.is_some() {
@@ -207,25 +207,28 @@ fn actual_main() -> Result<(), i32> {
                             restore_cargo_update_exec(package.version.as_ref().unwrap());
                         }
 
-                        Err((install_res.code().unwrap_or(-1), package.name))
+                        (package.name, Err(install_res.code().unwrap_or(-1)))
                     } else {
-                        Ok(())
+                        (package.name, Ok(()))
                     }
                 })
-                .fold((0, vec![], None), |(s, mut e, r), p| match p {
-                    Ok(()) => (s + 1, e, r),
-                    Err((pr, pn)) => {
+                .fold((vec![], vec![], None), |(mut s, mut e, r), (pn, p)| match p {
+                    Ok(()) => {
+                        s.push(pn);
+                        (s, e, r)
+                    }
+                    Err(pr) => {
                         e.push(pn);
                         (s, e, r.or_else(|| Some(pr)))
                     }
                 });
 
-            success_n_global += success_n;
-
             if !opts.quiet {
                 println!();
-                println!("Updated {} package{}.", success_n, if success_n == 1 { "" } else { "s" });
+                println!("Updated {} package{}.", success.len(), if success.len() == 1 { "" } else { "s" });
             }
+            success_global = success;
+
             if !errored.is_empty() && result.is_some() {
                 eprint!("Failed to update ");
                 for (i, e) in errored.iter().enumerate() {
@@ -289,8 +292,8 @@ fn actual_main() -> Result<(), i32> {
             }
 
             if !packages.is_empty() {
-                let (success_n, errored, result): (usize, Vec<String>, Option<i32>) = packages.into_iter()
-                    .map(|package| -> Result<(), (i32, String)> {
+                let (success, errored, result): (Vec<String>, Vec<String>, Option<i32>) = packages.into_iter()
+                    .map(|package| -> (String, Result<(), i32>) {
                         if !opts.quiet {
                             println!("Updating {} from {}", package.name, package.url);
                         }
@@ -333,25 +336,28 @@ fn actual_main() -> Result<(), i32> {
                                 restore_cargo_update_exec(&package.id.to_string());
                             }
 
-                            Err((install_res.code().unwrap_or(-1), package.name))
+                            (package.name, Err(install_res.code().unwrap_or(-1)))
                         } else {
-                            Ok(())
+                            (package.name, Ok(()))
                         }
                     })
-                    .fold((0, vec![], None), |(s, mut e, r), p| match p {
-                        Ok(()) => (s + 1, e, r),
-                        Err((pr, pn)) => {
+                    .fold((vec![], vec![], None), |(mut s, mut e, r), (pn, p)| match p {
+                        Ok(()) => {
+                            s.push(pn);
+                            (s, e, r)
+                        }
+                        Err(pr) => {
                             e.push(pn);
                             (s, e, r.or_else(|| Some(pr)))
                         }
                     });
 
-                success_n_global += success_n;
-
                 if !opts.quiet {
                     println!();
-                    println!("Updated {} git package{}.", success_n, if success_n == 1 { "" } else { "s" });
+                    println!("Updated {} git package{}.", success.len(), if success.len() == 1 { "" } else { "s" });
                 }
+                success_global.extend(success);
+
                 if !errored.is_empty() && result.is_some() {
                     eprint!("Failed to update ");
                     for (i, e) in errored.iter().enumerate() {
@@ -379,11 +385,22 @@ fn actual_main() -> Result<(), i32> {
 
     if opts.update {
         if !opts.quiet {
-            println!("Overall updated {} package{}.", success_n_global, if success_n_global == 1 { "" } else { "s" });
+            print!("Overall updated {} package{}: ",
+                   success_global.len(),
+                   if success_global.len() == 1 { "" } else { "s" });
+            for (i, e) in success_global.iter().enumerate() {
+                if i != 0 {
+                    print!(", ");
+                }
+                print!("{}", e);
+            }
+            println!(".");
         }
 
         if !errored_global.is_empty() && result_global.is_some() {
-            eprint!("Overall failed to update ");
+            eprint!("Overall failed to update {} package{}: ",
+                    errored_global.len(),
+                    if errored_global.len() == 1 { "" } else { "s" });
             for (i, e) in errored_global.iter().enumerate() {
                 if i != 0 {
                     eprint!(", ");
