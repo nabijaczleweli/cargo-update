@@ -14,7 +14,7 @@ Then proceed as usual:
 cargo install cargo-update
 ```
 
-If that doesn't work and you're on Mac, [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/alexcrichton/git2-rs/issues/257). If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
+If that doesn't work and you're on Mac, [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/alexcrichton/git2-rs/issues/257), and [verify that you don't `openssl` installed twice via `brew`](https://github.com/nabijaczleweli/cargo-update/issues/121#issuecomment-570673813). If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
 
 #### Required libraries
 
