@@ -20,6 +20,7 @@ ALIASES["libssh2_sys"] = {};
 ALIASES["libz_sys"] = {};
 ALIASES["log"] = {};
 ALIASES["matches"] = {};
+ALIASES["maybe_uninit"] = {};
 ALIASES["memchr"] = {};
 ALIASES["openssl_probe"] = {};
 ALIASES["openssl_sys"] = {};
