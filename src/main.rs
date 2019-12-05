@@ -385,9 +385,13 @@ fn actual_main() -> Result<(), i32> {
 
     if opts.update {
         if !opts.quiet {
-            print!("Overall updated {} package{}: ",
+            print!("Overall updated {} package{}",
                    success_global.len(),
-                   if success_global.len() == 1 { "" } else { "s" });
+                   match success_global.len() {
+                       0 => "s",
+                       1 => ": ",
+                       _ => "s: ",
+                   });
             for (i, e) in success_global.iter().enumerate() {
                 if i != 0 {
                     print!(", ");
@@ -398,9 +402,13 @@ fn actual_main() -> Result<(), i32> {
         }
 
         if !errored_global.is_empty() && result_global.is_some() {
-            eprint!("Overall failed to update {} package{}: ",
+            eprint!("Overall failed to update {} package{}",
                     errored_global.len(),
-                    if errored_global.len() == 1 { "" } else { "s" });
+                    match errored_global.len() {
+                        0 => "s",
+                        1 => ": ",
+                        _ => "s: ",
+                    });
             for (i, e) in errored_global.iter().enumerate() {
                 if i != 0 {
                     eprint!(", ");
