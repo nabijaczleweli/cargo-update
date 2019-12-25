@@ -412,7 +412,7 @@ impl GitRepoPackage {
         });
 
         let repo = if let Ok(r) = Repository::open(&clone_dir) {
-            // If `Repository::open` is successful, both `clone_dir` exists _and_ points to a valid repository.
+            // If `Repository::open` is successful, both `clone_dir` exists *and* points to a valid repository.
             r.find_remote("origin")
                 .or_else(|_| r.remote_anonymous(&self.url))
                 .and_then(|mut rm| {
@@ -421,8 +421,8 @@ impl GitRepoPackage {
                         cb.credentials(|a, b, c| creds(a, b, c));
 
                         rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
-                        Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
-                        None)
+                                 Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
+                                 None)
                     })
                 })
                 .unwrap();
