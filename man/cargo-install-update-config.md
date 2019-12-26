@@ -102,7 +102,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Alex Burka &lt;<aburka@seas.upenn.edu>&gt;,
            Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;,
            Daniel Holbert &lt;<dholbert@cs.stanford.edu>&gt;,
-       and Jonas Bushart &lt;<jonas@bushart.org>&gt;
+           Harrison Metzger &lt;<harrisonmetz@gmail.com>&gt;,
+       and Benjamin Bannier &lt;<bbannier@gmail.com>&gt;
 
 ## SPECIAL THANKS
 

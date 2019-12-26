@@ -298,7 +298,8 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;,
            Daniel Holbert &lt;<dholbert@cs.stanford.edu>&gt;,
            Jonas Bushart &lt;<jonas@bushart.org>&gt;,
-       and Harrison Metzger &lt;<harrisonmetz@gmail.com>&gt;
+           Harrison Metzger &lt;<harrisonmetz@gmail.com>&gt;,
+       and Benjamin Bannier &lt;<bbannier@gmail.com>&gt;
 
 ## SPECIAL THANKS
 
