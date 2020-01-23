@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["IntoInnerError","An error returned by `into_inner`."],["TabWriter","TabWriter wraps an arbitrary writer and aligns tabbed output."]]});
+initSidebarItems({"enum":[["Alignment","`Alignment` represents how a `TabWriter` should align text within its cell."]],"struct":[["IntoInnerError","An error returned by `into_inner`."],["TabWriter","TabWriter wraps an arbitrary writer and aligns tabbed output."]]});
