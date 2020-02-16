@@ -411,26 +411,31 @@ impl GitRepoPackage {
             temp_dir.join(&self.name)
         });
 
-        let repo = if clone_dir.exists() {
-            let mut r = Repository::open(clone_dir);
-            if let Ok(ref mut r) = r.as_mut() {
-                r.find_remote("origin")
-                    .or_else(|_| r.remote_anonymous(&self.url))
-                    .and_then(|mut rm| {
-                        with_authentication(&self.url, |creds| {
-                            let mut cb = RemoteCallbacks::new();
-                            cb.credentials(|a, b, c| creds(a, b, c));
+        let repo = if let Ok(r) = Repository::open(&clone_dir) {
+            // If `Repository::open` is successful, both `clone_dir` exists _and_ points to a valid repository.
+            r.find_remote("origin")
+                .or_else(|_| r.remote_anonymous(&self.url))
+                .and_then(|mut rm| {
+                    with_authentication(&self.url, |creds| {
+                        let mut cb = RemoteCallbacks::new();
+                        cb.credentials(|a, b, c| creds(a, b, c));
 
-                            rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
-                                     Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
-                                     None)
-                        })
+                        rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
+                        Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
+                        None)
                     })
-                    .unwrap();
-                r.set_head("FETCH_HEAD").unwrap();
-            }
-            r
+                })
+                .unwrap();
+            r.set_head("FETCH_HEAD").unwrap();
+
+            Ok(r)
         } else {
+            // If we could not open the repository either it does not exist, or exists but is invalid.
+            if clone_dir.exists() {
+                // If `clone_dir` exists it must be invalid. Remove it to trigger a fresh clone.
+                fs::remove_dir_all(&clone_dir).unwrap();
+            }
+
             with_authentication(&self.url, |creds| {
                 let mut bldr = git2::build::RepoBuilder::new();
 
