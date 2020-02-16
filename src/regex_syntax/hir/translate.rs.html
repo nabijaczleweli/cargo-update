@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.13/src/hir/translate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>translate.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../regex_syntax/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.14/src/hir/translate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>translate.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../regex_syntax/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -3130,6 +3130,23 @@
 <span id="3130">3130</span>
 <span id="3131">3131</span>
 <span id="3132">3132</span>
+<span id="3133">3133</span>
+<span id="3134">3134</span>
+<span id="3135">3135</span>
+<span id="3136">3136</span>
+<span id="3137">3137</span>
+<span id="3138">3138</span>
+<span id="3139">3139</span>
+<span id="3140">3140</span>
+<span id="3141">3141</span>
+<span id="3142">3142</span>
+<span id="3143">3143</span>
+<span id="3144">3144</span>
+<span id="3145">3145</span>
+<span id="3146">3146</span>
+<span id="3147">3147</span>
+<span id="3148">3148</span>
+<span id="3149">3149</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">/*!
 Defines a translator that converts an `Ast` to an `Hir`.
@@ -3292,18 +3309,19 @@ Defines a translator that converts an `Ast` to an `Hir`.
     <span class="doccomment">/// indicated by parentheses (including non-capturing groups). It is popped</span>
     <span class="doccomment">/// upon leaving a group.</span>
     <span class="ident">Group</span> {
-        <span class="doccomment">/// The old active flags, if any, when this group was opened.</span>
+        <span class="doccomment">/// The old active flags when this group was opened.</span>
         <span class="doccomment">///</span>
         <span class="doccomment">/// If this group sets flags, then the new active flags are set to the</span>
         <span class="doccomment">/// result of merging the old flags with the flags introduced by this</span>
-        <span class="doccomment">/// group.</span>
+        <span class="doccomment">/// group. If the group doesn&#39;t set any flags, then this is simply</span>
+        <span class="doccomment">/// equivalent to whatever flags were set when the group was opened.</span>
         <span class="doccomment">///</span>
         <span class="doccomment">/// When this group is popped, the active flags should be restored to</span>
         <span class="doccomment">/// the flags set here.</span>
         <span class="doccomment">///</span>
         <span class="doccomment">/// The &quot;active&quot; flags correspond to whatever flags are set in the</span>
         <span class="doccomment">/// Translator.</span>
-        <span class="ident">old_flags</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flags</span><span class="op">&gt;</span>,
+        <span class="ident">old_flags</span>: <span class="ident">Flags</span>,
     },
     <span class="doccomment">/// This is pushed whenever a concatenation is observed. After visiting</span>
     <span class="doccomment">/// every sub-expression in the concatenation, the translator&#39;s stack is</span>
@@ -3352,8 +3370,8 @@ Defines a translator that converts an `Ast` to an `Hir`.
 
     <span class="doccomment">/// Assert that the current stack frame is a group indicator and return</span>
     <span class="doccomment">/// its corresponding flags (the flags that were active at the time the</span>
-    <span class="doccomment">/// group was entered) if they exist.</span>
-    <span class="kw">fn</span> <span class="ident">unwrap_group</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Flags</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// group was entered).</span>
+    <span class="kw">fn</span> <span class="ident">unwrap_group</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Flags</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">HirFrame</span>::<span class="ident">Group</span> { <span class="ident">old_flags</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">old_flags</span>,
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -3385,8 +3403,11 @@ Defines a translator that converts an `Ast` to an `Hir`.
                 }
             }
             <span class="ident">Ast</span>::<span class="ident">Group</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">old_flags</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">flags</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">ast</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">set_flags</span>(<span class="ident">ast</span>));
-                <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">HirFrame</span>::<span class="ident">Group</span> { <span class="ident">old_flags</span>: <span class="ident">old_flags</span> });
+                <span class="kw">let</span> <span class="ident">old_flags</span> <span class="op">=</span> <span class="ident">x</span>
+                    .<span class="ident">flags</span>()
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">ast</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">set_flags</span>(<span class="ident">ast</span>))
+                    .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">flags</span>());
+                <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">HirFrame</span>::<span class="ident">Group</span> { <span class="ident">old_flags</span> });
             }
             <span class="ident">Ast</span>::<span class="ident">Concat</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">asts</span>.<span class="ident">is_empty</span>() <span class="op">=</span><span class="op">&gt;</span> {}
             <span class="ident">Ast</span>::<span class="ident">Concat</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -3483,9 +3504,8 @@ Defines a translator that converts an `Ast` to an `Hir`.
             }
             <span class="ident">Ast</span>::<span class="ident">Group</span>(<span class="kw-2">ref</span> <span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">expr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap_expr</span>();
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">flags</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap_group</span>() {
-                    <span class="self">self</span>.<span class="ident">trans</span>().<span class="ident">flags</span>.<span class="ident">set</span>(<span class="ident">flags</span>);
-                }
+                <span class="kw">let</span> <span class="ident">old_flags</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap_group</span>();
+                <span class="self">self</span>.<span class="ident">trans</span>().<span class="ident">flags</span>.<span class="ident">set</span>(<span class="ident">old_flags</span>);
                 <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">HirFrame</span>::<span class="ident">Expr</span>(<span class="self">self</span>.<span class="ident">hir_group</span>(<span class="ident">x</span>, <span class="ident">expr</span>)));
             }
             <span class="ident">Ast</span>::<span class="ident">Concat</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -4772,6 +4792,20 @@ Defines a translator that converts an `Ast` to an `Hir`.
             <span class="ident">hir_cat</span>(<span class="macro">vec</span><span class="macro">!</span>[
                 <span class="ident">hir_group_nocap</span>(<span class="ident">hir_bclass</span>(<span class="kw-2">&amp;</span>[(<span class="string">b&#39;A&#39;</span>, <span class="string">b&#39;A&#39;</span>), (<span class="string">b&#39;a&#39;</span>, <span class="string">b&#39;a&#39;</span>)])),
                 <span class="ident">hir_lit</span>(<span class="string">&quot;β&quot;</span>),
+            ])
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">t</span>(<span class="string">&quot;(?:(?i-u)a)b&quot;</span>),
+            <span class="ident">hir_cat</span>(<span class="macro">vec</span><span class="macro">!</span>[
+                <span class="ident">hir_group_nocap</span>(<span class="ident">hir_bclass</span>(<span class="kw-2">&amp;</span>[(<span class="string">b&#39;A&#39;</span>, <span class="string">b&#39;A&#39;</span>), (<span class="string">b&#39;a&#39;</span>, <span class="string">b&#39;a&#39;</span>)])),
+                <span class="ident">hir_lit</span>(<span class="string">&quot;b&quot;</span>),
+            ])
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">t</span>(<span class="string">&quot;((?i-u)a)b&quot;</span>),
+            <span class="ident">hir_cat</span>(<span class="macro">vec</span><span class="macro">!</span>[
+                <span class="ident">hir_group</span>(<span class="number">1</span>, <span class="ident">hir_bclass</span>(<span class="kw-2">&amp;</span>[(<span class="string">b&#39;A&#39;</span>, <span class="string">b&#39;A&#39;</span>), (<span class="string">b&#39;a&#39;</span>, <span class="string">b&#39;a&#39;</span>)])),
+                <span class="ident">hir_lit</span>(<span class="string">&quot;b&quot;</span>),
             ])
         );
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;unicode-case&quot;</span>)]</span>

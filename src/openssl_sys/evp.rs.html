@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-sys-0.9.53/src/evp.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>evp.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../openssl_sys/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-sys-0.9.54/src/evp.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>evp.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../openssl_sys/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -408,6 +408,43 @@
 <span id="408">408</span>
 <span id="409">409</span>
 <span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">libc</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw-2">*</span>;
@@ -533,12 +570,24 @@
         <span class="ident">npubk</span>: <span class="ident">c_int</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_SealFinal</span>(<span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>, <span class="ident">out</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>, <span class="ident">outl</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_int</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_EncryptInit_ex</span>(
+        <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
+        <span class="ident">cipher</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_CIPHER</span>,
+        <span class="ident">impl_</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ENGINE</span>,
+        <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_uchar</span>,
+        <span class="ident">iv</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_uchar</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_EncryptUpdate</span>(
         <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
         <span class="ident">out</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>,
         <span class="ident">outl</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_int</span>,
         <span class="ident">in_</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
         <span class="ident">inl</span>: <span class="ident">c_int</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_EncryptFinal_ex</span>(
+        <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
+        <span class="ident">out</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>,
+        <span class="ident">outl</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_int</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_OpenInit</span>(
         <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
@@ -549,12 +598,24 @@
         <span class="ident">priv_</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_PKEY</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_OpenFinal</span>(<span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>, <span class="ident">out</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>, <span class="ident">outl</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_int</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_DecryptInit_ex</span>(
+        <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
+        <span class="ident">cipher</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_CIPHER</span>,
+        <span class="ident">impl_</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ENGINE</span>,
+        <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_uchar</span>,
+        <span class="ident">iv</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_uchar</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_DecryptUpdate</span>(
         <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
         <span class="ident">out</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>,
         <span class="ident">outl</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_int</span>,
         <span class="ident">in_</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>,
         <span class="ident">inl</span>: <span class="ident">c_int</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_DecryptFinal_ex</span>(
+        <span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_CIPHER_CTX</span>,
+        <span class="ident">outm</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>,
+        <span class="ident">outl</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_int</span>
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
 }
 <span class="macro">cfg_if</span><span class="macro">!</span> {
@@ -622,6 +683,7 @@
         <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
 
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_md_null</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_MD</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_md5</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_MD</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_sha1</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_MD</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_sha224</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_MD</span>;
@@ -813,6 +875,18 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_PKEY_keygen_init</span>(<span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_PKEY_CTX</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_PKEY_keygen</span>(<span class="ident">ctx</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_PKEY_CTX</span>, <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_PKEY</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+}
+
+<span class="macro">cfg_if</span><span class="macro">!</span> {
+    <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">ossl110</span>, <span class="ident">libressl280</span>))]</span> {
+        <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_PKCS82PKEY</span>(<span class="ident">p8</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">PKCS8_PRIV_KEY_INFO</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_PKEY</span>;
+        }
+    } <span class="kw">else</span> {
+        <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">EVP_PKCS82PKEY</span>(<span class="ident">p8</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">PKCS8_PRIV_KEY_INFO</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">EVP_PKEY</span>;
+        }
+    }
 }
 
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
