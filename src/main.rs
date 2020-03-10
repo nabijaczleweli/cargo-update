@@ -40,7 +40,7 @@ fn actual_main() -> Result<(), i32> {
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
     let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml"))?;
-    let mut packages = cargo_update::ops::installed_cargo_repo_packages(&crates_file);
+    let mut packages = cargo_update::ops::installed_registry_packages(&crates_file);
     let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
         cargo_update::ops::installed_git_repo_packages(&crates_file)
     } else {

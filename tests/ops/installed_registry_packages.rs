@@ -1,42 +1,41 @@
-use cargo_update::ops::{MainRepoPackage, installed_main_repo_packages};
+use cargo_update::ops::{RegistryPackage, installed_registry_packages};
 use semver::Version as Semver;
 use std::fs::{self, File};
 use std::env::temp_dir;
 use std::io::Write;
 
 
-static CRATES: &'static [u8] = include_bytes!("../../test-data/.cargo-crates.toml");
+static CRATES: &[u8] = include_bytes!("../../test-data/.cargo-crates.toml");
 
 
 #[test]
 fn existant() {
-    let mut td = temp_dir();
-    let _ = fs::create_dir(&td);
-    td.push("cargo_update-test");
-    let _ = fs::create_dir(&td);
-    td.push("installed_main_repo_packages-existant");
-    let _ = fs::create_dir(&td);
+    let mut td = temp_dir().join("cargo_update-test").join("installed_registry_packages-existant");
+    let _ = fs::create_dir_all(&td);
     td.push(".crates.toml");
 
     File::create(&td).unwrap().write_all(CRATES).unwrap();
 
-    assert_eq!(installed_main_repo_packages(&td),
-               vec![MainRepoPackage {
+    assert_eq!(installed_registry_packages(&td),
+               vec![RegistryPackage {
                         name: "cargo-outdated".to_string(),
+                        registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
                         version: Some(Semver::parse("0.2.0").unwrap()),
                         newest_version: None,
                         alternative_version: None,
                         max_version: None,
                     },
-                    MainRepoPackage {
+                    RegistryPackage {
                         name: "racer".to_string(),
+                        registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
                         version: Some(Semver::parse("1.2.10").unwrap()),
                         newest_version: None,
                         alternative_version: None,
                         max_version: None,
                     },
-                    MainRepoPackage {
+                    RegistryPackage {
                         name: "rustfmt".to_string(),
+                        registry_url: "file:///usr/local/share/cargo".to_string(),
                         version: Some(Semver::parse("0.6.2").unwrap()),
                         newest_version: None,
                         alternative_version: None,
@@ -46,13 +45,8 @@ fn existant() {
 
 #[test]
 fn non_existant() {
-    let mut td = temp_dir();
-    let _ = fs::create_dir(&td);
-    td.push("cargo_update-test");
-    let _ = fs::create_dir(&td);
-    td.push("installed_main_repo_packages-nonexistant");
-    let _ = fs::create_dir(&td);
-    td.push(".crates.toml");
+    let td = temp_dir().join("cargo_update-test").join("installed_registry_packages-nonexistant");
+    let _ = fs::create_dir_all(&td);
 
-    assert_eq!(installed_main_repo_packages(&td), vec![]);
+    assert_eq!(installed_registry_packages(&td.join(".crates.toml")), vec![]);
 }

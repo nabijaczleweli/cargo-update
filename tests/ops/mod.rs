@@ -1,23 +1,25 @@
-use cargo_update::ops::{self, MainRepoPackage};
+use cargo_update::ops::{self, RegistryPackage};
 use semver::Version as Semver;
 use std::fs::File;
 
-mod installed_main_repo_packages;
+mod installed_registry_packages;
 mod package_filter_element;
-mod main_repo_package;
+mod registry_package;
 mod get_index_path;
 
 
 #[test]
 fn intersect_packages() {
-    assert_eq!(ops::intersect_packages(&[MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-                                         MainRepoPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-                                         MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()],
-                                       &[("cargo-count".to_string(), None), ("racer".to_string(), None), ("checksums".to_string(), None)],
+    assert_eq!(ops::intersect_packages(&[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
+                                         RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
+                                         RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)").unwrap()],
+                                       &[("cargo-count".to_string(), None, "https://github.com/rust-lang/crates.io-index".to_string()),
+                                         ("racer".to_string(), None, "https://github.com/rust-lang/crates.io-index".to_string()),
+                                         ("checksums".to_string(), None, "file:///usr/local/share/cargo".to_string())],
                                        false,
                                        &[]),
-               vec![MainRepoPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-                    MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
+               vec![RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
+                    RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)").unwrap()]);
 }
 
 #[test]

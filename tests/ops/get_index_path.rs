@@ -1,8 +1,6 @@
 use cargo_update::ops::get_index_path;
 use std::path::{PathBuf, Path};
 use std::fs::{self, File};
-use std::time::Duration;
-use std::thread::sleep;
 use std::env::temp_dir;
 
 
@@ -10,25 +8,33 @@ use std::env::temp_dir;
 fn nonexistant() {
     let indices = prep_indices("nonexistant");
 
-    assert_eq!(get_index_path(&indices, None), Err("index directory nonexistant"));
+    assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
+               Err(format!(r"Couldn't read {} (index directory for https://github.com/rust-lang/crates.io-index): {}",
+                           indices.join("registry").join("index").join("github.com-1ecc6299db9ec823").display(),
+                           "The system cannot find the path specified. (os error 3)")
+                   .into()));
 }
 
 #[test]
-fn empty() {
-    let indices = prep_indices("empty");
+fn is_file() {
+    let indices = prep_indices("is_file");
 
     prepare_indices(&indices, &[]);
+    File::create(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")).unwrap();
 
-    assert_eq!(get_index_path(&indices, None), Err("empty index directory"));
+    assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
+               Err(format!("{} (index directory for https://github.com/rust-lang/crates.io-index) not a directory",
+                           indices.join("registry").join("index").join("github.com-1ecc6299db9ec823").display())
+                   .into()));
 }
 
 #[test]
 fn single() {
     let indices = prep_indices("single");
 
-    prepare_indices(&indices, &["1ecc6299db9ec823"]);
+    prepare_indices(&indices, &[("github.com", "1ecc6299db9ec823")]);
 
-    assert_eq!(get_index_path(&indices, None),
+    assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
                Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
 }
 
@@ -36,52 +42,37 @@ fn single() {
 fn double() {
     let indices = prep_indices("double");
 
-    prepare_indices(&indices, &["1ecc6299db9ec823", "48ad6e4054423464"]);
+    prepare_indices(&indices, &[("github.com", "1ecc6299db9ec823"), ("github.com", "48ad6e4054423464")]);
 
-    assert_eq!(get_index_path(&indices, None),
-               Ok(indices.join("registry").join("index").join("github.com-48ad6e4054423464")));
+    assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
+               Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
 }
 
 #[test]
-fn triple() {
-    let indices = prep_indices("triple");
+fn two() {
+    let indices = prep_indices("two");
 
-    prepare_indices(&indices, &["1ecc6299db9ec823", "88ac128001ac3a9a", "48ad6e4054423464"]);
+    prepare_indices(&indices,
+                    &[("github.com", "1ecc6299db9ec823"), ("", "72ffea3e1e10b7e3"), ("github.com", "48ad6e4054423464")]);
 
-    assert_eq!(get_index_path(&indices, None),
-               Ok(indices.join("registry").join("index").join("github.com-48ad6e4054423464")));
-}
+    assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
+               Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
 
-#[test]
-fn with_file() {
-    let indices = prep_indices("with_file");
-
-    prepare_indices(&indices, &["1ecc6299db9ec823", "88ac128001ac3a9a"]);
-    File::create(indices.join("registry").join("index").join("I-am-a-random-file-yes")).unwrap();
-
-    assert_eq!(get_index_path(&indices, None),
-               Ok(indices.join("registry").join("index").join("github.com-88ac128001ac3a9a")));
+    assert_eq!(get_index_path(&indices, "file:///usr/local/share/cargo"),
+               Ok(indices.join("registry").join("index").join("-72ffea3e1e10b7e3")));
 }
 
 fn prep_indices(subname: &str) -> PathBuf {
-    let mut td = temp_dir();
-    let _ = fs::create_dir(&td);
-    td.push("cargo_update-test");
-    let _ = fs::create_dir(&td);
-    td.push(format!("get_index_path-{}", subname));
-    let _ = fs::create_dir(&td);
+    let td = temp_dir().join("cargo_update-test").join(format!("get_index_path-{}", subname));
+    let _ = fs::create_dir_all(&td);
     td
 }
 
-fn prepare_indices(index: &Path, hashes: &[&str]) {
-    let mut index = index.to_path_buf();
-    index.push("registry");
-    let _ = fs::create_dir(&index);
-    index.push("index");
-    let _ = fs::create_dir(&index);
+fn prepare_indices(index: &Path, shortnames: &[(&str, &str)]) {
+    let index = index.join("registry").join("index");
+    let _ = fs::create_dir_all(&index);
 
-    for hash in hashes {
-        let _ = fs::create_dir(index.join(format!("github.com-{}", hash)));
-        sleep(Duration::from_millis(10));
+    for (name, hash) in shortnames {
+        let _ = fs::create_dir(index.join(format!("{}-{}", name, hash)));
     }
 }
