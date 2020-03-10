@@ -34,15 +34,14 @@ before_install:
 
 install:
   - if [ "$LANGUAGE" == "Ruby" ]; then gem install ronn; fi
+  - if [ "$LANGUAGE" == "Rust" ] && [ "$CLIPPY" ]; then
+      rustup component add clippy-preview || cargo install --git https://github.com/rust-lang/rust-clippy clippy -f;
+    fi
 
 script:
   - if [ "$LANGUAGE" == "Rust" ]; then cargo build --verbose; fi
   - if [ "$LANGUAGE" == "Rust" ]; then cargo test  --verbose; fi
-  - if [ "$LANGUAGE" == "Rust" ] && [ "$CLIPPY" ]; then
-      cargo install clippy;
-      target/debug/cargo-install-update install-update -a;
-      cargo clippy;
-    fi
+  - if [ "$LANGUAGE" == "Rust" ] && [ "$CLIPPY" ]; then cargo clippy; fi
   - if [ "$LANGUAGE" == "Rust" ] && [ "$DEPLOY" ] && [ "$TRAVIS_TAG" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then cargo build --verbose --release; fi
   -
   - if [ "$LANGUAGE" == "Ruby" ]; then

@@ -26,19 +26,23 @@ install:
 
 build: off
 build_script:
-  - git submodule update --init --recursive
-  - cargo build --release
-  - cp target\release\cargo-install-update.exe cargo-install-update-v2.5.3.exe
-  - strip --strip-all --remove-section=.comment --remove-section=.note cargo-install-update-v2.5.3.exe
+  - cargo build --verbose --release
+  -
+  - mkdir cargo-update-v2.5.3
+  - cp target\release\cargo-install-update.exe target\release\cargo-install-update-config.exe cargo-update-v2.5.3\
+  - strip --strip-all --remove-section=.comment --remove-section=.note cargo-update-v2.5.3/cargo-install-update.exe cargo-update-v2.5.3/cargo-install-update-config.exe
+  - zip -9r cargo-update-v2.5.3.zip cargo-update-v2.5.3
 
 test: off
+test_script:
+  - cargo test --verbose --release
 
 artifacts:
-  - path: cargo-install-update-v2.5.3.exe
+  - path: cargo-update-v2.5.3.zip
 
 deploy:
   provider: GitHub
-  artifact: cargo-install-update-v2.5.3.exe
+  artifact: cargo-update-v2.5.3.zip
   auth_token:
     secure: 8dP4MwLtHqrSNKYKeSGSt8vm/QIc+0LHdSoI2ReFPAWEL9VrU8+88YcjQNcF6Wzn
   on:
