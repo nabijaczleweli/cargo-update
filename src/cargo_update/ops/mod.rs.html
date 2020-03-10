@@ -1070,10 +1070,36 @@
 <span id="1070">1070</span>
 <span id="1071">1071</span>
 <span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Use `installed_main_repo_packages()` to list the installed packages,</span>
+<span class="doccomment">//! Use `installed_cargo_repo_packages()` to list the installed packages,</span>
 <span class="doccomment">//! then use `intersect_packages()` to confirm which ones should be updated,</span>
 <span class="doccomment">//! poll the packages&#39; latest versions by calling `MainRepoPackage::pull_version()` on them,</span>
 <span class="doccomment">//! continue with doing whatever you wish.</span>
@@ -1081,16 +1107,17 @@
 
 <span class="kw">use</span> <span class="ident">git2</span>::{<span class="self">self</span>, <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">GitError</span>, <span class="ident">Config</span> <span class="kw">as</span> <span class="ident">GitConfig</span>, <span class="ident">Cred</span> <span class="kw">as</span> <span class="ident">GitCred</span>, <span class="ident">RemoteCallbacks</span>, <span class="ident">CredentialType</span>, <span class="ident">FetchOptions</span>, <span class="ident">ProxyOptions</span>, <span class="ident">Repository</span>, <span class="ident">Tree</span>, <span class="ident">Oid</span>};
 <span class="kw">use</span> <span class="ident">semver</span>::{<span class="ident">VersionReq</span> <span class="kw">as</span> <span class="ident">SemverReq</span>, <span class="ident">Version</span> <span class="kw">as</span> <span class="ident">Semver</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::{<span class="self">self</span>, <span class="ident">DirEntry</span>, <span class="ident">File</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::{<span class="ident">PathBuf</span>, <span class="ident">Path</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::{<span class="ident">Hasher</span>, <span class="ident">Hash</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Write</span>, <span class="ident">Read</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="ident">SystemTime</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::{<span class="self">self</span>, <span class="ident">File</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cmp</span>, <span class="ident">env</span>, <span class="ident">mem</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">regex</span>::<span class="ident">Regex</span>;
 <span class="kw">use</span> <span class="ident">url</span>::<span class="ident">Url</span>;
 <span class="kw">use</span> <span class="ident">toml</span>;
 <span class="kw">use</span> <span class="ident">json</span>;
+<span class="kw">use</span> <span class="ident">hex</span>;
 
 <span class="kw">mod</span> <span class="ident">config</span>;
 
@@ -1098,7 +1125,7 @@
 
 
 <span class="macro">lazy_static</span><span class="macro">!</span> {
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">MAIN_PACKAGE_RGX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)&quot;</span>).<span class="ident">unwrap</span>();
+    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">CARGO_PACKAGE_RGX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)&quot;</span>).<span class="ident">unwrap</span>();
     <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">GIT_PACKAGE_RGX</span>: <span class="ident">Regex</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)&quot;</span>).<span class="ident">unwrap</span>();
 }
 
@@ -1114,14 +1141,16 @@
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # extern crate cargo_update;</span>
 <span class="doccomment">/// # extern crate semver;</span>
-<span class="doccomment">/// # use cargo_update::ops::MainRepoPackage;</span>
+<span class="doccomment">/// # use cargo_update::ops::CargoRepoPackage;</span>
 <span class="doccomment">/// # use semver::Version as Semver;</span>
 <span class="doccomment">/// # fn main() {</span>
 <span class="doccomment">/// let package_s = &quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;;</span>
-<span class="doccomment">/// let mut package = MainRepoPackage::parse(package_s).unwrap();</span>
+<span class="doccomment">/// let mut package = CargoRepoPackage::parse(package_s).unwrap();</span>
 <span class="doccomment">/// assert_eq!(package,</span>
-<span class="doccomment">///            MainRepoPackage {</span>
+<span class="doccomment">///            CargoRepoPackage {</span>
 <span class="doccomment">///                name: &quot;racer&quot;.to_string(),</span>
+<span class="doccomment">///                registry_url: &quot;https://github.com/rust-lang/crates.io-index&quot;.to_string(),</span>
+<span class="doccomment">///                registry_shortname: &quot;github.com-1ecc6299db9ec823&quot;.to_string(),</span>
 <span class="doccomment">///                version: Some(Semver::parse(&quot;1.2.10&quot;).unwrap()),</span>
 <span class="doccomment">///                newest_version: None,</span>
 <span class="doccomment">///                alternative_version: None,</span>
@@ -1136,14 +1165,18 @@
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MainRepoPackage</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CargoRepoPackage</span> {
     <span class="doccomment">/// The package&#39;s name.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Go to `https://crates.io/crates/{name}` to get the crate info.</span>
+    <span class="doccomment">/// Go to `https://crates.io/crates/{name}` to get the crate info, if available on the main repository.</span>
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
+    <span class="doccomment">/// The registry the package is available from.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The main repository is `https://github.com/rust-lang/crates.io-index`</span>
+    <span class="kw">pub</span> <span class="ident">registry_url</span>: <span class="ident">String</span>,
     <span class="doccomment">/// The package&#39;s locally installed version.</span>
     <span class="kw">pub</span> <span class="ident">version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.</span>
+    <span class="doccomment">/// The latest version of the package, available at [`crates.io`](https://crates.io), if in main repository.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// `None` by default, acquire via `MainRepoPackage::pull_version()`.</span>
     <span class="kw">pub</span> <span class="ident">newest_version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>,
@@ -1201,7 +1234,7 @@
 }
 
 
-<span class="kw">impl</span> <span class="ident">MainRepoPackage</span> {
+<span class="kw">impl</span> <span class="ident">CargoRepoPackage</span> {
     <span class="doccomment">/// Try to decypher a package descriptor into a `MainRepoPackage`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Will return `None` if:</span>
@@ -1250,10 +1283,11 @@
     <span class="doccomment">/// let package_s = &quot;treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#v0.2.1)&quot;;</span>
     <span class="doccomment">/// assert!(MainRepoPackage::parse(package_s).is_none());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">what</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span> {
-        <span class="ident">MAIN_PACKAGE_RGX</span>.<span class="ident">captures</span>(<span class="ident">what</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> {
-            <span class="ident">MainRepoPackage</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">what</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CargoRepoPackage</span><span class="op">&gt;</span> {
+        <span class="ident">CARGO_PACKAGE_RGX</span>.<span class="ident">captures</span>(<span class="ident">what</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> {
+            <span class="ident">CargoRepoPackage</span> {
                 <span class="ident">name</span>: <span class="ident">c</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_string</span>(),
+                <span class="ident">registry_url</span>: <span class="ident">c</span>.<span class="ident">get</span>(<span class="number">3</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>().<span class="ident">to_string</span>(),
                 <span class="ident">version</span>: <span class="prelude-val">Some</span>(<span class="ident">Semver</span>::<span class="ident">parse</span>(<span class="ident">c</span>.<span class="ident">get</span>(<span class="number">2</span>).<span class="ident">unwrap</span>().<span class="ident">as_str</span>()).<span class="ident">unwrap</span>()),
                 <span class="ident">newest_version</span>: <span class="prelude-val">None</span>,
                 <span class="ident">alternative_version</span>: <span class="prelude-val">None</span>,
@@ -1640,7 +1674,7 @@
 }
 
 <span class="doccomment">/// List the installed packages at the specified location that originate</span>
-<span class="doccomment">/// from the main [`crates.io`](https://crates.io) registry.</span>
+<span class="doccomment">/// from the a cargo registry.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If the `.crates.toml` file doesn&#39;t exist an empty vector is returned.</span>
 <span class="doccomment">///</span>
@@ -1651,21 +1685,21 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
-<span class="doccomment">/// # use cargo_update::ops::installed_main_repo_packages;</span>
+<span class="doccomment">/// # use cargo_update::ops::installed_cargo_repo_packages;</span>
 <span class="doccomment">/// # use std::env::temp_dir;</span>
 <span class="doccomment">/// # let cargo_dir = temp_dir().join(&quot;.crates.toml&quot;);</span>
-<span class="doccomment">/// let packages = installed_main_repo_packages(&amp;cargo_dir);</span>
+<span class="doccomment">/// let packages = installed_cargo_repo_packages(&amp;cargo_dir);</span>
 <span class="doccomment">/// for package in &amp;packages {</span>
 <span class="doccomment">///     println!(&quot;{} v{}&quot;, package.name, package.version.as_ref().unwrap());</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">installed_main_repo_packages</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">installed_cargo_repo_packages</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CargoRepoPackage</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">crates_file</span>.<span class="ident">exists</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">crates</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
         <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">crates_file</span>).<span class="ident">unwrap</span>().<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">crates</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span>::<span class="ident">new</span>();
-        <span class="kw">for</span> <span class="ident">pkg</span> <span class="kw">in</span> <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">crates</span>).<span class="ident">unwrap</span>()[<span class="string">&quot;v1&quot;</span>].<span class="ident">as_table</span>().<span class="ident">unwrap</span>().<span class="ident">keys</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">MainRepoPackage</span>::<span class="ident">parse</span>(<span class="ident">s</span>)) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">CargoRepoPackage</span><span class="op">&gt;</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> <span class="ident">pkg</span> <span class="kw">in</span> <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">crates</span>).<span class="ident">unwrap</span>()[<span class="string">&quot;v1&quot;</span>].<span class="ident">as_table</span>().<span class="ident">unwrap</span>().<span class="ident">keys</span>().<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">CargoRepoPackage</span>::<span class="ident">parse</span>(<span class="ident">s</span>)) {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">saved</span>) <span class="op">=</span> <span class="ident">res</span>.<span class="ident">iter_mut</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">pkg</span>.<span class="ident">name</span>) {
                 <span class="kw">if</span> <span class="ident">saved</span>.<span class="ident">version</span>.<span class="ident">is_none</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">saved</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() <span class="op">&lt;</span> <span class="ident">pkg</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>() {
                     <span class="ident">saved</span>.<span class="ident">version</span> <span class="op">=</span> <span class="ident">pkg</span>.<span class="ident">version</span>;
@@ -1722,16 +1756,16 @@
 <span class="doccomment">/// Filter out the installed packages not specified to be updated and add the packages you specify to install,</span>
 <span class="doccomment">/// if they aren&#39;t already installed via git.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// List installed packages with `installed_main_repo_packages()`.</span>
+<span class="doccomment">/// List installed packages with `installed_cargo_repo_packages()`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// # use cargo_update::ops::{MainRepoPackage, intersect_packages};</span>
-<span class="doccomment">/// # fn installed_main_repo_packages(_: &amp;()) {}</span>
+<span class="doccomment">/// # fn installed_cargo_repo_packages(_: &amp;()) {}</span>
 <span class="doccomment">/// # let cargo_dir = ();</span>
 <span class="doccomment">/// # let packages_to_update = [(&quot;racer&quot;.to_string(), None), (&quot;cargo-outdated&quot;.to_string(), None)];</span>
-<span class="doccomment">/// let mut installed_packages = installed_main_repo_packages(&amp;cargo_dir);</span>
+<span class="doccomment">/// let mut installed_packages = installed_cargo_repo_packages(&amp;cargo_dir);</span>
 <span class="doccomment">/// # let mut installed_packages =</span>
 <span class="doccomment">/// #     vec![MainRepoPackage::parse(&quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
 <span class="doccomment">/// #          MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
@@ -1741,17 +1775,19 @@
 <span class="doccomment">/// #   &amp;[MainRepoPackage::parse(&quot;cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap(),</span>
 <span class="doccomment">/// #     MainRepoPackage::parse(&quot;racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)&quot;).unwrap()]);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intersect_packages</span>(<span class="ident">installed</span>: <span class="kw-2">&amp;</span>[<span class="ident">MainRepoPackage</span>], <span class="ident">to_update</span>: <span class="kw-2">&amp;</span>[(<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>)], <span class="ident">allow_installs</span>: <span class="ident">bool</span>, <span class="ident">installed_git</span>: <span class="kw-2">&amp;</span>[<span class="ident">GitRepoPackage</span>])
-                          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MainRepoPackage</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intersect_packages</span>(<span class="ident">installed</span>: <span class="kw-2">&amp;</span>[<span class="ident">CargoRepoPackage</span>], <span class="ident">to_update</span>: <span class="kw-2">&amp;</span>[(<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Semver</span><span class="op">&gt;</span>, <span class="ident">String</span>)], <span class="ident">allow_installs</span>: <span class="ident">bool</span>,
+                          <span class="ident">installed_git</span>: <span class="kw-2">&amp;</span>[<span class="ident">GitRepoPackage</span>])
+                          <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">CargoRepoPackage</span><span class="op">&gt;</span> {
     <span class="ident">installed</span>.<span class="ident">iter</span>()
         .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">to_update</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">u</span>.<span class="number">0</span>))
         .<span class="ident">cloned</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">MainRepoPackage</span> { <span class="ident">max_version</span>: <span class="ident">to_update</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">u</span>.<span class="number">0</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="number">1</span>.<span class="ident">clone</span>()), ..<span class="ident">p</span> })
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">CargoRepoPackage</span> { <span class="ident">max_version</span>: <span class="ident">to_update</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">u</span>.<span class="number">0</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="number">1</span>.<span class="ident">clone</span>()), ..<span class="ident">p</span> })
         .<span class="ident">chain</span>(<span class="ident">to_update</span>.<span class="ident">iter</span>()
             .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">allow_installs</span> <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">installed</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">p</span>.<span class="number">0</span>).<span class="ident">is_none</span>() <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">installed_git</span>.<span class="ident">iter</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">p</span>.<span class="number">0</span>).<span class="ident">is_none</span>())
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> {
-                <span class="ident">MainRepoPackage</span> {
+                <span class="ident">CargoRepoPackage</span> {
                     <span class="ident">name</span>: <span class="ident">p</span>.<span class="number">0</span>.<span class="ident">clone</span>(),
+                    <span class="ident">registry_url</span>: <span class="ident">p</span>.<span class="number">2</span>.<span class="ident">clone</span>(),
                     <span class="ident">version</span>: <span class="prelude-val">None</span>,
                     <span class="ident">newest_version</span>: <span class="prelude-val">None</span>,
                     <span class="ident">alternative_version</span>: <span class="prelude-val">None</span>,
@@ -1809,37 +1845,18 @@
 <span class="doccomment">/// # let _ = fs::create_dir(&amp;cargo_dir);</span>
 <span class="doccomment">/// # let idx_dir = cargo_dir.join(&quot;registry&quot;).join(&quot;index&quot;).join(&quot;github.com-1ecc6299db9ec823&quot;);</span>
 <span class="doccomment">/// # let _ = fs::create_dir_all(&amp;idx_dir);</span>
-<span class="doccomment">/// // These are equivalent for most users,</span>
-<span class="doccomment">/// // but you might need to specify the URL to find the right checkout if you use more than one registry</span>
-<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir, None).unwrap();</span>
-<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir, Some(&quot;https://github.com/rust-lang/crates.io-index&quot;)).unwrap();</span>
+<span class="doccomment">/// let index = get_index_path(&amp;cargo_dir, &quot;https://github.com/rust-lang/crates.io-index&quot;).unwrap();</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// // Use find_package_data() to look for packages</span>
 <span class="doccomment">/// # assert_eq!(index, idx_dir);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_path</span>(<span class="ident">cargo_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">registry_url</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">registry_url</span> <span class="op">=</span> <span class="ident">registry_url</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="ident">u</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;registry URL not an URL&quot;</span>)).<span class="ident">transpose</span>()<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">registry_host</span> <span class="op">=</span> <span class="ident">registry_url</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">u</span><span class="op">|</span> <span class="ident">u</span>.<span class="ident">host_str</span>());
-
-    <span class="prelude-val">Ok</span>(<span class="ident">fs</span>::<span class="ident">read_dir</span>(<span class="ident">cargo_dir</span>.<span class="ident">join</span>(<span class="string">&quot;registry&quot;</span>).<span class="ident">join</span>(<span class="string">&quot;index&quot;</span>))
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;index directory nonexistant&quot;</span>)<span class="question-mark">?</span>
-        .<span class="ident">map</span>(<span class="prelude-ty">Result</span>::<span class="ident">unwrap</span>)
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">file_type</span>().<span class="ident">unwrap</span>().<span class="ident">is_dir</span>())
-        .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">registry_host</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">rh</span><span class="op">|</span> <span class="ident">i</span>.<span class="ident">file_name</span>().<span class="ident">to_string_lossy</span>().<span class="ident">starts_with</span>(<span class="ident">rh</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>))
-        .<span class="ident">max_by_key</span>(<span class="ident">latest_modified</span>)
-        .<span class="ident">ok_or</span>(<span class="string">&quot;empty index directory&quot;</span>)<span class="question-mark">?</span>
-        .<span class="ident">path</span>())
-}
-
-<span class="kw">fn</span> <span class="ident">latest_modified</span>(<span class="ident">ent</span>: <span class="kw-2">&amp;</span><span class="ident">DirEntry</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SystemTime</span> {
-    <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">ent</span>.<span class="ident">metadata</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">latest</span> <span class="op">=</span> <span class="ident">meta</span>.<span class="ident">modified</span>().<span class="ident">unwrap</span>();
-    <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_dir</span>() {
-        <span class="kw">for</span> <span class="ident">ent</span> <span class="kw">in</span> <span class="ident">fs</span>::<span class="ident">read_dir</span>(<span class="ident">ent</span>.<span class="ident">path</span>()).<span class="ident">unwrap</span>() {
-            <span class="ident">latest</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">latest</span>, <span class="ident">latest_modified</span>(<span class="kw-2">&amp;</span><span class="ident">ent</span>.<span class="ident">unwrap</span>()));
-        }
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_path</span>(<span class="ident">cargo_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">registry_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">cargo_dir</span>.<span class="ident">join</span>(<span class="string">&quot;registry&quot;</span>).<span class="ident">join</span>(<span class="string">&quot;index&quot;</span>).<span class="ident">join</span>(<span class="ident">registry_shortname</span>(<span class="ident">registry_url</span>));
+    <span class="kw">if</span> <span class="ident">path</span>.<span class="ident">is_file</span>() {
+        <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} not a directory&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>())).<span class="ident">unwrap</span>()
+    } <span class="kw">else</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">path</span>)
     }
-    <span class="ident">latest</span>
 }
 
 <span class="doccomment">/// Update the specified index repository from the specified URL.</span>
@@ -1923,8 +1940,13 @@
 <span class="doccomment">/// Defaults to `https://github.com/rust-lang/crates.io-index`</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) for details</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_url</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span> {
-    <span class="ident">get_index_url_impl</span>(<span class="ident">crates_file</span>).<span class="ident">map</span>(<span class="ident">Cow</span>::<span class="ident">from</span>).<span class="ident">unwrap_or</span>(<span class="ident">Cow</span>::<span class="ident">from</span>(<span class="string">&quot;https://github.com/rust-lang/crates.io-index&quot;</span>))
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_url</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">registry_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="comment">// TODO: this is most likely not the right way to do this</span>
+    <span class="kw">if</span> <span class="ident">registry_url</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;https://github.com/rust-lang/crates.io-index&quot;</span> {
+        <span class="ident">get_index_url_impl</span>(<span class="ident">crates_file</span>).<span class="ident">map</span>(<span class="ident">Cow</span>::<span class="ident">from</span>).<span class="ident">unwrap_or</span>(<span class="ident">Cow</span>::<span class="ident">from</span>(<span class="string">&quot;https://github.com/rust-lang/crates.io-index&quot;</span>))
+    } <span class="kw">else</span> {
+        <span class="ident">registry_url</span>.<span class="ident">to_string</span>().<span class="ident">into</span>()
+    }
 }
 
 <span class="kw">fn</span> <span class="ident">get_index_url_impl</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
@@ -1994,7 +2016,7 @@
         <span class="kw">for</span> <span class="ident">uname</span> <span class="kw">in</span> <span class="ident">cred_helper</span>.<span class="ident">username</span>
             .<span class="ident">into_iter</span>()
             .<span class="ident">chain</span>(<span class="ident">cfg</span>.<span class="ident">get_string</span>(<span class="string">&quot;user.name&quot;</span>))
-            .<span class="ident">chain</span>([<span class="string">&quot;USERNAME&quot;</span>, <span class="string">&quot;USER&quot;</span>].<span class="ident">into_iter</span>().<span class="ident">flat_map</span>(<span class="ident">env</span>::<span class="ident">var</span>))
+            .<span class="ident">chain</span>([<span class="string">&quot;USERNAME&quot;</span>, <span class="string">&quot;USER&quot;</span>].<span class="ident">iter</span>().<span class="ident">flat_map</span>(<span class="ident">env</span>::<span class="ident">var</span>))
             .<span class="ident">chain</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;git&quot;</span>).<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">str</span>::<span class="ident">to_string</span>)) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ssh_attempts</span> <span class="op">=</span> <span class="number">0</span>;
 
@@ -2142,6 +2164,36 @@
 <span class="doccomment">/// The resulting paths are children of this directory in the format `cratename-hash`</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_git_db_repo</span>(<span class="ident">git_db_dir</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">cratename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span> {
     <span class="ident">fs</span>::<span class="ident">read_dir</span>(<span class="ident">git_db_dir</span>).<span class="ident">ok</span>()<span class="question-mark">?</span>.<span class="ident">flatten</span>().<span class="ident">find</span>(<span class="op">|</span><span class="ident">de</span><span class="op">|</span> <span class="ident">de</span>.<span class="ident">file_name</span>().<span class="ident">to_str</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">starts_with</span>(<span class="ident">cratename</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)).<span class="ident">map</span>(<span class="op">|</span><span class="ident">de</span><span class="op">|</span> <span class="ident">de</span>.<span class="ident">path</span>())
+}
+
+
+<span class="doccomment">/// The short filesystem name for the repository, as used by `cargo`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Must be equivalent to</span>
+<span class="doccomment">/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/sources/registry/mod.rs#L387-L402</span>
+<span class="doccomment">/// and</span>
+<span class="doccomment">/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/util/hex.rs</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For main repository it&#39;s `github.com-1ecc6299db9ec823`</span>
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">registry_shortname</span>(<span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">SipHasher</span>;
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hasher</span> <span class="op">=</span> <span class="ident">SipHasher</span>::<span class="ident">new_with_keys</span>(<span class="number">0</span>, <span class="number">0</span>);
+    <span class="ident">url</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">hasher</span>);
+    <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">hasher</span>.<span class="ident">finish</span>();
+    <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">hex</span>::<span class="ident">encode</span>(<span class="kw-2">&amp;</span>[(<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">0</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">8</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">16</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">24</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">40</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">48</span>) <span class="kw">as</span> <span class="ident">u8</span>,
+                             (<span class="ident">hash</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">56</span>) <span class="kw">as</span> <span class="ident">u8</span>]);
+
+    <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}-{}&quot;</span>,
+            <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="ident">url</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} not an URL: {}&quot;</span>, <span class="ident">url</span>, <span class="ident">e</span>)).<span class="ident">unwrap</span>().<span class="ident">host_str</span>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>),
+            <span class="ident">hash</span>)
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "cargo_update";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

@@ -10,6 +10,7 @@ sourcesIndex["clap"] = {"name":"","dirs":[{"name":"app","files":["help.rs","meta
 sourcesIndex["dirs"] = {"name":"","files":["lib.rs","lin.rs"]};
 sourcesIndex["dirs_sys"] = {"name":"","files":["lib.rs","xdg_user_dirs.rs"]};
 sourcesIndex["git2"] = {"name":"","files":["blame.rs","blob.rs","branch.rs","buf.rs","build.rs","call.rs","cert.rs","cherrypick.rs","commit.rs","config.rs","cred.rs","describe.rs","diff.rs","error.rs","index.rs","lib.rs","merge.rs","message.rs","note.rs","object.rs","odb.rs","oid.rs","oid_array.rs","packbuilder.rs","panic.rs","patch.rs","pathspec.rs","proxy_options.rs","rebase.rs","reference.rs","reflog.rs","refspec.rs","remote.rs","remote_callbacks.rs","repo.rs","revspec.rs","revwalk.rs","signature.rs","stash.rs","status.rs","string_array.rs","submodule.rs","tag.rs","time.rs","transport.rs","tree.rs","treebuilder.rs","util.rs"]};
+sourcesIndex["hex"] = {"name":"","files":["error.rs","lib.rs"]};
 sourcesIndex["idna"] = {"name":"","files":["lib.rs","punycode.rs","uts46.rs"]};
 sourcesIndex["json"] = {"name":"","dirs":[{"name":"util","files":["diyfp.rs","grisu2.rs","mod.rs","print_dec.rs"]},{"name":"value","files":["implements.rs","mod.rs"]}],"files":["codegen.rs","error.rs","lib.rs","number.rs","object.rs","parser.rs","short.rs"]};
 sourcesIndex["lazy_static"] = {"name":"","files":["inline_lazy.rs","lib.rs"]};

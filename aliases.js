@@ -10,6 +10,7 @@ ALIASES["clap"] = {};
 ALIASES["dirs"] = {};
 ALIASES["dirs_sys"] = {};
 ALIASES["git2"] = {};
+ALIASES["hex"] = {};
 ALIASES["idna"] = {};
 ALIASES["json"] = {};
 ALIASES["lazy_static"] = {};

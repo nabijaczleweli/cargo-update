@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/aho-corasick-0.7.8/src/prefilter.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>prefilter.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../aho_corasick/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/aho-corasick-0.7.10/src/prefilter.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>prefilter.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../aho_corasick/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -953,6 +953,48 @@
 <span id="953">953</span>
 <span id="954">954</span>
 <span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
+<span id="978">978</span>
+<span id="979">979</span>
+<span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -1327,8 +1369,14 @@
     <span class="doccomment">/// Whether this prefilter should account for ASCII case insensitivity or</span>
     <span class="doccomment">/// not.</span>
     <span class="ident">ascii_case_insensitive</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// A set of byte offsets associated with detected rare bytes. An entry is</span>
-    <span class="doccomment">/// only set if a rare byte is detected in a pattern.</span>
+    <span class="doccomment">/// A set of rare bytes, indexed by byte value.</span>
+    <span class="ident">rare_set</span>: <span class="ident">ByteSet</span>,
+    <span class="doccomment">/// A set of byte offsets associated with bytes in a pattern. An entry</span>
+    <span class="doccomment">/// corresponds to a particular bytes (its index) and is only non-zero if</span>
+    <span class="doccomment">/// the byte occurred at an offset greater than 0 in at least one pattern.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If a byte&#39;s offset is not representable in 8 bits, then the rare bytes</span>
+    <span class="doccomment">/// prefilter becomes inert.</span>
     <span class="ident">byte_offsets</span>: <span class="ident">RareByteOffsets</span>,
     <span class="doccomment">/// Whether this is available as a prefilter or not. This can be set to</span>
     <span class="doccomment">/// false during construction if a condition is seen that invalidates the</span>
@@ -1341,11 +1389,43 @@
     <span class="ident">rank_sum</span>: <span class="ident">u16</span>,
 }
 
-<span class="doccomment">/// A set of rare byte offsets, keyed by byte.</span>
+<span class="doccomment">/// A set of bytes.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
+<span class="kw">struct</span> <span class="ident">ByteSet</span>([<span class="ident">bool</span>; <span class="number">256</span>]);
+
+<span class="kw">impl</span> <span class="ident">ByteSet</span> {
+    <span class="kw">fn</span> <span class="ident">empty</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ByteSet</span> {
+        <span class="ident">ByteSet</span>([<span class="bool-val">false</span>; <span class="number">256</span>])
+    }
+
+    <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">b</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">let</span> <span class="ident">new</span> <span class="op">=</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">contains</span>(<span class="ident">b</span>);
+        <span class="self">self</span>.<span class="number">0</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>] <span class="op">=</span> <span class="bool-val">true</span>;
+        <span class="ident">new</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">b</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="number">0</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>]
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ByteSet</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="number">0</span>..<span class="op">=</span><span class="number">255</span> {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident">b</span>) {
+                <span class="ident">bytes</span>.<span class="ident">push</span>(<span class="ident">b</span>);
+            }
+        }
+        <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;ByteSet&quot;</span>).<span class="ident">field</span>(<span class="string">&quot;set&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">bytes</span>).<span class="ident">finish</span>()
+    }
+}
+
+<span class="doccomment">/// A set of byte offsets, keyed by byte.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">struct</span> <span class="ident">RareByteOffsets</span> {
-    <span class="doccomment">/// When an item in this set has an offset of u8::MAX (255), then it is</span>
-    <span class="doccomment">/// considered unset.</span>
+    <span class="doccomment">/// Each entry corresponds to the maximum offset of the corresponding</span>
+    <span class="doccomment">/// byte across all patterns seen.</span>
     <span class="ident">set</span>: [<span class="ident">RareByteOffset</span>; <span class="number">256</span>],
 }
 
@@ -1359,21 +1439,9 @@
     <span class="doccomment">/// greater than the existing offset, then it overwrites the previous</span>
     <span class="doccomment">/// value and returns false. If there is no previous value set, then this</span>
     <span class="doccomment">/// sets it and returns true.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The given offset must be active, otherwise this panics.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>, <span class="ident">off</span>: <span class="ident">RareByteOffset</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">off</span>.<span class="ident">is_active</span>());
-
-        <span class="kw">let</span> <span class="ident">existing</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">set</span>[<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span>];
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">existing</span>.<span class="ident">is_active</span>() {
-            <span class="kw-2">*</span><span class="ident">existing</span> <span class="op">=</span> <span class="ident">off</span>;
-            <span class="bool-val">true</span>
-        } <span class="kw">else</span> {
-            <span class="kw">if</span> <span class="ident">existing</span>.<span class="ident">max</span> <span class="op">&lt;</span> <span class="ident">off</span>.<span class="ident">max</span> {
-                <span class="kw-2">*</span><span class="ident">existing</span> <span class="op">=</span> <span class="ident">off</span>;
-            }
-            <span class="bool-val">false</span>
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>, <span class="ident">off</span>: <span class="ident">RareByteOffset</span>) {
+        <span class="self">self</span>.<span class="ident">set</span>[<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">max</span> <span class="op">=</span>
+            <span class="ident">cmp</span>::<span class="ident">max</span>(<span class="self">self</span>.<span class="ident">set</span>[<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">max</span>, <span class="ident">off</span>.<span class="ident">max</span>);
     }
 }
 
@@ -1381,7 +1449,7 @@
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">offsets</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">for</span> <span class="ident">off</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">set</span>.<span class="ident">iter</span>() {
-            <span class="kw">if</span> <span class="ident">off</span>.<span class="ident">is_active</span>() {
+            <span class="kw">if</span> <span class="ident">off</span>.<span class="ident">max</span> <span class="op">&gt;</span> <span class="number">0</span> {
                 <span class="ident">offsets</span>.<span class="ident">push</span>(<span class="ident">off</span>);
             }
         }
@@ -1404,33 +1472,27 @@
     <span class="doccomment">/// ineffective when it is asked to start scanning from a position that it</span>
     <span class="doccomment">/// has already scanned past.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// N.B. The maximum value for this is 254. A value of 255 indicates that</span>
-    <span class="doccomment">/// this is unused. If a rare byte is found at an offset of 255 or greater,</span>
-    <span class="doccomment">/// then the rare-byte prefilter is disabled for simplicity.</span>
+    <span class="doccomment">/// Using a `u8` here means that if we ever see a pattern that&#39;s longer</span>
+    <span class="doccomment">/// than 255 bytes, then the entire rare byte prefilter is disabled.</span>
     <span class="ident">max</span>: <span class="ident">u8</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">RareByteOffset</span> {
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RareByteOffset</span> {
-        <span class="ident">RareByteOffset</span> { <span class="ident">max</span>: <span class="ident">u8</span>::<span class="ident">MAX</span> }
+        <span class="ident">RareByteOffset</span> { <span class="ident">max</span>: <span class="number">0</span> }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">RareByteOffset</span> {
     <span class="doccomment">/// Create a new rare byte offset. If the given offset is too big, then</span>
-    <span class="doccomment">/// an inactive `RareByteOffset` is returned.</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">max</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RareByteOffset</span> {
-        <span class="kw">if</span> <span class="ident">max</span> <span class="op">&gt;</span> (<span class="ident">u8</span>::<span class="ident">MAX</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">usize</span> {
-            <span class="ident">RareByteOffset</span>::<span class="ident">default</span>()
+    <span class="doccomment">/// None is returned. In that case, callers should render the rare bytes</span>
+    <span class="doccomment">/// prefilter inert.</span>
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">max</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RareByteOffset</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">max</span> <span class="op">&gt;</span> <span class="ident">u8</span>::<span class="ident">MAX</span> <span class="kw">as</span> <span class="ident">usize</span> {
+            <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
-            <span class="ident">RareByteOffset</span> { <span class="ident">max</span>: <span class="ident">max</span> <span class="kw">as</span> <span class="ident">u8</span> }
+            <span class="prelude-val">Some</span>(<span class="ident">RareByteOffset</span> { <span class="ident">max</span>: <span class="ident">max</span> <span class="kw">as</span> <span class="ident">u8</span> })
         }
-    }
-
-    <span class="doccomment">/// Returns true if and only if this offset is active. If it&#39;s inactive,</span>
-    <span class="doccomment">/// then it should not be used.</span>
-    <span class="kw">fn</span> <span class="ident">is_active</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">max</span> <span class="op">&lt;</span> <span class="ident">u8</span>::<span class="ident">MAX</span>
     }
 }
 
@@ -1439,6 +1501,7 @@
     <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RareBytesBuilder</span> {
         <span class="ident">RareBytesBuilder</span> {
             <span class="ident">ascii_case_insensitive</span>: <span class="bool-val">false</span>,
+            <span class="ident">rare_set</span>: <span class="ident">ByteSet</span>::<span class="ident">empty</span>(),
             <span class="ident">byte_offsets</span>: <span class="ident">RareByteOffsets</span>::<span class="ident">empty</span>(),
             <span class="ident">available</span>: <span class="bool-val">true</span>,
             <span class="ident">count</span>: <span class="number">0</span>,
@@ -1463,8 +1526,8 @@
             <span class="kw">return</span> <span class="prelude-val">None</span>;
         }
         <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">bytes</span>, <span class="kw-2">mut</span> <span class="ident">len</span>) <span class="op">=</span> ([<span class="number">0</span>; <span class="number">3</span>], <span class="number">0</span>);
-        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">256</span> {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">byte_offsets</span>.<span class="ident">set</span>[<span class="ident">b</span>].<span class="ident">is_active</span>() {
+        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="number">0</span>..<span class="op">=</span><span class="number">255</span> {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rare_set</span>.<span class="ident">contains</span>(<span class="ident">b</span>) {
                 <span class="ident">bytes</span>[<span class="ident">len</span>] <span class="op">=</span> <span class="ident">b</span> <span class="kw">as</span> <span class="ident">u8</span>;
                 <span class="ident">len</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             }
@@ -1495,15 +1558,25 @@
     <span class="doccomment">/// All patterns added to an Aho-Corasick automaton should be added to this</span>
     <span class="doccomment">/// builder before attempting to construct the prefilter.</span>
     <span class="kw">fn</span> <span class="ident">add</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
+        <span class="comment">// If we&#39;ve already given up, then do nothing.</span>
+        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">available</span> {
+            <span class="kw">return</span>;
+        }
         <span class="comment">// If we&#39;ve already blown our budget, then don&#39;t waste time looking</span>
         <span class="comment">// for more rare bytes.</span>
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">count</span> <span class="op">&gt;</span> <span class="number">3</span> {
             <span class="self">self</span>.<span class="ident">available</span> <span class="op">=</span> <span class="bool-val">false</span>;
             <span class="kw">return</span>;
         }
+        <span class="comment">// If the pattern is too long, then our offset table is bunk, so</span>
+        <span class="comment">// give up.</span>
+        <span class="kw">if</span> <span class="ident">bytes</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">256</span> {
+            <span class="self">self</span>.<span class="ident">available</span> <span class="op">=</span> <span class="bool-val">false</span>;
+            <span class="kw">return</span>;
+        }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rarest</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">bytes</span>.<span class="ident">get</span>(<span class="number">0</span>) {
             <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">b</span>, <span class="number">0</span>, <span class="ident">freq_rank</span>(<span class="ident">b</span>)),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">b</span>, <span class="ident">freq_rank</span>(<span class="ident">b</span>)),
         };
         <span class="comment">// The idea here is to look for the rarest byte in each pattern, and</span>
         <span class="comment">// add that to our set. As a special exception, if we see a byte that</span>
@@ -1514,33 +1587,44 @@
         <span class="comment">// were searching for `Sherlock` and `lockjaw`, then this would pick</span>
         <span class="comment">// `k` for both patterns, resulting in the use of `memchr` instead of</span>
         <span class="comment">// `memchr2` for `k` and `j`.</span>
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">found</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">for</span> (<span class="ident">pos</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="kw">in</span> <span class="ident">bytes</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">byte_offsets</span>.<span class="ident">set</span>[<span class="ident">b</span> <span class="kw">as</span> <span class="ident">usize</span>].<span class="ident">is_active</span>() {
-                <span class="self">self</span>.<span class="ident">add_rare_byte</span>(<span class="ident">b</span>, <span class="ident">pos</span>);
-                <span class="kw">return</span>;
+            <span class="self">self</span>.<span class="ident">set_offset</span>(<span class="ident">pos</span>, <span class="ident">b</span>);
+            <span class="kw">if</span> <span class="ident">found</span> {
+                <span class="kw">continue</span>;
+            }
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rare_set</span>.<span class="ident">contains</span>(<span class="ident">b</span>) {
+                <span class="ident">found</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="kw">continue</span>;
             }
             <span class="kw">let</span> <span class="ident">rank</span> <span class="op">=</span> <span class="ident">freq_rank</span>(<span class="ident">b</span>);
-            <span class="kw">if</span> <span class="ident">rank</span> <span class="op">&lt;</span> <span class="ident">rarest</span>.<span class="number">2</span> {
-                <span class="ident">rarest</span> <span class="op">=</span> (<span class="ident">b</span>, <span class="ident">pos</span>, <span class="ident">rank</span>);
+            <span class="kw">if</span> <span class="ident">rank</span> <span class="op">&lt;</span> <span class="ident">rarest</span>.<span class="number">1</span> {
+                <span class="ident">rarest</span> <span class="op">=</span> (<span class="ident">b</span>, <span class="ident">rank</span>);
             }
         }
-        <span class="self">self</span>.<span class="ident">add_rare_byte</span>(<span class="ident">rarest</span>.<span class="number">0</span>, <span class="ident">rarest</span>.<span class="number">1</span>);
+        <span class="kw">if</span> <span class="op">!</span><span class="ident">found</span> {
+            <span class="self">self</span>.<span class="ident">add_rare_byte</span>(<span class="ident">rarest</span>.<span class="number">0</span>);
+        }
     }
 
-    <span class="kw">fn</span> <span class="ident">add_rare_byte</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">add_one_byte</span>(<span class="ident">byte</span>, <span class="ident">pos</span>);
+    <span class="kw">fn</span> <span class="ident">set_offset</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">pos</span>: <span class="ident">usize</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) {
+        <span class="comment">// This unwrap is OK because pos is never bigger than our max.</span>
+        <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">RareByteOffset</span>::<span class="ident">new</span>(<span class="ident">pos</span>).<span class="ident">unwrap</span>();
+        <span class="self">self</span>.<span class="ident">byte_offsets</span>.<span class="ident">set</span>(<span class="ident">byte</span>, <span class="ident">offset</span>);
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ascii_case_insensitive</span> {
-            <span class="self">self</span>.<span class="ident">add_one_byte</span>(<span class="ident">opposite_ascii_case</span>(<span class="ident">byte</span>), <span class="ident">pos</span>);
+            <span class="self">self</span>.<span class="ident">byte_offsets</span>.<span class="ident">set</span>(<span class="ident">opposite_ascii_case</span>(<span class="ident">byte</span>), <span class="ident">offset</span>);
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">add_one_byte</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) {
-        <span class="kw">let</span> <span class="ident">off</span> <span class="op">=</span> <span class="ident">RareByteOffset</span>::<span class="ident">new</span>(<span class="ident">pos</span>);
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">off</span>.<span class="ident">is_active</span>() {
-            <span class="self">self</span>.<span class="ident">available</span> <span class="op">=</span> <span class="bool-val">false</span>;
-            <span class="kw">return</span>;
+    <span class="kw">fn</span> <span class="ident">add_rare_byte</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) {
+        <span class="self">self</span>.<span class="ident">add_one_rare_byte</span>(<span class="ident">byte</span>);
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ascii_case_insensitive</span> {
+            <span class="self">self</span>.<span class="ident">add_one_rare_byte</span>(<span class="ident">opposite_ascii_case</span>(<span class="ident">byte</span>));
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">byte_offsets</span>.<span class="ident">apply</span>(<span class="ident">byte</span>, <span class="ident">off</span>) {
+    }
+
+    <span class="kw">fn</span> <span class="ident">add_one_rare_byte</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">byte</span>: <span class="ident">u8</span>) {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rare_set</span>.<span class="ident">insert</span>(<span class="ident">byte</span>) {
             <span class="self">self</span>.<span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="self">self</span>.<span class="ident">rank_sum</span> <span class="op">+</span><span class="op">=</span> <span class="ident">freq_rank</span>(<span class="ident">byte</span>) <span class="kw">as</span> <span class="ident">u16</span>;
         }
