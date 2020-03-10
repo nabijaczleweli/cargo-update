@@ -11,7 +11,11 @@ fn nonexistant() {
     assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
                Err(format!(r"Couldn't read {} (index directory for https://github.com/rust-lang/crates.io-index): {}",
                            indices.join("registry").join("index").join("github.com-1ecc6299db9ec823").display(),
-                           "The system cannot find the path specified. (os error 3)")
+                           if cfg!(target_os = "windows") {
+                               "The system cannot find the path specified. (os error 3)"
+                           } else {
+                               "No such file or directory (os error 2)"
+                           })
                    .into()));
 }
 

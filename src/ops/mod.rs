@@ -762,8 +762,13 @@ fn crate_versions_impl(buf: String) -> Vec<Semver> {
 pub fn get_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, Cow<'static, str>> {
     let path = cargo_dir.join("registry").join("index").join(registry_shortname(registry_url));
     match path.metadata() {
-        Ok(meta) if meta.is_dir() => Ok(path),
-        Ok(_) => Err(format!("{} (index directory for {}) not a directory", path.display(), registry_url).into()),
+        Ok(meta) => {
+            if meta.is_dir() {
+                Ok(path)
+            } else {
+                Err(format!("{} (index directory for {}) not a directory", path.display(), registry_url).into())
+            }
+        }
         Err(e) => Err(format!("Couldn't read {} (index directory for {}): {}", path.display(), registry_url, e).into()),
     }
 }
@@ -866,20 +871,21 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<String, Cow<'
         cur_source = "crates-io".into();
     }
 
-    let empty = vec![].into_iter().collect();
-    for (name, v) in config.get("source").and_then(toml::Value::as_table).unwrap_or(&empty) {
-        if let Some(replacement) = v.get("replace-with") {
-            replacements.insert(&name[..],
-                                replacement.as_str().ok_or_else(|| format!("source.{}.replacement not string", name))?);
-        }
-
-        if let Some(url) = v.get("registry") {
-            let url = url.as_str().ok_or_else(|| format!("source.{}.registry not string", name))?.to_string().into();
-            if cur_source == url {
-                cur_source = name.into();
+    if let Some(source) = config.get("source") {
+        for (name, v) in source.as_table().ok_or(Cow::from("source not table"))? {
+            if let Some(replacement) = v.get("replace-with") {
+                replacements.insert(&name[..],
+                                    replacement.as_str().ok_or_else(|| format!("source.{}.replacement not string", name))?);
             }
 
-            registries.insert(&name[..], url);
+            if let Some(url) = v.get("registry") {
+                let url = url.as_str().ok_or_else(|| format!("source.{}.registry not string", name))?.to_string().into();
+                if cur_source == url {
+                    cur_source = name.into();
+                }
+
+                registries.insert(&name[..], url);
+            }
         }
     }
 
