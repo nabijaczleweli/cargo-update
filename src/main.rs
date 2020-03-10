@@ -6,6 +6,8 @@ extern crate git2;
 
 use std::io::{Write, stdout, sink};
 use std::process::{Command, exit};
+use std::collections::BTreeMap;
+use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
@@ -38,7 +40,7 @@ fn actual_main() -> Result<(), i32> {
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
     let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml"))?;
-    let mut packages = cargo_update::ops::installed_main_repo_packages(&crates_file);
+    let mut packages = cargo_update::ops::installed_cargo_repo_packages(&crates_file);
     let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
         cargo_update::ops::installed_git_repo_packages(&crates_file)
     } else {
@@ -66,35 +68,62 @@ fn actual_main() -> Result<(), i32> {
         (false, false) => packages = cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install, &installed_git_packages),
     }
 
-    let registry_url = cargo_update::ops::get_index_url(&crates_file);
-    let registry = cargo_update::ops::get_index_path(&opts.cargo_dir.1, Some(&registry_url)).map_err(|e| {
-            eprintln!("Couldn't get package repository: {}.", e);
-            2
-        })?;
-    let mut registry_repo = Repository::open(&registry).map_err(|_| {
+    // These are all in the same order and (item => [package names]) maps
+    let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
+    for package in &packages {
+        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry_url)).or_default().push(package.name.clone());
+    }
+    let registry_urls: Vec<_> = registry_urls.into_iter().collect();
+
+    let registries: Vec<_> = Result::from_iter(registry_urls.iter()
+        .map(|(registry_url, pkg_names)| {
+            cargo_update::ops::get_index_path(&opts.cargo_dir.1, &registry_url[..])
+                .map(|path| (path, &pkg_names[..]))
+                .map_err(|e| {
+                    eprintln!("Couldn't get package repository: {}.", e);
+                    2
+                })
+        }))?;
+    let mut registry_repos: Vec<_> = Result::from_iter(registries.iter().map(|(registry, _)| {
+        Repository::open(&registry).map_err(|_| {
             eprintln!("Failed to open registry repository at {}.", registry.display());
             2
-        })?;
-    cargo_update::ops::update_index(&mut registry_repo,
-                                    &registry_url,
-                                    http_proxy.as_ref().map(String::as_str),
-                                    &mut if !opts.quiet {
-                                        Box::new(stdout()) as Box<dyn Write>
-                                    } else {
-                                        Box::new(sink()) as Box<dyn Write>
-                                    }).map_err(|e| {
-            eprintln!("Failed to update index repository: {}.", e);
-            2
-        })?;
-    let latest_registry = registry_repo.revparse_single("origin/master")
-        .map_err(|_| {
-            eprintln!("Failed to read master branch of registry repository at {}.", registry.display());
-            2
-        })?;
+        })
+    }))?;
+    for (i, mut registry_repo) in registry_repos.iter_mut().enumerate() {
+        cargo_update::ops::update_index(&mut registry_repo,
+                                        &registry_urls[i].0,
+                                        http_proxy.as_ref().map(String::as_str),
+                                        &mut if !opts.quiet {
+                                            Box::new(stdout()) as Box<dyn Write>
+                                        } else {
+                                            Box::new(sink()) as Box<dyn Write>
+                                        }).map_err(|e| {
+                eprintln!("Failed to update index repository: {}.", e);
+                2
+            })?;
+    }
+    let latest_registries: Vec<_> = Result::from_iter(registry_repos.iter().zip(registries.iter()).map(|(registry_repo, (registry, _))| {
+        registry_repo.revparse_single("origin/master")
+            .map_err(|_| {
+                eprintln!("Failed to read master branch of registry repository at {}.", registry.display());
+                2
+            })
+    }))?;
 
     for package in &mut packages {
+        let registry_idx = match registries.iter().position(|(_, pkg_names)| pkg_names.contains(&package.name)) {
+            Some(i) => i,
+            None => {
+                panic!("Couldn't find registry for package {} (please report to http://github.com/nabijaczleweli/cargo-update)",
+                       &package.name[..])
+            }
+        };
+
         let install_prereleases = configuration.get(&package.name).and_then(|c| c.install_prereleases);
-        package.pull_version(&latest_registry.as_commit().unwrap().tree().unwrap(), &registry_repo, install_prereleases);
+        package.pull_version(&latest_registries[registry_idx].as_commit().unwrap().tree().unwrap(),
+                             &registry_repos[registry_idx],
+                             install_prereleases);
     }
 
     if !opts.quiet {
@@ -173,6 +202,13 @@ fn actual_main() -> Result<(), i32> {
                         save_cargo_update_exec(package.version.as_ref().unwrap());
                     }
 
+                    let registry_url = match registry_urls.iter().find(|(_, pkg_names)| pkg_names.contains(&package.name)) {
+                        Some(u) => &u.0,
+                        None => {
+                            panic!("Couldn't find registry URL for package {} (please report to http://github.com/nabijaczleweli/cargo-update)",
+                                   &package.name[..])
+                        }
+                    };
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
                             Command::new("cargo")
                                 .args(&cfg.cargo_args()[..])
@@ -183,6 +219,8 @@ fn actual_main() -> Result<(), i32> {
                                 } else {
                                     package.update_to_version().unwrap().to_string()
                                 })
+                                .arg("--registry")
+                                .arg(registry_url.as_ref())
                                 .arg(&package.name)
                                 .args(&opts.cargo_install_args)
                                 .status()
@@ -193,6 +231,8 @@ fn actual_main() -> Result<(), i32> {
                                 .args(if opts.quiet { Some("--quiet") } else { None })
                                 .arg("--vers")
                                 .arg(package.update_to_version().unwrap().to_string())
+                                .arg("--registry")
+                                .arg(registry_url.as_ref())
                                 .arg(&package.name)
                                 .args(&opts.cargo_install_args)
                                 .status()

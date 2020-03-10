@@ -38,7 +38,9 @@ Exit values and possible errors:
 
   [PACKAGE...]
 
-    List of packages to update.
+    List of packages to update in the [(registry_url):]package_name[:version] format.
+
+    Registry defaults to the default crates.io registry.
 
     If specified in addition to --all,
     will add the specified packages to the update list
@@ -134,7 +136,7 @@ Exit values and possible errors:
 
       Updated 2 packages.
 
-  `cargo install-update` *racer treesize cargo-cln*
+  `cargo install-update racer treesize cargo-cln`
 
     Only consider racer, treesize and cargo-cln for updates.
     Since cargo-cln is not installed, it'll be ignored.
@@ -235,7 +237,7 @@ Exit values and possible errors:
          [...]
          Compiling checksums v0.5.2
           Finished release [optimized] target(s) in 95.2 secs
-         Replacing D:\Users\nabijaczleweli\.cargo\bin\checksums.exe
+         Installing D:\Users\nabijaczleweli\.cargo\bin\checksums.exe
 
       Updating treesize
           Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -246,6 +248,28 @@ Exit values and possible errors:
          Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
 
       Updated 2 packages.
+
+  `cargo install-update -i (file:///usr/share/cargo):zram-generator:0.1.1`
+
+    Install zram-generator from a local repository in /usr/share/cargo
+    (but a remote one will work just as well), at most version 0.1.1.
+
+     Example output:
+          Updating registry `file:///usr/share/cargo`
+
+      Package         Installed  Latest   Needs update
+      zram-generator             v0.1.1   Yes
+
+      Installing zram-generator
+          Updating registry `https://github.com/rust-lang/crates.io-index`
+         Downloading zram-generator v0.1.1
+         [...]
+         Compiling zram-generator v0.1.1
+          Finished release [optimized] target(s) in 21.62 secs
+        Installing /home/nabijaczleweli/.cargo/bin/zram-generator
+         Installed package `zram-generator v0.1.1` (executable `zram-generator`)
+
+      Updated 1 package.
 
   `cargo install-update -ag`
 

@@ -1,6 +1,6 @@
 //! Main functions doing actual work.
 //!
-//! Use `installed_main_repo_packages()` to list the installed packages,
+//! Use `installed_cargo_repo_packages()` to list the installed packages,
 //! then use `intersect_packages()` to confirm which ones should be updated,
 //! poll the packages' latest versions by calling `MainRepoPackage::pull_version()` on them,
 //! continue with doing whatever you wish.
@@ -8,16 +8,17 @@
 
 use git2::{self, Error as GitError, Config as GitConfig, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
-use std::fs::{self, DirEntry, File};
 use std::path::{PathBuf, Path};
+use std::hash::{Hasher, Hash};
 use std::io::{Write, Read};
-use std::time::SystemTime;
+use std::fs::{self, File};
 use std::{cmp, env, mem};
 use std::borrow::Cow;
 use regex::Regex;
 use url::Url;
 use toml;
 use json;
+use hex;
 
 mod config;
 
@@ -25,7 +26,7 @@ pub use self::config::*;
 
 
 lazy_static! {
-    static ref MAIN_PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)").unwrap();
+    static ref CARGO_PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)").unwrap();
     static ref GIT_PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)").unwrap();
 }
 
@@ -41,14 +42,16 @@ lazy_static! {
 /// ```
 /// # extern crate cargo_update;
 /// # extern crate semver;
-/// # use cargo_update::ops::MainRepoPackage;
+/// # use cargo_update::ops::CargoRepoPackage;
 /// # use semver::Version as Semver;
 /// # fn main() {
 /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
-/// let mut package = MainRepoPackage::parse(package_s).unwrap();
+/// let mut package = CargoRepoPackage::parse(package_s).unwrap();
 /// assert_eq!(package,
-///            MainRepoPackage {
+///            CargoRepoPackage {
 ///                name: "racer".to_string(),
+///                registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+///                registry_shortname: "github.com-1ecc6299db9ec823".to_string(),
 ///                version: Some(Semver::parse("1.2.10").unwrap()),
 ///                newest_version: None,
 ///                alternative_version: None,
@@ -63,14 +66,18 @@ lazy_static! {
 /// # }
 /// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct MainRepoPackage {
+pub struct CargoRepoPackage {
     /// The package's name.
     ///
-    /// Go to `https://crates.io/crates/{name}` to get the crate info.
+    /// Go to `https://crates.io/crates/{name}` to get the crate info, if available on the main repository.
     pub name: String,
+    /// The registry the package is available from.
+    ///
+    /// The main repository is `https://github.com/rust-lang/crates.io-index`
+    pub registry_url: String,
     /// The package's locally installed version.
     pub version: Option<Semver>,
-    /// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.
+    /// The latest version of the package, available at [`crates.io`](https://crates.io), if in main repository.
     ///
     /// `None` by default, acquire via `MainRepoPackage::pull_version()`.
     pub newest_version: Option<Semver>,
@@ -128,7 +135,7 @@ pub struct GitRepoPackage {
 }
 
 
-impl MainRepoPackage {
+impl CargoRepoPackage {
     /// Try to decypher a package descriptor into a `MainRepoPackage`.
     ///
     /// Will return `None` if:
@@ -177,10 +184,11 @@ impl MainRepoPackage {
     /// let package_s = "treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#v0.2.1)";
     /// assert!(MainRepoPackage::parse(package_s).is_none());
     /// ```
-    pub fn parse(what: &str) -> Option<MainRepoPackage> {
-        MAIN_PACKAGE_RGX.captures(what).map(|c| {
-            MainRepoPackage {
+    pub fn parse(what: &str) -> Option<CargoRepoPackage> {
+        CARGO_PACKAGE_RGX.captures(what).map(|c| {
+            CargoRepoPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
+                registry_url: c.get(3).unwrap().as_str().to_string(),
                 version: Some(Semver::parse(c.get(2).unwrap().as_str()).unwrap()),
                 newest_version: None,
                 alternative_version: None,
@@ -567,7 +575,7 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
 }
 
 /// List the installed packages at the specified location that originate
-/// from the main [`crates.io`](https://crates.io) registry.
+/// from the a cargo registry.
 ///
 /// If the `.crates.toml` file doesn't exist an empty vector is returned.
 ///
@@ -578,21 +586,21 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
 /// # Examples
 ///
 /// ```
-/// # use cargo_update::ops::installed_main_repo_packages;
+/// # use cargo_update::ops::installed_cargo_repo_packages;
 /// # use std::env::temp_dir;
 /// # let cargo_dir = temp_dir().join(".crates.toml");
-/// let packages = installed_main_repo_packages(&cargo_dir);
+/// let packages = installed_cargo_repo_packages(&cargo_dir);
 /// for package in &packages {
 ///     println!("{} v{}", package.name, package.version.as_ref().unwrap());
 /// }
 /// ```
-pub fn installed_main_repo_packages(crates_file: &Path) -> Vec<MainRepoPackage> {
+pub fn installed_cargo_repo_packages(crates_file: &Path) -> Vec<CargoRepoPackage> {
     if crates_file.exists() {
         let mut crates = String::new();
         File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
-        let mut res = Vec::<MainRepoPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| MainRepoPackage::parse(s)) {
+        let mut res = Vec::<CargoRepoPackage>::new();
+        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| CargoRepoPackage::parse(s)) {
             if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
                 if saved.version.is_none() || saved.version.as_ref().unwrap() < pkg.version.as_ref().unwrap() {
                     saved.version = pkg.version;
@@ -649,16 +657,16 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
 /// Filter out the installed packages not specified to be updated and add the packages you specify to install,
 /// if they aren't already installed via git.
 ///
-/// List installed packages with `installed_main_repo_packages()`.
+/// List installed packages with `installed_cargo_repo_packages()`.
 ///
 /// # Examples
 ///
 /// ```
 /// # use cargo_update::ops::{MainRepoPackage, intersect_packages};
-/// # fn installed_main_repo_packages(_: &()) {}
+/// # fn installed_cargo_repo_packages(_: &()) {}
 /// # let cargo_dir = ();
 /// # let packages_to_update = [("racer".to_string(), None), ("cargo-outdated".to_string(), None)];
-/// let mut installed_packages = installed_main_repo_packages(&cargo_dir);
+/// let mut installed_packages = installed_cargo_repo_packages(&cargo_dir);
 /// # let mut installed_packages =
 /// #     vec![MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #          MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
@@ -668,17 +676,19 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
 /// #   &[MainRepoPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
 /// #     MainRepoPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
 /// ```
-pub fn intersect_packages(installed: &[MainRepoPackage], to_update: &[(String, Option<Semver>)], allow_installs: bool, installed_git: &[GitRepoPackage])
-                          -> Vec<MainRepoPackage> {
+pub fn intersect_packages(installed: &[CargoRepoPackage], to_update: &[(String, Option<Semver>, String)], allow_installs: bool,
+                          installed_git: &[GitRepoPackage])
+                          -> Vec<CargoRepoPackage> {
     installed.iter()
         .filter(|p| to_update.iter().any(|u| p.name == u.0))
         .cloned()
-        .map(|p| MainRepoPackage { max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()), ..p })
+        .map(|p| CargoRepoPackage { max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()), ..p })
         .chain(to_update.iter()
             .filter(|p| allow_installs && installed.iter().find(|i| i.name == p.0).is_none() && installed_git.iter().find(|i| i.name == p.0).is_none())
             .map(|p| {
-                MainRepoPackage {
+                CargoRepoPackage {
                     name: p.0.clone(),
+                    registry_url: p.2.clone(),
                     version: None,
                     newest_version: None,
                     alternative_version: None,
@@ -736,37 +746,18 @@ fn crate_versions_impl(buf: String) -> Vec<Semver> {
 /// # let _ = fs::create_dir(&cargo_dir);
 /// # let idx_dir = cargo_dir.join("registry").join("index").join("github.com-1ecc6299db9ec823");
 /// # let _ = fs::create_dir_all(&idx_dir);
-/// // These are equivalent for most users,
-/// // but you might need to specify the URL to find the right checkout if you use more than one registry
-/// let index = get_index_path(&cargo_dir, None).unwrap();
-/// let index = get_index_path(&cargo_dir, Some("https://github.com/rust-lang/crates.io-index")).unwrap();
+/// let index = get_index_path(&cargo_dir, "https://github.com/rust-lang/crates.io-index").unwrap();
 ///
 /// // Use find_package_data() to look for packages
 /// # assert_eq!(index, idx_dir);
 /// ```
-pub fn get_index_path(cargo_dir: &Path, registry_url: Option<&str>) -> Result<PathBuf, &'static str> {
-    let registry_url = registry_url.map(|u| Url::parse(u).map_err(|_| "registry URL not an URL")).transpose()?;
-    let registry_host = registry_url.as_ref().and_then(|u| u.host_str());
-
-    Ok(fs::read_dir(cargo_dir.join("registry").join("index"))
-        .map_err(|_| "index directory nonexistant")?
-        .map(Result::unwrap)
-        .filter(|i| i.file_type().unwrap().is_dir())
-        .filter(|i| registry_host.map(|rh| i.file_name().to_string_lossy().starts_with(rh)).unwrap_or(true))
-        .max_by_key(latest_modified)
-        .ok_or("empty index directory")?
-        .path())
-}
-
-fn latest_modified(ent: &DirEntry) -> SystemTime {
-    let meta = ent.metadata().unwrap();
-    let mut latest = meta.modified().unwrap();
-    if meta.is_dir() {
-        for ent in fs::read_dir(ent.path()).unwrap() {
-            latest = cmp::max(latest, latest_modified(&ent.unwrap()));
-        }
+pub fn get_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, &'static str> {
+    let path = cargo_dir.join("registry").join("index").join(registry_shortname(registry_url));
+    if path.is_file() {
+        Err(format!("{} not a directory", path.display())).unwrap()
+    } else {
+        Ok(path)
     }
-    latest
 }
 
 /// Update the specified index repository from the specified URL.
@@ -850,8 +841,13 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callb
 /// Defaults to `https://github.com/rust-lang/crates.io-index`
 ///
 /// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) for details
-pub fn get_index_url(crates_file: &Path) -> Cow<'static, str> {
-    get_index_url_impl(crates_file).map(Cow::from).unwrap_or(Cow::from("https://github.com/rust-lang/crates.io-index"))
+pub fn get_index_url(crates_file: &Path, registry_url: &str) -> Cow<'static, str> {
+    // TODO: this is most likely not the right way to do this
+    if registry_url == "https://github.com/rust-lang/crates.io-index" {
+        get_index_url_impl(crates_file).map(Cow::from).unwrap_or(Cow::from("https://github.com/rust-lang/crates.io-index"))
+    } else {
+        registry_url.to_string().into()
+    }
 }
 
 fn get_index_url_impl(crates_file: &Path) -> Option<String> {
@@ -921,7 +917,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
         for uname in cred_helper.username
             .into_iter()
             .chain(cfg.get_string("user.name"))
-            .chain(["USERNAME", "USER"].into_iter().flat_map(env::var))
+            .chain(["USERNAME", "USER"].iter().flat_map(env::var))
             .chain(Some("git").into_iter().map(str::to_string)) {
             let mut ssh_attempts = 0;
 
@@ -1069,4 +1065,34 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
 /// The resulting paths are children of this directory in the format `cratename-hash`
 pub fn find_git_db_repo(git_db_dir: &Path, cratename: &str) -> Option<PathBuf> {
     fs::read_dir(git_db_dir).ok()?.flatten().find(|de| de.file_name().to_str().map(|n| n.starts_with(cratename)).unwrap_or(false)).map(|de| de.path())
+}
+
+
+/// The short filesystem name for the repository, as used by `cargo`
+///
+/// Must be equivalent to
+/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/sources/registry/mod.rs#L387-L402
+/// and
+/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/util/hex.rs
+///
+/// For main repository it's `github.com-1ecc6299db9ec823`
+#[allow(deprecated)]
+pub fn registry_shortname(url: &str) -> String {
+    use std::hash::SipHasher;
+
+    let mut hasher = SipHasher::new_with_keys(0, 0);
+    url.hash(&mut hasher);
+    let hash = hasher.finish();
+    let hash = hex::encode(&[(hash >> 0) as u8,
+                             (hash >> 8) as u8,
+                             (hash >> 16) as u8,
+                             (hash >> 24) as u8,
+                             (hash >> 32) as u8,
+                             (hash >> 40) as u8,
+                             (hash >> 48) as u8,
+                             (hash >> 56) as u8]);
+
+    format!("{}-{}",
+            Url::parse(url).map_err(|e| format!("{} not an URL: {}", url, e)).unwrap().host_str().unwrap_or(""),
+            hash)
 }

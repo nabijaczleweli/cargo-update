@@ -27,7 +27,7 @@ use std::{env, fs};
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Options {
     /// (Additional) packages to update. Default: `[]`
-    pub to_update: Vec<(String, Option<Semver>)>,
+    pub to_update: Vec<(String, Option<Semver>, String)>,
     /// Whether to update all packages. Default: `false`
     pub all: bool,
     /// Whether to update packages or just list them. Default: `true`
@@ -257,11 +257,23 @@ fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
     fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
 }
 
-fn package_parse(s: String) -> Result<(String, Option<Semver>), String> {
+fn package_parse(s: String) -> Result<(String, Option<Semver>, String), String> {
+    let mut registry_url = None;
+    let mut s = &s[..];
+    if s.starts_with('(') {
+        if let Some(idx) = s.find("):") {
+            registry_url = Some(s[1..idx].to_string());
+            s = &s[idx + 2..];
+        }
+    }
+
+    let registry_url = registry_url.unwrap_or_else(|| "https://github.com/rust-lang/crates.io-index".to_string());
+
     if let Some(idx) = s.find(':') {
         Ok((s[0..idx].to_string(),
-            Some(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))?)))
+            Some(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))?),
+            registry_url))
     } else {
-        Ok((s, None))
+        Ok((s.to_string(), None, registry_url))
     }
 }
