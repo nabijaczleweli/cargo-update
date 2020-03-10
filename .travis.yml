@@ -1,15 +1,6 @@
 sudo: false
 language: generic
-cache:
-  cargo: true
-  directories:
-    - /tmp/tools
-
-env:
-  global:
-    - PATH="$HOME/bin:$PATH"
-    - CMAKE_VERSION_PREFIX=3.8
-    - CMAKE_VERSION_FULL=3.8.1
+cache: cargo
 
 matrix:
   include:
@@ -43,15 +34,6 @@ before_install:
 
 install:
   - if [ "$LANGUAGE" == "Ruby" ]; then gem install ronn; fi
-  -
-  - mkdir -p /tmp/tools
-  - pushd /tmp/tools
-  - if [[ ! -f "cmake-$CMAKE_VERSION_FULL-Linux-x86_64.sh" ]]; then
-      curl -SOL "https://cmake.org/files/v$CMAKE_VERSION_PREFIX/cmake-$CMAKE_VERSION_FULL-Linux-x86_64.sh";
-      chmod +x "cmake-$CMAKE_VERSION_FULL-Linux-x86_64.sh";
-    fi
-  - ./"cmake-$CMAKE_VERSION_FULL-Linux-x86_64.sh" --prefix="$HOME" --exclude-subdir --skip-license
-  - popd
 
 script:
   - if [ "$LANGUAGE" == "Rust" ]; then cargo build --verbose; fi
