@@ -40,7 +40,8 @@ Exit values and possible errors:
 
     List of packages to update in the [(registry_url):]package_name[:version] format.
 
-    Registry defaults to the default crates.io registry.
+    Registry defaults to the default crates.io registry,
+    and can be a name from ~/.cargo/config.
 
     If specified in addition to --all,
     will add the specified packages to the update list
