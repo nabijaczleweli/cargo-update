@@ -1081,6 +1081,7 @@ pub fn registry_shortname(url: &str) -> String {
     use std::hash::SipHasher;
 
     let mut hasher = SipHasher::new_with_keys(0, 0);
+    SourceKind::Registry.hash(&mut hasher);
     url.hash(&mut hasher);
     let hash = hasher.finish();
     let hash = hex::encode(&[(hash >> 0) as u8,
@@ -1095,4 +1096,26 @@ pub fn registry_shortname(url: &str) -> String {
     format!("{}-{}",
             Url::parse(url).map_err(|e| format!("{} not an URL: {}", url, e)).unwrap().host_str().unwrap_or(""),
             hash)
+}
+
+/// These two are stolen verbatim from
+/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/core/source/source_id.rs#L48-L73
+/// in order to match our hash with
+/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/core/source/source_id.rs#L510
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[allow(unused)]
+enum SourceKind {
+    Git(GitReference),
+    Path,
+    Registry,
+    LocalRegistry,
+    Directory,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[allow(unused)]
+enum GitReference {
+    Tag(String),
+    Branch(String),
+    Rev(String),
 }
