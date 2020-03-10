@@ -19,7 +19,7 @@ fn existant() {
     assert_eq!(installed_registry_packages(&td),
                vec![RegistryPackage {
                         name: "cargo-outdated".to_string(),
-                        registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+                        registry: "https://github.com/rust-lang/crates.io-index".to_string(),
                         version: Some(Semver::parse("0.2.0").unwrap()),
                         newest_version: None,
                         alternative_version: None,
@@ -27,7 +27,7 @@ fn existant() {
                     },
                     RegistryPackage {
                         name: "racer".to_string(),
-                        registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+                        registry: "https://github.com/rust-lang/crates.io-index".to_string(),
                         version: Some(Semver::parse("1.2.10").unwrap()),
                         newest_version: None,
                         alternative_version: None,
@@ -35,7 +35,7 @@ fn existant() {
                     },
                     RegistryPackage {
                         name: "rustfmt".to_string(),
-                        registry_url: "file:///usr/local/share/cargo".to_string(),
+                        registry: "file:///usr/local/share/cargo".to_string(),
                         version: Some(Semver::parse("0.6.2").unwrap()),
                         newest_version: None,
                         alternative_version: None,

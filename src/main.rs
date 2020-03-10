@@ -11,6 +11,7 @@ use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
+use std::borrow::Cow;
 use git2::Repository;
 #[cfg(target_os="windows")]
 use std::fs::File;
@@ -71,7 +72,33 @@ fn actual_main() -> Result<(), i32> {
     // These are all in the same order and (item => [package names]) maps
     let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
     for package in &packages {
-        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry_url)).or_default().push(package.name.clone());
+        // Why is this Cow<> here? no idea. Without it rustc gave me absolutely nonsensical errors like
+        //
+        // error[E0283]: type annotations needed for `std::string::String`
+        //   --> src/main.rs:74:110
+        //    |
+        // 74 |         match registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry).map_err(|e: String| {
+        //    |                                                                                                              ^ consider giving this closure parameter a type
+        //    |
+        //    = note: cannot resolve `std::string::String: std::convert::AsRef<_>`
+        //
+        // and
+        //
+        // error[E0283]: type annotations needed for `&(std::string::String, &std::vec::Vec<std::string::String>)`
+        //   --> src/main.rs:87:15
+        //    |
+        // 87 |         .map(|(registry_url, pkg_names)| {
+        //    |               ^^^^^^^^^^^^^^^^^^^^^^^^^ consider giving this closure parameter the explicit type `&(std::string::String, &std::vec::Vec<std::string::String>)`, where the type parameter `std::string::String` is specified
+        //    |
+        //    = note: cannot resolve `std::string::String: std::convert::AsRef<_>`
+        //
+        // after switching get_index_url() to String. I'd love to get rid of it, but I can only do it if the error makes a shred of sense,
+        registry_urls.entry(Cow::from(cargo_update::ops::get_index_url(&crates_file, &package.registry).map_err(|e| {
+                    eprintln!("Couldn't get registry for {}: {}.", package.name, e);
+                    2
+                })?))
+            .or_default()
+            .push(package.name.clone());
     }
     let registry_urls: Vec<_> = registry_urls.into_iter().collect();
 

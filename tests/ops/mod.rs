@@ -6,6 +6,7 @@ mod installed_registry_packages;
 mod package_filter_element;
 mod registry_package;
 mod get_index_path;
+mod get_index_url;
 
 
 #[test]

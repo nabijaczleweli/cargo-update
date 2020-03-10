@@ -8,6 +8,7 @@
 
 use git2::{self, Error as GitError, Config as GitConfig, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
+use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
 use std::io::{Write, Read};
@@ -50,7 +51,7 @@ lazy_static! {
 /// assert_eq!(package,
 ///            RegistryPackage {
 ///                name: "racer".to_string(),
-///                registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+///                registry: "https://github.com/rust-lang/crates.io-index".to_string(),
 ///                version: Some(Semver::parse("1.2.10").unwrap()),
 ///                newest_version: None,
 ///                alternative_version: None,
@@ -72,8 +73,10 @@ pub struct RegistryPackage {
     pub name: String,
     /// The registry the package is available from.
     ///
+    /// Can be a name from ~/.cargo/config.
+    ///
     /// The main repository is `https://github.com/rust-lang/crates.io-index`
-    pub registry_url: String,
+    pub registry: String,
     /// The package's locally installed version.
     pub version: Option<Semver>,
     /// The latest version of the package, available at [`crates.io`](https://crates.io), if in main repository.
@@ -155,7 +158,7 @@ impl RegistryPackage {
     /// assert_eq!(RegistryPackage::parse(package_s).unwrap(),
     ///            RegistryPackage {
     ///                name: "racer".to_string(),
-    ///                registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///                registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///                version: Some(Semver::parse("1.2.10").unwrap()),
     ///                newest_version: None,
     ///                alternative_version: None,
@@ -166,7 +169,7 @@ impl RegistryPackage {
     /// assert_eq!(RegistryPackage::parse(package_s).unwrap(),
     ///            RegistryPackage {
     ///                name: "cargo-outdated".to_string(),
-    ///                registry_url: "file:///usr/local/share/cargo".to_string(),
+    ///                registry: "file:///usr/local/share/cargo".to_string(),
     ///                version: Some(Semver::parse("0.2.0").unwrap()),
     ///                newest_version: None,
     ///                alternative_version: None,
@@ -186,7 +189,7 @@ impl RegistryPackage {
         REGISTRY_RGX.captures(what).map(|c| {
             RegistryPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
-                registry_url: c.get(3).unwrap().as_str().to_string(),
+                registry: c.get(3).unwrap().as_str().to_string(),
                 version: Some(Semver::parse(c.get(2).unwrap().as_str()).unwrap()),
                 newest_version: None,
                 alternative_version: None,
@@ -231,7 +234,7 @@ impl RegistryPackage {
     /// # fn main() {
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
@@ -239,7 +242,7 @@ impl RegistryPackage {
     ///         }.needs_update(None, None));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
@@ -247,7 +250,7 @@ impl RegistryPackage {
     ///         }.needs_update(None, None));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
@@ -255,7 +258,7 @@ impl RegistryPackage {
     ///         }.needs_update(None, None));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: Some(Semver::parse("2.0.6").unwrap()),
     ///             newest_version: None,
     ///             alternative_version: None,
@@ -265,7 +268,7 @@ impl RegistryPackage {
     /// let req = SemverReq::from_str("^1.7").unwrap();
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("1.7.3").unwrap()),
     ///             alternative_version: None,
@@ -273,7 +276,7 @@ impl RegistryPackage {
     ///         }.needs_update(Some(&req), None));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
@@ -281,7 +284,7 @@ impl RegistryPackage {
     ///         }.needs_update(Some(&req), None));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: Some(Semver::parse("1.7.2").unwrap()),
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
@@ -290,7 +293,7 @@ impl RegistryPackage {
     ///
     /// assert!(!RegistryPackage {
     ///             name: "cargo-audit".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
     ///             alternative_version: None,
@@ -298,7 +301,7 @@ impl RegistryPackage {
     ///         }.needs_update(Some(&req), None));
     /// assert!(RegistryPackage {
     ///             name: "cargo-audit".to_string(),
-    ///             registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///             version: None,
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
     ///             alternative_version: None,
@@ -329,7 +332,7 @@ impl RegistryPackage {
     /// # fn main() {
     /// assert_eq!(RegistryPackage {
     ///                name: "racer".to_string(),
-    ///                registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///                registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///                version: Some(Semver::parse("1.7.2").unwrap()),
     ///                newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///                alternative_version: None,
@@ -338,7 +341,7 @@ impl RegistryPackage {
     ///            Some(&Semver::parse("2.0.5").unwrap()));
     /// assert_eq!(RegistryPackage {
     ///                name: "gutenberg".to_string(),
-    ///                registry_url: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///                registry: "https://github.com/rust-lang/crates.io-index".to_string(),
     ///                version: Some(Semver::parse("0.0.7").unwrap()),
     ///                newest_version: None,
     ///                alternative_version: None,
@@ -358,7 +361,7 @@ impl GitRepoPackage {
     /// Will return `None` if:
     ///
     ///   * the given package descriptor is invalid, or
-    ///   * the package descriptor is not from a .
+    ///   * the package descriptor is not from a git repository.
     ///
     /// In the returned instance, `newest_version` is always `None`, get it via `GitRepoPackage::pull_version()`.
     ///
@@ -674,8 +677,10 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
 /// # use cargo_update::ops::{RegistryPackage, intersect_packages};
 /// # fn installed_registry_packages(_: &()) {}
 /// # let cargo_dir = ();
-/// # let packages_to_update = [("racer".to_string(), None, "registry+https://github.com/rust-lang/crates.io-index".to_string()),
-/// #                           ("cargo-outdated".to_string(), None, "registry+https://github.com/rust-lang/crates.io-index".to_string())];
+/// # let packages_to_update = [("racer".to_string(), None,
+/// #                            "registry+https://github.com/rust-lang/crates.io-index".to_string()),
+/// #                           ("cargo-outdated".to_string(), None,
+/// #                            "registry+https://github.com/rust-lang/crates.io-index".to_string())];
 /// let mut installed_packages = installed_registry_packages(&cargo_dir);
 /// # let mut installed_packages =
 /// #     vec![RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
@@ -698,7 +703,7 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
             .map(|p| {
                 RegistryPackage {
                     name: p.0.clone(),
-                    registry_url: p.2.clone(),
+                    registry: p.2.clone(),
                     version: None,
                     newest_version: None,
                     alternative_version: None,
@@ -737,10 +742,7 @@ fn crate_versions_impl(buf: String) -> Vec<Semver> {
         .collect()
 }
 
-/// Get the location of the latest registry index whose name optionally starts with the registry URL's domain name in the
-/// specified cargo directory.
-///
-/// If no indices exist, an appropriate `Err` is returned.
+/// Try to get the location of the registry index corresponding ot the given URL.
 ///
 /// # Examples
 ///
@@ -840,33 +842,62 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callb
 
 /// Get the URL to update index from the config file parallel to the specified crates file
 ///
-/// Get `source.crates-io.registry` or follow `source.crates-io.replace-with`,
-/// to `source.$SRCNAME.registry` or follow `source.$SRCNAME.replace-with`,
-/// et caetera.
+/// First gets the source name corresponding to the given URL, if appropriate,
+/// then chases the `source.$SRCNAME.replace-with` chain,
+/// then retrieves the URL from `source.$SRCNAME.registry` of the final source.
 ///
-/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) for details
-pub fn get_index_url(crates_file: &Path, registry_url: &str) -> Cow<'static, str> {
-    // TODO: this is most likely not the right way to do this
-    if registry_url == "https://github.com/rust-lang/crates.io-index" {
-        get_index_url_impl(crates_file).map(Cow::from).unwrap_or(Cow::from("https://github.com/rust-lang/crates.io-index"))
-    } else {
-        registry_url.to_string().into()
+/// Prepopulates with `source.crates-io.registry = "https://github.com/rust-lang/crates.io-index"`,
+/// as specified in the book
+///
+/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and
+/// the [Cargo Book](https://doc.rust-lang.org/cargo/reference/source-replacement.html) for details
+pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<String, Cow<'static, str>> {
+    let config_file = crates_file.with_file_name("config");
+    let config = fs::read_to_string(&config_file).map_err(|e| format!("Couldn't read {}: {}", config_file.display(), e))?;
+    let config = toml::from_str::<toml::Value>(&config).map_err(|e| format!("{} not TOML: {}", config_file.display(), e))?;
+
+    let mut replacements = BTreeMap::new();
+    let mut registries = BTreeMap::new();
+    let mut cur_source = Cow::from(registry);
+
+    // Special case, always present
+    registries.insert("crates-io", Cow::from("https://github.com/rust-lang/crates.io-index"));
+    if cur_source == "https://github.com/rust-lang/crates.io-index" {
+        cur_source = "crates-io".into();
     }
-}
 
-fn get_index_url_impl(crates_file: &Path) -> Option<String> {
-    let config = fs::read_to_string(crates_file.with_file_name("config")).ok()?;
-    let config = toml::from_str::<toml::Value>(&config).ok()?;
+    let empty = vec![].into_iter().collect();
+    for (name, v) in config.get("source").and_then(toml::Value::as_table).unwrap_or(&empty) {
+        if let Some(replacement) = v.get("replace-with") {
+            replacements.insert(&name[..],
+                                replacement.as_str().ok_or_else(|| format!("source.{}.replacement not string", name))?);
+        }
 
-    let sources = config.get("source")?;
+        if let Some(url) = v.get("registry") {
+            let url = url.as_str().ok_or_else(|| format!("source.{}.registry not string", name))?.to_string().into();
+            if cur_source == url {
+                cur_source = name.into();
+            }
 
-    let mut cur_source = sources.get("crates-io")?;
-    loop {
-        match cur_source.get("replace-with") {
-            Some(redir) => cur_source = sources.get(redir.as_str()?)?,
-            None => return Some(cur_source.get("registry")?.as_str()?.to_string()),
+            registries.insert(&name[..], url);
         }
     }
+
+    if Url::parse(&cur_source).is_ok() {
+        return Ok(cur_source.to_string().into());
+    }
+
+    while let Some(repl) = replacements.get(&cur_source[..]) {
+        cur_source = Cow::from(&repl[..]);
+    }
+
+    registries.get(&cur_source[..]).map(|reg| reg.to_string().into()).ok_or_else(|| {
+        format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
+                registry,
+                config_file.display(),
+                cur_source)
+            .into()
+    })
 }
 
 /// Based on
