@@ -845,7 +845,7 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callb
     ret
 }
 
-/// Get the URL to update index from the config file parallel to the specified crates file
+/// Get the URL to update index from and the cargo name for it from the config file parallel to the specified crates file
 ///
 /// First gets the source name corresponding to the given URL, if appropriate,
 /// then chases the `source.$SRCNAME.replace-with` chain,
@@ -856,10 +856,20 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callb
 ///
 /// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and
 /// the [Cargo Book](https://doc.rust-lang.org/cargo/reference/source-replacement.html) for details
-pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<String, Cow<'static, str>> {
+pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<'static, str>), Cow<'static, str>> {
     let config_file = crates_file.with_file_name("config");
-    let config = fs::read_to_string(&config_file).map_err(|e| format!("Couldn't read {}: {}", config_file.display(), e))?;
-    let config = toml::from_str::<toml::Value>(&config).map_err(|e| format!("{} not TOML: {}", config_file.display(), e))?;
+    let config = if let Ok(cfg) = fs::read_to_string(&config_file) {
+        toml::from_str::<toml::Value>(&cfg).map_err(|e| format!("{} not TOML: {}", config_file.display(), e))?
+    } else {
+        if registry == "https://github.com/rust-lang/crates.io-index" {
+            return Ok((registry.to_string(), "crates-io".into()));
+        } else {
+            Err(format!("Non-crates.io registry specified and no config file found at {}. \
+                         Due to a Cargo limitation we will not be able to install from there \
+                         until it's given a [source.NAME] in that file!",
+                        config_file.display()))?
+        }
+    };
 
     let mut replacements = BTreeMap::new();
     let mut registries = BTreeMap::new();
@@ -890,14 +900,18 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<String, Cow<'
     }
 
     if Url::parse(&cur_source).is_ok() {
-        return Ok(cur_source.to_string());
+        Err(format!("Non-crates.io registry specified and {} couldn't be found in the config file at {}. \
+                     Due to a Cargo limitation we will not be able to install from there \
+                     until it's given a [source.NAME] in that file!",
+                    cur_source,
+                    config_file.display()))?
     }
 
     while let Some(repl) = replacements.get(&cur_source[..]) {
         cur_source = Cow::from(&repl[..]);
     }
 
-    registries.get(&cur_source[..]).map(|reg| reg.to_string()).ok_or_else(|| {
+    registries.get(&cur_source[..]).map(|reg| (reg.to_string(), cur_source.to_string().into())).ok_or_else(|| {
         format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
                 registry,
                 config_file.display(),

@@ -11,7 +11,6 @@ use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
-use std::borrow::Cow;
 use git2::Repository;
 #[cfg(target_os="windows")]
 use std::fs::File;
@@ -72,38 +71,17 @@ fn actual_main() -> Result<(), i32> {
     // These are all in the same order and (item => [package names]) maps
     let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
     for package in &packages {
-        // Why is this Cow<> here? no idea. Without it rustc gave me absolutely nonsensical errors like
-        //
-        // error[E0283]: type annotations needed for `std::string::String`
-        //   --> src/main.rs:74:110
-        //    |
-        // 74 |         match registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry).map_err(|e: String| {
-        //    |                                                                                                              ^ consider giving this closure parameter a type
-        //    |
-        //    = note: cannot resolve `std::string::String: std::convert::AsRef<_>`
-        //
-        // and
-        //
-        // error[E0283]: type annotations needed for `&(std::string::String, &std::vec::Vec<std::string::String>)`
-        //   --> src/main.rs:87:15
-        //    |
-        // 87 |         .map(|(registry_url, pkg_names)| {
-        //    |               ^^^^^^^^^^^^^^^^^^^^^^^^^ consider giving this closure parameter the explicit type `&(std::string::String, &std::vec::Vec<std::string::String>)`, where the type parameter `std::string::String` is specified
-        //    |
-        //    = note: cannot resolve `std::string::String: std::convert::AsRef<_>`
-        //
-        // after switching get_index_url() to String. I'd love to get rid of it, but I can only do it if the error makes a shred of sense,
-        registry_urls.entry(Cow::from(cargo_update::ops::get_index_url(&crates_file, &package.registry).map_err(|e| {
+        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry).map_err(|e| {
                     eprintln!("Couldn't get registry for {}: {}.", package.name, e);
                     2
-                })?))
+                })?)
             .or_default()
             .push(package.name.clone());
     }
     let registry_urls: Vec<_> = registry_urls.into_iter().collect();
 
     let registries: Vec<_> = Result::from_iter(registry_urls.iter()
-        .map(|(registry_url, pkg_names)| {
+        .map(|((registry_url, _), pkg_names)| {
             cargo_update::ops::get_index_path(&opts.cargo_dir.1, &registry_url[..])
                 .map(|path| (path, &pkg_names[..]))
                 .map_err(|e| {
@@ -119,7 +97,7 @@ fn actual_main() -> Result<(), i32> {
     }))?;
     for (i, mut registry_repo) in registry_repos.iter_mut().enumerate() {
         cargo_update::ops::update_index(&mut registry_repo,
-                                        &registry_urls[i].0,
+                                        &(registry_urls[i].0).0,
                                         http_proxy.as_ref().map(String::as_str),
                                         &mut if !opts.quiet {
                                             Box::new(stdout()) as Box<dyn Write>
@@ -229,8 +207,8 @@ fn actual_main() -> Result<(), i32> {
                         save_cargo_update_exec(package.version.as_ref().unwrap());
                     }
 
-                    let registry_url = match registry_urls.iter().find(|(_, pkg_names)| pkg_names.contains(&package.name)) {
-                        Some(u) => &u.0,
+                    let registry_name = match registry_urls.iter().find(|(_, pkg_names)| pkg_names.contains(&package.name)) {
+                        Some(u) => &(u.0).1,
                         None => {
                             panic!("Couldn't find registry URL for package {} (please report to http://github.com/nabijaczleweli/cargo-update)",
                                    &package.name[..])
@@ -247,7 +225,7 @@ fn actual_main() -> Result<(), i32> {
                                     package.update_to_version().unwrap().to_string()
                                 })
                                 .arg("--registry")
-                                .arg(registry_url.as_ref())
+                                .arg(registry_name.as_ref())
                                 .arg(&package.name)
                                 .args(&opts.cargo_install_args)
                                 .status()
@@ -259,7 +237,7 @@ fn actual_main() -> Result<(), i32> {
                                 .arg("--vers")
                                 .arg(package.update_to_version().unwrap().to_string())
                                 .arg("--registry")
-                                .arg(registry_url.as_ref())
+                                .arg(registry_name.as_ref())
                                 .arg(&package.name)
                                 .args(&opts.cargo_install_args)
                                 .status()
