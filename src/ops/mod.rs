@@ -872,7 +872,7 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<String, Cow<'
     }
 
     if let Some(source) = config.get("source") {
-        for (name, v) in source.as_table().ok_or(Cow::from("source not table"))? {
+        for (name, v) in source.as_table().ok_or(Cow::Borrowed("source not table"))? {
             if let Some(replacement) = v.get("replace-with") {
                 replacements.insert(&name[..],
                                     replacement.as_str().ok_or_else(|| format!("source.{}.replacement not string", name))?);
@@ -890,14 +890,14 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<String, Cow<'
     }
 
     if Url::parse(&cur_source).is_ok() {
-        return Ok(cur_source.to_string().into());
+        return Ok(cur_source.to_string());
     }
 
     while let Some(repl) = replacements.get(&cur_source[..]) {
         cur_source = Cow::from(&repl[..]);
     }
 
-    registries.get(&cur_source[..]).map(|reg| reg.to_string().into()).ok_or_else(|| {
+    registries.get(&cur_source[..]).map(|reg| reg.to_string()).ok_or_else(|| {
         format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
                 registry,
                 config_file.display(),
@@ -985,7 +985,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
     if res.is_ok() || !any_attempts {
         res
     } else {
-        let err = res.err().map(|e| format!("{}: ", e)).unwrap_or(String::new());
+        let err = res.err().map(|e| format!("{}: ", e)).unwrap_or_default();
 
         let mut msg = format!("{}failed to authenticate when downloading repository {}", err, url);
         if !ssh_agent_attempts.is_empty() {

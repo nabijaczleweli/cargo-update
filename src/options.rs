@@ -114,7 +114,7 @@ impl Options {
                 (true, None) => vec![],
                 (false, None) => {
                     clap::Error {
-                            message: format!("Need at least one PACKAGE without --all"),
+                            message: "Need at least one PACKAGE without --all".to_string(),
                             kind: clap::ErrorKind::MissingRequiredArgument,
                             info: None,
                         }
@@ -207,8 +207,8 @@ impl ConfigOptions {
                     ConfigOperation::SetToolchain(t.to_string())
                 })
                 .into_iter()
-                .chain(matches.values_of("feature").into_iter().flat_map(|f| f).map(str::to_string).map(ConfigOperation::AddFeature))
-                .chain(matches.values_of("no-feature").into_iter().flat_map(|f| f).map(str::to_string).map(ConfigOperation::RemoveFeature))
+                .chain(matches.values_of("feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::AddFeature))
+                .chain(matches.values_of("no-feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::RemoveFeature))
                 .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
                 .chain(match (matches.is_present("debug"), matches.is_present("release")) {
                     (true, _) => Some(ConfigOperation::SetDebugMode(true)),
