@@ -253,7 +253,7 @@ Exit values and possible errors:
   `cargo install-update -i (file:///usr/local/share/cargo):zram-generator:0.1.1`
 
     Install zram-generator from a local repository in /usr/local/share/cargo
-    (but a remote one will work just as well), at most version 0.1.1.
+    (but a remote one or a short name  will work just as well), at most version 0.1.1.
 
      Example output:
           Updating registry `file:///usr/local/share/cargo`
