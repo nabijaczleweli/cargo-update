@@ -1160,6 +1160,20 @@
 <span id="1160">1160</span>
 <span id="1161">1161</span>
 <span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Main functions doing actual work.</span>
 <span class="doccomment">//!</span>
@@ -2008,7 +2022,7 @@
     <span class="ident">ret</span>
 }
 
-<span class="doccomment">/// Get the URL to update index from the config file parallel to the specified crates file</span>
+<span class="doccomment">/// Get the URL to update index from and the cargo name for it from the config file parallel to the specified crates file</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// First gets the source name corresponding to the given URL, if appropriate,</span>
 <span class="doccomment">/// then chases the `source.$SRCNAME.replace-with` chain,</span>
@@ -2019,10 +2033,20 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and</span>
 <span class="doccomment">/// the [Cargo Book](https://doc.rust-lang.org/cargo/reference/source-replacement.html) for details</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_url</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">registry</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_index_url</span>(<span class="ident">crates_file</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>, <span class="ident">registry</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span>), <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">config_file</span> <span class="op">=</span> <span class="ident">crates_file</span>.<span class="ident">with_file_name</span>(<span class="string">&quot;config&quot;</span>);
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">config_file</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t read {}: {}&quot;</span>, <span class="ident">config_file</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} not TOML: {}&quot;</span>, <span class="ident">config_file</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">cfg</span>) <span class="op">=</span> <span class="ident">fs</span>::<span class="ident">read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">config_file</span>) {
+        <span class="ident">toml</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">toml</span>::<span class="ident">Value</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">cfg</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{} not TOML: {}&quot;</span>, <span class="ident">config_file</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>
+    } <span class="kw">else</span> {
+        <span class="kw">if</span> <span class="ident">registry</span> <span class="op">=</span><span class="op">=</span> <span class="string">&quot;https://github.com/rust-lang/crates.io-index&quot;</span> {
+            <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">registry</span>.<span class="ident">to_string</span>(), <span class="string">&quot;crates-io&quot;</span>.<span class="ident">into</span>()));
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Non-crates.io registry specified and no config file found at {}. \
+                         Due to a Cargo limitation we will not be able to install from there \
+                         until it&#39;s given a [source.NAME] in that file!&quot;</span>,
+                        <span class="ident">config_file</span>.<span class="ident">display</span>()))<span class="question-mark">?</span>
+        }
+    };
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">replacements</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">registries</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="ident">new</span>();
@@ -2053,14 +2077,18 @@
     }
 
     <span class="kw">if</span> <span class="ident">Url</span>::<span class="ident">parse</span>(<span class="kw-2">&amp;</span><span class="ident">cur_source</span>).<span class="ident">is_ok</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">cur_source</span>.<span class="ident">to_string</span>());
+        <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Non-crates.io registry specified and {} couldn&#39;t be found in the config file at {}. \
+                     Due to a Cargo limitation we will not be able to install from there \
+                     until it&#39;s given a [source.NAME] in that file!&quot;</span>,
+                    <span class="ident">cur_source</span>,
+                    <span class="ident">config_file</span>.<span class="ident">display</span>()))<span class="question-mark">?</span>
     }
 
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">repl</span>) <span class="op">=</span> <span class="ident">replacements</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">cur_source</span>[..]) {
         <span class="ident">cur_source</span> <span class="op">=</span> <span class="ident">Cow</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="ident">repl</span>[..]);
     }
 
-    <span class="ident">registries</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">cur_source</span>[..]).<span class="ident">map</span>(<span class="op">|</span><span class="ident">reg</span><span class="op">|</span> <span class="ident">reg</span>.<span class="ident">to_string</span>()).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
+    <span class="ident">registries</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">cur_source</span>[..]).<span class="ident">map</span>(<span class="op">|</span><span class="ident">reg</span><span class="op">|</span> (<span class="ident">reg</span>.<span class="ident">to_string</span>(), <span class="ident">cur_source</span>.<span class="ident">to_string</span>().<span class="ident">into</span>())).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Couldn&#39;t find appropriate source URL for {} in {} (resolved to {:?})&quot;</span>,
                 <span class="ident">registry</span>,
                 <span class="ident">config_file</span>.<span class="ident">display</span>(),
