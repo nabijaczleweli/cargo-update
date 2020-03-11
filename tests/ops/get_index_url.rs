@@ -8,8 +8,8 @@ static TEST_DATA: &[u8] = include_bytes!("../../test-data/cargo.config");
 
 
 #[test]
-fn nonexistant() {
-    let crates_file = prep_config("nonexistant");
+fn nonexistent() {
+    let crates_file = prep_config("nonexistent");
     fs::remove_file(crates_file.with_file_name("config")).unwrap();
 
     assert_eq!(get_index_url(&crates_file, "https://github.com/LoungeCPP/pir-8-emu"),

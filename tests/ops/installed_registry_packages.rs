@@ -9,8 +9,8 @@ static CRATES: &[u8] = include_bytes!("../../test-data/.cargo-crates.toml");
 
 
 #[test]
-fn existant() {
-    let mut td = temp_dir().join("cargo_update-test").join("installed_registry_packages-existant");
+fn existent() {
+    let mut td = temp_dir().join("cargo_update-test").join("installed_registry_packages-existent");
     let _ = fs::create_dir_all(&td);
     td.push(".crates.toml");
 
@@ -44,8 +44,8 @@ fn existant() {
 }
 
 #[test]
-fn non_existant() {
-    let td = temp_dir().join("cargo_update-test").join("installed_registry_packages-nonexistant");
+fn non_existent() {
+    let td = temp_dir().join("cargo_update-test").join("installed_registry_packages-nonexistent");
     let _ = fs::create_dir_all(&td);
 
     assert_eq!(installed_registry_packages(&td.join(".crates.toml")), vec![]);

@@ -5,8 +5,8 @@ use std::env::temp_dir;
 
 
 #[test]
-fn nonexistant() {
-    let indices = prep_indices("nonexistant");
+fn nonexistent() {
+    let indices = prep_indices("nonexistent");
 
     assert_eq!(get_index_path(&indices, "https://github.com/rust-lang/crates.io-index"),
                Err(format!(r"Couldn't read {} (index directory for https://github.com/rust-lang/crates.io-index): {}",
