@@ -11,15 +11,9 @@
 //!
 //! This library is used by `cargo-update` itself for all its function and is therefore contains all necessary functions.
 //!
-//! ## Data flow
+//! ## Example
 //!
-//! ```text
-//! Options::parse()
-//! |> installed_main_repo_packages()
-//! |> intersect_packages()
-//! |> get_index_path()
-//! |> MainRepoPackage::pull_version()
-//! ```
+//! See the [`src/main.rs`](https://github.com/nabijaczleweli/cargo-update/blob/master/src/main.rs) file in the git repository.
 //!
 //! # Executable manpage
 //!
@@ -29,22 +23,31 @@
 //!
 //! ## DESCRIPTION
 //!
+//!
 //! Cargo subcommand for checking and applying updates to installed executables.
 //!
 //! This was mostly built out of a frustration with periodically checking for
 //! updates for my cargo-installed executables, which was long and boring.
 //!
-//! Only updates packages from the main repository.
+//! Updates packages from the main repository and git repositories.
 //!
 //! See
 //! [cargo-install-update-config(1)](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update-config.1.html)
 //! for further configuring updates.
+//!
+//! The `CARGO_INSTALL_OPTS` environment variable can be set,
+//! containing options to forward to the end of `cargo install` invocations'
+//! argument lists.
+//! Note, that
+//! [cargo-install-update-config(1)](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update-config.1.html)
+//! is preferred in the general case.
 //!
 //! Exit values and possible errors:
 //!
 //! ```text
 //! -1 - cargo subprocess was terminated by a signal (Linux-only)
 //! 1  - option parsing error
+//! 2  - registry repository error
 //! X  - bubbled-up cargo install exit value
 //! ```
 //!
@@ -55,21 +58,30 @@
 //! ```text
 //! Update all currently installed executables.
 //!
-//! Exclusive with list of packages. Required if list of packages not given.
+//! Required if list of packages not given.
 //! ```
 //!
 //! [PACKAGE...]
 //!
 //! ```text
-//! List of packages to update.
+//! List of packages to update in the [(registry_url):]package_name[:version] format.
 //!
-//! Exclusive with --all. Required if --all not given.
+//! Registry defaults to the default crates.io registry,
+//! and can be a name from ~/.cargo/config.
+//!
+//! If specified in addition to --all,
+//! will add the specified packages to the update list
+//! (useful, e.g., in conjunction with --allow-no-update).
+//!
+//! Required if --all not given.
 //! ```
 //!
 //! -l --list
 //!
 //! ```text
 //! Don't update any packages, just list them.
+//!
+//! If PACKAGE is empty, act as if --all was specified.
 //! ```
 //!
 //! -f --force
@@ -96,7 +108,24 @@
 //! Off by default, because it's expensive.
 //! ```
 //!
-//! -c --cargo-dir &lt;CARGO_DIR&gt;
+//! -q --quiet
+//!
+//! ```text
+//! Don't print status messages to stdout
+//! and pass down --quiet to cargo subprocesses.
+//! ```
+//!
+//! -s --filter <PACKAGE_FILTER>...
+//!
+//! ```text
+//! Only consider packages matching all filters.
+//!
+//! PACKAGE_FILTER is in the form "key=value", where key is any of:
+//!   - "toolchain": the package must be configured to be compiled with
+//!                  the specified toolchain via cargo-install-update-config(1).
+//! ```
+//!
+//! -c --cargo-dir <CARGO_DIR>
 //!
 //! ```text
 //! Set the directory containing cargo metadata.
@@ -104,7 +133,7 @@
 //! Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
 //! ```
 //!
-//! -t --TEMP-dir &lt;TEMP_DIR&gt;
+//! -t --temp-dir <TEMP_DIR>
 //!
 //! ```text
 //! Set the directory in which to clone git repositories.
@@ -269,6 +298,30 @@
 //!      Replacing D:\Users\nabijaczleweli\.cargo\bin\treesize.exe
 //!
 //!   Updated 2 packages.
+//! ```
+//!
+//! `cargo install-update -i (file:///usr/local/share/cargo):zram-generator:0.1.1`
+//!
+//! ```text
+//! Install zram-generator from a local repository in /usr/local/share/cargo
+//! (but a remote one or a short name will work just as well), at most version 0.1.1.
+//!
+//!  Example output:
+//!       Updating registry `file:///usr/local/share/cargo`
+//!
+//!   Package         Installed  Latest   Needs update
+//!   zram-generator             v0.1.1   Yes
+//!
+//!   Installing zram-generator
+//!       Updating registry `https://github.com/rust-lang/crates.io-index`
+//!      Downloading zram-generator v0.1.1
+//!      [...]
+//!      Compiling zram-generator v0.1.1
+//!       Finished release [optimized] target(s) in 21.62 secs
+//!     Installing /home/nabijaczleweli/.cargo/bin/zram-generator
+//!      Installed package `zram-generator v0.1.1` (executable `zram-generator`)
+//!
+//!   Updated 1 package.
 //! ```
 //!
 //! `cargo install-update -ag`
