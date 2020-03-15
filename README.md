@@ -14,8 +14,9 @@ Then proceed as usual:
 cargo install cargo-update
 ```
 
-If that doesn't work and you're on Mac:
+If that doesn't work:
  * [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/alexcrichton/git2-rs/issues/257),
+ * [re-try with `LIBSSH2_SYS_USE_PKG_CONFIG=whatever`](https://github.com/nabijaczleweli/cargo-update/issues/129#issuecomment-599269219),
  * [install OpenSSL via `brew`, and re-try with `LDFLAGS="-L/usr/local/opt/openssl@1.1/lib" CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"`](https://github.com/nabijaczleweli/cargo-update/issues/123),
  * [verify that you don't `openssl` installed twice via `brew`](https://github.com/nabijaczleweli/cargo-update/issues/121#issuecomment-570673813),
 
