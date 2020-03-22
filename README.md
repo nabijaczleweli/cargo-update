@@ -81,6 +81,11 @@ help: please run `rustup component add clippy-preview` instead
 In that case, run `cargo install --list` to verify that they're still there and `cargo uninstall` them,
   which will deregister the `cargo` versions and leave you with the `rustup` ones.
 
+### Bleeding-edge `cargo`s
+
+Since [`0.42.0`](https://github.com/rust-lang/cargo/commit/fb4415090f600bae51b0747bef2e7049070cd6ee),
+  `cargo install cratename` checks for newer versions and installs them if they exist, instead of erroring out like it does usually.
+
 ## Special thanks
 
 To all who support further development on Patreon, in particular:
