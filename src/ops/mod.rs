@@ -130,7 +130,7 @@ pub struct GitRepoPackage {
     pub branch: Option<String>,
     /// The package's locally installed version's object hash.
     pub id: Oid,
-    /// The latest version of the package vailable at the main [`crates.io`](https://crates.io) repository.
+    /// The latest version of the package available at the main [`crates.io`](https://crates.io) repository.
     ///
     /// `None` by default, acquire via `RegistryPackage::pull_version()`.
     pub newest_id: Option<Oid>,
