@@ -426,7 +426,7 @@ impl GitRepoPackage {
     }
 
     fn pull_version_impl(&mut self, temp_dir: &Path, git_db_dir: &Path, http_proxy: Option<&str>) {
-        let clone_dir = find_git_db_repo(git_db_dir, &self.name).unwrap_or_else(|| {
+        let clone_dir = find_git_db_repo(git_db_dir, &self.url).unwrap_or_else(|| {
             fs::create_dir_all(temp_dir).unwrap();
             temp_dir.join(&self.name)
         });
@@ -787,8 +787,7 @@ pub fn get_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, C
 /// asking for a `cargo update-registry` command, followed by a [PR](https://github.com/rust-lang/cargo/pull/5961) implementing
 /// this.
 /// Up to this point, there was no good substitute: `cargo install lazy_static`, the poster-child of replacements errored out
-/// and left garbage in the console,
-/// making it unsuitable.
+/// and left garbage in the console, making it unsuitable.
 ///
 /// But then, a [man of steel eyes and hawk will](https://github.com/Eh2406) has emerged, seemingly from nowhere, remarking:
 ///
@@ -1117,9 +1116,26 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
 ///
 /// The db directory is usually `$HOME/.cargo/git/db/`
 ///
-/// The resulting paths are children of this directory in the format `cratename-hash`
-pub fn find_git_db_repo(git_db_dir: &Path, cratename: &str) -> Option<PathBuf> {
-    fs::read_dir(git_db_dir).ok()?.flatten().find(|de| de.file_name().to_str().map(|n| n.starts_with(cratename)).unwrap_or(false)).map(|de| de.path())
+/// The resulting paths are children of this directory in the format
+/// [`{last_url_segment || "_empty"}-{hash(url)}`]
+/// (https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/sources/git/source.rs#L62-L73)
+pub fn find_git_db_repo(git_db_dir: &Path, url: &str) -> Option<PathBuf> {
+    let path = git_db_dir.join(format!("{}-{}",
+                                       match Url::parse(url)
+                                           .map_err(|e| println!("Url::parse({}) => {}", url, e))
+                                           .ok()?
+                                           .path_segments()
+                                           .and_then(|segs| segs.rev().next())
+                                           .unwrap_or("") {
+                                           "" => "_empty",
+                                           url => url,
+                                       },
+                                       cargo_hash(url)));
+    if path.is_dir() {
+        Some(path)
+    } else {
+        None
+    }
 }
 
 
