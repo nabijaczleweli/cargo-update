@@ -91,3 +91,4 @@ Since [`0.42.0`](https://github.com/rust-lang/cargo/commit/fb4415090f600bae51b07
 To all who support further development on Patreon, in particular:
 
   * ThePhD
+  * Embark Studios
