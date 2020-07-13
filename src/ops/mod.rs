@@ -1131,26 +1131,37 @@ pub fn find_git_db_repo(git_db_dir: &Path, cratename: &str) -> Option<PathBuf> {
 /// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/util/hex.rs
 ///
 /// For main repository it's `github.com-1ecc6299db9ec823`
-#[allow(deprecated)]
 pub fn registry_shortname(url: &str) -> String {
-    use std::hash::SipHasher;
-
-    let mut hasher = SipHasher::new_with_keys(0, 0);
-    SourceKind::Registry.hash(&mut hasher);
-    url.hash(&mut hasher);
-    let hash = hasher.finish();
-    let hash = hex::encode(&[(hash >> 0) as u8,
-                             (hash >> 8) as u8,
-                             (hash >> 16) as u8,
-                             (hash >> 24) as u8,
-                             (hash >> 32) as u8,
-                             (hash >> 40) as u8,
-                             (hash >> 48) as u8,
-                             (hash >> 56) as u8]);
+    struct RegistryHash<'u>(&'u str);
+    impl<'u> Hash for RegistryHash<'u> {
+        fn hash<S: Hasher>(&self, hasher: &mut S) {
+            SourceKind::Registry.hash(hasher);
+            self.0.hash(hasher);
+        }
+    }
 
     format!("{}-{}",
             Url::parse(url).map_err(|e| format!("{} not an URL: {}", url, e)).unwrap().host_str().unwrap_or(""),
-            hash)
+            cargo_hash(RegistryHash(url)))
+}
+
+/// Stolen from and equivalent to `short_hash()` from
+/// https://github.com/rust-lang/cargo/blob/74f2b400d2be43da798f99f94957d359bc223988/src/cargo/util/hex.rs
+#[allow(deprecated)]
+pub fn cargo_hash<T: Hash>(whom: T) -> String {
+    use std::hash::SipHasher;
+
+    let mut hasher = SipHasher::new_with_keys(0, 0);
+    whom.hash(&mut hasher);
+    let hash = hasher.finish();
+    hex::encode(&[(hash >> 0) as u8,
+                  (hash >> 8) as u8,
+                  (hash >> 16) as u8,
+                  (hash >> 24) as u8,
+                  (hash >> 32) as u8,
+                  (hash >> 40) as u8,
+                  (hash >> 48) as u8,
+                  (hash >> 56) as u8])
 }
 
 /// These two are stolen verbatim from
