@@ -1122,7 +1122,6 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
 pub fn find_git_db_repo(git_db_dir: &Path, url: &str) -> Option<PathBuf> {
     let path = git_db_dir.join(format!("{}-{}",
                                        match Url::parse(url)
-                                           .map_err(|e| println!("Url::parse({}) => {}", url, e))
                                            .ok()?
                                            .path_segments()
                                            .and_then(|segs| segs.rev().next())
