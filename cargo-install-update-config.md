@@ -89,7 +89,7 @@ See cargo-install-update(1) for general information.
 
 ## AUTHOR
 
-Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
+Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Yann Simon &lt;<yann.simon.fr@gmail.com>&gt;,
            ven &lt;<vendethiel@hotmail.fr>&gt;,
            Cat Plus Plus &lt;<piotrlegnica@piotrl.pl>&gt;,
@@ -102,8 +102,10 @@ Written by nabijaczleweli &lt;<nabijaczleweli@gmail.com>&gt;,
            Alex Burka &lt;<aburka@seas.upenn.edu>&gt;,
            Matthias Krüger &lt;<matthias.krueger@famsik.de>&gt;,
            Daniel Holbert &lt;<dholbert@cs.stanford.edu>&gt;,
+           Jonas Bushart &lt;<jonas@bushart.org>&gt;,
            Harrison Metzger &lt;<harrisonmetz@gmail.com>&gt;,
-       and Benjamin Bannier &lt;<bbannier@gmail.com>&gt;
+           Benjamin Bannier &lt;<bbannier@gmail.com>&gt;,
+       and Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;
 
 ## SPECIAL THANKS
 
