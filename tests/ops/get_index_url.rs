@@ -34,19 +34,19 @@ fn unknown() {
 #[test]
 fn default() {
     assert_eq!(get_index_url(&prep_config("default"), "https://github.com/rust-lang/crates.io-index"),
-               Ok(("outside-the-scope-of-this-document".to_string(), "tralternative".into())));
+               Ok(("outside-the-scope-of-this-document".to_string(), "crates-io".into())));
 }
 
 #[test]
 fn from_alt_url() {
     assert_eq!(get_index_url(&prep_config("from_alt_url"), "file:///usr/local/share/cargo"),
-               Ok(("outside-the-scope-of-this-document".to_string(), "tralternative".into())));
+               Ok(("outside-the-scope-of-this-document".to_string(), "alternative".into())));
 }
 
 #[test]
 fn from_name() {
     assert_eq!(get_index_url(&prep_config("from_name"), "alternative"),
-               Ok(("outside-the-scope-of-this-document".to_string(), "tralternative".into())));
+               Ok(("outside-the-scope-of-this-document".to_string(), "alternative".into())));
 }
 
 #[test]

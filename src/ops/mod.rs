@@ -853,7 +853,8 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callb
 /// Prepopulates with `source.crates-io.registry = "https://github.com/rust-lang/crates.io-index"`,
 /// as specified in the book
 ///
-/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and
+/// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107),
+/// [#137](https://github.com/nabijaczleweli/cargo-update/issues/137) and
 /// the [Cargo Book](https://doc.rust-lang.org/cargo/reference/source-replacement.html) for details
 pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<'static, str>), Cow<'static, str>> {
     let config_file = crates_file.with_file_name("config");
@@ -906,11 +907,12 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
                     config_file.display()))?
     }
 
+    let root_source = cur_source.clone();
     while let Some(repl) = replacements.get(&cur_source[..]) {
         cur_source = Cow::from(&repl[..]);
     }
 
-    registries.get(&cur_source[..]).map(|reg| (reg.to_string(), cur_source.to_string().into())).ok_or_else(|| {
+    registries.get(&cur_source[..]).map(|reg| (reg.to_string(), root_source.to_string().into())).ok_or_else(|| {
         format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
                 registry,
                 config_file.display(),
