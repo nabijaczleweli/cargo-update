@@ -6,7 +6,8 @@
 //! continue with doing whatever you wish.
 
 
-use git2::{self, Error as GitError, Config as GitConfig, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
+use git2::{self, Error as GitError, Config as GitConfig, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, BranchType, Repository,
+           Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
@@ -433,6 +434,23 @@ impl GitRepoPackage {
 
         let repo = if let Ok(r) = Repository::open(&clone_dir) {
             // If `Repository::open` is successful, both `clone_dir` exists *and* points to a valid repository.
+            //
+            // Fetch the specified or default branch, reset it to the remote HEAD
+
+            let branch = match self.branch.as_ref() {
+                Some(b) => Cow::from(b),
+                None => {
+                    r.find_reference("HEAD")
+                            .map_err(|e| panic!("No HEAD in {}: {}", clone_dir.display(), e))
+                            .unwrap()
+                            .symbolic_target()
+                            .expect("HEAD not symbolic?")
+                        ["refs/heads/".len()..]
+                        .to_string()
+                        .into()
+                }
+            };
+
             r.find_remote("origin")
                 .or_else(|_| r.remote_anonymous(&self.url))
                 .and_then(|mut rm| {
@@ -440,15 +458,25 @@ impl GitRepoPackage {
                         let mut cb = RemoteCallbacks::new();
                         cb.credentials(|a, b, c| creds(a, b, c));
 
-                        rm.fetch(&[self.branch.as_ref().map(String::as_str).unwrap_or("master")],
+                        rm.fetch(&[dbg!(&branch[..])],
                                  Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
                                  None)
                     })
                 })
                 .map_err(|e| panic!("Fetching {} from {}: {}", clone_dir.display(), self.url, e))
                 .unwrap();
-            r.set_head("FETCH_HEAD")
-                .map_err(|e| panic!("Updating HEAD in {} from {}: {}", clone_dir.display(), self.url, e))
+            r.find_branch(&branch, BranchType::Local)
+                .map_err(|e| panic!("Local branch {} doesn't exist in {}: {}", branch, clone_dir.display(), e))
+                .unwrap()
+                .into_reference()
+                .set_target(r.find_reference("FETCH_HEAD")
+                                .map_err(|e| panic!("No FETCH_HEAD in {}: {}", clone_dir.display(), e))
+                                .unwrap()
+                                .target()
+                                .ok_or_else(|| panic!("FETCH_HEAD a symbolic reference in {}", clone_dir.display()))
+                                .unwrap(),
+                            concat!(crate_name!(), " v", crate_version!()))
+                .map_err(|e| panic!("Updating local branch {} in {}: {}", branch, clone_dir.display(), e))
                 .unwrap();
 
             Ok(r)
