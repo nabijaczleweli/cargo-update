@@ -444,7 +444,8 @@ impl GitRepoPackage {
                             .map_err(|e| panic!("No HEAD in {}: {}", clone_dir.display(), e))
                             .unwrap()
                             .symbolic_target()
-                            .expect("HEAD not symbolic?")
+                            .ok_or_else(|| panic!("HEAD not symbolic in {}", clone_dir.display()))
+                            .unwrap()
                         ["refs/heads/".len()..]
                         .to_string()
                         .into()
@@ -458,9 +459,7 @@ impl GitRepoPackage {
                         let mut cb = RemoteCallbacks::new();
                         cb.credentials(|a, b, c| creds(a, b, c));
 
-                        rm.fetch(&[dbg!(&branch[..])],
-                                 Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
-                                 None)
+                        rm.fetch(&[&branch[..]], Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)), None)
                     })
                 })
                 .map_err(|e| panic!("Fetching {} from {}: {}", clone_dir.display(), self.url, e))
