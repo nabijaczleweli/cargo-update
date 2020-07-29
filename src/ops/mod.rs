@@ -445,8 +445,11 @@ impl GitRepoPackage {
                                  None)
                     })
                 })
+                .map_err(|e| panic!("Fetching {} from {}: {}", clone_dir.display(), self.url, e))
                 .unwrap();
-            r.set_head("FETCH_HEAD").unwrap();
+            r.set_head("FETCH_HEAD")
+                .map_err(|e| panic!("Updating HEAD in {} from {}: {}", clone_dir.display(), self.url, e))
+                .unwrap();
 
             Ok(r)
         } else {
@@ -1130,11 +1133,8 @@ pub fn find_git_db_repo(git_db_dir: &Path, url: &str) -> Option<PathBuf> {
                                            url => url,
                                        },
                                        cargo_hash(url)));
-    if path.is_dir() {
-        Some(path)
-    } else {
-        None
-    }
+
+    if path.is_dir() { Some(path) } else { None }
 }
 
 
