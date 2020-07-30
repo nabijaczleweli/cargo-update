@@ -432,23 +432,53 @@ impl GitRepoPackage {
             temp_dir.join(&self.name)
         });
 
-        let repo = if let Ok(r) = Repository::open(&clone_dir) {
+        let repo = self.pull_version_repo(&clone_dir, http_proxy);
+
+        self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
+    }
+
+    fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>) -> Result<Repository, GitError> {
+        with_authentication(&self.url, |creds| {
+            let mut bldr = git2::build::RepoBuilder::new();
+
+            let mut cb = RemoteCallbacks::new();
+            cb.credentials(|a, b, c| creds(a, b, c));
+            bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(http_proxy, cb));
+            if let Some(ref b) = self.branch.as_ref() {
+                bldr.branch(b);
+            }
+
+            bldr.bare(true);
+            bldr.clone(&self.url, &clone_dir)
+        })
+    }
+
+    fn pull_version_repo(&self, clone_dir: &Path, http_proxy: Option<&str>)-> Result<Repository, GitError> {
+        if let Ok(r) = Repository::open(clone_dir) {
             // If `Repository::open` is successful, both `clone_dir` exists *and* points to a valid repository.
             //
-            // Fetch the specified or default branch, reset it to the remote HEAD
+            // Fetch the specified or default branch, reset it to the remote HEAD.
 
             let branch = match self.branch.as_ref() {
                 Some(b) => Cow::from(b),
                 None => {
-                    r.find_reference("HEAD")
-                            .map_err(|e| panic!("No HEAD in {}: {}", clone_dir.display(), e))
-                            .unwrap()
-                            .symbolic_target()
-                            .ok_or_else(|| panic!("HEAD not symbolic in {}", clone_dir.display()))
-                            .unwrap()
-                        ["refs/heads/".len()..]
-                        .to_string()
-                        .into()
+                    match r.find_reference("HEAD")
+                        .map_err(|e| panic!("No HEAD in {}: {}", clone_dir.display(), e))
+                        .unwrap()
+                        .symbolic_target() {
+                        Some(ht) => ht["refs/heads/".len()..].to_string().into(),
+                        None => {
+                            // Versions up to v4.0.0 (well, 59be1c0de283dabce320a860a3d533d00910a6a9, but who's counting)
+                            // called r.set_head("FETCH_HEAD"), which made HEAD a direct SHA reference.
+                            // This is obviously problematic when trying to read the default branch, and these checkouts can persist
+                            // (https://github.com/nabijaczleweli/cargo-update/issues/139#issuecomment-665847290);
+                            // yeeting them shouldn't be a problem, since that's what we *would* do anyway,
+                            // and we set up for the non-pessimised path in later runs.
+                            fs::remove_dir_all(clone_dir).unwrap();
+                            return self.pull_version_fresh_clone(clone_dir, http_proxy);
+                        }
+                    }
+
                 }
             };
 
@@ -486,22 +516,8 @@ impl GitRepoPackage {
                 fs::remove_dir_all(&clone_dir).unwrap();
             }
 
-            with_authentication(&self.url, |creds| {
-                let mut bldr = git2::build::RepoBuilder::new();
-
-                let mut cb = RemoteCallbacks::new();
-                cb.credentials(|a, b, c| creds(a, b, c));
-                bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(http_proxy, cb));
-                if let Some(ref b) = self.branch.as_ref() {
-                    bldr.branch(b);
-                }
-
-                bldr.bare(true);
-                bldr.clone(&self.url, &clone_dir)
-            })
-        };
-
-        self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
+            self.pull_version_fresh_clone(clone_dir, http_proxy)
+        }
     }
 
     /// Check whether this package needs to be installed
