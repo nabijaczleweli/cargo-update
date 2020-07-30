@@ -86,6 +86,33 @@ In that case, run `cargo install --list` to verify that they're still there and 
 Since [`0.42.0`](https://github.com/rust-lang/cargo/commit/fb4415090f600bae51b0747bef2e7049070cd6ee),
   `cargo install cratename` checks for newer versions and installs them if they exist, instead of erroring out like it does usually.
 
+### Source Replacement vs custom registries
+
+Cargo allows [replacing entire registries at a time](https://doc.rust-lang.org/cargo/reference/source-replacement.html).
+
+For example, this stanza in `~/.cargo/config` will replace the default crates.io registry with the Shanghai Jiao Tong Universty's mirror:
+```toml
+[source.crates-io]
+replace-with = "sjtu"
+
+[source.sjtu]
+registry = "https://mirrors.sjtug.sjtu.edu.cn/git/crates.io-index"
+```
+
+`cargo-update` resolves this to the deepest registry, and passes `--registry sjtu` to `cargo install`.
+This worked until roughly `nightly-2019-08-10`, but since `nightly-2019-09-10` due to a Cargo regression (or feature, but it's breaking without a major version bump, so)
+`--registry` looks into a different key, requiring this additional stanza to ensure correct updates:
+```toml
+[registries.sjtu]
+index = "https://mirrors.sjtug.sjtu.edu.cn/git/crates.io-index"
+```
+
+Confer the [initial implementation](https://github.com/nabijaczleweli/cargo-update/issues/107), [rewrite](https://github.com/nabijaczleweli/cargo-update/issues/128),
+[final broken testcase](https://github.com/nabijaczleweli/cargo-update/issues/137) and
+[final debug implementation](https://github.com/nabijaczleweli/cargo-update/pull/138) threads
+(h/t [@DCJanus](https://github.com/DCjanus) for help debugging and testcases, also
+ dealing with me as I slowly [spiraled](https://twitter.com/nabijaczleweli/status/1288559898763157511) into insanity).
+
 ## Special thanks
 
 To all who support further development on Patreon, in particular:
