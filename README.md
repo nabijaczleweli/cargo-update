@@ -19,6 +19,7 @@ If that doesn't work:
  * [re-try with `LIBSSH2_SYS_USE_PKG_CONFIG=whatever`](https://github.com/nabijaczleweli/cargo-update/issues/129#issuecomment-599269219),
  * [install OpenSSL via `brew`, and re-try with `LDFLAGS="-L/usr/local/opt/openssl@1.1/lib" CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"`](https://github.com/nabijaczleweli/cargo-update/issues/123),
  * [verify that you don't `openssl` installed twice via `brew`](https://github.com/nabijaczleweli/cargo-update/issues/121#issuecomment-570673813),
+ * [re-try with `--features vendored-openssl`](https://docs.rs/openssl/0.10.30/openssl/#building),
 
 If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
 
