@@ -105,7 +105,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Jonas Bushart &lt;<jonas@bushart.org>&gt;,
            Harrison Metzger &lt;<harrisonmetz@gmail.com>&gt;,
            Benjamin Bannier &lt;<bbannier@gmail.com>&gt;,
-       and Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;
+           Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;,
+       and Corbin Uselton &lt;<corbinu@decimal.io>&gt;
 
 ## SPECIAL THANKS
 

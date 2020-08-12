@@ -453,7 +453,7 @@ impl GitRepoPackage {
         })
     }
 
-    fn pull_version_repo(&self, clone_dir: &Path, http_proxy: Option<&str>)-> Result<Repository, GitError> {
+    fn pull_version_repo(&self, clone_dir: &Path, http_proxy: Option<&str>) -> Result<Repository, GitError> {
         if let Ok(r) = Repository::open(clone_dir) {
             // If `Repository::open` is successful, both `clone_dir` exists *and* points to a valid repository.
             //
