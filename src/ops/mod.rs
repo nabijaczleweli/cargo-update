@@ -6,8 +6,7 @@
 //! continue with doing whatever you wish.
 
 
-use git2::{self, Error as GitError, Config as GitConfig, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, BranchType, Repository,
-           Tree, Oid};
+use git2::{self, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
@@ -494,20 +493,16 @@ impl GitRepoPackage {
                 })
                 .map_err(|e| panic!("Fetching {} from {}: {}", clone_dir.display(), self.url, e))
                 .unwrap();
-            r.find_branch(&branch, BranchType::Local)
-                .map_err(|e| panic!("Local branch {} doesn't exist in {}: {}", branch, clone_dir.display(), e))
-                .unwrap()
-                .into_reference()
-                .set_target(r.find_reference("FETCH_HEAD")
-                                .map_err(|e| panic!("No FETCH_HEAD in {}: {}", clone_dir.display(), e))
-                                .unwrap()
-                                .target()
-                                .ok_or_else(|| panic!("FETCH_HEAD a symbolic reference in {}", clone_dir.display()))
-                                .unwrap(),
-                            concat!(crate_name!(), " v", crate_version!()))
-                .map_err(|e| panic!("Updating local branch {} in {}: {}", branch, clone_dir.display(), e))
+            r.branch(&branch,
+                        &r.find_reference("FETCH_HEAD")
+                            .map_err(|e| panic!("No FETCH_HEAD in {}: {}", clone_dir.display(), e))
+                            .unwrap()
+                            .peel_to_commit()
+                            .map_err(|e| panic!("FETCH_HEAD not a commit in {}: {}", clone_dir.display(), e))
+                            .unwrap(),
+                        true)
+                .map_err(|e| panic!("Setting local branch {} in {}: {}", branch, clone_dir.display(), e))
                 .unwrap();
-
             Ok(r)
         } else {
             // If we could not open the repository either it does not exist, or exists but is invalid.
