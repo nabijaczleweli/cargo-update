@@ -459,7 +459,13 @@ impl GitRepoPackage {
             // Fetch the specified or default branch, reset it to the remote HEAD.
 
             let branch = match self.branch.as_ref() {
-                Some(b) => Cow::from(b),
+                Some(b) => {
+                    // Cargo doesn't point the HEAD at the chosen (via "--branch") branch when installing
+                    // https://github.com/nabijaczleweli/cargo-update/issues/143
+                    r.set_head(&format!("refs/heads/{}", b)).map_err(|e| panic!("Couldn't set HEAD to chosen branch {}: {}", b, e)).unwrap();
+                    Cow::from(b)
+                }
+
                 None => {
                     match r.find_reference("HEAD")
                         .map_err(|e| panic!("No HEAD in {}: {}", clone_dir.display(), e))
