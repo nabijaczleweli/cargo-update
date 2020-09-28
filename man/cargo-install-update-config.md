@@ -13,7 +13,10 @@ Settable options:
 
   * toolchain,
   * whether to use default features,
-  * additional feature list.
+  * additional feature list,
+  * build profile,
+  * whether to install prereleases,
+  * version range locks.
 
 See cargo-install-update(1) for general information.
 
