@@ -14,7 +14,7 @@ Settable options:
   * toolchain,
   * whether to use default features,
   * additional feature list,
-  * compilation mode,
+  * build profile,
   * whether to install prereleases,
   * version range locks.
 
