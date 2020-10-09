@@ -442,7 +442,7 @@ impl GitRepoPackage {
 
             let mut cb = RemoteCallbacks::new();
             cb.credentials(|a, b, c| creds(a, b, c));
-            bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(http_proxy, cb));
+            bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb));
             if let Some(ref b) = self.branch.as_ref() {
                 bldr.branch(b);
             }
@@ -494,7 +494,7 @@ impl GitRepoPackage {
                         let mut cb = RemoteCallbacks::new();
                         cb.credentials(|a, b, c| creds(a, b, c));
 
-                        rm.fetch(&[&branch[..]], Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)), None)
+                        rm.fetch(&[&branch[..]], Some(&mut fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb)), None)
                     })
                 })
                 .map_err(|e| panic!("Fetching {} from {}: {}", clone_dir.display(), self.url, e))
@@ -868,7 +868,7 @@ pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_
                 cb.credentials(|a, b, c| creds(a, b, c));
 
                 r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
-                        Some(&mut fetch_options_from_proxy_url_and_callbacks(http_proxy, cb)),
+                        Some(&mut fetch_options_from_proxy_url_and_callbacks(repo_url, http_proxy, cb)),
                         None)
             })
         })
@@ -878,12 +878,25 @@ pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_
     Ok(())
 }
 
-fn fetch_options_from_proxy_url_and_callbacks<'a>(proxy_url: Option<&str>, callbacks: RemoteCallbacks<'a>) -> FetchOptions<'a> {
+fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Option<&str>, callbacks: RemoteCallbacks<'a>) -> FetchOptions<'a> {
     let mut ret = FetchOptions::new();
     if let Some(proxy_url) = proxy_url {
         ret.proxy_options({
             let mut prx = ProxyOptions::new();
-            prx.url(proxy_url);
+            let mut url = Cow::from(proxy_url);
+
+            // Cargo allows [protocol://]host[:port], but git needs the protocol, try to crudely add it here if missing;
+            // confer https://github.com/nabijaczleweli/cargo-update/issues/144.
+            if Url::parse(proxy_url).is_err() {
+                if let Ok(rurl) = Url::parse(repo_url) {
+                    let replacement_proxy_url = format!("{}://{}", rurl.scheme(), proxy_url);
+                    if Url::parse(&replacement_proxy_url).is_ok() {
+                        url = Cow::from(replacement_proxy_url);
+                    }
+                }
+            }
+
+                prx.url(&url);
             prx
         });
     }
