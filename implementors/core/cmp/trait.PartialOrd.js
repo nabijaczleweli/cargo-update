@@ -7,7 +7,6 @@ implementors["regex_syntax"] = [{"text":"impl PartialOrd&lt;Span&gt; for Span","
 implementors["semver"] = [{"text":"impl PartialOrd&lt;Identifier&gt; for Identifier","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;SemVerError&gt; for SemVerError","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;Version&gt; for Version","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;VersionReq&gt; for VersionReq","synthetic":false,"types":[]}];
 implementors["smallvec"] = [{"text":"impl&lt;A:&nbsp;Array&gt; PartialOrd&lt;SmallVec&lt;A&gt;&gt; for SmallVec&lt;A&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;A::Item: PartialOrd,&nbsp;</span>","synthetic":false,"types":[]}];
 implementors["syn"] = [{"text":"impl PartialOrd&lt;Lifetime&gt; for Lifetime","synthetic":false,"types":[]}];
-implementors["toml"] = [{"text":"impl&lt;T:&nbsp;PartialOrd&gt; PartialOrd&lt;Spanned&lt;T&gt;&gt; for Spanned&lt;T&gt;","synthetic":false,"types":[]}];
 implementors["unicode_bidi"] = [{"text":"impl PartialOrd&lt;Level&gt; for Level","synthetic":false,"types":[]}];
 implementors["url"] = [{"text":"impl&lt;S:&nbsp;PartialOrd&gt; PartialOrd&lt;Host&lt;S&gt;&gt; for Host&lt;S&gt;","synthetic":false,"types":[]},{"text":"impl PartialOrd&lt;Url&gt; for Url","synthetic":false,"types":[]}];
 implementors["vec_map"] = [{"text":"impl&lt;V:&nbsp;PartialOrd&gt; PartialOrd&lt;VecMap&lt;V&gt;&gt; for VecMap&lt;V&gt;","synthetic":false,"types":[]}];

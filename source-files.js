@@ -9,6 +9,7 @@ sourcesIndex["cfg_if"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["clap"] = {"name":"","dirs":[{"name":"app","files":["help.rs","meta.rs","mod.rs","parser.rs","settings.rs","usage.rs","validator.rs"]},{"name":"args","dirs":[{"name":"arg_builder","files":["base.rs","flag.rs","mod.rs","option.rs","positional.rs","switched.rs","valued.rs"]}],"files":["any_arg.rs","arg.rs","arg_matcher.rs","arg_matches.rs","group.rs","macros.rs","matched_arg.rs","mod.rs","settings.rs","subcommand.rs"]},{"name":"completions","files":["bash.rs","elvish.rs","fish.rs","macros.rs","mod.rs","powershell.rs","shell.rs","zsh.rs"]}],"files":["errors.rs","fmt.rs","lib.rs","macros.rs","map.rs","osstringext.rs","strext.rs","suggestions.rs","usage_parser.rs"]};
 sourcesIndex["dirs"] = {"name":"","files":["lib.rs","lin.rs"]};
 sourcesIndex["dirs_sys"] = {"name":"","files":["lib.rs","xdg_user_dirs.rs"]};
+sourcesIndex["form_urlencoded"] = {"name":"","files":["lib.rs","query_encoding.rs"]};
 sourcesIndex["git2"] = {"name":"","files":["blame.rs","blob.rs","branch.rs","buf.rs","build.rs","call.rs","cert.rs","cherrypick.rs","commit.rs","config.rs","cred.rs","describe.rs","diff.rs","error.rs","index.rs","lib.rs","merge.rs","message.rs","note.rs","object.rs","odb.rs","oid.rs","oid_array.rs","packbuilder.rs","panic.rs","patch.rs","pathspec.rs","proxy_options.rs","rebase.rs","reference.rs","reflog.rs","refspec.rs","remote.rs","remote_callbacks.rs","repo.rs","revspec.rs","revwalk.rs","signature.rs","stash.rs","status.rs","string_array.rs","submodule.rs","tag.rs","time.rs","transport.rs","tree.rs","treebuilder.rs","util.rs"]};
 sourcesIndex["hex"] = {"name":"","files":["error.rs","lib.rs"]};
 sourcesIndex["idna"] = {"name":"","files":["lib.rs","punycode.rs","uts46.rs"]};
@@ -45,6 +46,6 @@ sourcesIndex["unicode_bidi"] = {"name":"","dirs":[{"name":"char_data","files":["
 sourcesIndex["unicode_normalization"] = {"name":"","files":["decompose.rs","lib.rs","lookups.rs","normalize.rs","perfect_hash.rs","quick_check.rs","recompose.rs","stream_safe.rs","tables.rs"]};
 sourcesIndex["unicode_width"] = {"name":"","files":["lib.rs","tables.rs"]};
 sourcesIndex["unicode_xid"] = {"name":"","files":["lib.rs","tables.rs"]};
-sourcesIndex["url"] = {"name":"","files":["form_urlencoded.rs","host.rs","lib.rs","origin.rs","parser.rs","path_segments.rs","query_encoding.rs","quirks.rs","slicing.rs"]};
+sourcesIndex["url"] = {"name":"","files":["host.rs","lib.rs","origin.rs","parser.rs","path_segments.rs","quirks.rs","slicing.rs"]};
 sourcesIndex["vec_map"] = {"name":"","files":["lib.rs"]};
 createSourceSidebar();

@@ -11,6 +11,6 @@ implementors["semver"] = [{"text":"impl Error for SemVerError","synthetic":false
 implementors["serde"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["syn"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["tabwriter"] = [{"text":"impl&lt;W:&nbsp;Any&gt; Error for IntoInnerError&lt;W&gt;","synthetic":false,"types":[]}];
-implementors["toml"] = [{"text":"impl Error for DatetimeParseError","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["toml"] = [{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["url"] = [{"text":"impl Error for ParseError","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

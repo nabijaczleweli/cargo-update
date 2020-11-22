@@ -1,0 +1,11 @@
+(function() {var implementors = {};
+implementors["clap"] = [{"text":"impl FromStr for AppSettings","synthetic":false,"types":[]},{"text":"impl FromStr for ArgSettings","synthetic":false,"types":[]},{"text":"impl FromStr for Shell","synthetic":false,"types":[]}];
+implementors["git2"] = [{"text":"impl FromStr for Oid","synthetic":false,"types":[]}];
+implementors["log"] = [{"text":"impl FromStr for Level","synthetic":false,"types":[]},{"text":"impl FromStr for LevelFilter","synthetic":false,"types":[]}];
+implementors["proc_macro2"] = [{"text":"impl FromStr for TokenStream","synthetic":false,"types":[]}];
+implementors["regex"] = [{"text":"impl FromStr for Regex","synthetic":false,"types":[]},{"text":"impl FromStr for Regex","synthetic":false,"types":[]}];
+implementors["semver"] = [{"text":"impl FromStr for Version","synthetic":false,"types":[]},{"text":"impl FromStr for VersionReq","synthetic":false,"types":[]}];
+implementors["semver_parser"] = [{"text":"impl FromStr for Op","synthetic":false,"types":[]}];
+implementors["toml"] = [{"text":"impl FromStr for Value","synthetic":false,"types":[]}];
+implementors["url"] = [{"text":"impl FromStr for Url","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
