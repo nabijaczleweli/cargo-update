@@ -141,7 +141,7 @@ fn actual_main() -> Result<(), i32> {
                     (p, cfg.as_ref().and_then(|c| c.target_version.as_ref()), cfg.as_ref().and_then(|c| c.install_prereleases))
                 })
                 .sorted_by(|&(ref lhs, lhstv, lhsip), &(ref rhs, rhstv, rhsip)| {
-                    (!lhs.needs_update(lhstv, lhsip), &lhs.name).cmp(&(!rhs.needs_update(rhstv, rhsip), &rhs.name))
+                    (!lhs.needs_update(lhstv, lhsip, opts.downdate), &lhs.name).cmp(&(!rhs.needs_update(rhstv, rhsip, opts.downdate), &rhs.name))
                 }) {
             write!(out, "{}\t", package.name).unwrap();
 
@@ -164,7 +164,7 @@ fn actual_main() -> Result<(), i32> {
 
             writeln!(out,
                      "\t{}",
-                     if package.needs_update(package_target_version, package_install_prereleases) {
+                     if package.needs_update(package_target_version, package_install_prereleases, opts.downdate) {
                          "Yes"
                      } else {
                          "No"
@@ -184,7 +184,8 @@ fn actual_main() -> Result<(), i32> {
             packages.retain(|p| {
                 let cfg = configuration.get(&p.name);
                 p.needs_update(cfg.as_ref().and_then(|c| c.target_version.as_ref()),
-                               cfg.as_ref().and_then(|c| c.install_prereleases))
+                               cfg.as_ref().and_then(|c| c.install_prereleases),
+                               opts.downdate)
             });
         }
 

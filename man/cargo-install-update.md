@@ -59,6 +59,10 @@ Exit values and possible errors:
 
     Update all packages, regardless of whether they need to be version-wise.
 
+  -d --downdate
+
+    Downdate packages to match the latest unyanked version from the registry.
+
   -i --allow-no-update
 
     Allow to fresh install packages passed as PACKAGE argument.

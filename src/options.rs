@@ -36,6 +36,8 @@ pub struct Options {
     pub install: bool,
     /// Update all packages. Default: `false`
     pub force: bool,
+    /// Downdate packages to match newest unyanked registry version.
+    pub downdate: bool,
     /// Update git packages too (it's expensive). Default: `false`
     pub update_git: bool,
     /// Don't output messages and pass --quiet to `cargo` subprocesses. Default: `false`
@@ -83,6 +85,7 @@ impl Options {
                         Arg::from_usage("-a --all 'Update all packages'"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update (all packages by default)'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
+                        Arg::from_usage("-d --downdate 'Downdate packages to match latest unyanked registry version'"),
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
                         Arg::from_usage("-g --git 'Also update git packages'"),
                         Arg::from_usage("-q --quiet 'No output printed to stdout'"),
@@ -125,6 +128,7 @@ impl Options {
             update: update,
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
+            downdate: matches.is_present("downdate"),
             update_git: matches.is_present("git"),
             quiet: matches.is_present("quiet"),
             filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_else(|| vec![]),

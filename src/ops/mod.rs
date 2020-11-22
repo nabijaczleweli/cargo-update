@@ -239,7 +239,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(None, None));
+    ///         }.needs_update(None, None, false));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
     ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -247,7 +247,15 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(None, None));
+    ///         }.needs_update(None, None, false));
+    /// assert!(RegistryPackage {
+    ///             name: "racer".to_string(),
+    ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
+    ///             version: Some(Semver::parse("2.0.7").unwrap()),
+    ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
+    ///             alternative_version: None,
+    ///             max_version: None,
+    ///         }.needs_update(None, None, true));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
     ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -255,7 +263,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(None, None));
+    ///         }.needs_update(None, None, false));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
     ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -263,7 +271,7 @@ impl RegistryPackage {
     ///             newest_version: None,
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(None, None));
+    ///         }.needs_update(None, None, false));
     ///
     /// let req = SemverReq::from_str("^1.7").unwrap();
     /// assert!(RegistryPackage {
@@ -273,7 +281,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("1.7.3").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(Some(&req), None));
+    ///         }.needs_update(Some(&req), None, false));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
     ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -281,7 +289,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(Some(&req), None));
+    ///         }.needs_update(Some(&req), None, false));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
     ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -289,7 +297,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(Some(&req), None));
+    ///         }.needs_update(Some(&req), None, false));
     ///
     /// assert!(!RegistryPackage {
     ///             name: "cargo-audit".to_string(),
@@ -298,7 +306,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(Some(&req), None));
+    ///         }.needs_update(Some(&req), None, false));
     /// assert!(RegistryPackage {
     ///             name: "cargo-audit".to_string(),
     ///             registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -306,16 +314,25 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
-    ///         }.needs_update(Some(&req), Some(true)));
+    ///         }.needs_update(Some(&req), Some(true), false));
     /// # }
     /// ```
-    pub fn needs_update(&self, req: Option<&SemverReq>, install_prereleases: Option<bool>) -> bool {
+    pub fn needs_update(&self, req: Option<&SemverReq>, install_prereleases: Option<bool>, downdate: bool) -> bool {
+        fn criterion(fromver: &Semver, tover: &Semver, downdate: bool) -> bool {
+            if downdate {
+                fromver != tover
+            } else {
+                fromver < tover
+            }
+        }
+
         let update_to_version = self.update_to_version();
 
         (req.into_iter().zip(self.version.as_ref()).map(|(sr, cv)| !sr.matches(cv)).next().unwrap_or(true) ||
          req.into_iter().zip(update_to_version).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
         update_to_version.map(|upd_v| {
-                (!upd_v.is_prerelease() || install_prereleases.unwrap_or(false)) && (self.version.is_none() || (*self.version.as_ref().unwrap() < *upd_v))
+                (!upd_v.is_prerelease() || install_prereleases.unwrap_or(false)) &&
+                (self.version.is_none() || criterion(self.version.as_ref().unwrap(), upd_v, downdate))
             })
             .unwrap_or(false)
     }
@@ -494,7 +511,9 @@ impl GitRepoPackage {
                         let mut cb = RemoteCallbacks::new();
                         cb.credentials(|a, b, c| creds(a, b, c));
 
-                        rm.fetch(&[&branch[..]], Some(&mut fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb)), None)
+                        rm.fetch(&[&branch[..]],
+                                 Some(&mut fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb)),
+                                 None)
                     })
                 })
                 .map_err(|e| panic!("Fetching {} from {}: {}", clone_dir.display(), self.url, e))
@@ -896,7 +915,7 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Opt
                 }
             }
 
-                prx.url(&url);
+            prx.url(&url);
             prx
         });
     }
