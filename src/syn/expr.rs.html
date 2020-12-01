@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-1.0.50/src/expr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>expr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/syn-1.0.53/src/expr.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>expr.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
 <link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../syn/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
@@ -3259,6 +3259,33 @@
 <span id="3256">3256</span>
 <span id="3257">3257</span>
 <span id="3258">3258</span>
+<span id="3259">3259</span>
+<span id="3260">3260</span>
+<span id="3261">3261</span>
+<span id="3262">3262</span>
+<span id="3263">3263</span>
+<span id="3264">3264</span>
+<span id="3265">3265</span>
+<span id="3266">3266</span>
+<span id="3267">3267</span>
+<span id="3268">3268</span>
+<span id="3269">3269</span>
+<span id="3270">3270</span>
+<span id="3271">3271</span>
+<span id="3272">3272</span>
+<span id="3273">3273</span>
+<span id="3274">3274</span>
+<span id="3275">3275</span>
+<span id="3276">3276</span>
+<span id="3277">3277</span>
+<span id="3278">3278</span>
+<span id="3279">3279</span>
+<span id="3280">3280</span>
+<span id="3281">3281</span>
+<span id="3282">3282</span>
+<span id="3283">3283</span>
+<span id="3284">3284</span>
+<span id="3285">3285</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">punctuated</span>::<span class="ident">Punctuated</span>;
@@ -4306,6 +4333,8 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">parse</span>::{<span class="ident">Parse</span>, <span class="ident">ParseStream</span>, <span class="prelude-ty">Result</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">path</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+    <span class="kw">use</span> <span class="ident">proc_macro2</span>::<span class="ident">TokenTree</span>;
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
 
     <span class="kw">crate</span>::<span class="macro">custom_keyword</span><span class="macro">!</span>(<span class="ident">raw</span>);
@@ -4980,10 +5009,16 @@
             <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_yield</span>).<span class="ident">map</span>(<span class="ident">Expr</span>::<span class="ident">Yield</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">unsafe</span>]) {
             <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_unsafe</span>).<span class="ident">map</span>(<span class="ident">Expr</span>::<span class="ident">Unsafe</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">const</span>]) {
+            <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_const</span>).<span class="ident">map</span>(<span class="ident">Expr</span>::<span class="ident">Verbatim</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">token</span>::<span class="ident">Brace</span>) {
             <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_block</span>).<span class="ident">map</span>(<span class="ident">Expr</span>::<span class="ident">Block</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[..]) {
             <span class="ident">expr_range</span>(<span class="ident">input</span>, <span class="ident">allow_struct</span>).<span class="ident">map</span>(<span class="ident">Expr</span>::<span class="ident">Range</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">_</span>]) {
+            <span class="prelude-val">Ok</span>(<span class="ident">Expr</span>::<span class="ident">Verbatim</span>(<span class="ident">TokenStream</span>::<span class="ident">from</span>(
+                <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">TokenTree</span><span class="op">&gt;</span>()<span class="question-mark">?</span>,
+            )))
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">Lifetime</span>) {
             <span class="kw">let</span> <span class="ident">the_label</span>: <span class="ident">Label</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expr</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">while</span>]) {
@@ -5174,6 +5209,8 @@
             <span class="ident">Expr</span>::<span class="ident">TryBlock</span>(<span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_try_block</span>)<span class="question-mark">?</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">unsafe</span>]) {
             <span class="ident">Expr</span>::<span class="ident">Unsafe</span>(<span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_unsafe</span>)<span class="question-mark">?</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="macro">Token</span><span class="macro">!</span>[<span class="kw">const</span>]) {
+            <span class="ident">Expr</span>::<span class="ident">Verbatim</span>(<span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_const</span>)<span class="question-mark">?</span>)
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">input</span>.<span class="ident">peek</span>(<span class="ident">token</span>::<span class="ident">Brace</span>) {
             <span class="ident">Expr</span>::<span class="ident">Block</span>(<span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">expr_block</span>)<span class="question-mark">?</span>)
         } <span class="kw">else</span> {
@@ -5709,7 +5746,11 @@
                     <span class="ident">path</span>,
                     <span class="ident">fields</span>,
                     <span class="ident">dot2_token</span>: <span class="prelude-val">Some</span>(<span class="ident">content</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>),
-                    <span class="ident">rest</span>: <span class="prelude-val">Some</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">content</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>)),
+                    <span class="ident">rest</span>: <span class="kw">if</span> <span class="ident">content</span>.<span class="ident">is_empty</span>() {
+                        <span class="prelude-val">None</span>
+                    } <span class="kw">else</span> {
+                        <span class="prelude-val">Some</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">content</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>))
+                    },
                 });
             }
 
@@ -5745,6 +5786,19 @@
             <span class="ident">unsafe_token</span>,
             <span class="ident">block</span>: <span class="ident">Block</span> { <span class="ident">brace_token</span>, <span class="ident">stmts</span> },
         })
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">expr_const</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">begin</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">fork</span>();
+        <span class="ident">input</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="macro">Token</span><span class="macro">!</span>[<span class="kw">const</span>]<span class="op">&gt;</span>()<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="ident">content</span>;
+        <span class="macro">braced</span><span class="macro">!</span>(<span class="ident">content</span> <span class="kw">in</span> <span class="ident">input</span>);
+        <span class="ident">content</span>.<span class="ident">call</span>(<span class="ident">Attribute</span>::<span class="ident">parse_inner</span>)<span class="question-mark">?</span>;
+        <span class="ident">content</span>.<span class="ident">call</span>(<span class="ident">Block</span>::<span class="ident">parse_within</span>)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(<span class="ident">verbatim</span>::<span class="ident">between</span>(<span class="ident">begin</span>, <span class="ident">input</span>))
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
@@ -5917,8 +5971,6 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">attr</span>::<span class="ident">FilterAttrs</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;full&quot;</span>)]</span>
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">print</span>::<span class="ident">TokensOrDefault</span>;
     <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Literal</span>, <span class="ident">TokenStream</span>};
     <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">ToTokens</span>, <span class="ident">TokenStreamExt</span>};
 
@@ -6426,10 +6478,12 @@
             <span class="self">self</span>.<span class="ident">brace_token</span>.<span class="ident">surround</span>(<span class="ident">tokens</span>, <span class="op">|</span><span class="ident">tokens</span><span class="op">|</span> {
                 <span class="ident">inner_attrs_to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>, <span class="ident">tokens</span>);
                 <span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rest</span>.<span class="ident">is_some</span>() {
-                    <span class="ident">TokensOrDefault</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">dot2_token</span>).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
-                    <span class="self">self</span>.<span class="ident">rest</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">dot2_token</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">dot2_token</span> {
+                    <span class="ident">dot2_token</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">rest</span>.<span class="ident">is_some</span>() {
+                    <span class="macro">Token</span><span class="macro">!</span>[..](<span class="ident">Span</span>::<span class="ident">call_site</span>()).<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
                 }
+                <span class="self">self</span>.<span class="ident">rest</span>.<span class="ident">to_tokens</span>(<span class="ident">tokens</span>);
             })
         }
     }
