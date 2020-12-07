@@ -4,6 +4,7 @@ extern crate lazysort;
 extern crate regex;
 extern crate git2;
 
+use git2::{Repository, ErrorCode as GitErrorCode};
 use std::io::{Write, stdout, sink};
 use std::process::{Command, exit};
 use std::collections::BTreeMap;
@@ -11,7 +12,6 @@ use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
-use git2::Repository;
 #[cfg(target_os="windows")]
 use std::fs::File;
 use regex::Regex;
@@ -82,7 +82,7 @@ fn actual_main() -> Result<(), i32> {
 
     let registries: Vec<_> = Result::from_iter(registry_urls.iter()
         .map(|((registry_url, _), pkg_names)| {
-            cargo_update::ops::get_index_path(&opts.cargo_dir.1, &registry_url[..])
+            cargo_update::ops::assert_index_path(&opts.cargo_dir.1, &registry_url[..])
                 .map(|path| (path, &pkg_names[..]))
                 .map_err(|e| {
                     eprintln!("Couldn't get package repository: {}.", e);
@@ -90,9 +90,15 @@ fn actual_main() -> Result<(), i32> {
                 })
         }))?;
     let mut registry_repos: Vec<_> = Result::from_iter(registries.iter().map(|(registry, _)| {
-        Repository::open(&registry).map_err(|_| {
+        Repository::open(&registry).or_else(|e| if e.code() == GitErrorCode::NotFound {
+            Repository::init(&registry).map_err(|_| {
+                eprintln!("Failed to initialise fresh registry repository at {}. Try running 'cargo search cargo-update' to initialise the repository.",
+                          registry.display());
+                2
+            })
+        } else {
             eprintln!("Failed to open registry repository at {}.", registry.display());
-            2
+            Err(2)
         })
     }))?;
     for (i, mut registry_repo) in registry_repos.iter_mut().enumerate() {

@@ -8,10 +8,10 @@
 
 use git2::{self, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
+use std::io::{ErrorKind as IoErrorKind, Write, Read};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
-use std::io::{Write, Read};
 use std::fs::{self, File};
 use std::{cmp, env, mem};
 use std::borrow::Cow;
@@ -808,24 +808,23 @@ fn crate_versions_impl(buf: String) -> Vec<Semver> {
         .collect()
 }
 
-/// Try to get the location of the registry index corresponding ot the given URL.
+/// Get the location of the registry index corresponding ot the given URL; if not present – make it and its parents.
+///
+/// As odd as it may be, this [can happen (if rarely) and is a supported configuration](https://github.com/nabijaczleweli/cargo-update/issues/150).
 ///
 /// # Examples
 ///
 /// ```
-/// # use cargo_update::ops::get_index_path;
+/// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
-/// # use std::fs;
-/// # let mut cargo_dir = temp_dir().join("cargo_update-doctest").join("get_index_path-0");
-/// # let _ = fs::create_dir_all(&cargo_dir);
+/// # let cargo_dir = temp_dir().join("cargo_update-doctest").join("assert_index_path-0");
 /// # let idx_dir = cargo_dir.join("registry").join("index").join("github.com-1ecc6299db9ec823");
-/// # let _ = fs::create_dir_all(&idx_dir);
-/// let index = get_index_path(&cargo_dir, "https://github.com/rust-lang/crates.io-index").unwrap();
+/// let index = assert_index_path(&cargo_dir, "https://github.com/rust-lang/crates.io-index").unwrap();
 ///
 /// // Use find_package_data() to look for packages
 /// # assert_eq!(index, idx_dir);
 /// ```
-pub fn get_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, Cow<'static, str>> {
+pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, Cow<'static, str>> {
     let path = cargo_dir.join("registry").join("index").join(registry_shortname(registry_url));
     match path.metadata() {
         Ok(meta) => {
@@ -835,6 +834,10 @@ pub fn get_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, C
                 Err(format!("{} (index directory for {}) not a directory", path.display(), registry_url).into())
             }
         }
+        Err(e) if e.kind() == IoErrorKind::NotFound => {
+            fs::create_dir_all(&path).map_err(|e| format!("Couldn't create {} (index directory for {}): {}", path.display(), registry_url, e))?;
+            Ok(path)
+        },
         Err(e) => Err(format!("Couldn't read {} (index directory for {}): {}", path.display(), registry_url, e).into()),
     }
 }

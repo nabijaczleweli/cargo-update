@@ -4,8 +4,8 @@ use std::fs::File;
 
 mod installed_registry_packages;
 mod package_filter_element;
+mod assert_index_path;
 mod registry_package;
-mod get_index_path;
 mod get_index_url;
 
 
