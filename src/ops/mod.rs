@@ -834,7 +834,7 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf
                 Err(format!("{} (index directory for {}) not a directory", path.display(), registry_url).into())
             }
         }
-        Err(e) if e.kind() == IoErrorKind::NotFound => {
+        Err(ref e) if e.kind() == IoErrorKind::NotFound => {
             fs::create_dir_all(&path).map_err(|e| format!("Couldn't create {} (index directory for {}): {}", path.display(), registry_url, e))?;
             Ok(path)
         },
