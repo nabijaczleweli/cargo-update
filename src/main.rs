@@ -222,7 +222,7 @@ fn actual_main() -> Result<(), i32> {
                         }
                     };
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                            Command::new("cargo")
+                            Command::new(&opts.install_cargo)
                                 .args(&cfg.cargo_args()[..])
                                 .args(if opts.quiet { Some("--quiet") } else { None })
                                 .arg("--vers")
@@ -237,7 +237,7 @@ fn actual_main() -> Result<(), i32> {
                                 .args(&opts.cargo_install_args)
                                 .status()
                         } else {
-                            Command::new("cargo")
+                            Command::new(&opts.install_cargo)
                                 .arg("install")
                                 .arg("-f")
                                 .args(if opts.quiet { Some("--quiet") } else { None })
@@ -355,7 +355,7 @@ fn actual_main() -> Result<(), i32> {
                         }
 
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                                let mut cmd = Command::new("cargo");
+                                let mut cmd = Command::new(&opts.install_cargo);
                                 cmd.args(&cfg.cargo_args()[..])
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
@@ -366,7 +366,7 @@ fn actual_main() -> Result<(), i32> {
                                 }
                                 cmd.args(&opts.cargo_install_args).status()
                             } else {
-                                let mut cmd = Command::new("cargo");
+                                let mut cmd = Command::new(&opts.install_cargo);
                                 cmd.arg("install")
                                     .arg("-f")
                                     .args(if opts.quiet { Some("--quiet") } else { None })

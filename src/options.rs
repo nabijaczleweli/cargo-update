@@ -53,6 +53,8 @@ pub struct Options {
     pub temp_dir: (String, PathBuf),
     /// Arbitrary arguments to forward to `cargo install`, acquired from `$CARGO_INSTALL_OPTS`. Default: `[]`
     pub cargo_install_args: Vec<OsString>,
+    /// The cargo to run for installations. Default: `"cargo"`
+    pub install_cargo: OsString,
 }
 
 /// Representation of the config application's all configurable values.
@@ -91,6 +93,7 @@ impl Options {
                         Arg::from_usage("-q --quiet 'No output printed to stdout'"),
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
+                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").default_value("cargo"),
                         Arg::with_name("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
@@ -159,6 +162,7 @@ impl Options {
                  temp_pb.join("cargo-update"))
             },
             cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
+            install_cargo: matches.value_of_os("install-cargo").expect("has default").to_os_string(),
         }
     }
 }
