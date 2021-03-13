@@ -3,7 +3,6 @@ implementors["aho_corasick"] = [{"text":"impl Error for Error","synthetic":false
 implementors["clap"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["git2"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["hex"] = [{"text":"impl Error for FromHexError","synthetic":false,"types":[]}];
-implementors["idna"] = [{"text":"impl Error for Errors","synthetic":false,"types":[]}];
 implementors["json"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
 implementors["proc_macro2"] = [{"text":"impl Error for LexError","synthetic":false,"types":[]}];
 implementors["regex"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
