@@ -96,7 +96,7 @@ Exit values and possible errors:
 
     *Must* behave indistinguishably from the default cargo
     with regards to on-disk state ("$CARGO_DIR/.crates.toml"
-    and installed executables). And the arguments it accepts.
+    and installed executables) and the arguments it accepts.
 
     Required. Default: "cargo"
 
