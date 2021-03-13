@@ -90,6 +90,16 @@ Exit values and possible errors:
       - "toolchain": the package must be configured to be compiled with
                      the specified toolchain via cargo-install-update-config(1).
 
+  -r --install-cargo <CARGO_EXECUTABLE>
+
+    Cargo executable to run for installations.
+
+    *Must* behave indistinguishably from the default cargo
+    with regards to on-disk state ("$CARGO_DIR/.crates.toml"
+    and installed executables). And the arguments it accepts.
+
+    Required. Default: "cargo"
+
   -c --cargo-dir <CARGO_DIR>
 
     Set the directory containing cargo metadata.
