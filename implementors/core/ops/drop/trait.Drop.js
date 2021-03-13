@@ -3,6 +3,5 @@ implementors["git2"] = [{"text":"impl Drop for OidArray","synthetic":false,"type
 implementors["regex_syntax"] = [{"text":"impl Drop for Ast","synthetic":false,"types":[]},{"text":"impl Drop for ClassSet","synthetic":false,"types":[]},{"text":"impl Drop for Hir","synthetic":false,"types":[]}];
 implementors["smallvec"] = [{"text":"impl&lt;'a, T:&nbsp;'a&gt; Drop for Drain&lt;'a, T&gt;","synthetic":false,"types":[]},{"text":"impl&lt;A:&nbsp;Array&gt; Drop for SmallVec&lt;A&gt;","synthetic":false,"types":[]},{"text":"impl&lt;A:&nbsp;Array&gt; Drop for IntoIter&lt;A&gt;","synthetic":false,"types":[]}];
 implementors["syn"] = [{"text":"impl&lt;'a&gt; Drop for ParseBuffer&lt;'a&gt;","synthetic":false,"types":[]}];
-implementors["thread_local"] = [{"text":"impl&lt;T:&nbsp;Send&gt; Drop for ThreadLocal&lt;T&gt;","synthetic":false,"types":[]}];
 implementors["url"] = [{"text":"impl&lt;'a&gt; Drop for PathSegmentsMut&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'a&gt; Drop for UrlQuery&lt;'a&gt;","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

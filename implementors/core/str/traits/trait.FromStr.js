@@ -6,6 +6,6 @@ implementors["proc_macro2"] = [{"text":"impl FromStr for TokenStream","synthetic
 implementors["regex"] = [{"text":"impl FromStr for Regex","synthetic":false,"types":[]},{"text":"impl FromStr for Regex","synthetic":false,"types":[]}];
 implementors["semver"] = [{"text":"impl FromStr for Version","synthetic":false,"types":[]},{"text":"impl FromStr for VersionReq","synthetic":false,"types":[]}];
 implementors["semver_parser"] = [{"text":"impl FromStr for Op","synthetic":false,"types":[]}];
-implementors["toml"] = [{"text":"impl FromStr for Value","synthetic":false,"types":[]}];
+implementors["toml"] = [{"text":"impl FromStr for Value","synthetic":false,"types":[]},{"text":"impl FromStr for Datetime","synthetic":false,"types":[]}];
 implementors["url"] = [{"text":"impl FromStr for Url","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -7,6 +7,7 @@ implementors["proc_macro2"] = [{"text":"impl Hash for Ident","synthetic":false,"
 implementors["semver"] = [{"text":"impl Hash for Identifier","synthetic":false,"types":[]},{"text":"impl Hash for Version","synthetic":false,"types":[]},{"text":"impl Hash for VersionReq","synthetic":false,"types":[]}];
 implementors["smallvec"] = [{"text":"impl&lt;A:&nbsp;Array&gt; Hash for SmallVec&lt;A&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;A::Item: Hash,&nbsp;</span>","synthetic":false,"types":[]}];
 implementors["syn"] = [{"text":"impl Hash for Member","synthetic":false,"types":[]},{"text":"impl Hash for Index","synthetic":false,"types":[]},{"text":"impl Hash for Lifetime","synthetic":false,"types":[]}];
+implementors["toml"] = [{"text":"impl&lt;T:&nbsp;Hash&gt; Hash for Spanned&lt;T&gt;","synthetic":false,"types":[]}];
 implementors["url"] = [{"text":"impl&lt;S:&nbsp;Hash&gt; Hash for Host&lt;S&gt;","synthetic":false,"types":[]},{"text":"impl Hash for Origin","synthetic":false,"types":[]},{"text":"impl Hash for OpaqueOrigin","synthetic":false,"types":[]},{"text":"impl Hash for Url","synthetic":false,"types":[]}];
 implementors["vec_map"] = [{"text":"impl&lt;V:&nbsp;Hash&gt; Hash for VecMap&lt;V&gt;","synthetic":false,"types":[]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
