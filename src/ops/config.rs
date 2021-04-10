@@ -3,6 +3,7 @@ use std::fmt::Write as FWrite;
 use std::io::{Read, Write};
 use std::default::Default;
 use semver::VersionReq;
+use std::borrow::Cow;
 use std::path::Path;
 use std::fs::File;
 use toml;
@@ -123,34 +124,34 @@ impl PackageConfig {
     /// # let name = "cargo-update".to_string();
     /// # let mut configuration = BTreeMap::new();
     /// # configuration.insert(name.clone(), PackageConfig::from(&[]));
-    /// let cmd = Command::new("cargo").args(configuration.get(&name).unwrap().cargo_args()).arg(&name)
+    /// let cmd = Command::new("cargo").args(configuration.get(&name).unwrap().cargo_args().iter().map(AsRef::as_ref)).arg(&name)
     /// // Process the command further -- run it, for example.
     /// # .status().unwrap();
     /// # let _ = cmd;
     /// ```
-    pub fn cargo_args(&self) -> Vec<String> {
+    pub fn cargo_args(&self) -> Vec<Cow<'static, str>> {
         let mut res = vec![];
         if let Some(ref t) = self.toolchain {
-            res.push(format!("+{}", t));
+            res.push(format!("+{}", t).into());
         }
-        res.push("install".to_string());
-        res.push("-f".to_string());
+        res.push("install".into());
+        res.push("-f".into());
         if !self.default_features {
-            res.push("--no-default-features".to_string());
+            res.push("--no-default-features".into());
         }
         if !self.features.is_empty() {
-            res.push("--features".to_string());
+            res.push("--features".into());
             let mut a = String::new();
             for f in &self.features {
                 write!(a, "{} ", f).unwrap();
             }
-            res.push(a);
+            res.push(a.into());
         }
         if let Some(true) = self.enforce_lock {
-            res.push("--locked".to_string());
+            res.push("--locked".into());
         }
         if let Some(true) = self.debug {
-            res.push("--debug".to_string());
+            res.push("--debug".into());
         }
         res
     }
