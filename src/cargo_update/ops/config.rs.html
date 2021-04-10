@@ -322,12 +322,29 @@
 <span id="319">319</span>
 <span id="320">320</span>
 <span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Write</span> <span class="kw">as</span> <span class="ident">FWrite</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Read</span>, <span class="ident">Write</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span>;
 <span class="kw">use</span> <span class="ident">semver</span>::<span class="ident">VersionReq</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">Path</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 <span class="kw">use</span> <span class="ident">toml</span>;
@@ -350,6 +367,8 @@
     <span class="ident">SetDebugMode</span>(<span class="ident">bool</span>),
     <span class="doccomment">/// Set allowing to install prereleases to the specified value.</span>
     <span class="ident">SetInstallPrereleases</span>(<span class="ident">bool</span>),
+    <span class="doccomment">/// Set enforcing Cargo.lock to the specified value.</span>
+    <span class="ident">SetEnforceLock</span>(<span class="ident">bool</span>),
     <span class="doccomment">/// Constrain the installed to the specified one.</span>
     <span class="ident">SetTargetVersion</span>(<span class="ident">VersionReq</span>),
     <span class="doccomment">/// Always install latest package version.</span>
@@ -387,6 +406,8 @@
     <span class="kw">pub</span> <span class="ident">debug</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Whether to install pre-release versions.</span>
     <span class="kw">pub</span> <span class="ident">install_prereleases</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Whether to enforce Cargo.lock versions.</span>
+    <span class="kw">pub</span> <span class="ident">enforce_lock</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Versions to constrain to.</span>
     <span class="kw">pub</span> <span class="ident">target_version</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VersionReq</span><span class="op">&gt;</span>,
 }
@@ -410,6 +431,7 @@
     <span class="doccomment">///                                  ConfigOperation::AddFeature(&quot;rustc-serialize&quot;.to_string()),</span>
     <span class="doccomment">///                                  ConfigOperation::SetDebugMode(true),</span>
     <span class="doccomment">///                                  ConfigOperation::SetInstallPrereleases(false),</span>
+    <span class="doccomment">///                                  ConfigOperation::SetEnforceLock(true),</span>
     <span class="doccomment">///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(&quot;&gt;=0.1&quot;).unwrap())]),</span>
     <span class="doccomment">///            PackageConfig {</span>
     <span class="doccomment">///                toolchain: Some(&quot;nightly&quot;.to_string()),</span>
@@ -421,6 +443,7 @@
     <span class="doccomment">///                },</span>
     <span class="doccomment">///                debug: Some(true),</span>
     <span class="doccomment">///                install_prereleases: Some(false),</span>
+    <span class="doccomment">///                enforce_lock: Some(true),</span>
     <span class="doccomment">///                target_version: Some(VersionReq::from_str(&quot;&gt;=0.1&quot;).unwrap()),</span>
     <span class="doccomment">///            });</span>
     <span class="doccomment">/// # }</span>
@@ -442,31 +465,34 @@
     <span class="doccomment">/// # let name = &quot;cargo-update&quot;.to_string();</span>
     <span class="doccomment">/// # let mut configuration = BTreeMap::new();</span>
     <span class="doccomment">/// # configuration.insert(name.clone(), PackageConfig::from(&amp;[]));</span>
-    <span class="doccomment">/// let cmd = Command::new(&quot;cargo&quot;).args(configuration.get(&amp;name).unwrap().cargo_args()).arg(&amp;name)</span>
+    <span class="doccomment">/// let cmd = Command::new(&quot;cargo&quot;).args(configuration.get(&amp;name).unwrap().cargo_args().iter().map(AsRef::as_ref)).arg(&amp;name)</span>
     <span class="doccomment">/// // Process the command further -- run it, for example.</span>
     <span class="doccomment">/// # .status().unwrap();</span>
     <span class="doccomment">/// # let _ = cmd;</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cargo_args</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cargo_args</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">t</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">toolchain</span> {
-            <span class="ident">res</span>.<span class="ident">push</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;+{}&quot;</span>, <span class="ident">t</span>));
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;+{}&quot;</span>, <span class="ident">t</span>).<span class="ident">into</span>());
         }
-        <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;install&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;-f&quot;</span>.<span class="ident">to_string</span>());
+        <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;install&quot;</span>.<span class="ident">into</span>());
+        <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;-f&quot;</span>.<span class="ident">into</span>());
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">default_features</span> {
-            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--no-default-features&quot;</span>.<span class="ident">to_string</span>());
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--no-default-features&quot;</span>.<span class="ident">into</span>());
         }
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">features</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--features&quot;</span>.<span class="ident">to_string</span>());
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--features&quot;</span>.<span class="ident">into</span>());
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
             <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">features</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">a</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">f</span>).<span class="ident">unwrap</span>();
             }
-            <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">a</span>);
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="ident">a</span>.<span class="ident">into</span>());
+        }
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">enforce_lock</span> {
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--locked&quot;</span>.<span class="ident">into</span>());
         }
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">debug</span> {
-            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--debug&quot;</span>.<span class="ident">to_string</span>());
+            <span class="ident">res</span>.<span class="ident">push</span>(<span class="string">&quot;--debug&quot;</span>.<span class="ident">into</span>());
         }
         <span class="ident">res</span>
     }
@@ -493,6 +519,7 @@
     <span class="doccomment">///     },</span>
     <span class="doccomment">///     debug: None,</span>
     <span class="doccomment">///     install_prereleases: None,</span>
+    <span class="doccomment">///     enforce_lock: None,</span>
     <span class="doccomment">///     target_version: Some(VersionReq::from_str(&quot;&gt;=0.1&quot;).unwrap()),</span>
     <span class="doccomment">/// };</span>
     <span class="doccomment">/// cfg.execute_operations(&amp;[ConfigOperation::RemoveToolchain,</span>
@@ -511,6 +538,7 @@
     <span class="doccomment">///                },</span>
     <span class="doccomment">///                debug: Some(true),</span>
     <span class="doccomment">///                install_prereleases: None,</span>
+    <span class="doccomment">///                enforce_lock: None,</span>
     <span class="doccomment">///                target_version: None,</span>
     <span class="doccomment">///            });</span>
     <span class="doccomment">/// # }</span>
@@ -534,6 +562,7 @@
             }
             <span class="ident">ConfigOperation</span>::<span class="ident">SetDebugMode</span>(<span class="ident">d</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">debug</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">d</span>),
             <span class="ident">ConfigOperation</span>::<span class="ident">SetInstallPrereleases</span>(<span class="ident">pr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">install_prereleases</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">pr</span>),
+            <span class="ident">ConfigOperation</span>::<span class="ident">SetEnforceLock</span>(<span class="ident">el</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">enforce_lock</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">el</span>),
             <span class="ident">ConfigOperation</span>::<span class="ident">SetTargetVersion</span>(<span class="kw-2">ref</span> <span class="ident">vr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">target_version</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">vr</span>.<span class="ident">clone</span>()),
             <span class="ident">ConfigOperation</span>::<span class="ident">RemoveTargetVersion</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">target_version</span> <span class="op">=</span> <span class="prelude-val">None</span>,
         }
@@ -570,6 +599,7 @@
     <span class="doccomment">///         },</span>
     <span class="doccomment">///         debug: None,</span>
     <span class="doccomment">///         install_prereleases: None,</span>
+    <span class="doccomment">///         enforce_lock: None,</span>
     <span class="doccomment">///         target_version: None,</span>
     <span class="doccomment">///     });</span>
     <span class="doccomment">///     pkgs</span>
@@ -613,6 +643,7 @@
     <span class="doccomment">///         },</span>
     <span class="doccomment">///         debug: None,</span>
     <span class="doccomment">///         install_prereleases: None,</span>
+    <span class="doccomment">///         enforce_lock: None,</span>
     <span class="doccomment">///         target_version: None,</span>
     <span class="doccomment">///     });</span>
     <span class="doccomment">///     pkgs</span>
@@ -640,9 +671,11 @@
             <span class="ident">features</span>: <span class="ident">BTreeSet</span>::<span class="ident">new</span>(),
             <span class="ident">debug</span>: <span class="prelude-val">None</span>,
             <span class="ident">install_prereleases</span>: <span class="prelude-val">None</span>,
+            <span class="ident">enforce_lock</span>: <span class="prelude-val">None</span>,
             <span class="ident">target_version</span>: <span class="prelude-val">None</span>,
         }
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "cargo_update";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="cargo_update"></div>
+    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
