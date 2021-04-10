@@ -25,6 +25,8 @@ pub enum ConfigOperation {
     SetDebugMode(bool),
     /// Set allowing to install prereleases to the specified value.
     SetInstallPrereleases(bool),
+    /// Set enforcing Cargo.lock to the specified value.
+    SetEnforceLock(bool),
     /// Constrain the installed to the specified one.
     SetTargetVersion(VersionReq),
     /// Always install latest package version.
@@ -62,6 +64,8 @@ pub struct PackageConfig {
     pub debug: Option<bool>,
     /// Whether to install pre-release versions.
     pub install_prereleases: Option<bool>,
+    /// Whether to enforce Cargo.lock versions.
+    pub enforce_lock: Option<bool>,
     /// Versions to constrain to.
     pub target_version: Option<VersionReq>,
 }
@@ -85,6 +89,7 @@ impl PackageConfig {
     ///                                  ConfigOperation::AddFeature("rustc-serialize".to_string()),
     ///                                  ConfigOperation::SetDebugMode(true),
     ///                                  ConfigOperation::SetInstallPrereleases(false),
+    ///                                  ConfigOperation::SetEnforceLock(true),
     ///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(">=0.1").unwrap())]),
     ///            PackageConfig {
     ///                toolchain: Some("nightly".to_string()),
@@ -96,6 +101,7 @@ impl PackageConfig {
     ///                },
     ///                debug: Some(true),
     ///                install_prereleases: Some(false),
+    ///                enforce_lock: Some(true),
     ///                target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     ///            });
     /// # }
@@ -140,6 +146,9 @@ impl PackageConfig {
             }
             res.push(a);
         }
+        if let Some(true) = self.enforce_lock {
+            res.push("--locked".to_string());
+        }
         if let Some(true) = self.debug {
             res.push("--debug".to_string());
         }
@@ -168,6 +177,7 @@ impl PackageConfig {
     ///     },
     ///     debug: None,
     ///     install_prereleases: None,
+    ///     enforce_lock: None,
     ///     target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
@@ -186,6 +196,7 @@ impl PackageConfig {
     ///                },
     ///                debug: Some(true),
     ///                install_prereleases: None,
+    ///                enforce_lock: None,
     ///                target_version: None,
     ///            });
     /// # }
@@ -209,6 +220,7 @@ impl PackageConfig {
             }
             ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
             ConfigOperation::SetInstallPrereleases(pr) => self.install_prereleases = Some(pr),
+            ConfigOperation::SetEnforceLock(el) => self.enforce_lock = Some(el),
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
         }
@@ -245,6 +257,7 @@ impl PackageConfig {
     ///         },
     ///         debug: None,
     ///         install_prereleases: None,
+    ///         enforce_lock: None,
     ///         target_version: None,
     ///     });
     ///     pkgs
@@ -288,6 +301,7 @@ impl PackageConfig {
     ///         },
     ///         debug: None,
     ///         install_prereleases: None,
+    ///         enforce_lock: None,
     ///         target_version: None,
     ///     });
     ///     pkgs
@@ -315,6 +329,7 @@ impl Default for PackageConfig {
             features: BTreeSet::new(),
             debug: None,
             install_prereleases: None,
+            enforce_lock: None,
             target_version: None,
         }
     }

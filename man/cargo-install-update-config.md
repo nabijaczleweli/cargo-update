@@ -16,6 +16,7 @@ Settable options:
   * additional feature list,
   * build profile,
   * whether to install prereleases,
+  * Cargo.lock enforcement,
   * version range locks.
 
 See cargo-install-update(1) for general information.
@@ -60,6 +61,14 @@ See cargo-install-update(1) for general information.
   --no-install-prereleases
 
     Don't update to prerelease versions (default).
+
+  --enforce-lock
+
+    Require Cargo.lock is up to date.
+
+  --no-enforce-lock
+
+    Don't require Cargo.lock to be up to date. (default).
 
   -v --version [VERSION_REQ]
 

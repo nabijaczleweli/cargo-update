@@ -188,6 +188,8 @@ impl ConfigOptions {
                         Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug"),
                         Arg::from_usage("--install-prereleases 'Install prerelease versions'").conflicts_with("no-install-prereleases"),
                         Arg::from_usage("--no-install-prereleases 'Filter out prerelease versions'").conflicts_with("install-prereleases"),
+                        Arg::from_usage("--enforce-lock 'Require Cargo.lock to be up to date'").conflicts_with("no-enforce-lock"),
+                        Arg::from_usage("--no-enforce-lock 'Don't enforce Cargo.lock'").conflicts_with("enforce-lock"),
                         Arg::from_usage("-v --version=[VERSION_REQ] 'Require a cargo-compatible version range'")
                             .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
                             .conflicts_with("any-version"),
@@ -226,6 +228,11 @@ impl ConfigOptions {
                 .chain(match (matches.is_present("install-prereleases"), matches.is_present("no-install-prereleases")) {
                     (true, _) => Some(ConfigOperation::SetInstallPrereleases(true)),
                     (_, true) => Some(ConfigOperation::SetInstallPrereleases(false)),
+                    _ => None,
+                })
+                .chain(match (matches.is_present("enforce-lock"), matches.is_present("no-enforce-lock")) {
+                    (true, _) => Some(ConfigOperation::SetEnforceLock(true)),
+                    (_, true) => Some(ConfigOperation::SetEnforceLock(false)),
                     _ => None,
                 })
                 .chain(match (matches.is_present("any-version"), matches.value_of("version")) {

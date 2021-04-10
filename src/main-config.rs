@@ -37,8 +37,11 @@ fn actual_main() -> Result<(), i32> {
         if let Some(d) = cfg.debug {
             writeln!(out, "Debug mode\t{}", d).unwrap();
         }
-        if let Some(d) = cfg.install_prereleases {
-            writeln!(out, "Install prereleases\t{}", d).unwrap();
+        if let Some(ip) = cfg.install_prereleases {
+            writeln!(out, "Install prereleases\t{}", ip).unwrap();
+        }
+        if let Some(el) = cfg.enforce_lock {
+            writeln!(out, "Enforce lock\t{}", el).unwrap();
         }
         if let Some(ref tv) = cfg.target_version {
             writeln!(out, "Target version\t{}", tv).unwrap();
