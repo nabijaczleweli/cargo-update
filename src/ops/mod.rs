@@ -47,7 +47,7 @@ lazy_static! {
 /// # use semver::Version as Semver;
 /// # fn main() {
 /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
-/// let mut package = RegistryPackage::parse(package_s).unwrap();
+/// let mut package = RegistryPackage::parse(package_s, vec!["racer.exe".to_string()]).unwrap();
 /// assert_eq!(package,
 ///            RegistryPackage {
 ///                name: "racer".to_string(),
@@ -56,6 +56,7 @@ lazy_static! {
 ///                newest_version: None,
 ///                alternative_version: None,
 ///                max_version: None,
+///                executables: vec!["racer.exe".to_string()],
 ///            });
 ///
 /// # /*
@@ -87,6 +88,8 @@ pub struct RegistryPackage {
     pub alternative_version: Option<Semver>,
     /// User-bounded maximum version to update up to.
     pub max_version: Option<Semver>,
+    /// Executables currently installed for this package.
+    pub executables: Vec<String>,
 }
 
 /// A representation of a package a remote git repository.
@@ -103,7 +106,7 @@ pub struct RegistryPackage {
 /// # use cargo_update::ops::GitRepoPackage;
 /// # fn main() {
 /// let package_s = "alacritty 0.1.0 (git+https://github.com/jwilm/alacritty#eb231b3e70b87875df4bdd1974d5e94704024d70)";
-/// let mut package = GitRepoPackage::parse(package_s).unwrap();
+/// let mut package = GitRepoPackage::parse(package_s, vec!["alacritty".to_string()]).unwrap();
 /// assert_eq!(package,
 ///            GitRepoPackage {
 ///                name: "alacritty".to_string(),
@@ -111,6 +114,7 @@ pub struct RegistryPackage {
 ///                branch: None,
 ///                id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
 ///                newest_id: None,
+///                executables: vec!["alacritty".to_string()],
 ///            });
 ///
 /// # /*
@@ -132,8 +136,10 @@ pub struct GitRepoPackage {
     pub id: Oid,
     /// The latest version of the package available at the main [`crates.io`](https://crates.io) repository.
     ///
-    /// `None` by default, acquire via `RegistryPackage::pull_version()`.
+    /// `None` by default, acquire via `GitRepoPackage::pull_version()`.
     pub newest_id: Option<Oid>,
+    /// Executables currently installed for this package.
+    pub executables: Vec<String>,
 }
 
 
@@ -143,6 +149,8 @@ impl RegistryPackage {
     /// Will return `None` if the given package descriptor is invalid.
     ///
     /// In the returned instance, `newest_version` is always `None`, get it via `RegistryPackage::pull_version()`.
+    ///
+    /// The executable list is used as-is.
     ///
     /// # Examples
     ///
@@ -155,7 +163,7 @@ impl RegistryPackage {
     /// # use semver::Version as Semver;
     /// # fn main() {
     /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
-    /// assert_eq!(RegistryPackage::parse(package_s).unwrap(),
+    /// assert_eq!(RegistryPackage::parse(package_s, vec!["racer.exe".to_string()]).unwrap(),
     ///            RegistryPackage {
     ///                name: "racer".to_string(),
     ///                registry: "https://github.com/rust-lang/crates.io-index".to_string(),
@@ -163,10 +171,11 @@ impl RegistryPackage {
     ///                newest_version: None,
     ///                alternative_version: None,
     ///                max_version: None,
+    ///                executables: vec!["racer.exe".to_string()],
     ///            });
     ///
     /// let package_s = "cargo-outdated 0.2.0 (registry+file:///usr/local/share/cargo)";
-    /// assert_eq!(RegistryPackage::parse(package_s).unwrap(),
+    /// assert_eq!(RegistryPackage::parse(package_s, vec!["cargo-outdated".to_string()]).unwrap(),
     ///            RegistryPackage {
     ///                name: "cargo-outdated".to_string(),
     ///                registry: "file:///usr/local/share/cargo".to_string(),
@@ -174,6 +183,7 @@ impl RegistryPackage {
     ///                newest_version: None,
     ///                alternative_version: None,
     ///                max_version: None,
+    ///                executables: vec!["cargo-outdated".to_string()],
     ///            });
     /// # }
     /// ```
@@ -183,9 +193,9 @@ impl RegistryPackage {
     /// ```
     /// # use cargo_update::ops::RegistryPackage;
     /// let package_s = "treesize 0.2.1 (git+https://github.com/melak47/treesize-rs#v0.2.1)";
-    /// assert!(RegistryPackage::parse(package_s).is_none());
+    /// assert!(RegistryPackage::parse(package_s, vec!["treesize".to_string()]).is_none());
     /// ```
-    pub fn parse(what: &str) -> Option<RegistryPackage> {
+    pub fn parse(what: &str, executables: Vec<String>) -> Option<RegistryPackage> {
         REGISTRY_RGX.captures(what).map(|c| {
             RegistryPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
@@ -194,6 +204,7 @@ impl RegistryPackage {
                 newest_version: None,
                 alternative_version: None,
                 max_version: None,
+                executables: executables,
             }
         })
     }
@@ -239,6 +250,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(None, None, false));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
@@ -247,6 +259,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(None, None, false));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
@@ -255,6 +268,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(None, None, true));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
@@ -263,6 +277,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(None, None, false));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
@@ -271,6 +286,7 @@ impl RegistryPackage {
     ///             newest_version: None,
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(None, None, false));
     ///
     /// let req = SemverReq::from_str("^1.7").unwrap();
@@ -281,6 +297,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("1.7.3").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(Some(&req), None, false));
     /// assert!(RegistryPackage {
     ///             name: "racer".to_string(),
@@ -289,6 +306,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(Some(&req), None, false));
     /// assert!(!RegistryPackage {
     ///             name: "racer".to_string(),
@@ -297,6 +315,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(Some(&req), None, false));
     ///
     /// assert!(!RegistryPackage {
@@ -306,6 +325,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(Some(&req), None, false));
     /// assert!(RegistryPackage {
     ///             name: "cargo-audit".to_string(),
@@ -314,6 +334,7 @@ impl RegistryPackage {
     ///             newest_version: Some(Semver::parse("0.9.0-beta2").unwrap()),
     ///             alternative_version: None,
     ///             max_version: None,
+    ///             executables: vec!["racer".to_string()],
     ///         }.needs_update(Some(&req), Some(true), false));
     /// # }
     /// ```
@@ -354,6 +375,7 @@ impl RegistryPackage {
     ///                newest_version: Some(Semver::parse("2.0.6").unwrap()),
     ///                alternative_version: None,
     ///                max_version: Some(Semver::parse("2.0.5").unwrap()),
+    ///                executables: vec!["racer".to_string()],
     ///            }.update_to_version(),
     ///            Some(&Semver::parse("2.0.5").unwrap()));
     /// assert_eq!(RegistryPackage {
@@ -363,6 +385,7 @@ impl RegistryPackage {
     ///                newest_version: None,
     ///                alternative_version: None,
     ///                max_version: None,
+    ///                executables: vec!["gutenberg".to_string()],
     ///            }.update_to_version(),
     ///            None);
     /// # }
@@ -382,6 +405,8 @@ impl GitRepoPackage {
     ///
     /// In the returned instance, `newest_version` is always `None`, get it via `GitRepoPackage::pull_version()`.
     ///
+    /// The executable list is used as-is.
+    ///
     /// # Examples
     ///
     /// Remote git repo packages:
@@ -392,25 +417,27 @@ impl GitRepoPackage {
     /// # use cargo_update::ops::GitRepoPackage;
     /// # fn main() {
     /// let package_s = "alacritty 0.1.0 (git+https://github.com/jwilm/alacritty#eb231b3e70b87875df4bdd1974d5e94704024d70)";
-    /// assert_eq!(GitRepoPackage::parse(package_s).unwrap(),
+    /// assert_eq!(GitRepoPackage::parse(package_s, vec!["alacritty".to_string()]).unwrap(),
     ///            GitRepoPackage {
     ///                name: "alacritty".to_string(),
     ///                url: "https://github.com/jwilm/alacritty".to_string(),
     ///                branch: None,
     ///                id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
     ///                newest_id: None,
+    ///                executables: vec!["alacritty".to_string()],
     ///            });
     ///
     /// let package_s = "chattium-oxide-client 0.1.0 \
     ///                  (git+https://github.com/nabijaczleweli/chattium-oxide-client\
     ///                       ?branch=master#108a7b94f0e0dcb2a875f70fc0459d5a682df14c)";
-    /// assert_eq!(GitRepoPackage::parse(package_s).unwrap(),
+    /// assert_eq!(GitRepoPackage::parse(package_s, vec!["chattium-oxide-client.exe".to_string()]).unwrap(),
     ///            GitRepoPackage {
     ///                name: "chattium-oxide-client".to_string(),
     ///                url: "https://github.com/nabijaczleweli/chattium-oxide-client".to_string(),
     ///                branch: Some("master".to_string()),
     ///                id: git2::Oid::from_str("108a7b94f0e0dcb2a875f70fc0459d5a682df14c").unwrap(),
     ///                newest_id: None,
+    ///                executables: vec!["chattium-oxide-client.exe".to_string()],
     ///            });
     /// # }
     /// ```
@@ -420,9 +447,9 @@ impl GitRepoPackage {
     /// ```
     /// # use cargo_update::ops::GitRepoPackage;
     /// let package_s = "racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)";
-    /// assert!(GitRepoPackage::parse(package_s).is_none());
+    /// assert!(GitRepoPackage::parse(package_s, vec!["racer".to_string()]).is_none());
     /// ```
-    pub fn parse(what: &str) -> Option<GitRepoPackage> {
+    pub fn parse(what: &str, executables: Vec<String>) -> Option<GitRepoPackage> {
         GIT_PACKAGE_RGX.captures(what).map(|c| {
             let mut url = Url::parse(c.get(3).unwrap().as_str()).unwrap();
             let branch = url.query_pairs().find(|&(ref name, _)| name == "branch").map(|(_, value)| value.to_string());
@@ -433,6 +460,7 @@ impl GitRepoPackage {
                 branch: branch,
                 id: Oid::from_str(c.get(4).unwrap().as_str()).unwrap(),
                 newest_id: None,
+                executables: executables,
             }
         })
     }
@@ -555,6 +583,7 @@ impl GitRepoPackage {
     ///             branch: None,
     ///             id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
     ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
+    ///             executables: vec!["alacritty".to_string()],
     ///         }.needs_update());
     /// assert!(!GitRepoPackage {
     ///             name: "alacritty".to_string(),
@@ -562,6 +591,7 @@ impl GitRepoPackage {
     ///             branch: None,
     ///             id: git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap(),
     ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
+    ///             executables: vec!["alacritty".to_string()],
     ///         }.needs_update());
     /// # }
     /// ```
@@ -678,7 +708,12 @@ pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
         File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
         let mut res = Vec::<RegistryPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| RegistryPackage::parse(s)) {
+        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"]
+            .as_table()
+            .unwrap()
+            .iter()
+            .flat_map(|(s, x)| x.as_array().map(|x| (s, x)))
+            .flat_map(|(s, x)| RegistryPackage::parse(s, x.iter().flat_map(toml::Value::as_str).map(str::to_string).collect())) {
             if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
                 if saved.version.is_none() || saved.version.as_ref().unwrap() < pkg.version.as_ref().unwrap() {
                     saved.version = pkg.version;
@@ -718,7 +753,12 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
         File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
 
         let mut res = Vec::<GitRepoPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"].as_table().unwrap().keys().flat_map(|s| GitRepoPackage::parse(s)) {
+        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"]
+            .as_table()
+            .unwrap()
+            .iter()
+            .flat_map(|(s, x)| x.as_array().map(|x| (s, x)))
+            .flat_map(|(s, x)| GitRepoPackage::parse(s, x.iter().flat_map(toml::Value::as_str).map(str::to_string).collect())) {
             if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
                 saved.id = pkg.id;
                 continue;
@@ -749,13 +789,13 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
 /// #                            "registry+https://github.com/rust-lang/crates.io-index".to_string())];
 /// let mut installed_packages = installed_registry_packages(&cargo_dir);
 /// # let mut installed_packages =
-/// #     vec![RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-/// #          RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-/// #          RegistryPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()];
+/// #     vec![RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)", vec!["cargo-outdated".to_string()]).unwrap(),
+/// #          RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)", vec!["racer.exe".to_string()]).unwrap(),
+/// #          RegistryPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)", vec!["rustfmt".to_string(), "cargo-format".to_string()]).unwrap()];
 /// installed_packages = intersect_packages(&installed_packages, &packages_to_update, false, &[]);
 /// # assert_eq!(&installed_packages,
-/// #   &[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-/// #     RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)").unwrap()]);
+/// #   &[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)", vec!["cargo-outdated".to_string()]).unwrap(),
+/// #     RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)", vec!["racer.exe".to_string()]).unwrap()]);
 /// ```
 pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, Option<Semver>, String)], allow_installs: bool,
                           installed_git: &[GitRepoPackage])
@@ -774,6 +814,7 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
                     newest_version: None,
                     alternative_version: None,
                     max_version: p.1.clone(),
+                    executables: vec![],
                 }
             }))
         .collect()
@@ -810,7 +851,8 @@ fn crate_versions_impl(buf: String) -> Vec<Semver> {
 
 /// Get the location of the registry index corresponding ot the given URL; if not present – make it and its parents.
 ///
-/// As odd as it may be, this [can happen (if rarely) and is a supported configuration](https://github.com/nabijaczleweli/cargo-update/issues/150).
+/// As odd as it may be, this [can happen (if rarely) and is a supported
+/// configuration](https://github.com/nabijaczleweli/cargo-update/issues/150).
 ///
 /// # Examples
 ///
@@ -837,7 +879,7 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf
         Err(ref e) if e.kind() == IoErrorKind::NotFound => {
             fs::create_dir_all(&path).map_err(|e| format!("Couldn't create {} (index directory for {}): {}", path.display(), registry_url, e))?;
             Ok(path)
-        },
+        }
         Err(e) => Err(format!("Couldn't read {} (index directory for {}): {}", path.display(), registry_url, e).into()),
     }
 }

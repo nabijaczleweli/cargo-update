@@ -43,6 +43,9 @@ fn actual_main() -> Result<(), i32> {
         if let Some(el) = cfg.enforce_lock {
             writeln!(out, "Enforce lock\t{}", el).unwrap();
         }
+        if let Some(rb) = cfg.respect_binaries {
+            writeln!(out, "Respect binaries\t{}", rb).unwrap();
+        }
         if let Some(ref tv) = cfg.target_version {
             writeln!(out, "Target version\t{}", tv).unwrap();
         }

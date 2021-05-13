@@ -70,6 +70,14 @@ See cargo-install-update(1) for general information.
 
     Don't require Cargo.lock to be up to date. (default).
 
+  --respect-binaries
+
+    Only install the binaries that are already installed for this package.
+
+  --no-respect-binaries
+
+    Install all binaries. (default).
+
   -v --version [VERSION_REQ]
 
     Require a cargo-compatible version range not to update beyond.

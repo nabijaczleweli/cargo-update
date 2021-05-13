@@ -11,16 +11,21 @@ mod get_index_url;
 
 #[test]
 fn intersect_packages() {
-    assert_eq!(ops::intersect_packages(&[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-                                         RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-                                         RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)").unwrap()],
+    assert_eq!(ops::intersect_packages(&[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)", vec![])
+                                             .unwrap(),
+                                         RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+                                                                vec!["cc".to_string()])
+                                             .unwrap(),
+                                         RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)", vec!["r".to_string()]).unwrap()],
                                        &[("cargo-count".to_string(), None, "https://github.com/rust-lang/crates.io-index".to_string()),
                                          ("racer".to_string(), None, "https://github.com/rust-lang/crates.io-index".to_string()),
                                          ("checksums".to_string(), None, "file:///usr/local/share/cargo".to_string())],
                                        false,
                                        &[]),
-               vec![RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)").unwrap(),
-                    RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)").unwrap()]);
+               vec![RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+                                           vec!["cc".to_string()])
+                        .unwrap(),
+                    RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)", vec!["r".to_string()]).unwrap()]);
 }
 
 #[test]

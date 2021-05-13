@@ -190,6 +190,8 @@ impl ConfigOptions {
                         Arg::from_usage("--no-install-prereleases 'Filter out prerelease versions'").conflicts_with("install-prereleases"),
                         Arg::from_usage("--enforce-lock 'Require Cargo.lock to be up to date'").conflicts_with("no-enforce-lock"),
                         Arg::from_usage("--no-enforce-lock 'Don't enforce Cargo.lock'").conflicts_with("enforce-lock"),
+                        Arg::from_usage("--respect-binaries 'Only install already installed binaries'").conflicts_with("no-respect-binaries"),
+                        Arg::from_usage("--no-respect-binaries 'Install all binaries'").conflicts_with("respect-binaries"),
                         Arg::from_usage("-v --version=[VERSION_REQ] 'Require a cargo-compatible version range'")
                             .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
                             .conflicts_with("any-version"),
@@ -233,6 +235,11 @@ impl ConfigOptions {
                 .chain(match (matches.is_present("enforce-lock"), matches.is_present("no-enforce-lock")) {
                     (true, _) => Some(ConfigOperation::SetEnforceLock(true)),
                     (_, true) => Some(ConfigOperation::SetEnforceLock(false)),
+                    _ => None,
+                })
+                .chain(match (matches.is_present("respect-binaries"), matches.is_present("no-respect-binaries")) {
+                    (true, _) => Some(ConfigOperation::SetRespectBinaries(true)),
+                    (_, true) => Some(ConfigOperation::SetRespectBinaries(false)),
                     _ => None,
                 })
                 .chain(match (matches.is_present("any-version"), matches.value_of("version")) {

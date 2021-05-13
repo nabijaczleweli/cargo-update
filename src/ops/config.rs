@@ -28,6 +28,8 @@ pub enum ConfigOperation {
     SetInstallPrereleases(bool),
     /// Set enforcing Cargo.lock to the specified value.
     SetEnforceLock(bool),
+    /// Set installing only the pre-set binaries.
+    SetRespectBinaries(bool),
     /// Constrain the installed to the specified one.
     SetTargetVersion(VersionReq),
     /// Always install latest package version.
@@ -67,6 +69,8 @@ pub struct PackageConfig {
     pub install_prereleases: Option<bool>,
     /// Whether to enforce Cargo.lock versions.
     pub enforce_lock: Option<bool>,
+    /// Whether to install only the pre-configured binaries.
+    pub respect_binaries: Option<bool>,
     /// Versions to constrain to.
     pub target_version: Option<VersionReq>,
 }
@@ -91,6 +95,7 @@ impl PackageConfig {
     ///                                  ConfigOperation::SetDebugMode(true),
     ///                                  ConfigOperation::SetInstallPrereleases(false),
     ///                                  ConfigOperation::SetEnforceLock(true),
+    ///                                  ConfigOperation::SetRespectBinaries(true),
     ///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(">=0.1").unwrap())]),
     ///            PackageConfig {
     ///                toolchain: Some("nightly".to_string()),
@@ -103,6 +108,7 @@ impl PackageConfig {
     ///                debug: Some(true),
     ///                install_prereleases: Some(false),
     ///                enforce_lock: Some(true),
+    ///                respect_binaries: Some(true),
     ///                target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     ///            });
     /// # }
@@ -115,6 +121,8 @@ impl PackageConfig {
 
     /// Generate cargo arguments from this configuration.
     ///
+    /// Executable names are stripped of their trailing `".exe"`, if any.
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -124,12 +132,12 @@ impl PackageConfig {
     /// # let name = "cargo-update".to_string();
     /// # let mut configuration = BTreeMap::new();
     /// # configuration.insert(name.clone(), PackageConfig::from(&[]));
-    /// let cmd = Command::new("cargo").args(configuration.get(&name).unwrap().cargo_args().iter().map(AsRef::as_ref)).arg(&name)
+    /// let cmd = Command::new("cargo").args(configuration.get(&name).unwrap().cargo_args(&["racer"]).iter().map(AsRef::as_ref)).arg(&name)
     /// // Process the command further -- run it, for example.
     /// # .status().unwrap();
     /// # let _ = cmd;
     /// ```
-    pub fn cargo_args(&self) -> Vec<Cow<'static, str>> {
+    pub fn cargo_args<S: AsRef<str>, I: IntoIterator<Item = S>>(&self, executables: I) -> Vec<Cow<'static, str>> {
         let mut res = vec![];
         if let Some(ref t) = self.toolchain {
             res.push(format!("+{}", t).into());
@@ -149,6 +157,14 @@ impl PackageConfig {
         }
         if let Some(true) = self.enforce_lock {
             res.push("--locked".into());
+        }
+        if let Some(true) = self.respect_binaries {
+            for x in executables {
+                let x = x.as_ref();
+
+                res.push("--bin".into());
+                res.push(x.strip_suffix(".exe").unwrap_or(x).to_string().into());
+            }
         }
         if let Some(true) = self.debug {
             res.push("--debug".into());
@@ -179,6 +195,7 @@ impl PackageConfig {
     ///     debug: None,
     ///     install_prereleases: None,
     ///     enforce_lock: None,
+    ///     respect_binaries: None,
     ///     target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
@@ -198,6 +215,7 @@ impl PackageConfig {
     ///                debug: Some(true),
     ///                install_prereleases: None,
     ///                enforce_lock: None,
+    ///                respect_binaries: None,
     ///                target_version: None,
     ///            });
     /// # }
@@ -222,6 +240,7 @@ impl PackageConfig {
             ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
             ConfigOperation::SetInstallPrereleases(pr) => self.install_prereleases = Some(pr),
             ConfigOperation::SetEnforceLock(el) => self.enforce_lock = Some(el),
+            ConfigOperation::SetRespectBinaries(rb) => self.respect_binaries = Some(rb),
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
         }
@@ -259,6 +278,7 @@ impl PackageConfig {
     ///         debug: None,
     ///         install_prereleases: None,
     ///         enforce_lock: None,
+    ///         respect_binaries: None,
     ///         target_version: None,
     ///     });
     ///     pkgs
@@ -303,6 +323,7 @@ impl PackageConfig {
     ///         debug: None,
     ///         install_prereleases: None,
     ///         enforce_lock: None,
+    ///         respect_binaries: None,
     ///         target_version: None,
     ///     });
     ///     pkgs
@@ -331,6 +352,7 @@ impl Default for PackageConfig {
             debug: None,
             install_prereleases: None,
             enforce_lock: None,
+            respect_binaries: None,
             target_version: None,
         }
     }

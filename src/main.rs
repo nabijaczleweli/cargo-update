@@ -223,7 +223,7 @@ fn actual_main() -> Result<(), i32> {
                     };
                     let install_res = if let Some(cfg) = configuration.get(&package.name) {
                             Command::new(&opts.install_cargo)
-                                .args(cfg.cargo_args().iter().map(AsRef::as_ref))
+                                .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                 .args(if opts.quiet { Some("--quiet") } else { None })
                                 .arg("--vers")
                                 .arg(if let Some(tv) = cfg.target_version.as_ref() {
@@ -356,7 +356,7 @@ fn actual_main() -> Result<(), i32> {
 
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
                                 let mut cmd = Command::new(&opts.install_cargo);
-                                cmd.args(cfg.cargo_args().iter().map(AsRef::as_ref))
+                                cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)

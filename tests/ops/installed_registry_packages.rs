@@ -24,6 +24,7 @@ fn existent() {
                         newest_version: None,
                         alternative_version: None,
                         max_version: None,
+                        executables: vec!["cargo-outdated.exe".to_string()],
                     },
                     RegistryPackage {
                         name: "racer".to_string(),
@@ -32,6 +33,7 @@ fn existent() {
                         newest_version: None,
                         alternative_version: None,
                         max_version: None,
+                        executables: vec!["racer.exe".to_string()],
                     },
                     RegistryPackage {
                         name: "rustfmt".to_string(),
@@ -40,6 +42,7 @@ fn existent() {
                         newest_version: None,
                         alternative_version: None,
                         max_version: None,
+                        executables: vec!["cargo-fmt.exe".to_string(), "rustfmt.exe".to_string()],
                     }]);
 }
 
