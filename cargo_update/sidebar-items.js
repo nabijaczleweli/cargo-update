@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["ops","Main functions doing actual work."]],"struct":[["ConfigOptions","Representation of the config application's all configurable values."],["Options","Representation of the application's all configurable values."]]});
+initSidebarItems({"mod":[["ops","Main functions doing actual work."]],"struct":[["ConfigOptions","Representation of the config application’s all configurable values."],["Options","Representation of the application’s all configurable values."]]});
