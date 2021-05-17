@@ -163,7 +163,11 @@ impl PackageConfig {
                 let x = x.as_ref();
 
                 res.push("--bin".into());
-                res.push(x.strip_suffix(".exe").unwrap_or(x).to_string().into());
+                res.push(if x.ends_with(".exe") {
+                    &x[..x.len() - 4]
+                } else {
+                    x
+                }.to_string().into());
             }
         }
         if let Some(true) = self.debug {
