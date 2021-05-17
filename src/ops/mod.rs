@@ -456,7 +456,7 @@ impl GitRepoPackage {
             url.set_query(None);
             GitRepoPackage {
                 name: c.get(1).unwrap().as_str().to_string(),
-                url: url.into_string(),
+                url: url.into(),
                 branch: branch,
                 id: Oid::from_str(c.get(4).unwrap().as_str()).unwrap(),
                 newest_id: None,
