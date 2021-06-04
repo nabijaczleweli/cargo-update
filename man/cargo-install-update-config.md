@@ -126,7 +126,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Harrison Metzger &lt;<harrisonmetz@gmail.com>&gt;,
            Benjamin Bannier &lt;<bbannier@gmail.com>&gt;,
            Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;,
-       and Corbin Uselton &lt;<corbinu@decimal.io>&gt;
+           Corbin Uselton &lt;<corbinu@decimal.io>&gt;,
+       and QuarticCat &lt;<QuarticCat@protonmail.com>&gt;
 
 ## SPECIAL THANKS
 
