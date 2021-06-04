@@ -39,6 +39,7 @@ sourcesIndex["smallvec"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["strsim"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["syn"] = {"name":"","dirs":[{"name":"gen","files":["clone.rs","gen_helper.rs"]}],"files":["attr.rs","await.rs","bigint.rs","buffer.rs","custom_keyword.rs","custom_punctuation.rs","data.rs","derive.rs","discouraged.rs","error.rs","export.rs","expr.rs","ext.rs","generics.rs","group.rs","ident.rs","lib.rs","lifetime.rs","lit.rs","lookahead.rs","mac.rs","macros.rs","op.rs","parse.rs","parse_macro_input.rs","parse_quote.rs","path.rs","print.rs","punctuated.rs","sealed.rs","span.rs","spanned.rs","thread.rs","token.rs","ty.rs","verbatim.rs"]};
 sourcesIndex["tabwriter"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["term_size"] = {"name":"","dirs":[{"name":"platform","files":["mod.rs","unix.rs"]}],"files":["lib.rs"]};
 sourcesIndex["textwrap"] = {"name":"","files":["indentation.rs","lib.rs","splitting.rs"]};
 sourcesIndex["toml"] = {"name":"","files":["datetime.rs","de.rs","lib.rs","macros.rs","map.rs","ser.rs","spanned.rs","tokens.rs","value.rs"]};
 sourcesIndex["unicode_bidi"] = {"name":"","dirs":[{"name":"char_data","files":["mod.rs","tables.rs"]}],"files":["deprecated.rs","explicit.rs","format_chars.rs","implicit.rs","level.rs","lib.rs","prepare.rs"]};
