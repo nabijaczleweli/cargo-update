@@ -1,11 +1,10 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as FWrite;
-use std::io::{Read, Write};
 use std::default::Default;
 use semver::VersionReq;
 use std::borrow::Cow;
 use std::path::Path;
-use std::fs::File;
+use std::fs;
 use toml;
 
 
@@ -292,14 +291,9 @@ impl PackageConfig {
     ///     pkgs
     /// }));
     /// ```
-    pub fn read(p: &Path) -> Result<BTreeMap<String, PackageConfig>, i32> {
+    pub fn read(p: &Path) -> Result<BTreeMap<String, PackageConfig>, (String, i32)> {
         if p.exists() {
-            let mut buf = String::new();
-            File::open(p).map_err(|_| 1)?
-                .read_to_string(&mut buf)
-                .map_err(|_| 1)?;
-
-            toml::from_str(&buf).map_err(|_| 2)
+            toml::from_str(&fs::read_to_string(p).map_err(|e| (e.to_string(), 1))?).map_err(|e| (e.to_string(), 2))
         } else {
             Ok(BTreeMap::new())
         }
@@ -312,7 +306,7 @@ impl PackageConfig {
     /// ```
     /// # use std::collections::{BTreeSet, BTreeMap};
     /// # use cargo_update::ops::PackageConfig;
-    /// # use std::fs::{File, create_dir_all};
+    /// # use std::fs::{self, create_dir_all};
     /// # use std::env::temp_dir;
     /// # use std::io::Read;
     /// # let td = temp_dir().join("cargo_update-doctest").join("PackageConfig-write-0");
@@ -337,17 +331,13 @@ impl PackageConfig {
     ///     pkgs
     /// }, &config_file).unwrap();
     ///
-    /// let mut buf = String::new();
-    /// File::open(&config_file).unwrap().read_to_string(&mut buf).unwrap();
-    /// assert_eq!(&buf, "[cargo-update]\n\
-    ///                   default_features = true\n\
-    ///                   features = [\"serde\"]\n");
+    /// assert_eq!(&fs::read_to_string(&config_file).unwrap(),
+    ///            "[cargo-update]\n\
+    ///             default_features = true\n\
+    ///             features = [\"serde\"]\n");
     /// ```
-    pub fn write(configuration: &BTreeMap<String, PackageConfig>, p: &Path) -> Result<(), i32> {
-        File::create(p)
-            .map_err(|_| 3)?
-            .write_all(&toml::to_vec(configuration).map_err(|_| 2)?)
-            .map_err(|_| 3)
+    pub fn write(configuration: &BTreeMap<String, PackageConfig>, p: &Path) -> Result<(), (String, i32)> {
+        fs::write(p, &toml::to_vec(configuration).map_err(|e| (e.to_string(), 2))?).map_err(|e| (e.to_string(), 3))
     }
 }
 
