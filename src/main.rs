@@ -40,6 +40,7 @@ fn actual_main() -> Result<(), i32> {
     let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
     let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml"))?;
+    let cargo_config = cargo_update::ops::CargoConfig::load(&crates_file);
     let mut packages = cargo_update::ops::installed_registry_packages(&crates_file);
     let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
         cargo_update::ops::installed_git_repo_packages(&crates_file)
@@ -105,6 +106,7 @@ fn actual_main() -> Result<(), i32> {
         cargo_update::ops::update_index(&mut registry_repo,
                                         &(registry_urls[i].0).0,
                                         http_proxy.as_ref().map(String::as_str),
+                                        cargo_config.net_git_fetch_with_cli,
                                         &mut if !opts.quiet {
                                             Box::new(stdout()) as Box<dyn Write>
                                         } else {

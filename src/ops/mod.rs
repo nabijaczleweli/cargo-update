@@ -12,9 +12,11 @@ use std::io::{ErrorKind as IoErrorKind, Write, Read};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
+use std::process::Command;
 use std::fs::{self, File};
 use std::{cmp, env, mem};
 use std::borrow::Cow;
+use std::ffi::OsStr;
 use regex::Regex;
 use url::Url;
 use toml;
@@ -652,6 +654,50 @@ impl PackageFilterElement {
 }
 
 
+/// `cargo` configuration, as obtained from `.cargo/config[.toml]`
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CargoConfig {
+    pub net_git_fetch_with_cli: bool,
+}
+
+impl CargoConfig {
+    pub fn load(crates_file: &Path) -> CargoConfig {
+        CargoConfig {
+            net_git_fetch_with_cli: env::var("CARGO_NET_GIT_FETCH_WITH_CLI")
+                .ok()
+                .and_then(|e| if e.is_empty() {
+                    Some(toml::Value::String(String::new()))
+                } else {
+                    e.parse::<toml::Value>().ok()
+                })
+                .or_else(|| {
+                    fs::read_to_string(crates_file.with_file_name("config"))
+                        .or_else(|_| fs::read_to_string(crates_file.with_file_name("config,toml")))
+                        .ok()?
+                        .parse::<toml::Value>()
+                        .ok()?
+                        .as_table_mut()?
+                        .remove("net")?
+                        .as_table_mut()?
+                        .remove("git-fetch-with-cli")
+                })
+                .map(CargoConfig::truthy)
+                .unwrap_or(false),
+        }
+    }
+
+    fn truthy(v: toml::Value) -> bool {
+        match v {
+            toml::Value::String(s) if s == "" => false,
+            toml::Value::Float(f) if f == 0. => false,
+            toml::Value::Integer(0) |
+            toml::Value::Boolean(false) => false,
+            _ => true,
+        }
+    }
+}
+
+
 /// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file
 /// parallel to the specified crates file up to the final one.
 ///
@@ -789,13 +835,18 @@ pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
 /// #                            "registry+https://github.com/rust-lang/crates.io-index".to_string())];
 /// let mut installed_packages = installed_registry_packages(&cargo_dir);
 /// # let mut installed_packages =
-/// #     vec![RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)", vec!["cargo-outdated".to_string()]).unwrap(),
-/// #          RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)", vec!["racer.exe".to_string()]).unwrap(),
-/// #          RegistryPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)", vec!["rustfmt".to_string(), "cargo-format".to_string()]).unwrap()];
+/// #     vec![RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+/// #     vec!["cargo-outdated".to_string()]).unwrap(),
+/// #          RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
+/// #     vec!["racer.exe".to_string()]).unwrap(),
+/// #          RegistryPackage::parse("rustfmt 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+/// #     vec!["rustfmt".to_string(), "cargo-format".to_string()]).unwrap()];
 /// installed_packages = intersect_packages(&installed_packages, &packages_to_update, false, &[]);
 /// # assert_eq!(&installed_packages,
-/// #   &[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)", vec!["cargo-outdated".to_string()]).unwrap(),
-/// #     RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)", vec!["racer.exe".to_string()]).unwrap()]);
+/// #   &[RegistryPackage::parse("cargo-outdated 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+/// #                            vec!["cargo-outdated".to_string()]).unwrap(),
+/// #     RegistryPackage::parse("racer 1.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
+/// #                            vec!["racer.exe".to_string()]).unwrap()]);
 /// ```
 pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, Option<Semver>, String)], allow_installs: bool,
                           installed_git: &[GitRepoPackage])
@@ -923,20 +974,36 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf
 ///
 /// Most of this would have been impossible, of course, without the [`rust-lang` Discord server](https://discord.gg/rust-lang),
 /// so shoutout to whoever convinced people that Discord is actually good.
-pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_proxy: Option<&str>, out: &mut W) -> Result<(), String> {
+///
+/// Sometimes, however, even this isn't enough (see https://github.com/nabijaczleweli/cargo-update/issues/163),
+/// hence `fork_git`, which actually runs `$GIT` (default: `git`).
+pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_proxy: Option<&str>, fork_git: bool, out: &mut W) -> Result<(), String> {
     writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string())?;
-    index_repo.remote_anonymous(repo_url)
-        .and_then(|mut r| {
-            with_authentication(repo_url, |creds| {
-                let mut cb = RemoteCallbacks::new();
-                cb.credentials(|a, b, c| creds(a, b, c));
+    if fork_git {
+        Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git"))).arg("-C")
+            .arg(index_repo.path())
+            .args(&["fetch", "-f", repo_url, "refs/heads/master:refs/remotes/origin/master"])
+            .status()
+            .map_err(|e| e.to_string())
+            .and_then(|e| if e.success() {
+                Ok(())
+            } else {
+                Err(e.to_string())
+            })?;
+    } else {
+        index_repo.remote_anonymous(repo_url)
+            .and_then(|mut r| {
+                with_authentication(repo_url, |creds| {
+                    let mut cb = RemoteCallbacks::new();
+                    cb.credentials(|a, b, c| creds(a, b, c));
 
-                r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
-                        Some(&mut fetch_options_from_proxy_url_and_callbacks(repo_url, http_proxy, cb)),
-                        None)
+                    r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
+                            Some(&mut fetch_options_from_proxy_url_and_callbacks(repo_url, http_proxy, cb)),
+                            None)
+                })
             })
-        })
-        .map_err(|e| e.message().to_string())?;
+            .map_err(|e| e.message().to_string())?;
+    }
     writeln!(out).map_err(|_| "failed to write post-update newline".to_string())?;
 
     Ok(())
@@ -993,7 +1060,8 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
             Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
                          Due to a Cargo limitation we will not be able to install from there \
                          until it's given a [source.NAME] in that file!",
-                        config_file.with_file_name("config").display(), config_file.display()))?
+                        config_file.with_file_name("config").display(),
+                        config_file.display()))?
         }
     };
 

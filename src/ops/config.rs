@@ -132,7 +132,9 @@ impl PackageConfig {
     /// # let name = "cargo-update".to_string();
     /// # let mut configuration = BTreeMap::new();
     /// # configuration.insert(name.clone(), PackageConfig::from(&[]));
-    /// let cmd = Command::new("cargo").args(configuration.get(&name).unwrap().cargo_args(&["racer"]).iter().map(AsRef::as_ref)).arg(&name)
+    /// let cmd = Command::new("cargo")
+    ///               .args(configuration.get(&name).unwrap().cargo_args(&["racer"]).iter().map(AsRef::as_ref))
+    ///               .arg(&name)
     /// // Process the command further -- run it, for example.
     /// # .status().unwrap();
     /// # let _ = cmd;
@@ -164,10 +166,12 @@ impl PackageConfig {
 
                 res.push("--bin".into());
                 res.push(if x.ends_with(".exe") {
-                    &x[..x.len() - 4]
-                } else {
-                    x
-                }.to_string().into());
+                        &x[..x.len() - 4]
+                    } else {
+                        x
+                    }
+                    .to_string()
+                    .into());
             }
         }
         if let Some(true) = self.debug {

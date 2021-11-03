@@ -114,6 +114,16 @@ Exit values and possible errors:
 
     Required. Default: system temp, otherwise manual.
 
+## ENVIRONMENT VARIABLES
+
+  `$CARGO_NET_GIT_FETCH_WITH_CLI`
+
+    Overrides the net.git-fetch-with-cli Cargo configuration key.
+
+  `$GIT`
+
+    Overrides the git executable in net.git-fetch-with-cli=true mode.
+
 ## EXAMPLES
 
   `cargo install-update -a`
