@@ -323,7 +323,10 @@ fn actual_main() -> Result<(), i32> {
 
         let git_db_dir = crates_file.with_file_name("git").join("db");
         for package in &mut packages {
-            package.pull_version(&opts.temp_dir.1, &git_db_dir, http_proxy.as_ref().map(String::as_str));
+            package.pull_version(&opts.temp_dir.1,
+                                 &git_db_dir,
+                                 http_proxy.as_ref().map(String::as_str),
+                                 cargo_config.net_git_fetch_with_cli);
         }
 
         if !opts.quiet {

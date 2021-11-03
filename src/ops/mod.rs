@@ -468,38 +468,54 @@ impl GitRepoPackage {
     }
 
     /// Clone the repo and check what the latest commit's hash is.
-    pub fn pull_version<Pt: AsRef<Path>, Pg: AsRef<Path>>(&mut self, temp_dir: Pt, git_db_dir: Pg, http_proxy: Option<&str>) {
-        self.pull_version_impl(temp_dir.as_ref(), git_db_dir.as_ref(), http_proxy)
+    pub fn pull_version<Pt: AsRef<Path>, Pg: AsRef<Path>>(&mut self, temp_dir: Pt, git_db_dir: Pg, http_proxy: Option<&str>, fork_git: bool) {
+        self.pull_version_impl(temp_dir.as_ref(), git_db_dir.as_ref(), http_proxy, fork_git)
     }
 
-    fn pull_version_impl(&mut self, temp_dir: &Path, git_db_dir: &Path, http_proxy: Option<&str>) {
+    fn pull_version_impl(&mut self, temp_dir: &Path, git_db_dir: &Path, http_proxy: Option<&str>, fork_git: bool) {
         let clone_dir = find_git_db_repo(git_db_dir, &self.url).unwrap_or_else(|| {
             fs::create_dir_all(temp_dir).unwrap();
             temp_dir.join(&self.name)
         });
 
-        let repo = self.pull_version_repo(&clone_dir, http_proxy);
+        let repo = self.pull_version_repo(&clone_dir, http_proxy, fork_git);
 
         self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
     }
 
-    fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>) -> Result<Repository, GitError> {
-        with_authentication(&self.url, |creds| {
-            let mut bldr = git2::build::RepoBuilder::new();
+    fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
+        if fork_git {
+            dbg!(Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
+                .arg("clone")
+                .args(self.branch.as_ref().map(|_| "-b"))
+                .args(self.branch.as_ref())
+                .args(&["--bare", "--", &self.url])
+                .arg(clone_dir))
+                .status()
+                .map_err(|e| GitError::from_str(&e.to_string()))
+                .and_then(|e| if e.success() {
+                    Repository::open(clone_dir)
+                } else {
+                    Err(GitError::from_str(&e.to_string()))
+                })
+        } else {
+            with_authentication(&self.url, |creds| {
+                let mut bldr = git2::build::RepoBuilder::new();
 
-            let mut cb = RemoteCallbacks::new();
-            cb.credentials(|a, b, c| creds(a, b, c));
-            bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb));
-            if let Some(ref b) = self.branch.as_ref() {
-                bldr.branch(b);
-            }
+                let mut cb = RemoteCallbacks::new();
+                cb.credentials(|a, b, c| creds(a, b, c));
+                bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb));
+                if let Some(ref b) = self.branch.as_ref() {
+                    bldr.branch(b);
+                }
 
-            bldr.bare(true);
-            bldr.clone(&self.url, &clone_dir)
-        })
+                bldr.bare(true);
+                bldr.clone(&self.url, &clone_dir)
+            })
+        }
     }
 
-    fn pull_version_repo(&self, clone_dir: &Path, http_proxy: Option<&str>) -> Result<Repository, GitError> {
+    fn pull_version_repo(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
         if let Ok(r) = Repository::open(clone_dir) {
             // If `Repository::open` is successful, both `clone_dir` exists *and* points to a valid repository.
             //
@@ -527,16 +543,32 @@ impl GitRepoPackage {
                             // yeeting them shouldn't be a problem, since that's what we *would* do anyway,
                             // and we set up for the non-pessimised path in later runs.
                             fs::remove_dir_all(clone_dir).unwrap();
-                            return self.pull_version_fresh_clone(clone_dir, http_proxy);
+                            return self.pull_version_fresh_clone(clone_dir, http_proxy, fork_git);
                         }
                     }
 
                 }
             };
 
+            let mut remote = "origin";
             r.find_remote("origin")
-                .or_else(|_| r.remote_anonymous(&self.url))
-                .and_then(|mut rm| {
+                .or_else(|_| {
+                    remote = &self.url;
+                    r.remote_anonymous(&self.url)
+                })
+                .and_then(|mut rm| if fork_git {
+                    Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
+                        .arg("-C")
+                        .arg(r.path())
+                        .args(&["fetch", remote, &branch])
+                        .status()
+                        .map_err(|e| GitError::from_str(&e.to_string()))
+                        .and_then(|e| if e.success() {
+                            Ok(())
+                        } else {
+                            Err(GitError::from_str(&e.to_string()))
+                        })
+                } else {
                     with_authentication(&self.url, |creds| {
                         let mut cb = RemoteCallbacks::new();
                         cb.credentials(|a, b, c| creds(a, b, c));
@@ -560,13 +592,13 @@ impl GitRepoPackage {
                 .unwrap();
             Ok(r)
         } else {
-            // If we could not open the repository either it does not exist, or exists but is invalid.
+            // If we could not open the repository either it does not exist, or exists but is invalid,
+            // in which case remove it to trigger a fresh clone.
             if clone_dir.exists() {
-                // If `clone_dir` exists it must be invalid. Remove it to trigger a fresh clone.
                 fs::remove_dir_all(&clone_dir).unwrap();
             }
 
-            self.pull_version_fresh_clone(clone_dir, http_proxy)
+            self.pull_version_fresh_clone(clone_dir, http_proxy, fork_git)
         }
     }
 
