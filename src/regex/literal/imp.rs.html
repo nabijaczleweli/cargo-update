@@ -1,7 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-1.4.6/src/literal/imp.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>imp.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../regex/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `&#x2F;home&#x2F;travis&#x2F;.cargo&#x2F;registry&#x2F;src&#x2F;github.com-1ecc6299db9ec823&#x2F;regex-1.4.6&#x2F;src&#x2F;literal&#x2F;imp.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>imp.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../regex/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1123,15 +1120,14 @@
 <span id="1120">1120</span>
 <span id="1121">1121</span>
 <span id="1122">1122</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::cmp</span>;
+<span class="kw">use</span> <span class="ident">std::mem</span>;
 
 <span class="kw">use</span> <span class="ident">aho_corasick</span>::{<span class="self">self</span>, <span class="ident">packed</span>, <span class="ident">AhoCorasick</span>, <span class="ident">AhoCorasickBuilder</span>};
 <span class="kw">use</span> <span class="ident">memchr</span>::{<span class="ident">memchr</span>, <span class="ident">memchr2</span>, <span class="ident">memchr3</span>};
-<span class="kw">use</span> <span class="ident">syntax</span>::<span class="ident">hir</span>::<span class="ident">literal</span>::{<span class="ident">Literal</span>, <span class="ident">Literals</span>};
+<span class="kw">use</span> <span class="ident">syntax::hir::literal</span>::{<span class="ident">Literal</span>, <span class="ident">Literals</span>};
 
-<span class="kw">use</span> <span class="ident">freqs</span>::<span class="ident">BYTE_FREQUENCIES</span>;
+<span class="kw">use</span> <span class="ident">freqs::BYTE_FREQUENCIES</span>;
 
 <span class="doccomment">/// A prefix extracted from a compiled regular expression.</span>
 <span class="doccomment">///</span>
@@ -1164,33 +1160,33 @@
     <span class="doccomment">/// internally automatically, however, there is some overhead associated</span>
     <span class="doccomment">/// with going through the Aho-Corasick machinery. So using the packed</span>
     <span class="doccomment">/// searcher directly results in some gains.</span>
-    <span class="ident">Packed</span> { <span class="ident">s</span>: <span class="ident">packed</span>::<span class="ident">Searcher</span>, <span class="ident">lits</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> },
+    <span class="ident">Packed</span> { <span class="ident">s</span>: <span class="ident">packed::Searcher</span>, <span class="ident">lits</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Literal</span><span class="op">&gt;</span> },
 }
 
 <span class="kw">impl</span> <span class="ident">LiteralSearcher</span> {
     <span class="doccomment">/// Returns a matcher that never matches and never advances the input.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">empty</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">Literals</span>::<span class="ident">empty</span>(), <span class="ident">Matcher</span>::<span class="ident">Empty</span>)
+        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">Literals::empty</span>(), <span class="ident">Matcher::Empty</span>)
     }
 
     <span class="doccomment">/// Returns a matcher for literal prefixes from the given set.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prefixes</span>(<span class="ident">lits</span>: <span class="ident">Literals</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">matcher</span> <span class="op">=</span> <span class="ident">Matcher</span>::<span class="ident">prefixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
-        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">matcher</span>)
+        <span class="kw">let</span> <span class="ident">matcher</span> <span class="op">=</span> <span class="ident">Matcher::prefixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
+        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">lits</span>, <span class="ident">matcher</span>)
     }
 
     <span class="doccomment">/// Returns a matcher for literal suffixes from the given set.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suffixes</span>(<span class="ident">lits</span>: <span class="ident">Literals</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">matcher</span> <span class="op">=</span> <span class="ident">Matcher</span>::<span class="ident">suffixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
-        <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">matcher</span>)
+        <span class="kw">let</span> <span class="ident">matcher</span> <span class="op">=</span> <span class="ident">Matcher::suffixes</span>(<span class="kw-2">&amp;</span><span class="ident">lits</span>);
+        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">lits</span>, <span class="ident">matcher</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">lits</span>: <span class="ident">Literals</span>, <span class="ident">matcher</span>: <span class="ident">Matcher</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">complete</span> <span class="op">=</span> <span class="ident">lits</span>.<span class="ident">all_complete</span>();
         <span class="ident">LiteralSearcher</span> {
             <span class="ident">complete</span>: <span class="ident">complete</span>,
-            <span class="ident">lcp</span>: <span class="ident">FreqyPacked</span>::<span class="ident">new</span>(<span class="ident">lits</span>.<span class="ident">longest_common_prefix</span>().<span class="ident">to_vec</span>()),
-            <span class="ident">lcs</span>: <span class="ident">FreqyPacked</span>::<span class="ident">new</span>(<span class="ident">lits</span>.<span class="ident">longest_common_suffix</span>().<span class="ident">to_vec</span>()),
+            <span class="ident">lcp</span>: <span class="ident">FreqyPacked::new</span>(<span class="ident">lits</span>.<span class="ident">longest_common_prefix</span>().<span class="ident">to_vec</span>()),
+            <span class="ident">lcs</span>: <span class="ident">FreqyPacked::new</span>(<span class="ident">lits</span>.<span class="ident">longest_common_suffix</span>().<span class="ident">to_vec</span>()),
             <span class="ident">matcher</span>: <span class="ident">matcher</span>,
         }
     }
@@ -1208,7 +1204,7 @@
     <span class="doccomment">/// Find the position of a literal in `haystack` if it exists.</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;perf-inline&quot;</span>, <span class="ident">inline</span>(<span class="ident">always</span>))]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
-        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Matcher</span>::<span class="kw-2">*</span>;
+        <span class="kw">use</span> <span class="ident"><span class="self">self</span>::Matcher</span>::<span class="kw-2">*</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
             <span class="ident">Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>((<span class="number">0</span>, <span class="number">0</span>)),
             <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">sset</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> (<span class="ident">i</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)),
@@ -1252,12 +1248,12 @@
     <span class="doccomment">/// Returns an iterator over all literals to be matched.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
-            <span class="ident">Matcher</span>::<span class="ident">Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Empty</span>,
-            <span class="ident">Matcher</span>::<span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Bytes</span>(<span class="kw-2">&amp;</span><span class="ident">sset</span>.<span class="ident">dense</span>),
-            <span class="ident">Matcher</span>::<span class="ident">FreqyPacked</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Single</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">pat</span>),
-            <span class="ident">Matcher</span>::<span class="ident">BoyerMoore</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Single</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">pattern</span>),
-            <span class="ident">Matcher</span>::<span class="ident">AC</span> { <span class="kw-2">ref</span> <span class="ident">lits</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">AC</span>(<span class="ident">lits</span>),
-            <span class="ident">Matcher</span>::<span class="ident">Packed</span> { <span class="kw-2">ref</span> <span class="ident">lits</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter</span>::<span class="ident">Packed</span>(<span class="ident">lits</span>),
+            <span class="ident">Matcher::Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter::Empty</span>,
+            <span class="ident">Matcher::Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter::Bytes</span>(<span class="kw-2">&amp;</span><span class="ident">sset</span>.<span class="ident">dense</span>),
+            <span class="ident">Matcher::FreqyPacked</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter::Single</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">pat</span>),
+            <span class="ident">Matcher::BoyerMoore</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter::Single</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">pattern</span>),
+            <span class="ident">Matcher::AC</span> { <span class="kw-2">ref</span> <span class="ident">lits</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter::AC</span>(<span class="ident">lits</span>),
+            <span class="ident">Matcher::Packed</span> { <span class="kw-2">ref</span> <span class="ident">lits</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">LiteralIter::Packed</span>(<span class="ident">lits</span>),
         }
     }
 
@@ -1278,7 +1274,7 @@
 
     <span class="doccomment">/// Returns the number of prefixes in this machine.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Matcher</span>::<span class="kw-2">*</span>;
+        <span class="kw">use</span> <span class="ident"><span class="self">self</span>::Matcher</span>::<span class="kw-2">*</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
             <span class="ident">Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
             <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">len</span>(),
@@ -1291,7 +1287,7 @@
 
     <span class="doccomment">/// Return the approximate heap usage of literals in bytes.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        <span class="kw">use</span> <span class="self">self</span>::<span class="ident">Matcher</span>::<span class="kw-2">*</span>;
+        <span class="kw">use</span> <span class="ident"><span class="self">self</span>::Matcher</span>::<span class="kw-2">*</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">matcher</span> {
             <span class="ident">Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
             <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">sset</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">sset</span>.<span class="ident">approximate_size</span>(),
@@ -1305,18 +1301,18 @@
 
 <span class="kw">impl</span> <span class="ident">Matcher</span> {
     <span class="kw">fn</span> <span class="ident">prefixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">Literals</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">prefixes</span>(<span class="ident">lits</span>);
-        <span class="ident">Matcher</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">sset</span>)
+        <span class="kw">let</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet::prefixes</span>(<span class="ident">lits</span>);
+        <span class="ident">Matcher::new</span>(<span class="ident">lits</span>, <span class="ident">sset</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">suffixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">Literals</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">suffixes</span>(<span class="ident">lits</span>);
-        <span class="ident">Matcher</span>::<span class="ident">new</span>(<span class="ident">lits</span>, <span class="ident">sset</span>)
+        <span class="kw">let</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet::suffixes</span>(<span class="ident">lits</span>);
+        <span class="ident">Matcher::new</span>(<span class="ident">lits</span>, <span class="ident">sset</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">Literals</span>, <span class="ident">sset</span>: <span class="ident">SingleByteSet</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Empty</span>;
+            <span class="kw">return</span> <span class="ident">Matcher::Empty</span>;
         }
         <span class="kw">if</span> <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">26</span> {
             <span class="comment">// Avoid trying to match a large number of single bytes.</span>
@@ -1325,36 +1321,36 @@
             <span class="comment">// No matter the size of sset, if its members all are rare in the</span>
             <span class="comment">// haystack, then it&#39;d be worth using it. How to tune this... IDK.</span>
             <span class="comment">// ---AG</span>
-            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Empty</span>;
+            <span class="kw">return</span> <span class="ident">Matcher::Empty</span>;
         }
         <span class="kw">if</span> <span class="ident">sset</span>.<span class="ident">complete</span> {
-            <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Bytes</span>(<span class="ident">sset</span>);
+            <span class="kw">return</span> <span class="ident">Matcher::Bytes</span>(<span class="ident">sset</span>);
         }
         <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
             <span class="kw">let</span> <span class="ident">lit</span> <span class="op">=</span> <span class="ident">lits</span>.<span class="ident">literals</span>()[<span class="number">0</span>].<span class="ident">to_vec</span>();
-            <span class="kw">if</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">should_use</span>(<span class="ident">lit</span>.<span class="ident">as_slice</span>()) {
-                <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">BoyerMoore</span>(<span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">lit</span>));
+            <span class="kw">if</span> <span class="ident">BoyerMooreSearch::should_use</span>(<span class="ident">lit</span>.<span class="ident">as_slice</span>()) {
+                <span class="kw">return</span> <span class="ident">Matcher::BoyerMoore</span>(<span class="ident">BoyerMooreSearch::new</span>(<span class="ident">lit</span>));
             } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">FreqyPacked</span>(<span class="ident">FreqyPacked</span>::<span class="ident">new</span>(<span class="ident">lit</span>));
+                <span class="kw">return</span> <span class="ident">Matcher::FreqyPacked</span>(<span class="ident">FreqyPacked::new</span>(<span class="ident">lit</span>));
             }
         }
 
         <span class="kw">let</span> <span class="ident">pats</span> <span class="op">=</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">to_owned</span>();
         <span class="kw">let</span> <span class="ident">is_aho_corasick_fast</span> <span class="op">=</span> <span class="ident">sset</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">sset</span>.<span class="ident">all_ascii</span>;
         <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">literals</span>().<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">100</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">is_aho_corasick_fast</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">packed</span>::<span class="ident">Config</span>::<span class="ident">new</span>()
-                .<span class="ident">match_kind</span>(<span class="ident">packed</span>::<span class="ident">MatchKind</span>::<span class="ident">LeftmostFirst</span>)
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">packed::Config::new</span>()
+                .<span class="ident">match_kind</span>(<span class="ident">packed::MatchKind::LeftmostFirst</span>)
                 .<span class="ident">builder</span>();
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="ident">pats</span>).<span class="ident">build</span>() {
-                <span class="kw">return</span> <span class="ident">Matcher</span>::<span class="ident">Packed</span> { <span class="ident">s</span>, <span class="ident">lits</span>: <span class="ident">pats</span> };
+                <span class="kw">return</span> <span class="ident">Matcher::Packed</span> { <span class="ident">s</span>, <span class="ident">lits</span>: <span class="ident">pats</span> };
             }
         }
-        <span class="kw">let</span> <span class="ident">ac</span> <span class="op">=</span> <span class="ident">AhoCorasickBuilder</span>::<span class="ident">new</span>()
-            .<span class="ident">match_kind</span>(<span class="ident">aho_corasick</span>::<span class="ident">MatchKind</span>::<span class="ident">LeftmostFirst</span>)
+        <span class="kw">let</span> <span class="ident">ac</span> <span class="op">=</span> <span class="ident">AhoCorasickBuilder::new</span>()
+            .<span class="ident">match_kind</span>(<span class="ident">aho_corasick::MatchKind::LeftmostFirst</span>)
             .<span class="ident">dfa</span>(<span class="bool-val">true</span>)
             .<span class="ident">build_with_size</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">pats</span>)
             .<span class="ident">unwrap</span>();
-        <span class="ident">Matcher</span>::<span class="ident">AC</span> { <span class="ident">ac</span>, <span class="ident">lits</span>: <span class="ident">pats</span> }
+        <span class="ident">Matcher::AC</span> { <span class="ident">ac</span>, <span class="ident">lits</span>: <span class="ident">pats</span> }
     }
 }
 
@@ -1370,10 +1366,10 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">LiteralIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>];
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">LiteralIter</span>::<span class="ident">Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="ident">LiteralIter</span>::<span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">many</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">LiteralIter::Empty</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">LiteralIter::Bytes</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">many</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="ident">many</span>.<span class="ident">is_empty</span>() {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
@@ -1382,7 +1378,7 @@
                     <span class="prelude-val">Some</span>(<span class="ident">next</span>)
                 }
             }
-            <span class="ident">LiteralIter</span>::<span class="ident">Single</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">one</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">LiteralIter::Single</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">one</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="ident">one</span>.<span class="ident">is_empty</span>() {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
@@ -1391,7 +1387,7 @@
                     <span class="prelude-val">Some</span>(<span class="ident">next</span>)
                 }
             }
-            <span class="ident">LiteralIter</span>::<span class="ident">AC</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">lits</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">LiteralIter::AC</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">lits</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">is_empty</span>() {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
@@ -1400,7 +1396,7 @@
                     <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">next</span>)
                 }
             }
-            <span class="ident">LiteralIter</span>::<span class="ident">Packed</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">lits</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">LiteralIter::Packed</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">lits</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="ident">lits</span>.<span class="ident">is_empty</span>() {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
@@ -1424,15 +1420,15 @@
 <span class="kw">impl</span> <span class="ident">SingleByteSet</span> {
     <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SingleByteSet</span> {
         <span class="ident">SingleByteSet</span> {
-            <span class="ident">sparse</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">false</span>; <span class="number">256</span>],
-            <span class="ident">dense</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">sparse</span>: <span class="macro">vec!</span>[<span class="bool-val">false</span>; <span class="number">256</span>],
+            <span class="ident">dense</span>: <span class="macro">vec!</span>[],
             <span class="ident">complete</span>: <span class="bool-val">true</span>,
             <span class="ident">all_ascii</span>: <span class="bool-val">true</span>,
         }
     }
 
     <span class="kw">fn</span> <span class="ident">prefixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">Literals</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SingleByteSet</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet::new</span>();
         <span class="kw">for</span> <span class="ident">lit</span> <span class="kw">in</span> <span class="ident">lits</span>.<span class="ident">literals</span>() {
             <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">=</span> <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">&amp;&amp;</span> <span class="ident">lit</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="op">=</span> <span class="ident">lit</span>.<span class="ident">get</span>(<span class="number">0</span>) {
@@ -1449,7 +1445,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">suffixes</span>(<span class="ident">lits</span>: <span class="kw-2">&amp;</span><span class="ident">Literals</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SingleByteSet</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sset</span> <span class="op">=</span> <span class="ident">SingleByteSet::new</span>();
         <span class="kw">for</span> <span class="ident">lit</span> <span class="kw">in</span> <span class="ident">lits</span>.<span class="ident">literals</span>() {
             <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">=</span> <span class="ident">sset</span>.<span class="ident">complete</span> <span class="op">&amp;&amp;</span> <span class="ident">lit</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="op">=</span> <span class="ident">lit</span>.<span class="ident">get</span>(<span class="ident">lit</span>.<span class="ident">len</span>().<span class="ident">checked_sub</span>(<span class="number">1</span>).<span class="ident">unwrap</span>()) {
@@ -1488,8 +1484,8 @@
     }
 
     <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        (<span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>())
-            <span class="op">+</span> (<span class="self">self</span>.<span class="ident">sparse</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>())
+        (<span class="self">self</span>.<span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>())
+            <span class="op">+</span> (<span class="self">self</span>.<span class="ident">sparse</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>())
     }
 }
 
@@ -1533,7 +1529,7 @@
 <span class="kw">impl</span> <span class="ident">FreqyPacked</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pat</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FreqyPacked</span> {
         <span class="kw">if</span> <span class="ident">pat</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="ident">FreqyPacked</span>::<span class="ident">empty</span>();
+            <span class="kw">return</span> <span class="ident">FreqyPacked::empty</span>();
         }
 
         <span class="comment">// Find the rarest two bytes. Try to make them distinct (but it&#39;s not</span>
@@ -1570,7 +1566,7 @@
 
     <span class="kw">fn</span> <span class="ident">empty</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FreqyPacked</span> {
         <span class="ident">FreqyPacked</span> {
-            <span class="ident">pat</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">pat</span>: <span class="macro">vec!</span>[],
             <span class="ident">char_len</span>: <span class="number">0</span>,
             <span class="ident">rare1</span>: <span class="number">0</span>,
             <span class="ident">rare1i</span>: <span class="number">0</span>,
@@ -1622,12 +1618,12 @@
     }
 
     <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">pat</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>()
+        <span class="self">self</span>.<span class="ident">pat</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>()
     }
 }
 
 <span class="kw">fn</span> <span class="ident">char_len_lossy</span>(<span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-    <span class="ident">String</span>::<span class="ident">from_utf8_lossy</span>(<span class="ident">bytes</span>).<span class="ident">chars</span>().<span class="ident">count</span>()
+    <span class="ident">String::from_utf8_lossy</span>(<span class="ident">bytes</span>).<span class="ident">chars</span>().<span class="ident">count</span>()
 }
 
 <span class="doccomment">/// An implementation of Tuned Boyer-Moore as laid out by</span>
@@ -1697,11 +1693,11 @@
     <span class="doccomment">/// Create a new string searcher, performing whatever</span>
     <span class="doccomment">/// compilation steps are required.</span>
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">pattern</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">pattern</span>.<span class="ident">is_empty</span>());
+        <span class="macro">debug_assert!</span>(<span class="op">!</span><span class="ident">pattern</span>.<span class="ident">is_empty</span>());
 
-        <span class="kw">let</span> (<span class="ident">g</span>, <span class="ident">gi</span>) <span class="op">=</span> <span class="self">Self</span>::<span class="ident">select_guard</span>(<span class="ident">pattern</span>.<span class="ident">as_slice</span>());
-        <span class="kw">let</span> <span class="ident">skip_table</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">compile_skip_table</span>(<span class="ident">pattern</span>.<span class="ident">as_slice</span>());
-        <span class="kw">let</span> <span class="ident">md2_shift</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">compile_md2_shift</span>(<span class="ident">pattern</span>.<span class="ident">as_slice</span>());
+        <span class="kw">let</span> (<span class="ident">g</span>, <span class="ident">gi</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::select_guard</span>(<span class="ident">pattern</span>.<span class="ident">as_slice</span>());
+        <span class="kw">let</span> <span class="ident">skip_table</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::compile_skip_table</span>(<span class="ident">pattern</span>.<span class="ident">as_slice</span>());
+        <span class="kw">let</span> <span class="ident">md2_shift</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::compile_md2_shift</span>(<span class="ident">pattern</span>.<span class="ident">as_slice</span>());
         <span class="ident">BoyerMooreSearch</span> {
             <span class="ident">pattern</span>: <span class="ident">pattern</span>,
             <span class="ident">skip_table</span>: <span class="ident">skip_table</span>,
@@ -1819,9 +1815,9 @@
         <span class="kw">const</span> <span class="ident">LEN_CUTOFF_PROPORTION</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">4</span>;
 
         <span class="kw">let</span> <span class="ident">scaled_rank</span> <span class="op">=</span> <span class="ident">pattern</span>.<span class="ident">len</span>().<span class="ident">wrapping_mul</span>(<span class="ident">LEN_CUTOFF_PROPORTION</span>);
-        <span class="kw">let</span> <span class="ident">cutoff</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">max</span>(
+        <span class="kw">let</span> <span class="ident">cutoff</span> <span class="op">=</span> <span class="ident">cmp::max</span>(
             <span class="ident">MIN_CUTOFF</span>,
-            <span class="ident">MAX_CUTOFF</span> <span class="op">-</span> <span class="ident">cmp</span>::<span class="ident">min</span>(<span class="ident">MAX_CUTOFF</span>, <span class="ident">scaled_rank</span>),
+            <span class="ident">MAX_CUTOFF</span> <span class="op">-</span> <span class="ident">cmp::min</span>(<span class="ident">MAX_CUTOFF</span>, <span class="ident">scaled_rank</span>),
         );
         <span class="comment">// The pattern must be long enough to be worthwhile. e.g., memchr will</span>
         <span class="comment">// be faster on `e` because it is short even though e is quite common.</span>
@@ -1897,7 +1893,7 @@
                         <span class="comment">// If ten iterations did not make at least 16 words</span>
                         <span class="comment">// worth of progress, we just fall back on memchr.</span>
                         <span class="kw">if</span> <span class="ident">window_end</span> <span class="op">-</span> <span class="ident">window_end_snapshot</span>
-                            <span class="op">&gt;</span> <span class="number">16</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()
+                            <span class="op">&gt;</span> <span class="number">16</span> <span class="op">*</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()
                         {
                             <span class="comment">// Returning a window_end &gt;= backstop will</span>
                             <span class="comment">// immediatly break us out of the inner loop in</span>
@@ -1935,7 +1931,7 @@
 
     <span class="doccomment">/// Compute the ufast skip table.</span>
     <span class="kw">fn</span> <span class="ident">compile_skip_table</span>(<span class="ident">pattern</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tab</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">pattern</span>.<span class="ident">len</span>(); <span class="number">256</span>];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tab</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">pattern</span>.<span class="ident">len</span>(); <span class="number">256</span>];
 
         <span class="comment">// For every char in the pattern, we write a skip</span>
         <span class="comment">// that will line us up with the rightmost occurrence.</span>
@@ -1991,8 +1987,8 @@
     }
 
     <span class="kw">fn</span> <span class="ident">approximate_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        (<span class="self">self</span>.<span class="ident">pattern</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>())
-            <span class="op">+</span> (<span class="number">256</span> <span class="op">*</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()) <span class="comment">// skip table</span>
+        (<span class="self">self</span>.<span class="ident">pattern</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>())
+            <span class="op">+</span> (<span class="number">256</span> <span class="op">*</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>()) <span class="comment">// skip table</span>
     }
 }
 
@@ -2011,16 +2007,16 @@
     <span class="comment">// The &quot;hello, world&quot; of string searching</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_find_subs</span>() {
-        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">Vec</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="string">b&quot;pattern&quot;</span>[..]));
+        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">Vec::from</span>(<span class="kw-2">&amp;</span><span class="string">b&quot;pattern&quot;</span>[..]));
         <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="string">b&quot;I keep seeing patterns in this text&quot;</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">14</span>, <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(<span class="number">14</span>, <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>).<span class="ident">unwrap</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_find_no_subs</span>() {
-        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">Vec</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="string">b&quot;pattern&quot;</span>[..]));
+        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">Vec::from</span>(<span class="kw-2">&amp;</span><span class="string">b&quot;pattern&quot;</span>[..]));
         <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="string">b&quot;I keep seeing needles in this text&quot;</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">None</span>, <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>));
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>));
     }
 
     <span class="comment">//</span>
@@ -2029,48 +2025,48 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_skip_reset_bug</span>() {
-        <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
-        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
+        <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
+        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>];
 
-        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>);
+        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>);
         <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>()).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">4</span>, <span class="ident">offset</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">4</span>, <span class="ident">offset</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_backstop_underflow_bug</span>() {
-        <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">0</span>];
-        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>, <span class="number">0</span>];
+        <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>];
+        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">0</span>];
 
-        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>);
+        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>);
         <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>()).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">offset</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">0</span>, <span class="ident">offset</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_naive_off_by_one_bug</span>() {
-        <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">91</span>];
-        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">91</span>];
+        <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">91</span>];
+        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">91</span>];
 
         <span class="kw">let</span> <span class="ident">naive_offset</span> <span class="op">=</span> <span class="ident">naive_find</span>(<span class="kw-2">&amp;</span><span class="ident">needle</span>, <span class="kw-2">&amp;</span><span class="ident">haystack</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">naive_offset</span>);
+        <span class="macro">assert_eq!</span>(<span class="number">0</span>, <span class="ident">naive_offset</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_memchr_fallback_indexing_bug</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="macro">vec!</span>[
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">87</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
         ];
-        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">32</span>, <span class="number">32</span>, <span class="number">87</span>];
+        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">32</span>, <span class="number">32</span>, <span class="number">87</span>];
         <span class="kw">let</span> <span class="ident">needle_start</span> <span class="op">=</span> <span class="ident">haystack</span>.<span class="ident">len</span>();
         <span class="ident">haystack</span>.<span class="ident">extend</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">needle_start</span>, <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>()).<span class="ident">unwrap</span>());
+        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">needle_start</span>, <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>()).<span class="ident">unwrap</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -2084,33 +2080,33 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         .<span class="ident">to_vec</span>();
         <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="string">b&quot;clone_created&quot;</span>.<span class="ident">to_vec</span>();
 
-        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>);
+        <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">haystack</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="prelude-val">Some</span>(<span class="number">43</span>), <span class="ident">result</span>);
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="number">43</span>), <span class="ident">result</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">bm_win_gnu_indexing_bug</span>() {
-        <span class="kw">let</span> <span class="ident">haystack_raw</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[
+        <span class="kw">let</span> <span class="ident">haystack_raw</span> <span class="op">=</span> <span class="macro">vec!</span>[
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
         ];
-        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>];
+        <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>];
         <span class="kw">let</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="ident">haystack_raw</span>.<span class="ident">as_slice</span>();
 
-        <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>()).<span class="ident">find</span>(<span class="ident">haystack</span>);
+        <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>()).<span class="ident">find</span>(<span class="ident">haystack</span>);
     }
 
     <span class="comment">//</span>
     <span class="comment">// QuickCheck Properties</span>
     <span class="comment">//</span>
 
-    <span class="kw">use</span> <span class="ident">quickcheck</span>::<span class="ident">TestResult</span>;
+    <span class="kw">use</span> <span class="ident">quickcheck::TestResult</span>;
 
     <span class="kw">fn</span> <span class="ident">naive_find</span>(<span class="ident">needle</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">haystack</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">haystack</span>.<span class="ident">len</span>());
+        <span class="macro">assert!</span>(<span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">haystack</span>.<span class="ident">len</span>());
 
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..(<span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">-</span> (<span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>)) {
             <span class="kw">if</span> <span class="ident">haystack</span>[<span class="ident">i</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">needle</span>[<span class="number">0</span>]
@@ -2123,10 +2119,10 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         <span class="prelude-val">None</span>
     }
 
-    <span class="macro">quickcheck</span><span class="macro">!</span> {
+    <span class="macro">quickcheck!</span> {
         <span class="kw">fn</span> <span class="ident">qc_bm_equals_nieve_find</span>(<span class="ident">pile1</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">pile2</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
             <span class="kw">if</span> <span class="ident">pile1</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">pile2</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="kw">let</span> (<span class="ident">needle</span>, <span class="ident">haystack</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">pile1</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">pile2</span>.<span class="ident">len</span>() {
@@ -2135,14 +2131,14 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                 (<span class="ident">pile2</span>, <span class="ident">pile1</span>.<span class="ident">as_slice</span>())
             };
 
-            <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
-            <span class="ident">TestResult</span>::<span class="ident">from_bool</span>(
+            <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
+            <span class="ident">TestResult::from_bool</span>(
                 <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">naive_find</span>(<span class="kw-2">&amp;</span><span class="ident">needle</span>, <span class="ident">haystack</span>))
         }
 
         <span class="kw">fn</span> <span class="ident">qc_bm_equals_single</span>(<span class="ident">pile1</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">pile2</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
             <span class="kw">if</span> <span class="ident">pile1</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">pile2</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="kw">let</span> (<span class="ident">needle</span>, <span class="ident">haystack</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">pile1</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="ident">pile2</span>.<span class="ident">len</span>() {
@@ -2151,9 +2147,9 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                 (<span class="ident">pile2</span>, <span class="ident">pile1</span>.<span class="ident">as_slice</span>())
             };
 
-            <span class="kw">let</span> <span class="ident">bm_searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
-            <span class="kw">let</span> <span class="ident">freqy_memchr</span> <span class="op">=</span> <span class="ident">FreqyPacked</span>::<span class="ident">new</span>(<span class="ident">needle</span>);
-            <span class="ident">TestResult</span>::<span class="ident">from_bool</span>(
+            <span class="kw">let</span> <span class="ident">bm_searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
+            <span class="kw">let</span> <span class="ident">freqy_memchr</span> <span class="op">=</span> <span class="ident">FreqyPacked::new</span>(<span class="ident">needle</span>);
+            <span class="ident">TestResult::from_bool</span>(
                 <span class="ident">bm_searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">freqy_memchr</span>.<span class="ident">find</span>(<span class="ident">haystack</span>))
         }
 
@@ -2162,15 +2158,15 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
             <span class="ident">needle</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>
         ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
             <span class="kw">if</span> <span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="ident">haystack_pre</span>.<span class="ident">clone</span>();
-            <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
+            <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
 
             <span class="kw">if</span> <span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span>
                 <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>()).<span class="ident">is_some</span>() {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="ident">haystack</span>.<span class="ident">extend</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
@@ -2182,11 +2178,11 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                 .<span class="ident">unwrap_or</span>(<span class="number">0</span>);
             <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..(<span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>) {
                 <span class="kw">if</span> <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">haystack</span>[(<span class="ident">i</span> <span class="op">+</span> <span class="ident">start</span>)..]).<span class="ident">is_some</span>() {
-                    <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                    <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
                 }
             }
 
-            <span class="ident">TestResult</span>::<span class="ident">from_bool</span>(
+            <span class="ident">TestResult::from_bool</span>(
                 <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>())
                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="ident">haystack_pre</span>.<span class="ident">len</span>())
                         .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>))
@@ -2205,25 +2201,25 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
             <span class="ident">needle_length</span>: <span class="ident">usize</span>
         ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
             <span class="kw">if</span> <span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="kw">let</span> <span class="ident">needle_start</span> <span class="op">=</span> <span class="ident">needle_start</span> <span class="op">%</span> <span class="ident">haystack</span>.<span class="ident">len</span>();
             <span class="kw">let</span> <span class="ident">needle_length</span> <span class="op">=</span> <span class="ident">needle_length</span> <span class="op">%</span> (<span class="ident">haystack</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">needle_start</span>);
 
             <span class="kw">if</span> <span class="ident">needle_length</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="kw">let</span> <span class="ident">needle</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">haystack</span>[<span class="ident">needle_start</span>..(<span class="ident">needle_start</span> <span class="op">+</span> <span class="ident">needle_length</span>)];
 
-            <span class="kw">let</span> <span class="ident">bm_searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>.<span class="ident">to_vec</span>());
+            <span class="kw">let</span> <span class="ident">bm_searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>.<span class="ident">to_vec</span>());
 
             <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">naive_find</span>(<span class="kw-2">&amp;</span><span class="ident">needle</span>, <span class="kw-2">&amp;</span><span class="ident">haystack</span>);
             <span class="kw">match</span> <span class="ident">start</span> {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TestResult</span>::<span class="ident">from_bool</span>(<span class="bool-val">false</span>),
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TestResult::from_bool</span>(<span class="bool-val">false</span>),
                 <span class="prelude-val">Some</span>(<span class="ident">nf_start</span>) <span class="op">=</span><span class="op">&gt;</span>
-                    <span class="ident">TestResult</span>::<span class="ident">from_bool</span>(
+                    <span class="ident">TestResult::from_bool</span>(
                         <span class="ident">nf_start</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">needle_start</span>
                             <span class="op">&amp;&amp;</span> <span class="ident">bm_searcher</span>.<span class="ident">find</span>(<span class="kw-2">&amp;</span><span class="ident">haystack</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">start</span>
                     )
@@ -2232,20 +2228,21 @@ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
         <span class="kw">fn</span> <span class="ident">qc_bm_finds_first</span>(<span class="ident">needle</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
             <span class="kw">if</span> <span class="ident">needle</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">return</span> <span class="ident">TestResult</span>::<span class="ident">discard</span>();
+                <span class="kw">return</span> <span class="ident">TestResult::discard</span>();
             }
 
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">haystack</span> <span class="op">=</span> <span class="ident">needle</span>.<span class="ident">clone</span>();
-            <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch</span>::<span class="ident">new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
+            <span class="kw">let</span> <span class="ident">searcher</span> <span class="op">=</span> <span class="ident">BoyerMooreSearch::new</span>(<span class="ident">needle</span>.<span class="ident">clone</span>());
             <span class="ident">haystack</span>.<span class="ident">extend</span>(<span class="ident">needle</span>);
 
-            <span class="ident">TestResult</span>::<span class="ident">from_bool</span>(
+            <span class="ident">TestResult::from_bool</span>(
                 <span class="ident">searcher</span>.<span class="ident">find</span>(<span class="ident">haystack</span>.<span class="ident">as_slice</span>())
                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>)
                         .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>))
         }
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="regex" data-search-js="../../../search-index.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="regex" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
+    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
+</body></html>
