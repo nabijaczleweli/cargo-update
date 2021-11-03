@@ -13,10 +13,11 @@ fn nonexistent() {
     fs::remove_file(crates_file.with_file_name("config")).unwrap();
 
     assert_eq!(get_index_url(&crates_file, "https://github.com/LoungeCPP/pir-8-emu"),
-               Err(format!("Non-crates.io registry specified and no config file found at {}. \
+               Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
                             Due to a Cargo limitation we will not be able to install from there \
                             until it's given a [source.NAME] in that file!",
-                           crates_file.with_file_name("config").display())
+                           crates_file.with_file_name("config").display(),
+                           crates_file.with_file_name("config.toml").display())
                    .into()));
 }
 

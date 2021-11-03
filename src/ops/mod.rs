@@ -665,12 +665,12 @@ impl PackageFilterElement {
 /// # let _ = crates_file;
 /// ```
 pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
-    let config_file = crates_file.with_file_name("config");
+    let mut config_file = crates_file.with_file_name("config");
+    if !config_file.exists() {
+        config_file.set_file_name("config.toml");
+    }
     if config_file.exists() {
-        let mut crates = String::new();
-        File::open(&config_file).unwrap().read_to_string(&mut crates).unwrap();
-
-        if let Some(idir) = toml::from_str::<toml::Value>(&crates)
+        if let Some(idir) = toml::from_str::<toml::Value>(&fs::read_to_string(&config_file).unwrap())
             .unwrap()
             .get("install")
             .and_then(|t| t.as_table())
@@ -980,17 +980,20 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Opt
 /// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and
 /// the [Cargo Book](https://doc.rust-lang.org/cargo/reference/source-replacement.html) for details
 pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<'static, str>), Cow<'static, str>> {
-    let config_file = crates_file.with_file_name("config");
-    let config = if let Ok(cfg) = fs::read_to_string(&config_file) {
+    let mut config_file = crates_file.with_file_name("config");
+    let config = if let Ok(cfg) = fs::read_to_string(&config_file).or_else(|_| {
+        config_file.set_file_name("config.toml");
+        fs::read_to_string(&config_file)
+    }) {
         toml::from_str::<toml::Value>(&cfg).map_err(|e| format!("{} not TOML: {}", config_file.display(), e))?
     } else {
         if registry == "https://github.com/rust-lang/crates.io-index" {
             return Ok((registry.to_string(), "crates-io".into()));
         } else {
-            Err(format!("Non-crates.io registry specified and no config file found at {}. \
+            Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
                          Due to a Cargo limitation we will not be able to install from there \
                          until it's given a [source.NAME] in that file!",
-                        config_file.display()))?
+                        config_file.with_file_name("config").display(), config_file.display()))?
         }
     };
 
