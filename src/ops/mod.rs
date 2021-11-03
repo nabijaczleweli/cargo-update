@@ -12,9 +12,8 @@ use std::io::{ErrorKind as IoErrorKind, Write, Read};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
+use std::{cmp, env, mem, fs};
 use std::process::Command;
-use std::fs::{self, File};
-use std::{cmp, env, mem};
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use regex::Regex;
@@ -486,11 +485,11 @@ impl GitRepoPackage {
     fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
         if fork_git {
             dbg!(Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
-                .arg("clone")
-                .args(self.branch.as_ref().map(|_| "-b"))
-                .args(self.branch.as_ref())
-                .args(&["--bare", "--", &self.url])
-                .arg(clone_dir))
+                    .arg("clone")
+                    .args(self.branch.as_ref().map(|_| "-b"))
+                    .args(self.branch.as_ref())
+                    .args(&["--bare", "--", &self.url])
+                    .arg(clone_dir))
                 .status()
                 .map_err(|e| GitError::from_str(&e.to_string()))
                 .and_then(|e| if e.success() {
@@ -782,11 +781,8 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
 /// ```
 pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
     if crates_file.exists() {
-        let mut crates = String::new();
-        File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
-
         let mut res = Vec::<RegistryPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"]
+        for pkg in toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap()["v1"]
             .as_table()
             .unwrap()
             .iter()
@@ -827,11 +823,8 @@ pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
 /// ```
 pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
     if crates_file.exists() {
-        let mut crates = String::new();
-        File::open(crates_file).unwrap().read_to_string(&mut crates).unwrap();
-
         let mut res = Vec::<GitRepoPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&crates).unwrap()["v1"]
+        for pkg in toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap()["v1"]
             .as_table()
             .unwrap()
             .iter()
@@ -1313,10 +1306,7 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
 pub fn find_proxy(crates_file: &Path) -> Option<String> {
     let config_file = crates_file.with_file_name("config");
     if config_file.exists() {
-        let mut crates = String::new();
-        File::open(&config_file).unwrap().read_to_string(&mut crates).unwrap();
-
-        if let Some(proxy) = toml::from_str::<toml::Value>(&crates)
+        if let Some(proxy) = toml::from_str::<toml::Value>(&fs::read_to_string(config_file).unwrap())
             .unwrap()
             .get("http")
             .and_then(|t| t.as_table())

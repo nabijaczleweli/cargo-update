@@ -262,16 +262,16 @@ impl PackageConfig {
     /// ```
     /// # use std::collections::{BTreeSet, BTreeMap};
     /// # use cargo_update::ops::PackageConfig;
-    /// # use std::fs::{File, create_dir_all};
+    /// # use std::fs::{self, create_dir_all};
     /// # use std::env::temp_dir;
     /// # use std::io::Write;
     /// # let td = temp_dir().join("cargo_update-doctest").join("PackageConfig-read-0");
     /// # create_dir_all(&td).unwrap();
     /// # let config_file = td.join(".install_config.toml");
-    /// File::create(&config_file).unwrap().write_all(&b"\
+    /// fs::write(&config_file, &b"\
     ///    [cargo-update]\n\
     ///    default_features = true\n\
-    ///    features = [\"serde\"]\n"[..]);
+    ///    features = [\"serde\"]\n"[..]).unwrap();
     /// assert_eq!(PackageConfig::read(&config_file), Ok({
     ///     let mut pkgs = BTreeMap::new();
     ///     pkgs.insert("cargo-update".to_string(), PackageConfig {
