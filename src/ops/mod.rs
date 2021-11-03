@@ -9,13 +9,13 @@
 use git2::{self, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::io::{ErrorKind as IoErrorKind, Write, Read};
+use std::ffi::{OsString, OsStr};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
 use std::{cmp, env, mem, fs};
 use std::process::Command;
 use std::borrow::Cow;
-use std::ffi::OsStr;
 use regex::Regex;
 use url::Url;
 use toml;
@@ -484,12 +484,12 @@ impl GitRepoPackage {
 
     fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
         if fork_git {
-            dbg!(Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
-                    .arg("clone")
-                    .args(self.branch.as_ref().map(|_| "-b"))
-                    .args(self.branch.as_ref())
-                    .args(&["--bare", "--", &self.url])
-                    .arg(clone_dir))
+            Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
+                .arg("clone")
+                .args(self.branch.as_ref().map(|_| "-b"))
+                .args(self.branch.as_ref())
+                .args(&["--bare", "--", &self.url])
+                .arg(clone_dir)
                 .status()
                 .map_err(|e| GitError::from_str(&e.to_string()))
                 .and_then(|e| if e.success() {
@@ -556,7 +556,7 @@ impl GitRepoPackage {
                     r.remote_anonymous(&self.url)
                 })
                 .and_then(|mut rm| if fork_git {
-                    Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
+                    Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
                         .arg("-C")
                         .arg(r.path())
                         .args(&["fetch", remote, &branch])
@@ -719,7 +719,7 @@ impl CargoConfig {
 
     fn truthy(v: toml::Value) -> bool {
         match v {
-            toml::Value::String(s) if s == "" => false,
+            toml::Value::String(ref s) if s == "" => false,
             toml::Value::Float(f) if f == 0. => false,
             toml::Value::Integer(0) |
             toml::Value::Boolean(false) => false,
@@ -1005,7 +1005,7 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf
 pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_proxy: Option<&str>, fork_git: bool, out: &mut W) -> Result<(), String> {
     writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string())?;
     if fork_git {
-        Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git"))).arg("-C")
+        Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git"))).arg("-C")
             .arg(index_repo.path())
             .args(&["fetch", "-f", repo_url, "refs/heads/master:refs/remotes/origin/master"])
             .status()
