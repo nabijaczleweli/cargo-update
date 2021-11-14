@@ -1118,6 +1118,16 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
         }
     }
 
+    if let Some(registries_table) = config.get("registries") {
+		let table = registries_table.as_table().ok_or(Cow::Borrowed("registries is not a table"))?;
+        for (name, url) in table.iter().flat_map(|(name, val)| val.as_table()?.get("index")?.as_str().map(|v| (name, v))) {
+            if cur_source == url {
+                cur_source = name.into()
+            }
+            registries.insert(name, url.into());
+        }
+    }
+
     if Url::parse(&cur_source).is_ok() {
         Err(format!("Non-crates.io registry specified and {} couldn't be found in the config file at {}. \
                      Due to a Cargo limitation we will not be able to install from there \
