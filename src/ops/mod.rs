@@ -1070,7 +1070,8 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Opt
 /// as specified in the book
 ///
 /// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and
-/// the [Cargo Book](https://doc.rust-lang.org/cargo/reference/source-replacement.html) for details
+/// the Cargo Book for details: https://doc.rust-lang.org/cargo/reference/source-replacement.html,
+/// https://doc.rust-lang.org/cargo/reference/registries.html.
 pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<'static, str>), Cow<'static, str>> {
     let mut config_file = crates_file.with_file_name("config");
     let config = if let Ok(cfg) = fs::read_to_string(&config_file).or_else(|_| {
@@ -1101,7 +1102,7 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
     }
 
     if let Some(source) = config.get("source") {
-        for (name, v) in source.as_table().ok_or(Cow::Borrowed("source not table"))? {
+        for (name, v) in source.as_table().ok_or("source not table")? {
             if let Some(replacement) = v.get("replace-with") {
                 replacements.insert(&name[..],
                                     replacement.as_str().ok_or_else(|| format!("source.{}.replacement not string", name))?);
@@ -1118,8 +1119,8 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
         }
     }
 
-    if let Some(registries_table) = config.get("registries") {
-		let table = registries_table.as_table().ok_or(Cow::Borrowed("registries is not a table"))?;
+    if let Some(registries_tabls) = config.get("registries") {
+		let table = registries_tabls.as_table().ok_or("registries is not a table")?;
         for (name, url) in table.iter().flat_map(|(name, val)| val.as_table()?.get("index")?.as_str().map(|v| (name, v))) {
             if cur_source == url {
                 cur_source = name.into()
