@@ -4,6 +4,7 @@ extern crate tabwriter;
 use std::io::{Write, stdout};
 use tabwriter::TabWriter;
 use std::process::exit;
+use std::mem;
 
 
 fn main() {
@@ -12,23 +13,17 @@ fn main() {
 }
 
 fn actual_main() -> Result<(), i32> {
-    let opts = cargo_update::ConfigOptions::parse();
-    let config_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1).with_file_name(".install_config.toml");
+    let mut opts = cargo_update::ConfigOptions::parse();
+    let config_file = cargo_update::ops::resolve_crates_file(mem::replace(&mut opts.crates_file.1, Default::default())).with_file_name(".install_config.toml");
 
     let mut configuration = cargo_update::ops::PackageConfig::read(&config_file).map_err(|(e, r)| {
             eprintln!("Reading config: {}", e);
             r
         })?;
     if !opts.ops.is_empty() {
-        let mut changed = false;
-        if let Some(ref mut cfg) = configuration.get_mut(&opts.package) {
-            cfg.execute_operations(&opts.ops);
-            changed = true;
-        }
-        if !changed {
-            configuration.insert(opts.package.clone(), cargo_update::ops::PackageConfig::from(&opts.ops));
-        }
-        if *configuration.get(&opts.package).unwrap() == Default::default() {
+        if *configuration.entry(opts.package.clone())
+            .and_modify(|cfg| cfg.execute_operations(&opts.ops))
+            .or_insert_with(|| cargo_update::ops::PackageConfig::from(&opts.ops)) == Default::default() {
             configuration.remove(&opts.package);
         }
 
