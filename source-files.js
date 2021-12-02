@@ -1,6 +1,6 @@
 var N = null;var sourcesIndex = {};
 sourcesIndex["aho_corasick"] = {"name":"","dirs":[{"name":"packed","dirs":[{"name":"teddy","files":["compile.rs","mod.rs","runtime.rs"]}],"files":["api.rs","mod.rs","pattern.rs","rabinkarp.rs","vector.rs"]}],"files":["ahocorasick.rs","automaton.rs","buffer.rs","byte_frequencies.rs","classes.rs","dfa.rs","error.rs","lib.rs","nfa.rs","prefilter.rs","state_id.rs"]};
-sourcesIndex["ansi_term"] = {"name":"","files":["ansi.rs","debug.rs","difference.rs","display.rs","lib.rs","style.rs","windows.rs","write.rs"]};
+sourcesIndex["ansi_term"] = {"name":"","files":["ansi.rs","debug.rs","difference.rs","display.rs","lib.rs","style.rs","util.rs","windows.rs","write.rs"]};
 sourcesIndex["array_tool"] = {"name":"","files":["iter.rs","lib.rs","string.rs","vec.rs"]};
 sourcesIndex["atty"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["bitflags"] = {"name":"","files":["lib.rs"]};
@@ -16,7 +16,7 @@ sourcesIndex["idna"] = {"name":"","files":["lib.rs","punycode.rs","uts46.rs"]};
 sourcesIndex["json"] = {"name":"","dirs":[{"name":"util","files":["diyfp.rs","grisu2.rs","mod.rs","print_dec.rs"]},{"name":"value","files":["implements.rs","mod.rs"]}],"files":["codegen.rs","error.rs","lib.rs","number.rs","object.rs","parser.rs","short.rs"]};
 sourcesIndex["lazy_static"] = {"name":"","files":["inline_lazy.rs","lib.rs"]};
 sourcesIndex["lazysort"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["libc"] = {"name":"","dirs":[{"name":"unix","dirs":[{"name":"linux_like","dirs":[{"name":"linux","dirs":[{"name":"arch","dirs":[{"name":"generic","files":["mod.rs"]}],"files":["mod.rs"]},{"name":"gnu","dirs":[{"name":"b64","dirs":[{"name":"x86_64","files":["align.rs","mod.rs","not_x32.rs"]}],"files":["mod.rs"]}],"files":["align.rs","mod.rs"]}],"files":["align.rs","mod.rs"]}],"files":["mod.rs"]}],"files":["align.rs","mod.rs"]}],"files":["fixed_width_ints.rs","lib.rs","macros.rs"]};
+sourcesIndex["libc"] = {"name":"","dirs":[{"name":"unix","dirs":[{"name":"linux_like","dirs":[{"name":"linux","dirs":[{"name":"arch","dirs":[{"name":"generic","files":["mod.rs"]}],"files":["mod.rs"]},{"name":"gnu","dirs":[{"name":"b64","dirs":[{"name":"x86_64","files":["align.rs","mod.rs","not_x32.rs"]}],"files":["mod.rs"]}],"files":["align.rs","mod.rs"]}],"files":["align.rs","mod.rs","non_exhaustive.rs"]}],"files":["mod.rs"]}],"files":["align.rs","mod.rs"]}],"files":["fixed_width_ints.rs","lib.rs","macros.rs"]};
 sourcesIndex["libgit2_sys"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["libssh2_sys"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["libz_sys"] = {"name":"","files":["lib.rs"]};
