@@ -196,6 +196,7 @@ impl ConfigOptions {
                             .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
                             .conflicts_with("any-version"),
                         Arg::from_usage("-a --any-version 'Allow any version'").conflicts_with("version"),
+                        Arg::from_usage("-r --reset 'Roll back the configuration to the defaults.'"),
                         Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
@@ -247,6 +248,7 @@ impl ConfigOptions {
                     (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
                     _ => None,
                 })
+                .chain(matches.index_of("reset").map(|_| ConfigOperation::ResetConfig))
                 .collect(),
         }
     }

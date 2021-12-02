@@ -88,6 +88,10 @@ See cargo-install-update(1) for general information.
 
     Allow any version.
 
+  -r --reset
+
+    Roll back the configuration to the empty defaults.
+
   -c --cargo-dir <CARGO_DIR>
 
     Set the directory containing cargo metadata.

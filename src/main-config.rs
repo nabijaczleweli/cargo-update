@@ -24,6 +24,9 @@ fn actual_main() -> Result<(), i32> {
         if let Some(ref mut cfg) = configuration.get_mut(&opts.package) {
             cfg.execute_operations(&opts.ops);
             changed = true;
+            if **cfg == Default::default() {
+                configuration.remove(&opts.package);
+            }
         }
         if !changed {
             configuration.insert(opts.package.clone(), cargo_update::ops::PackageConfig::from(&opts.ops));

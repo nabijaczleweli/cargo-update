@@ -33,6 +33,8 @@ pub enum ConfigOperation {
     SetTargetVersion(VersionReq),
     /// Always install latest package version.
     RemoveTargetVersion,
+    /// Reset configuration to default values.
+    ResetConfig,
 }
 
 
@@ -250,6 +252,7 @@ impl PackageConfig {
             ConfigOperation::SetRespectBinaries(rb) => self.respect_binaries = Some(rb),
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
+            ConfigOperation::ResetConfig => *self = Default::default(),
         }
     }
 
