@@ -351,7 +351,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Benjamin Bannier &lt;<bbannier@gmail.com>&gt;,
            Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;,
            Corbin Uselton &lt;<corbinu@decimal.io>&gt;,
-       and QuarticCat &lt;<QuarticCat@protonmail.com>&gt;
+           QuarticCat &lt;<QuarticCat@protonmail.com>&gt;,
+       and Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;
 
 ## SPECIAL THANKS
 
