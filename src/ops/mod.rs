@@ -782,7 +782,10 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
 pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
     if crates_file.exists() {
         let mut res = Vec::<RegistryPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap()["v1"]
+        for pkg in match toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap().get("v1") {
+                Some(tbl) => tbl,
+                None => return Vec::new(),
+            }
             .as_table()
             .unwrap()
             .iter()
@@ -824,7 +827,10 @@ pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
 pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
     if crates_file.exists() {
         let mut res = Vec::<GitRepoPackage>::new();
-        for pkg in toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap()["v1"]
+        for pkg in match toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap().get("v1") {
+                Some(tbl) => tbl,
+                None => return Vec::new(),
+            }
             .as_table()
             .unwrap()
             .iter()
@@ -1120,7 +1126,7 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
     }
 
     if let Some(registries_tabls) = config.get("registries") {
-		let table = registries_tabls.as_table().ok_or("registries is not a table")?;
+        let table = registries_tabls.as_table().ok_or("registries is not a table")?;
         for (name, url) in table.iter().flat_map(|(name, val)| val.as_table()?.get("index")?.as_str().map(|v| (name, v))) {
             if cur_source == url {
                 cur_source = name.into()
