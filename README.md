@@ -23,13 +23,14 @@ If that doesn't work:
 
 If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
 
-#### Required libraries
+#### Dependencies
 
-| Library                                 | \*X package name | msys2 package name         |
-|-----------------------------------------|------------------|----------------------------|
-| [`libgit2`](https://libgit2.github.com) | `libgit2-devel`  | `mingw-w64-x86_64-libgit2` |
-| [`libssh2`](https://libssh2.org)        | `libssh2-devel`  | `mingw-w64-x86_64-libssh2` |
-| [`openssl`](https://openssl.org)        | `openssl-devel`  | `mingw-w64-x86_64-openssl` |
+| Dependency                                                                             | Debian package | Fedora package   | MSYS2 package              |
+|----------------------------------------------------------------------------------------|----------------|------------------|----------------------------|
+| [`libgit2`](https://libgit2.github.com)                                                | `libgit2-dev`  | `libgit2-devel`  | `mingw-w64-x86_64-libgit2` |
+| [`libssh2`](https://libssh2.org)                                                       | `libssh-dev`   | `libssh2-devel`  | `mingw-w64-x86_64-libssh2` |
+| [`openssl`](https://openssl.org)                                                       | `libssl-dev`   | `openssl-devel`  | `mingw-w64-x86_64-openssl` |
+| [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/) (some platforms) | `pkg-config`   | `pkg-config`     | `mingw-w64-x86_64-pkg-config` |
 
 ### Usage
 
