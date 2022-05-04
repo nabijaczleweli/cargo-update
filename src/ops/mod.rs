@@ -703,7 +703,7 @@ impl CargoConfig {
                 })
                 .or_else(|| {
                     fs::read_to_string(crates_file.with_file_name("config"))
-                        .or_else(|_| fs::read_to_string(crates_file.with_file_name("config,toml")))
+                        .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
                         .ok()?
                         .parse::<toml::Value>()
                         .ok()?
