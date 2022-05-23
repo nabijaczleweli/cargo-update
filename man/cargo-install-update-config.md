@@ -132,7 +132,9 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;,
            Corbin Uselton &lt;<corbinu@decimal.io>&gt;,
            QuarticCat &lt;<QuarticCat@protonmail.com>&gt;,
-       and Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;
+           Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;,
+           qthree &lt;<qthree3@gmail.com>&gt;,
+       and Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;
 
 ## SPECIAL THANKS
 
