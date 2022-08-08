@@ -5,7 +5,7 @@ extern crate regex;
 extern crate git2;
 
 use git2::{Repository, ErrorCode as GitErrorCode};
-use std::io::{Write, stdout, sink};
+use std::io::{ErrorKind as IoErrorKind, Write, stdout, sink};
 use std::process::{Command, exit};
 use std::collections::BTreeMap;
 use std::iter::FromIterator;
@@ -226,33 +226,49 @@ fn actual_main() -> Result<(), i32> {
                                    &package.name[..])
                         }
                     };
-                    let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                            Command::new(&opts.install_cargo)
-                                .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
-                                .args(if opts.quiet { Some("--quiet") } else { None })
-                                .arg("--vers")
-                                .arg(if let Some(tv) = cfg.target_version.as_ref() {
-                                    tv.to_string()
+                    let install_res = {
+                            let cfg = configuration.get(&package.name);
+                            if opts.install_cargo == "cargo" && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
+                               (cfg == None || cfg == Some(&Default::default())) {
+                                    Command::new("cargo-binstall")
+                                        .arg("--no-confirm")
+                                        .arg("--version")
+                                        .arg(&format!("={}", package.update_to_version().unwrap()))
+                                        .arg("--force")
+                                        .args(if opts.quiet { Some("--quiet") } else { None })
+                                        .arg(&package.name)
+                                        .status()
                                 } else {
-                                    package.update_to_version().unwrap().to_string()
+                                    Err(IoErrorKind::NotFound.into())
+                                }
+                                .or_else(|_| if let Some(cfg) = cfg {
+                                    Command::new(&opts.install_cargo)
+                                        .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
+                                        .args(if opts.quiet { Some("--quiet") } else { None })
+                                        .arg("--version")
+                                        .arg(if let Some(tv) = cfg.target_version.as_ref() {
+                                            tv.to_string()
+                                        } else {
+                                            package.update_to_version().unwrap().to_string()
+                                        })
+                                        .arg("--registry")
+                                        .arg(registry_name.as_ref())
+                                        .arg(&package.name)
+                                        .args(&opts.cargo_install_args)
+                                        .status()
+                                } else {
+                                    Command::new(&opts.install_cargo)
+                                        .arg("install")
+                                        .arg("-f")
+                                        .args(if opts.quiet { Some("--quiet") } else { None })
+                                        .arg("--version")
+                                        .arg(package.update_to_version().unwrap().to_string())
+                                        .arg("--registry")
+                                        .arg(registry_name.as_ref())
+                                        .arg(&package.name)
+                                        .args(&opts.cargo_install_args)
+                                        .status()
                                 })
-                                .arg("--registry")
-                                .arg(registry_name.as_ref())
-                                .arg(&package.name)
-                                .args(&opts.cargo_install_args)
-                                .status()
-                        } else {
-                            Command::new(&opts.install_cargo)
-                                .arg("install")
-                                .arg("-f")
-                                .args(if opts.quiet { Some("--quiet") } else { None })
-                                .arg("--vers")
-                                .arg(package.update_to_version().unwrap().to_string())
-                                .arg("--registry")
-                                .arg(registry_name.as_ref())
-                                .arg(&package.name)
-                                .args(&opts.cargo_install_args)
-                                .status()
                         }
                         .unwrap();
 

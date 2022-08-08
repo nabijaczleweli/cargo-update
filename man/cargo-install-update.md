@@ -21,6 +21,11 @@ containing options to forward to the end of `cargo install` invocations'
 argument lists.
 Note, that cargo-install-update-config(1) is preferred in the general case.
 
+If `cargo-binstall` (>=0.12) is available in the `PATH`,
+`-r` was not overriden, `CARGO_INSTALL_OPTS` is empty,
+the package is in the default registry, and has no non-default configuration,
+it will be used to install the package instead.
+
 Exit values and possible errors:
 
     -1 - cargo subprocess was terminated by a signal (Linux-only)
@@ -370,3 +375,5 @@ To all who support further development, in particular:
 ## SEE ALSO
 
 &lt;<https://github.com/nabijaczleweli/cargo-update>&gt;
+
+&lt;<https://github.com/ryankurte/cargo-binstall>&gt;
