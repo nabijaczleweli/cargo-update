@@ -520,12 +520,12 @@ impl GitRepoPackage {
             //
             // Fetch the specified or default branch, reset it to the remote HEAD.
 
-            let branch = match self.branch.as_ref() {
+            let (branch, tofetch) = match self.branch.as_ref() {
                 Some(b) => {
                     // Cargo doesn't point the HEAD at the chosen (via "--branch") branch when installing
                     // https://github.com/nabijaczleweli/cargo-update/issues/143
                     r.set_head(&format!("refs/heads/{}", b)).map_err(|e| panic!("Couldn't set HEAD to chosen branch {}: {}", b, e)).unwrap();
-                    Cow::from(b)
+                    (Cow::from(b), Cow::from(b))
                 }
 
                 None => {
@@ -533,7 +533,7 @@ impl GitRepoPackage {
                         .map_err(|e| panic!("No HEAD in {}: {}", clone_dir.display(), e))
                         .unwrap()
                         .symbolic_target() {
-                        Some(ht) => ht["refs/heads/".len()..].to_string().into(),
+                        Some(ht) => (ht["refs/heads/".len()..].to_string().into(), "+HEAD:refs/remotes/origin/HEAD".into()),
                         None => {
                             // Versions up to v4.0.0 (well, 59be1c0de283dabce320a860a3d533d00910a6a9, but who's counting)
                             // called r.set_head("FETCH_HEAD"), which made HEAD a direct SHA reference.
@@ -559,7 +559,7 @@ impl GitRepoPackage {
                     Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
                         .arg("-C")
                         .arg(r.path())
-                        .args(&["fetch", remote, &branch])
+                        .args(&["fetch", remote, &tofetch])
                         .status()
                         .map_err(|e| GitError::from_str(&e.to_string()))
                         .and_then(|e| if e.success() {
@@ -572,7 +572,7 @@ impl GitRepoPackage {
                         let mut cb = RemoteCallbacks::new();
                         cb.credentials(|a, b, c| creds(a, b, c));
 
-                        rm.fetch(&[&branch[..]],
+                        rm.fetch(&[&tofetch[..]],
                                  Some(&mut fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb)),
                                  None)
                     })
