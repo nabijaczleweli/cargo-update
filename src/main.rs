@@ -226,8 +226,14 @@ fn actual_main() -> Result<(), i32> {
                     let install_res = {
                             let cfg = configuration.get(&package.name);
                             if opts.install_cargo == "cargo" && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
-                               (cfg == None || cfg == Some(&Default::default())) {
+                               (cfg == None || cfg == Some(&Default::default())) && //---------
+                               opts.cargo_dir.0 == "$HOME/.cargo"
+                            // TODO: ^ string-valued in-band signaling: awful; cargo_dir should drop the .0 member,
+                            //         but blocked on https://github.com/cargo-bins/cargo-binstall/issues/388
+                            {
                                     Command::new("cargo-binstall")
+                                        // .arg("--root")
+                                        // .arg(&opts.cargo_dir.1)
                                         .arg("--no-confirm")
                                         .arg("--version")
                                         .arg(&format!("={}", package.update_to_version().unwrap()))
@@ -241,6 +247,8 @@ fn actual_main() -> Result<(), i32> {
                                 .or_else(|_| if let Some(cfg) = cfg {
                                     Command::new(&opts.install_cargo)
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
+                                        .arg("--root")
+                                        .arg(&opts.cargo_dir.1)
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .arg("--version")
                                         .arg(if let Some(tv) = cfg.target_version.as_ref() {
@@ -256,6 +264,8 @@ fn actual_main() -> Result<(), i32> {
                                 } else {
                                     Command::new(&opts.install_cargo)
                                         .arg("install")
+                                        .arg("--root")
+                                        .arg(&opts.cargo_dir.1)
                                         .arg("-f")
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .arg("--version")
@@ -378,6 +388,8 @@ fn actual_main() -> Result<(), i32> {
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
                                 let mut cmd = Command::new(&opts.install_cargo);
                                 cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
+                                    .arg("--root")
+                                    .arg(&opts.cargo_dir.1)
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
@@ -389,6 +401,8 @@ fn actual_main() -> Result<(), i32> {
                             } else {
                                 let mut cmd = Command::new(&opts.install_cargo);
                                 cmd.arg("install")
+                                    .arg("--root")
+                                    .arg(&opts.cargo_dir.1)
                                     .arg("-f")
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
