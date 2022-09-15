@@ -1,7 +1,6 @@
 extern crate cargo_update;
 extern crate tabwriter;
 extern crate lazysort;
-extern crate regex;
 extern crate git2;
 
 use git2::{Repository, ErrorCode as GitErrorCode};
@@ -14,7 +13,6 @@ use lazysort::SortedBy;
 use std::fmt::Display;
 #[cfg(target_os="windows")]
 use std::fs::File;
-use regex::Regex;
 use std::env;
 use std::fs;
 
@@ -28,11 +26,10 @@ fn actual_main() -> Result<(), i32> {
     let opts = cargo_update::Options::parse();
 
     if cfg!(target_os = "windows") {
-        let old_version_r = Regex::new(r"cargo-install-update\.exe-v.+").unwrap();
         for old_version in fs::read_dir(env::current_exe().unwrap().parent().unwrap().canonicalize().unwrap())
             .unwrap()
             .map(Result::unwrap)
-            .filter(|f| old_version_r.is_match(&f.file_name().into_string().unwrap())) {
+            .filter(|f| f.file_name().to_string_lossy().starts_with("cargo-install-update.exe-v")) {
             fs::remove_file(old_version.path()).unwrap();
         }
     }
