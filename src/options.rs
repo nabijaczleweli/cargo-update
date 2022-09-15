@@ -263,22 +263,27 @@ fn cargo_dir(opt_cargo_dir: Option<&str>) -> (String, PathBuf) {
         match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
             Ok(ch) => ("$CARGO_HOME".to_string(), ch),
             Err(()) =>
-                    match home_dir().and_then(|hd| hd.canonicalize().ok()) {
-                        Some(mut hd) => {
-                            hd.push(".cargo");
+                match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
+                    Ok(ch) => ("$CARGO_INSTALL_ROOT".to_string(), ch),
+                    Err(()) =>
+                        match home_dir().and_then(|hd| hd.canonicalize().ok()) {
+                            Some(mut hd) => {
+                                hd.push(".cargo");
 
-                            fs::create_dir_all(&hd).unwrap();
-                            ("$HOME/.cargo".to_string(), hd)
-                        }
-                        None => {
-                            clap::Error {
-                                    message: "$CARGO_HOME and home directory invalid, please specify the cargo home directory with the -c option".to_string(),
-                                    kind: clap::ErrorKind::MissingRequiredArgument,
-                                    info: None,
-                                }
-                                .exit()
-                        }
-                    },
+                                fs::create_dir_all(&hd).unwrap();
+                                ("$HOME/.cargo".to_string(), hd)
+                            }
+                            None => {
+                                clap::Error {
+                                        message: "$CARGO_HOME, $CARGO_INSTALL_ROOT, and home directory invalid, \
+                                                  please specify the cargo home directory with the -c option".to_string(),
+                                        kind: clap::ErrorKind::MissingRequiredArgument,
+                                        info: None,
+                                    }
+                                    .exit()
+                            }
+                        },
+                },
         }
     }
 }

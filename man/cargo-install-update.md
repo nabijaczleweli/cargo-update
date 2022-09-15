@@ -107,10 +107,14 @@ Exit values and possible errors:
     Required. Default: "cargo"
 
   -c --cargo-dir <CARGO_DIR>
+     --root      <CARGO_DIR>
 
     Set the directory containing cargo metadata.
 
-    Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
+    Equivalent to, and forwarded as, cargo install --root.
+
+    Required. Default: "$CARGO_HOME", then "$CARGO_INSTALL_ROOT",
+    then "$HOME/.cargo", otherwise manual.
 
   -t --temp-dir <TEMP_DIR>
 
