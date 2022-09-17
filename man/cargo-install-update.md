@@ -21,7 +21,7 @@ containing options to forward to the end of `cargo install` invocations'
 argument lists.
 Note, that cargo-install-update-config(1) is preferred in the general case.
 
-If `cargo-binstall` (>=0.12) is available in the `PATH`,
+If `cargo-binstall` (>=0.13.1) is available in the `PATH`,
 `-r` was not overriden, `CARGO_INSTALL_OPTS` is empty,
 the package is in the default registry, has no non-default configuration,
 and the cargo root is the default `$HOME/.cargo`,

@@ -226,14 +226,10 @@ fn actual_main() -> Result<(), i32> {
                     let install_res = {
                             let cfg = configuration.get(&package.name);
                             if opts.install_cargo == "cargo" && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
-                               (cfg == None || cfg == Some(&Default::default())) && //---------
-                               opts.cargo_dir.0 == "$HOME/.cargo"
-                            // TODO: ^ string-valued in-band signaling: awful; cargo_dir should drop the .0 member,
-                            //         but blocked on https://github.com/cargo-bins/cargo-binstall/issues/388
-                            {
+                               (cfg == None || cfg == Some(&Default::default())) {
                                     Command::new("cargo-binstall")
-                                        // .arg("--root")
-                                        // .arg(&opts.cargo_dir.1)
+                                        .arg("--roots")
+                                        .arg(&opts.cargo_dir.1)
                                         .arg("--no-confirm")
                                         .arg("--version")
                                         .arg(&format!("={}", package.update_to_version().unwrap()))
