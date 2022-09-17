@@ -729,20 +729,20 @@ impl CargoConfig {
 }
 
 
-/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` file
-/// parallel to the specified crates file up to the final one.
+/// [Follow `install.root`](https://github.com/nabijaczleweli/cargo-update/issues/23) in the `config` or `config.toml` file
+/// in the cargo directory specified.
 ///
 /// # Examples
 ///
 /// ```
-/// # use cargo_update::ops::resolve_crates_file;
+/// # use cargo_update::ops::crates_file_in;
 /// # use std::env::temp_dir;
-/// # let crates_file = temp_dir().join(".crates.toml");
-/// let crates_file = resolve_crates_file(crates_file);
-/// # let _ = crates_file;
+/// # let cargo_dir = temp_dir();
+/// let cargo_dir = crates_file_in(&cargo_dir);
+/// # let _ = cargo_dir;
 /// ```
-pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
-    let mut config_file = crates_file.with_file_name("config");
+pub fn crates_file_in(cargo_dir: &Path) -> PathBuf {
+    let mut config_file = cargo_dir.join("config");
     if !config_file.exists() {
         config_file.set_file_name("config.toml");
     }
@@ -753,10 +753,12 @@ pub fn resolve_crates_file(crates_file: PathBuf) -> PathBuf {
             .and_then(|t| t.as_table())
             .and_then(|t| t.get("root"))
             .and_then(|t| t.as_str()) {
-            return resolve_crates_file(Path::new(idir).join(".crates.toml"));
+            return crates_file_in(Path::new(idir));
         }
     }
-    crates_file
+
+    config_file.set_file_name(".crates.toml");
+    config_file
 }
 
 /// List the installed packages at the specified location that originate

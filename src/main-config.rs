@@ -4,7 +4,6 @@ extern crate tabwriter;
 use std::io::{Write, stdout};
 use tabwriter::TabWriter;
 use std::process::exit;
-use std::mem;
 
 
 fn main() {
@@ -13,8 +12,8 @@ fn main() {
 }
 
 fn actual_main() -> Result<(), i32> {
-    let mut opts = cargo_update::ConfigOptions::parse();
-    let config_file = cargo_update::ops::resolve_crates_file(mem::replace(&mut opts.crates_file.1, Default::default())).with_file_name(".install_config.toml");
+    let opts = cargo_update::ConfigOptions::parse();
+    let config_file = cargo_update::ops::crates_file_in(&opts.cargo_dir).with_file_name(".install_config.toml");
 
     let mut configuration = cargo_update::ops::PackageConfig::read(&config_file).map_err(|(e, r)| {
             eprintln!("Reading config: {}", e);

@@ -44,13 +44,10 @@ pub struct Options {
     pub quiet: bool,
     /// Update all packages. Default: empty
     pub filter: Vec<PackageFilterElement>,
-    /// The `.crates.toml` file in the `cargo` home directory.
-    /// Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
-    pub crates_file: (String, PathBuf),
-    /// The `cargo` home directory. Default: `"$CARGO_HOME"`, then `"$HOME/.cargo"`
-    pub cargo_dir: (String, PathBuf),
+    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    pub cargo_dir: PathBuf,
     /// The temporary directory to clone git repositories to. Default: `"$TEMP/cargo-update"`
-    pub temp_dir: (String, PathBuf),
+    pub temp_dir: PathBuf,
     /// Arbitrary arguments to forward to `cargo install`, acquired from `$CARGO_INSTALL_OPTS`. Default: `[]`
     pub cargo_install_args: Vec<OsString>,
     /// The cargo to run for installations. Default: `"cargo"`
@@ -60,9 +57,8 @@ pub struct Options {
 /// Representation of the config application's all configurable values.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct ConfigOptions {
-    /// The `config` file in the `cargo` home directory.
-    /// Default: in `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
-    pub crates_file: (String, PathBuf),
+    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    pub cargo_dir: PathBuf,
     /// Crate to modify config for
     pub package: String,
     /// What to do to the config, or display with empty
@@ -111,7 +107,6 @@ impl Options {
 
         let all = matches.is_present("all");
         let update = !matches.is_present("list");
-        let cdir = cargo_dir(matches.value_of("cargo-dir"));
         Options {
             to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
@@ -136,31 +131,13 @@ impl Options {
             update_git: matches.is_present("git"),
             quiet: matches.is_present("quiet"),
             filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_else(|| vec![]),
-            crates_file: match matches.value_of("cargo-dir") {
-                Some(dir) => (format!("{}/.crates.toml", dir), fs::canonicalize(dir).unwrap().join(".crates.toml")),
-                None => {
-                    match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                        Ok(ch) => ("$CARGO_INSTALL_ROOT/.crates.toml".to_string(), ch.join(".crates.toml")),
-                        Err(()) => (format!("{}/.crates.toml", cdir.0), cdir.1.join(".crates.toml")),
-                    }
-                }
-            },
-            cargo_dir: cdir,
+            cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             temp_dir: {
-                let (temp_s, temp_pb) = if let Some(tmpdir) = matches.value_of("temp-dir") {
-                    (tmpdir.to_string(), fs::canonicalize(tmpdir).unwrap())
+                if let Some(tmpdir) = matches.value_of("temp-dir") {
+                    fs::canonicalize(tmpdir).unwrap().join("cargo-update")
                 } else {
-                    ("$TEMP".to_string(), env::temp_dir())
-                };
-
-                (format!("{}{}cargo-update",
-                         temp_s,
-                         if temp_s.ends_with('/') || temp_s.ends_with('\\') {
-                             ""
-                         } else {
-                             "/"
-                         }),
-                 temp_pb.join("cargo-update"))
+                    env::temp_dir().join("cargo-update")
+                }
             },
             cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
             install_cargo: matches.value_of_os("install-cargo").expect("has default").to_os_string(),
@@ -203,17 +180,8 @@ impl ConfigOptions {
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
 
-        let cdir = cargo_dir(matches.value_of("cargo-dir"));
         ConfigOptions {
-            crates_file: match matches.value_of("cargo-dir") {
-                Some(dir) => (format!("{}/.crates.toml", dir), fs::canonicalize(dir).unwrap().join(".crates.toml")),
-                None => {
-                    match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                        Ok(ch) => ("$CARGO_INSTALL_ROOT/.crates.toml".to_string(), ch.join(".crates.toml")),
-                        Err(()) => (format!("{}/.crates.toml", cdir.0), cdir.1.join(".crates.toml")),
-                    }
-                }
-            },
+            cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             package: matches.value_of("PACKAGE").unwrap().to_string(),
             ops: matches.value_of("toolchain")
                 .map(|t| if t.is_empty() {
@@ -256,22 +224,31 @@ impl ConfigOptions {
     }
 }
 
-fn cargo_dir(opt_cargo_dir: Option<&str>) -> (String, PathBuf) {
+fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
     if let Some(dir) = opt_cargo_dir {
-        ("cargo-dir".to_string(), PathBuf::from(dir))
+        match fs::canonicalize(dir) {
+            Ok(dir) => dir,
+            Err(_) => {
+                clap::Error {
+                        message: format!("--cargo-dir={:?} doesn't exist", dir),
+                        kind: clap::ErrorKind::InvalidValue,
+                        info: None,
+                    }
+                    .exit()
+            }
+        }
     } else {
         match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-            Ok(ch) => ("$CARGO_HOME".to_string(), ch),
+            Ok(ch) => ch,
             Err(()) =>
                 match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                    Ok(ch) => ("$CARGO_INSTALL_ROOT".to_string(), ch),
+                    Ok(ch) => ch,
                     Err(()) =>
                         match home_dir().and_then(|hd| hd.canonicalize().ok()) {
                             Some(mut hd) => {
                                 hd.push(".cargo");
-
                                 fs::create_dir_all(&hd).unwrap();
-                                ("$HOME/.cargo".to_string(), hd)
+                                hd
                             }
                             None => {
                                 clap::Error {

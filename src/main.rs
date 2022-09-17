@@ -34,7 +34,7 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
-    let crates_file = cargo_update::ops::resolve_crates_file(opts.crates_file.1.clone());
+    let crates_file = cargo_update::ops::crates_file_in(&opts.cargo_dir);
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
     let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")).map_err(|(e, r)| {
             eprintln!("Reading config: {}", e);
@@ -83,7 +83,7 @@ fn actual_main() -> Result<(), i32> {
 
     let registries: Vec<_> = Result::from_iter(registry_urls.iter()
         .map(|((registry_url, _), pkg_names)| {
-            cargo_update::ops::assert_index_path(&opts.cargo_dir.1, &registry_url[..])
+            cargo_update::ops::assert_index_path(&opts.cargo_dir, &registry_url[..])
                 .map(|path| (path, &pkg_names[..]))
                 .map_err(|e| {
                     eprintln!("Couldn't get package repository: {}.", e);
@@ -229,7 +229,7 @@ fn actual_main() -> Result<(), i32> {
                                (cfg == None || cfg == Some(&Default::default())) {
                                     Command::new("cargo-binstall")
                                         .arg("--roots")
-                                        .arg(&opts.cargo_dir.1)
+                                        .arg(&opts.cargo_dir)
                                         .arg("--no-confirm")
                                         .arg("--version")
                                         .arg(&format!("={}", package.update_to_version().unwrap()))
@@ -244,7 +244,7 @@ fn actual_main() -> Result<(), i32> {
                                     Command::new(&opts.install_cargo)
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                         .arg("--root")
-                                        .arg(&opts.cargo_dir.1)
+                                        .arg(&opts.cargo_dir)
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .arg("--version")
                                         .arg(if let Some(tv) = cfg.target_version.as_ref() {
@@ -261,7 +261,7 @@ fn actual_main() -> Result<(), i32> {
                                     Command::new(&opts.install_cargo)
                                         .arg("install")
                                         .arg("--root")
-                                        .arg(&opts.cargo_dir.1)
+                                        .arg(&opts.cargo_dir)
                                         .arg("-f")
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .arg("--version")
@@ -342,7 +342,7 @@ fn actual_main() -> Result<(), i32> {
 
         let git_db_dir = crates_file.with_file_name("git").join("db");
         for package in &mut packages {
-            package.pull_version(&opts.temp_dir.1,
+            package.pull_version(&opts.temp_dir,
                                  &git_db_dir,
                                  http_proxy.as_ref().map(String::as_str),
                                  cargo_config.net_git_fetch_with_cli);
@@ -385,7 +385,7 @@ fn actual_main() -> Result<(), i32> {
                                 let mut cmd = Command::new(&opts.install_cargo);
                                 cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
                                     .arg("--root")
-                                    .arg(&opts.cargo_dir.1)
+                                    .arg(&opts.cargo_dir)
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
@@ -398,7 +398,7 @@ fn actual_main() -> Result<(), i32> {
                                 let mut cmd = Command::new(&opts.install_cargo);
                                 cmd.arg("install")
                                     .arg("--root")
-                                    .arg(&opts.cargo_dir.1)
+                                    .arg(&opts.cargo_dir)
                                     .arg("-f")
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
