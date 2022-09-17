@@ -23,8 +23,7 @@ Note, that cargo-install-update-config(1) is preferred in the general case.
 
 If `cargo-binstall` (>=0.13.1) is available in the `PATH`,
 `-r` was not overriden, `CARGO_INSTALL_OPTS` is empty,
-the package is in the default registry, has no non-default configuration,
-and the cargo root is the default `$HOME/.cargo`,
+the package is in the default registry, and has no non-default configuration,
 it will be used to install the package instead.
 
 Exit values and possible errors:
@@ -364,7 +363,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            QuarticCat &lt;<QuarticCat@protonmail.com>&gt;,
            Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;,
            qthree &lt;<qthree3@gmail.com>&gt;,
-       and Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;
+           Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;,
+       and Paul Barker &lt;<paul@pbarker.dev>&gt;
 
 ## SPECIAL THANKS
 

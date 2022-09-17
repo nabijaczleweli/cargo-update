@@ -134,7 +134,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            QuarticCat &lt;<QuarticCat@protonmail.com>&gt;,
            Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;,
            qthree &lt;<qthree3@gmail.com>&gt;,
-       and Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;
+           Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;,
+       and Paul Barker &lt;<paul@pbarker.dev>&gt;
 
 ## SPECIAL THANKS
 
