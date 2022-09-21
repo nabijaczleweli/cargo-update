@@ -89,6 +89,7 @@ impl Options {
                         Arg::from_usage("-g --git 'Also update git packages'"),
                         Arg::from_usage("-q --quiet 'No output printed to stdout'"),
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
+                            .number_of_values(1)
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
                         Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").default_value("cargo"),
                         Arg::with_name("cargo_install_opts")
@@ -158,8 +159,8 @@ impl ConfigOptions {
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .validator(|s| existing_dir_validator("Cargo", &s)),
                         Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
-                        Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'"),
-                        Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'"),
+                        Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'").number_of_values(1),
+                        Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'").number_of_values(1),
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
