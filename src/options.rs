@@ -239,10 +239,10 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
             }
         }
     } else {
-        match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
+        match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
             Ok(ch) => ch,
             Err(()) =>
-                match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
+                match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
                     Ok(ch) => ch,
                     Err(()) =>
                         match home_dir().and_then(|hd| hd.canonicalize().ok()) {
@@ -253,7 +253,7 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
                             }
                             None => {
                                 clap::Error {
-                                        message: "$CARGO_HOME, $CARGO_INSTALL_ROOT, and home directory invalid, \
+                                        message: "$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, \
                                                   please specify the cargo home directory with the -c option".to_string(),
                                         kind: clap::ErrorKind::MissingRequiredArgument,
                                         info: None,

@@ -112,7 +112,7 @@ Exit values and possible errors:
 
     Equivalent to, and forwarded as, cargo install --root.
 
-    Required. Default: "$CARGO_HOME", then "$CARGO_INSTALL_ROOT",
+    Required. Default: "$CARGO_INSTALL_ROOT", then "$CARGO_HOME",
     then "$HOME/.cargo", otherwise manual.
 
   -t --temp-dir <TEMP_DIR>
