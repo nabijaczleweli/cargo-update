@@ -92,13 +92,14 @@ fn actual_main() -> Result<(), i32> {
         }))?;
     let mut registry_repos: Vec<_> = Result::from_iter(registries.iter().map(|(registry, _)| {
         Repository::open(&registry).or_else(|e| if e.code() == GitErrorCode::NotFound {
-            Repository::init(&registry).map_err(|_| {
-                eprintln!("Failed to initialise fresh registry repository at {}. Try running 'cargo search cargo-update' to initialise the repository.",
-                          registry.display());
+            Repository::init(&registry).map_err(|e| {
+                eprintln!("Failed to initialise fresh registry repository at {}: {}.\nTry running 'cargo search cargo-update' to initialise the repository.",
+                          registry.display(),
+                          e);
                 2
             })
         } else {
-            eprintln!("Failed to open registry repository at {}.", registry.display());
+            eprintln!("Failed to open registry repository at {}: {}.", registry.display(), e);
             Err(2)
         })
     }))?;
@@ -118,8 +119,8 @@ fn actual_main() -> Result<(), i32> {
     }
     let latest_registries: Vec<_> = Result::from_iter(registry_repos.iter().zip(registries.iter()).map(|(registry_repo, (registry, _))| {
         registry_repo.revparse_single("origin/master")
-            .map_err(|_| {
-                eprintln!("Failed to read master branch of registry repository at {}.", registry.display());
+            .map_err(|e| {
+                eprintln!("Failed to read master branch of registry repository at {}: {}.", registry.display(), e);
                 2
             })
     }))?;
