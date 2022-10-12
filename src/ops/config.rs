@@ -9,7 +9,7 @@ use toml;
 
 
 /// A single operation to be executed upon configuration of a package.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ConfigOperation {
     /// Set the toolchain to use to compile the package.
     SetToolchain(String),
@@ -56,7 +56,7 @@ pub enum ConfigOperation {
 /// configuration.insert("cargo_update".to_string(), PackageConfig::from(&operations));
 /// PackageConfig::write(&configuration, &config_file).unwrap();
 /// ```
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PackageConfig {
     /// Toolchain to use to compile the package, or `None` for default.
     pub toolchain: Option<String>,

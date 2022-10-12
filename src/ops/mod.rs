@@ -1433,3 +1433,13 @@ enum GitReference {
     Branch(String),
     Rev(String),
 }
+
+
+trait SemverExt {
+    fn is_prerelease(&self) -> bool;
+}
+impl SemverExt for Semver {
+    fn is_prerelease(&self) -> bool {
+        !self.pre.is_empty()
+    }
+}
