@@ -224,8 +224,8 @@ impl RegistryPackage {
         if let Some(newest) = vers.next() {
             self.newest_version = Some(newest);
 
-            if self.newest_version.as_ref().unwrap().is_prerelease() && !install_prereleases.unwrap_or(false) {
-                if let Some(newest_nonpre) = vers.find(|v| !v.is_prerelease()) {
+            if is_prerelease(self.newest_version.as_ref().unwrap()) && !install_prereleases.unwrap_or(false) {
+                if let Some(newest_nonpre) = vers.find(|v| !is_prerelease(v)) {
                     mem::swap(&mut self.alternative_version, &mut self.newest_version);
                     self.newest_version = Some(newest_nonpre);
                 }
@@ -350,13 +350,18 @@ impl RegistryPackage {
 
         let update_to_version = self.update_to_version();
 
-        (req.into_iter().zip(self.version.as_ref()).map(|(sr, cv)| !sr.matches(cv)).next().unwrap_or(true) ||
-         req.into_iter().zip(update_to_version).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
-        update_to_version.map(|upd_v| {
-                (!upd_v.is_prerelease() || install_prereleases.unwrap_or(false)) &&
-                (self.version.is_none() || criterion(self.version.as_ref().unwrap(), upd_v, downdate))
-            })
-            .unwrap_or(false)
+        (req.into_iter()
+            .zip(self.version.as_ref())
+            .map(|(sr, cv)| !sr.matches(cv))
+            .next()
+            .unwrap_or(true)
+            || req.into_iter().zip(update_to_version).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true))
+            && update_to_version
+                .map(|upd_v| {
+                    (!is_prerelease(upd_v) || install_prereleases.unwrap_or(false))
+                        && (self.version.is_none() || criterion(self.version.as_ref().unwrap(), upd_v, downdate))
+                })
+                .unwrap_or(false)
     }
 
     /// Get package version to update to, or `None` if the crate has no newest version (was yanked)
@@ -1432,4 +1437,8 @@ enum GitReference {
     Tag(String),
     Branch(String),
     Rev(String),
+}
+
+fn is_prerelease(ver: &Semver) -> bool {
+    !ver.pre.is_empty()
 }
