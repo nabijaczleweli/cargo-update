@@ -135,7 +135,9 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;,
            qthree &lt;<qthree3@gmail.com>&gt;,
            Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;,
-       and Paul Barker &lt;<paul@pbarker.dev>&gt;
+           Paul Barker &lt;<paul@pbarker.dev>&gt;,
+           Benoît CORTIER &lt;<benoit.cortier@fried-world.eu>&gt;,
+       and Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;
 
 ## SPECIAL THANKS
 
