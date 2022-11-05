@@ -1015,7 +1015,7 @@ pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_
     if fork_git {
         Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git"))).arg("-C")
             .arg(index_repo.path())
-            .args(&["fetch", "-f", repo_url, "refs/heads/master:refs/remotes/origin/master"])
+            .args(&["fetch", "-f", repo_url, "HEAD:refs/remotes/origin/HEAD"])
             .status()
             .map_err(|e| e.to_string())
             .and_then(|e| if e.success() {
@@ -1030,7 +1030,7 @@ pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_
                     let mut cb = RemoteCallbacks::new();
                     cb.credentials(|a, b, c| creds(a, b, c));
 
-                    r.fetch(&["refs/heads/master:refs/remotes/origin/master"],
+                    r.fetch(&["HEAD:refs/remotes/origin/HEAD"],
                             Some(&mut fetch_options_from_proxy_url_and_callbacks(repo_url, http_proxy, cb)),
                             None)
                 })

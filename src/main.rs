@@ -118,9 +118,9 @@ fn actual_main() -> Result<(), i32> {
             })?;
     }
     let latest_registries: Vec<_> = Result::from_iter(registry_repos.iter().zip(registries.iter()).map(|(registry_repo, (registry, _))| {
-        registry_repo.revparse_single("origin/master")
+        registry_repo.revparse_single("origin/HEAD")
             .map_err(|e| {
-                eprintln!("Failed to read master branch of registry repository at {}: {}.", registry.display(), e);
+                eprintln!("Failed to read remote HEAD branch of registry repository at {}: {}.", registry.display(), e);
                 2
             })
     }))?;
