@@ -6,7 +6,7 @@ A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo
 
 ### Installation
 
-Firstly, ensure you have [CMake](https://cmake.org) and the [Required Libraries™](#required-libraries).
+Firstly, ensure you have [CMake](https://cmake.org) and the [Required Libraries™](#dependencies).
 
 Then proceed as usual:
 
