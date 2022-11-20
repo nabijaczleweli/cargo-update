@@ -366,7 +366,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Marcin Puc &lt;<tranzystorek.io@protonmail.com>&gt;,
            Paul Barker &lt;<paul@pbarker.dev>&gt;,
            Benoît CORTIER &lt;<benoit.cortier@fried-world.eu>&gt;,
-       and Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;
+           Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;,
+       and Shiraz &lt;<smcclennon@protonmail.com>&gt;
 
 ## SPECIAL THANKS
 
