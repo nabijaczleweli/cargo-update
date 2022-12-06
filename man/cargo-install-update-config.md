@@ -138,7 +138,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Paul Barker &lt;<paul@pbarker.dev>&gt;,
            Benoît CORTIER &lt;<benoit.cortier@fried-world.eu>&gt;,
            Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;,
-       and Shiraz &lt;<smcclennon@protonmail.com>&gt;
+           Shiraz &lt;<smcclennon@protonmail.com>&gt;,
+       and Victor Song &lt;<vms2@rice.edu>&gt;
 
 ## SPECIAL THANKS
 
