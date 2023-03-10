@@ -1,6 +1,6 @@
 use cargo_update::ops::{self, RegistryPackage};
 use semver::Version as Semver;
-use std::fs::File;
+use std::fs;
 
 mod installed_registry_packages;
 mod package_filter_element;
@@ -30,7 +30,7 @@ fn intersect_packages() {
 
 #[test]
 fn crate_versions() {
-    assert_eq!(ops::crate_versions(&mut File::open("test-data/checksums-versions.json").unwrap()),
+    assert_eq!(ops::crate_versions(&fs::read_to_string("test-data/checksums-versions.json").unwrap()),
                vec![Semver::parse("0.2.0").unwrap(),
                     Semver::parse("0.2.1").unwrap(),
                     Semver::parse("0.3.0").unwrap(),

@@ -7,6 +7,8 @@
 //!
 //!   * ThePhD
 //!   * Embark Studios
+//!   * Lars Strojny
+//!   * EvModder
 //!
 //! # Library doc
 //!
@@ -143,6 +145,25 @@
 //!
 //! Required. Default: system temp, otherwise manual.
 //! ```
+//!
+//! ## ENVIRONMENT VARIABLES
+//!
+//! ##### CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+//!
+//! Overrides the `registries.crates-io.protocol` Cargo configuration key.
+//!
+//! The default is `sparse`, and the crates.io URL is
+//! sparse+https://index.crates.io/.
+//! Set to some other value to use the git registry
+//! (https://github.com/rust-lang/crates.io-index) for crates.io.
+//!
+//! ##### CARGO_NET_GIT_FETCH_WITH_CLI
+//!
+//! Overrides the `net.git-fetch-with-cli` Cargo configuration key.
+//!
+//! ##### GIT
+//!
+//! Overrides the git executable in `net.git-fetch-with-cli=true` mode.
 //!
 //! ## EXAMPLES
 //!
@@ -376,6 +397,7 @@ extern crate regex;
 extern crate git2;
 #[macro_use]
 extern crate clap;
+extern crate curl;
 extern crate dirs;
 extern crate toml;
 extern crate json;

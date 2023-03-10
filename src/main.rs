@@ -3,7 +3,6 @@ extern crate tabwriter;
 extern crate lazysort;
 extern crate git2;
 
-use git2::{Repository, ErrorCode as GitErrorCode};
 use std::io::{ErrorKind as IoErrorKind, Write, stdout, sink};
 use std::process::{Command, exit};
 use std::collections::BTreeMap;
@@ -40,7 +39,7 @@ fn actual_main() -> Result<(), i32> {
             eprintln!("Reading config: {}", e);
             r
         })?;
-    let cargo_config = cargo_update::ops::CargoConfig::load(&crates_file);
+    let cargo_config = cargo_update::ops::CargoConfig::load(&crates_file/*, &opts.install_cargo*/);
     let mut packages = cargo_update::ops::installed_registry_packages(&crates_file);
     let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
         cargo_update::ops::installed_git_repo_packages(&crates_file)
@@ -72,7 +71,7 @@ fn actual_main() -> Result<(), i32> {
     // These are all in the same order and (item => [package names]) maps
     let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
     for package in &packages {
-        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry).map_err(|e| {
+        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse).map_err(|e| {
                     eprintln!("Couldn't get registry for {}: {}.", package.name, e);
                     2
                 })?)
@@ -82,30 +81,32 @@ fn actual_main() -> Result<(), i32> {
     let registry_urls: Vec<_> = registry_urls.into_iter().collect();
 
     let registries: Vec<_> = Result::from_iter(registry_urls.iter()
-        .map(|((registry_url, _), pkg_names)| {
-            cargo_update::ops::assert_index_path(&opts.cargo_dir, &registry_url[..])
-                .map(|path| (path, &pkg_names[..]))
+        .map(|((registry_url, sparse, _), pkg_names)| {
+            cargo_update::ops::assert_index_path(&opts.cargo_dir, &registry_url[..], *sparse)
+                .map(|path| (path, *sparse, &pkg_names[..]))
                 .map_err(|e| {
                     eprintln!("Couldn't get package repository: {}.", e);
                     2
                 })
         }))?;
-    let mut registry_repos: Vec<_> = Result::from_iter(registries.iter().map(|(registry, _)| {
-        Repository::open(&registry).or_else(|e| if e.code() == GitErrorCode::NotFound {
-            Repository::init(&registry).map_err(|e| {
-                eprintln!("Failed to initialise fresh registry repository at {}: {}.\nTry running 'cargo search cargo-update' to initialise the repository.",
-                          registry.display(),
-                          e);
-                2
-            })
-        } else {
-            eprintln!("Failed to open registry repository at {}: {}.", registry.display(), e);
-            Err(2)
+    let mut registry_repos: Vec<_> = Result::from_iter(registries.iter().map(|(registry, sparse, _)| {
+        cargo_update::ops::open_index_repository(registry, *sparse).map_err(|(init, e)| {
+            match init {
+                true => {
+                    eprintln!("Failed to initialise fresh registry repository at {}: {}.\nTry running 'cargo search cargo-update' to initialise the \
+                               repository.",
+                              registry.display(),
+                              e)
+                }
+                false => eprintln!("Failed to open registry repository at {}: {}.", registry.display(), e),
+            }
+            2
         })
     }))?;
     for (i, mut registry_repo) in registry_repos.iter_mut().enumerate() {
         cargo_update::ops::update_index(&mut registry_repo,
                                         &(registry_urls[i].0).0,
+                                        registry_urls[i].1.iter(),
                                         http_proxy.as_ref().map(String::as_str),
                                         cargo_config.net_git_fetch_with_cli,
                                         &mut if !opts.quiet {
@@ -113,20 +114,20 @@ fn actual_main() -> Result<(), i32> {
                                         } else {
                                             Box::new(sink()) as Box<dyn Write>
                                         }).map_err(|e| {
-                eprintln!("Failed to update index repository: {}.", e);
+                eprintln!("Failed to update index repository {}: {}.", registry_urls[i].0.2, e);
                 2
             })?;
     }
-    let latest_registries: Vec<_> = Result::from_iter(registry_repos.iter().zip(registries.iter()).map(|(registry_repo, (registry, _))| {
-        registry_repo.revparse_single("FETCH_HEAD").or_else(|_| registry_repo.revparse_single("origin/HEAD"))
-            .map_err(|e| {
-                eprintln!("Failed to read remote HEAD of registry repository at {}: {}.", registry.display(), e);
-                2
-            })
+
+    let latest_registries: Vec<_> = Result::from_iter(registry_repos.iter().zip(registries.iter()).map(|(registry_repo, (registry, ..))| {
+        cargo_update::ops::parse_registry_head(registry_repo).map_err(|e| {
+            eprintln!("Failed to read remote HEAD of registry repository at {}: {}.", registry.display(), e);
+            2
+        })
     }))?;
 
     for package in &mut packages {
-        let registry_idx = match registries.iter().position(|(_, pkg_names)| pkg_names.contains(&package.name)) {
+        let registry_idx = match registries.iter().position(|(.., pkg_names)| pkg_names.contains(&package.name)) {
             Some(i) => i,
             None => {
                 panic!("Couldn't find registry for package {} (please report to http://github.com/nabijaczleweli/cargo-update)",
@@ -135,9 +136,7 @@ fn actual_main() -> Result<(), i32> {
         };
 
         let install_prereleases = configuration.get(&package.name).and_then(|c| c.install_prereleases);
-        package.pull_version(&latest_registries[registry_idx].as_commit().unwrap().tree().unwrap(),
-                             &registry_repos[registry_idx],
-                             install_prereleases);
+        package.pull_version(&latest_registries[registry_idx], &registry_repos[registry_idx], install_prereleases);
     }
 
     if !opts.quiet {
@@ -218,7 +217,7 @@ fn actual_main() -> Result<(), i32> {
                     }
 
                     let registry_name = match registry_urls.iter().find(|(_, pkg_names)| pkg_names.contains(&package.name)) {
-                        Some(u) => &(u.0).1,
+                        Some(u) => &(u.0).2,
                         None => {
                             panic!("Couldn't find registry URL for package {} (please report to http://github.com/nabijaczleweli/cargo-update)",
                                    &package.name[..])

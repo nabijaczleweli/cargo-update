@@ -21,17 +21,19 @@ If that doesn't work:
  * [verify that you don't `openssl` installed twice via `brew`](https://github.com/nabijaczleweli/cargo-update/issues/121#issuecomment-570673813),
  * [re-try with `--features vendored-openssl`](https://docs.rs/openssl/0.10.30/openssl/#building),
  * re-try with `--features vendored-libgit2`.
+ * re-try with `--features vendored-libcurl`.
 
 If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli/cargo-update/issues) or [comment on one of the existing relevant ones](https://github.com/nabijaczleweli/cargo-update/issues?q=is%3Aissue+is%3Aopen+label%3Aexternal).
 
 #### Dependencies
 
-| Dependency                                                                             | Debian package | Fedora package   | MSYS2 package              |
-|----------------------------------------------------------------------------------------|----------------|------------------|----------------------------|
-| [`libgit2`](https://libgit2.github.com)                                                | `libgit2-dev`  | `libgit2-devel`  | `mingw-w64-x86_64-libgit2` |
-| [`libssh2`](https://libssh2.org)                                                       | `libssh-dev`   | `libssh2-devel`  | `mingw-w64-x86_64-libssh2` |
-| [`openssl`](https://openssl.org)                                                       | `libssl-dev`   | `openssl-devel`  | `mingw-w64-x86_64-openssl` |
-| [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/) (some platforms) | `pkg-config`   | `pkg-config`     | `mingw-w64-x86_64-pkg-config` |
+| Dependency                                                                             | Debian package   | Fedora package   | MSYS2 package                 |
+|----------------------------------------------------------------------------------------|------------------|------------------|-------------------------------|
+| [`libgit2`](https://libgit2.github.com)                                                | `libgit2-dev`    | `libgit2-devel`  | `mingw-w64-x86_64-libgit2`    |
+| [`libgit2`](https://libgit2.github.com)                                                | `libcurl4-*-dev` | `libcurl-devel ` | `libcurl-devel`               |
+| [`libssh2`](https://libssh2.org)                                                       | `libssh-dev`     | `libssh2-devel`  | `mingw-w64-x86_64-libssh2`    |
+| [`openssl`](https://openssl.org)                                                       | `libssl-dev`     | `openssl-devel`  | `mingw-w64-x86_64-openssl`    |
+| [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/) (some platforms) | `pkg-config`     | `pkg-config`     | `mingw-w64-x86_64-pkg-config` |
 
 ### Usage
 
@@ -122,3 +124,5 @@ To all who support further development on Patreon, in particular:
 
   * ThePhD
   * Embark Studios
+  * Lars Strojny
+  * EvModder

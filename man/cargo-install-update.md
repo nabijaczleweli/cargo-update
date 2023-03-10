@@ -125,6 +125,15 @@ Exit values and possible errors:
 
 ## ENVIRONMENT VARIABLES
 
+  `$CARGO_REGISTRIES_CRATES_IO_PROTOCOL`
+
+    Overrides the registries.crates-io.protocol Cargo configuration key.
+
+    The default is "sparse", and the crates.io URL is
+    sparse+https://index.crates.io/.
+    Set to some other value to use the git registry
+    (https://github.com/rust-lang/crates.io-index) for crates.io.
+
   `$CARGO_NET_GIT_FETCH_WITH_CLI`
 
     Overrides the net.git-fetch-with-cli Cargo configuration key.
@@ -140,7 +149,7 @@ Exit values and possible errors:
     Update all installed packages.
 
     Example output:
-          Updating registry `https://github.com/rust-lang/crates.io-index`
+          Polling registry 'https://index.crates.io/'........
 
       Package         Installed  Latest   Needs update
       checksums       v0.5.0     v0.5.2   Yes

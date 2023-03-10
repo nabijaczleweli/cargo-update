@@ -6,16 +6,22 @@
 //! continue with doing whatever you wish.
 
 
-use git2::{self, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions, ProxyOptions, Repository, Tree, Oid};
+use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions,
+           ProxyOptions, Repository, Tree, Oid};
+use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, Easy2 as CurlEasy};
 use semver::{VersionReq as SemverReq, Version as Semver};
-use std::io::{ErrorKind as IoErrorKind, Write, Read};
+use std::io::{ErrorKind as IoErrorKind, Write};
+use curl::multi::Multi as CurlMulti;
+use std::{cmp, env, mem, str, fs};
 use std::ffi::{OsString, OsStr};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
-use std::{cmp, env, mem, fs};
+use std::iter::FromIterator;
 use std::process::Command;
+use std::time::Duration;
 use std::borrow::Cow;
+use std::sync::Mutex;
 use regex::Regex;
 use url::Url;
 use toml;
@@ -77,7 +83,7 @@ pub struct RegistryPackage {
     ///
     /// Can be a name from ~/.cargo/config.
     ///
-    /// The main repository is `https://github.com/rust-lang/crates.io-index`
+    /// The main repository is `https://github.com/rust-lang/crates.io-index`, or `sparse+https://index.crates.io/`.
     pub registry: String,
     /// The package's locally installed version.
     pub version: Option<Semver>,
@@ -210,24 +216,33 @@ impl RegistryPackage {
         })
     }
 
-    /// Download the version list for this crate off the specified repository tree and set the latest and alternative versions.
-    pub fn pull_version<'t>(&mut self, registry: &Tree<'t>, registry_parent: &'t Repository, install_prereleases: Option<bool>) {
-        let mut vers =
-            crate_versions(&mut &find_package_data(&self.name, registry, registry_parent).ok_or_else(|| format!("package {} not found", self.name)).unwrap()
-                                     [..]);
-        vers.sort();
+    /// Read the version list for this crate off the specified repository tree and set the latest and alternative versions.
+    pub fn pull_version(&mut self, registry: &RegistryTree, registry_parent: &Registry, install_prereleases: Option<bool>) {
+        let mut vers_git;
+        let vers = match (registry, registry_parent) {
+            (RegistryTree::Git(registry), Registry::Git(registry_parent)) => {
+                vers_git = crate_versions(&find_package_data(&self.name, registry, registry_parent)
+                    .ok_or_else(|| format!("package {} not found", self.name))
+                    .and_then(|d| String::from_utf8(d).map_err(|e| format!("package {}: {}", self.name, e)))
+                    .unwrap());
+                vers_git.sort();
+                &vers_git
+            }
+            (RegistryTree::Sparse(()), Registry::Sparse(registry_parent)) => &registry_parent[&self.name],
+            _ => unreachable!(),
+        };
 
         self.newest_version = None;
         self.alternative_version = None;
 
-        let mut vers = vers.into_iter().rev();
+        let mut vers = vers.iter().rev();
         if let Some(newest) = vers.next() {
-            self.newest_version = Some(newest);
+            self.newest_version = Some(newest.clone());
 
             if self.newest_version.as_ref().unwrap().is_prerelease() && !install_prereleases.unwrap_or(false) {
                 if let Some(newest_nonpre) = vers.find(|v| !v.is_prerelease()) {
                     mem::swap(&mut self.alternative_version, &mut self.newest_version);
-                    self.newest_version = Some(newest_nonpre);
+                    self.newest_version = Some(newest_nonpre.clone());
                 }
             }
         }
@@ -689,10 +704,18 @@ impl PackageFilterElement {
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CargoConfig {
     pub net_git_fetch_with_cli: bool,
+    /// https://blog.rust-lang.org/2023/03/09/Rust-1.68.0.html#cargos-sparse-protocol
+    /// https://doc.rust-lang.org/stable/cargo/reference/registry-index.html#sparse-protocol
+    pub registries_crates_io_protocol_sparse: bool,
 }
 
 impl CargoConfig {
-    pub fn load(crates_file: &Path) -> CargoConfig {
+    pub fn load(crates_file: &Path /* , cargo: &OsStr */) -> CargoConfig {
+        let mut cfg = fs::read_to_string(crates_file.with_file_name("config"))
+            .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
+            .ok()
+            .and_then(|s| s.parse::<toml::Value>().ok());
+
         CargoConfig {
             net_git_fetch_with_cli: env::var("CARGO_NET_GIT_FETCH_WITH_CLI")
                 .ok()
@@ -702,11 +725,7 @@ impl CargoConfig {
                     e.parse::<toml::Value>().ok()
                 })
                 .or_else(|| {
-                    fs::read_to_string(crates_file.with_file_name("config"))
-                        .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
-                        .ok()?
-                        .parse::<toml::Value>()
-                        .ok()?
+                    cfg.as_mut()?
                         .as_table_mut()?
                         .remove("net")?
                         .as_table_mut()?
@@ -714,6 +733,31 @@ impl CargoConfig {
                 })
                 .map(CargoConfig::truthy)
                 .unwrap_or(false),
+            registries_crates_io_protocol_sparse: env::var("CARGO_REGISTRIES_CRATES_IO_PROTOCOL")
+                .map(|s| s == "sparse")
+                .ok()
+                .or_else(|| {
+                    Some(cfg.as_mut()?
+                        .as_table_mut()?
+                        .remove("registries")?
+                        .as_table_mut()?
+                        .remove("crates-io")?
+                        .as_table_mut()?
+                        .remove("protocol")?
+                        .as_str()? == "sparse")
+                })
+                // // Horrifically expensive (82-93ms end-to-end) and largely unnecessary
+                // .or_else(|| {
+                //     let mut l = String::new();
+                //     // let before = std::time::Instant::now();
+                //     BufReader::new(Command::new(cargo).arg("version").stdout(Stdio::piped()).spawn().ok()?.stdout?).read_line(&mut l).ok()?;
+                //     // let after = std::time::Instant::now();
+                //
+                //     // cargo 1.63.0 (fd9c4297c 2022-07-01)
+                //     Some(Semver::parse(l.split_whitespace().nth(1)?).ok()? >= Semver::new(1, 70, 0))
+                // })
+                // .unwrap_or(false),
+                .unwrap_or(true),
         }
     }
 
@@ -910,22 +954,16 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
 ///
 /// ```
 /// # use cargo_update::ops::crate_versions;
-/// # use std::fs::File;
+/// # use std::fs;
 /// # let desc_path = "test-data/checksums-versions.json";
-/// let versions = crate_versions(&mut File::open(desc_path).unwrap());
+/// let versions = crate_versions(&fs::read_to_string(desc_path).unwrap());
 ///
 /// println!("Released versions of checksums:");
 /// for ver in &versions {
 ///     println!("  {}", ver);
 /// }
 /// ```
-pub fn crate_versions<R: Read>(package_desc: &mut R) -> Vec<Semver> {
-    let mut buf = String::new();
-    package_desc.read_to_string(&mut buf).unwrap();
-    crate_versions_impl(buf)
-}
-
-fn crate_versions_impl(buf: String) -> Vec<Semver> {
+pub fn crate_versions(buf: &str) -> Vec<Semver> {
     buf.lines()
         .map(|p| json::parse(p).unwrap())
         .filter(|j| !j["yanked"].as_bool().unwrap())
@@ -938,19 +976,27 @@ fn crate_versions_impl(buf: String) -> Vec<Semver> {
 /// As odd as it may be, this [can happen (if rarely) and is a supported
 /// configuration](https://github.com/nabijaczleweli/cargo-update/issues/150).
 ///
+/// Sparse registries do nothing and return a meaningless value.
+///
 /// # Examples
 ///
 /// ```
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
+/// # use std::path::Path;
 /// # let cargo_dir = temp_dir().join("cargo_update-doctest").join("assert_index_path-0");
 /// # let idx_dir = cargo_dir.join("registry").join("index").join("github.com-1ecc6299db9ec823");
-/// let index = assert_index_path(&cargo_dir, "https://github.com/rust-lang/crates.io-index").unwrap();
+/// let index = assert_index_path(&cargo_dir, "https://github.com/rust-lang/crates.io-index", false).unwrap();
 ///
 /// // Use find_package_data() to look for packages
 /// # assert_eq!(index, idx_dir);
+/// # assert_eq!(assert_index_path(&cargo_dir, "https://index.crates.io/", true).unwrap(), Path::new("/ENOENT"));
 /// ```
-pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf, Cow<'static, str>> {
+pub fn assert_index_path(cargo_dir: &Path, registry_url: &str, sparse: bool) -> Result<PathBuf, Cow<'static, str>> {
+    if sparse {
+        return Ok(PathBuf::from("/ENOENT"));
+    }
+
     let path = cargo_dir.join("registry").join("index").join(registry_shortname(registry_url));
     match path.metadata() {
         Ok(meta) => {
@@ -965,6 +1011,22 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf
             Ok(path)
         }
         Err(e) => Err(format!("Couldn't read {} (index directory for {}): {}", path.display(), registry_url, e).into()),
+    }
+}
+
+/// Opens or initialises a git repository at `registry`, or returns a blank sparse registry.
+///
+/// Error type distinguishes init error from open error.
+pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, (bool, GitError)> {
+    match sparse {
+        false => {
+            Repository::open(&registry).map(Registry::Git).or_else(|e| if e.code() == GitErrorCode::NotFound {
+                Repository::init(&registry).map(Registry::Git).map_err(|e| (true, e))
+            } else {
+                Err((false, e))
+            })
+        }
+        true => Ok(Registry::Sparse(BTreeMap::new())),
     }
 }
 
@@ -1010,37 +1072,151 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str) -> Result<PathBuf
 ///
 /// Sometimes, however, even this isn't enough (see https://github.com/nabijaczleweli/cargo-update/issues/163),
 /// hence `fork_git`, which actually runs `$GIT` (default: `git`).
-pub fn update_index<W: Write>(index_repo: &mut Repository, repo_url: &str, http_proxy: Option<&str>, fork_git: bool, out: &mut W) -> Result<(), String> {
-    writeln!(out, "    Updating registry '{}'", repo_url).map_err(|_| "failed to write updating message".to_string())?;
-    if fork_git {
-        Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git"))).arg("-C")
-            .arg(index_repo.path())
-            .args(&["fetch", "-f", repo_url, "HEAD:refs/remotes/origin/HEAD"])
-            .status()
-            .map_err(|e| e.to_string())
-            .and_then(|e| if e.success() {
-                Ok(())
+///
+/// # Sparse indices
+///
+/// Have a `.cache` under the obvious path, then the usual `ca/rg/cargo-update`, but *the file is different than the standard
+/// format*: it starts with a ^A or ^C (I'm assuming these are versions, and if I looked at more files I would also've seen
+/// ^C), then Some Binary Data, then the ETag(?), then {NUL, version, NUL, usual JSON blob line} repeats.
+///
+/// I do not wanna be touching that shit. Just suck off all the files.<br />
+/// Shoulda stored the blobs verbatim and used `If-Modified-Since`. Too me.
+///
+/// Only in this mode is the package list used.
+pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: &mut Registry, repo_url: &str, packages: I, http_proxy: Option<&str>,
+                                                                    fork_git: bool, out: &mut W)
+                                                                    -> Result<(), String> {
+    write!(out,
+           "    {} registry '{}'{}",
+           ["Updating", "Polling"][matches!(index_repo, Registry::Sparse(_)) as usize],
+           repo_url,
+           ["\n", ""][matches!(index_repo, Registry::Sparse(_)) as usize]).and_then(|_| out.flush())
+        .map_err(|e| format!("failed to write updating message: {}", e))?;
+    match index_repo {
+        Registry::Git(index_repo) => {
+            if fork_git {
+                Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git"))).arg("-C")
+                    .arg(index_repo.path())
+                    .args(&["fetch", "-f", repo_url, "HEAD:refs/remotes/origin/HEAD"])
+                    .status()
+                    .map_err(|e| e.to_string())
+                    .and_then(|e| if e.success() {
+                        Ok(())
+                    } else {
+                        Err(e.to_string())
+                    })?;
             } else {
-                Err(e.to_string())
-            })?;
-    } else {
-        index_repo.remote_anonymous(repo_url)
-            .and_then(|mut r| {
-                with_authentication(repo_url, |creds| {
-                    let mut cb = RemoteCallbacks::new();
-                    cb.credentials(|a, b, c| creds(a, b, c));
+                index_repo.remote_anonymous(repo_url)
+                    .and_then(|mut r| {
+                        with_authentication(repo_url, |creds| {
+                            let mut cb = RemoteCallbacks::new();
+                            cb.credentials(|a, b, c| creds(a, b, c));
 
-                    r.fetch(&["HEAD:refs/remotes/origin/HEAD"],
-                            Some(&mut fetch_options_from_proxy_url_and_callbacks(repo_url, http_proxy, cb)),
-                            None)
-                })
-            })
-            .map_err(|e| e.message().to_string())?;
+                            r.fetch(&["HEAD:refs/remotes/origin/HEAD"],
+                                    Some(&mut fetch_options_from_proxy_url_and_callbacks(repo_url, http_proxy, cb)),
+                                    None)
+                        })
+                    })
+                    .map_err(|e| e.message().to_string())?;
+            }
+        }
+        Registry::Sparse(registry) => {
+            let mut sucker = CurlMulti::new();
+            sucker.pipelining(true, true).map_err(|e| format!("pipelining: {}", e))?;
+
+            let writussy = Mutex::new(&mut *out);
+            let conns: Vec<_> = Result::from_iter(packages.map(|pkg| {
+                let mut conn = CurlEasy::new(SparseHandler(pkg.as_ref().to_string(), vec![], Some(&writussy)));
+                conn.url(&split_package_path(pkg.as_ref()).into_iter().fold(repo_url.to_string(), |mut u, s| {
+                        if !u.ends_with('/') {
+                            u.push('/');
+                        }
+                        u.push_str(&s);
+                        u
+                    }))
+                    .map_err(|e| format!("url: {}", e))?;
+                if let Some(http_proxy) = http_proxy {
+                    conn.proxy(http_proxy).map_err(|e| format!("proxy: {}", e))?;
+                }
+                conn.pipewait(true).map_err(|e| format!("pipewait: {}", e))?;
+                conn.progress(true).map_err(|e| format!("progress: {}", e))?;
+                sucker.add2(conn).map_err(|e| format!("add2: {}", e))
+            }))?;
+
+            while sucker.perform().map_err(|e| format!("perform: {}", e))? > 0 {
+                sucker.wait(&mut [], Duration::from_millis(200)).map_err(|e| format!("wait: {}", e))?;
+            }
+
+            writussy.lock()
+                .map_err(|e| e.to_string())
+                .and_then(|mut out| writeln!(out).map_err(|e| e.to_string()))
+                .map_err(|e| format!("failed to write post-update newline: {}", e))?;
+
+            for mut c in conns {
+                let pkg = mem::take(&mut c.get_mut().0);
+                match c.response_code().map_err(|e| format!("response_code: {}", e))? {
+                    200 => {
+                        let mut resp = crate_versions(str::from_utf8(&c.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?);
+                        resp.sort();
+                        registry.insert(pkg, resp);
+                    }
+                    rc @ 404 | rc @ 410 | rc @ 451 => return Err(format!("package {} doesn't exist: HTTP {}", pkg, rc)),
+                    rc => return Err(format!("package {}: HTTP {}", pkg, rc)),
+                }
+            }
+        }
     }
-    writeln!(out).map_err(|_| "failed to write post-update newline".to_string())?;
+    writeln!(out).map_err(|e| format!("failed to write post-update newline: {}", e))?;
 
     Ok(())
 }
+
+// Could we theoretically parse the semvers on the fly? Yes. Is it more trouble than it's worth? Also probably yes; there
+// doesn't appear to be a good way to bubble errors.
+// Same applies to just waiting instead of processing via .messages()
+struct SparseHandler<'m, 'w: 'm, W: Write>(String, Vec<u8>, Option<&'m Mutex<&'w mut W>>);
+
+impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
+    fn write(&mut self, data: &[u8]) -> Result<usize, CurlWriteError> {
+        self.1.extend(data);
+        Ok(data.len())
+    }
+    fn progress(&mut self, dltotal: f64, dlnow: f64, _: f64, _: f64) -> bool {
+        if dltotal != 0.0 && dltotal == dlnow {
+            if let Some(mut out) = self.2.take().and_then(|m| m.lock().ok()) {
+                let _ = out.write_all(b".").and_then(|_| out.flush());
+            }
+        }
+        true
+    }
+}
+
+
+/// Either an open git repository with a git registry, or a map of (package, sorted versions), populated by [`update_index()`](fn.update_index.html)
+pub enum Registry {
+    Git(Repository),
+    Sparse(BTreeMap<String, Vec<Semver>>),
+}
+
+/// A git tree corresponding to the latest revision of a git registry.
+pub enum RegistryTree<'a> {
+    Git(Tree<'a>),
+    Sparse(()),
+}
+
+/// Get `FETCH_HEAD` or `origin/HEAD`, then unwrap it to the tree it points to.
+pub fn parse_registry_head(registry_repo: &Registry) -> Result<RegistryTree, GitError> {
+    match registry_repo {
+        Registry::Git(registry_repo) => {
+            registry_repo.revparse_single("FETCH_HEAD")
+                .or_else(|_| registry_repo.revparse_single("origin/HEAD"))
+                .map(|h| h.as_commit().unwrap().tree().unwrap())
+                .map(RegistryTree::Git)
+        }
+        Registry::Sparse(_) => Ok(RegistryTree::Sparse(())),
+    }
+}
+
 
 fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Option<&str>, callbacks: RemoteCallbacks<'a>) -> FetchOptions<'a> {
     let mut ret = FetchOptions::new();
@@ -1068,7 +1244,8 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Opt
     ret
 }
 
-/// Get the URL to update index from and the cargo name for it from the config file parallel to the specified crates file
+/// Get the URL to update index from, whether it's "sparse", and the cargo name for it from the config file parallel to the
+/// specified crates file
 ///
 /// First gets the source name corresponding to the given URL, if appropriate,
 /// then chases the `source.$SRCNAME.replace-with` chain,
@@ -1077,10 +1254,14 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Opt
 /// Prepopulates with `source.crates-io.registry = "https://github.com/rust-lang/crates.io-index"`,
 /// as specified in the book
 ///
+/// If `registries_crates_io_protocol_sparse`, `https://github.com/rust-lang/crates.io-index` is replaced with
+/// `sparse+https://index.crates.io/`.
+///
 /// Consult [#107](https://github.com/nabijaczleweli/cargo-update/issues/107) and
 /// the Cargo Book for details: https://doc.rust-lang.org/cargo/reference/source-replacement.html,
 /// https://doc.rust-lang.org/cargo/reference/registries.html.
-pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<'static, str>), Cow<'static, str>> {
+pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_protocol_sparse: bool)
+                     -> Result<(String, bool, Cow<'static, str>), Cow<'static, str>> {
     let mut config_file = crates_file.with_file_name("config");
     let config = if let Ok(cfg) = fs::read_to_string(&config_file).or_else(|_| {
         config_file.set_file_name("config.toml");
@@ -1089,7 +1270,11 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
         toml::from_str::<toml::Value>(&cfg).map_err(|e| format!("{} not TOML: {}", config_file.display(), e))?
     } else {
         if registry == "https://github.com/rust-lang/crates.io-index" {
-            return Ok((registry.to_string(), "crates-io".into()));
+            if registries_crates_io_protocol_sparse {
+                return Ok(("https://index.crates.io/".to_string(), true, "crates-io".into()));
+            } else {
+                return Ok((registry.to_string(), false, "crates-io".into()));
+            }
         } else {
             Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
                          Due to a Cargo limitation we will not be able to install from there \
@@ -1104,8 +1289,13 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
     let mut cur_source = Cow::from(registry);
 
     // Special case, always present
-    registries.insert("crates-io", Cow::from("https://github.com/rust-lang/crates.io-index"));
-    if cur_source == "https://github.com/rust-lang/crates.io-index" {
+    registries.insert("crates-io",
+                      Cow::from(if registries_crates_io_protocol_sparse {
+                          "sparse+https://index.crates.io/"
+                      } else {
+                          "https://github.com/rust-lang/crates.io-index"
+                      }));
+    if cur_source == "https://github.com/rust-lang/crates.io-index" || cur_source == "sparse+https://index.crates.io/" {
         cur_source = "crates-io".into();
     }
 
@@ -1149,13 +1339,15 @@ pub fn get_index_url(crates_file: &Path, registry: &str) -> Result<(String, Cow<
         cur_source = Cow::from(&repl[..]);
     }
 
-    registries.get(&cur_source[..]).map(|reg| (reg.to_string(), cur_source.to_string().into())).ok_or_else(|| {
-        format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
-                registry,
-                config_file.display(),
-                cur_source)
-            .into()
-    })
+    registries.get(&cur_source[..])
+        .map(|reg| (reg.strip_prefix("sparse+").unwrap_or(reg).to_string(), reg.starts_with("sparse+"), cur_source.to_string().into()))
+        .ok_or_else(|| {
+            format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
+                    registry,
+                    config_file.display(),
+                    cur_source)
+                .into()
+        })
 }
 
 /// Based on
@@ -1267,30 +1459,35 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
 }
 
 
-/// Find package data in the specified cargo index tree.
-pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Vec<u8>> {
-    let clen = cratename.len().to_string();
+/// Split `cargo-update` into `[ca, rg, cargo-update]`, `jot` into `[3, j, jot]`, &c.
+pub fn split_package_path(cratename: &str) -> Vec<Cow<str>> {
     let mut elems = Vec::new();
     if cratename.len() <= 3 {
-        elems.push(&clen[..]);
+        elems.push(cratename.len().to_string().into());
     }
     match cratename.len() {
         0 => panic!("0-length cratename"),
         1 | 2 => {}
-        3 => elems.push(&cratename[0..1]),
+        3 => elems.push(cratename[0..1].into()),
         _ => {
-            elems.push(&cratename[0..2]);
-            elems.push(&cratename[2..4]);
+            elems.push(cratename[0..2].into());
+            elems.push(cratename[2..4].into());
         }
     }
-    elems.push(cratename);
+    elems.push(cratename.into());
+    elems
+}
 
-    let ent = registry.get_name(elems[0])?;
+/// Find package data in the specified cargo git index tree.
+pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Vec<u8>> {
+    let elems = split_package_path(cratename);
+
+    let ent = registry.get_name(&elems[0])?;
     let obj = ent.to_object(registry_parent).ok()?;
-    let ent = obj.as_tree()?.get_name(elems[1])?;
+    let ent = obj.as_tree()?.get_name(&elems[1])?;
     let obj = ent.to_object(registry_parent).ok()?;
     if elems.len() == 3 {
-        let ent = obj.as_tree()?.get_name(elems[2])?;
+        let ent = obj.as_tree()?.get_name(&elems[2])?;
         let obj = ent.to_object(registry_parent).ok()?;
         Some(obj.as_blob()?.content().into())
     } else {
