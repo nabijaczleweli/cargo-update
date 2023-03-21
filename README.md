@@ -30,7 +30,7 @@ If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli
 | Dependency                                                                             | Debian package   | Fedora package   | MSYS2 package                 |
 |----------------------------------------------------------------------------------------|------------------|------------------|-------------------------------|
 | [`libgit2`](https://libgit2.github.com)                                                | `libgit2-dev`    | `libgit2-devel`  | `mingw-w64-x86_64-libgit2`    |
-| [`libgit2`](https://libgit2.github.com)                                                | `libcurl4-*-dev` | `libcurl-devel ` | `libcurl-devel`               |
+| [`libcurl`](https://curl.se/libcurl/)                                                  | `libcurl4-*-dev` | `libcurl-devel ` | `libcurl-devel`               |
 | [`libssh2`](https://libssh2.org)                                                       | `libssh-dev`     | `libssh2-devel`  | `mingw-w64-x86_64-libssh2`    |
 | [`openssl`](https://openssl.org)                                                       | `libssl-dev`     | `openssl-devel`  | `mingw-w64-x86_64-openssl`    |
 | [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/) (some platforms) | `pkg-config`     | `pkg-config`     | `mingw-w64-x86_64-pkg-config` |
