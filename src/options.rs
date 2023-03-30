@@ -17,6 +17,8 @@ use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{self, AppSettings, SubCommand, App, Arg};
 use std::ffi::{OsString, OsStr};
 use array_tool::vec::Uniq;
+use std::fmt::Arguments;
+use std::process::exit;
 use std::path::PathBuf;
 use std::str::FromStr;
 use dirs::home_dir;
@@ -71,6 +73,7 @@ impl Options {
     pub fn parse() -> Options {
         let matches = App::new("cargo")
             .bin_name("cargo")
+            .version(crate_version!())
             .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
             .subcommand(SubCommand::with_name("install-update")
                 .version(crate_version!())
@@ -78,6 +81,7 @@ impl Options {
                 .about("A cargo subcommand for checking and applying updates to installed executables")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .visible_alias("root")
+                            .allow_invalid_utf8(true)
                             .validator(|s| existing_dir_validator("Cargo", &s)),
                         Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
                             .validator(|s| existing_dir_validator("Temporary", &s)),
@@ -91,13 +95,16 @@ impl Options {
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .number_of_values(1)
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
-                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").default_value("cargo"),
+                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'")
+                            .allow_invalid_utf8(true)
+                            .default_value("cargo"),
                         Arg::with_name("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
+                            .allow_invalid_utf8(true)
                             .empty_values(false)
                             .multiple(true)
-                            .value_delimiter(" ")
+                            .value_delimiter(' ')
                             .hidden(true),
                         Arg::from_usage("[PACKAGE]... 'Packages to update'")
                             .empty_values(false)
@@ -111,18 +118,11 @@ impl Options {
         Options {
             to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
-                    let packages: Vec<_> = pkgs.map(String::from).map(package_parse).map(Result::unwrap).collect();
+                    let packages: Vec<_> = pkgs.map(package_parse).map(Result::unwrap).collect();
                     packages.unique_via(|l, r| l.0 == r.0)
                 }
                 (true, None) => vec![],
-                (false, None) => {
-                    clap::Error {
-                            message: "Need at least one PACKAGE without --all".to_string(),
-                            kind: clap::ErrorKind::MissingRequiredArgument,
-                            info: None,
-                        }
-                        .exit()
-                }
+                (false, None) => clerror(format_args!("Need at least one PACKAGE without --all")),
             },
             all: all,
             update: update,
@@ -229,14 +229,7 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
     if let Some(dir) = opt_cargo_dir {
         match fs::canonicalize(dir) {
             Ok(dir) => dir,
-            Err(_) => {
-                clap::Error {
-                        message: format!("--cargo-dir={:?} doesn't exist", dir),
-                        kind: clap::ErrorKind::InvalidValue,
-                        info: None,
-                    }
-                    .exit()
-            }
+            Err(_) => clerror(format_args!("--cargo-dir={:?} doesn't exist", dir)),
         }
     } else {
         match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
@@ -251,15 +244,8 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
                                 fs::create_dir_all(&hd).unwrap();
                                 hd
                             }
-                            None => {
-                                clap::Error {
-                                        message: "$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, \
-                                                  please specify the cargo home directory with the -c option".to_string(),
-                                        kind: clap::ErrorKind::MissingRequiredArgument,
-                                        info: None,
-                                    }
-                                    .exit()
-                            }
+                            None => clerror(format_args!("$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, \
+                                                          please specify the cargo home directory with the -c option")),
                         },
                 },
         }
@@ -270,7 +256,7 @@ fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
     fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
 }
 
-fn package_parse(s: String) -> Result<(String, Option<Semver>, String), String> {
+fn package_parse(s: &str) -> Result<(String, Option<Semver>, String), String> {
     let mut registry_url = None;
     let mut s = &s[..];
     if s.starts_with('(') {
@@ -289,4 +275,10 @@ fn package_parse(s: String) -> Result<(String, Option<Semver>, String), String> 
     } else {
         Ok((s.to_string(), None, registry_url))
     }
+}
+
+
+fn clerror(f: Arguments) -> ! {
+    eprintln!("{}", f);
+    exit(1)
 }

@@ -390,9 +390,8 @@
 extern crate json_deserializer;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate lazy_static;
 extern crate array_tool;
+extern crate once_cell;
 extern crate semver;
 extern crate regex;
 extern crate git2;

@@ -19,6 +19,7 @@ use std::path::{PathBuf, Path};
 use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
+use once_cell::sync::Lazy;
 use std::process::Command;
 use std::time::Duration;
 use std::borrow::Cow;
@@ -33,10 +34,8 @@ mod config;
 pub use self::config::*;
 
 
-lazy_static! {
-    static ref REGISTRY_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)").unwrap();
-    static ref GIT_PACKAGE_RGX: Regex = Regex::new(r"([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)").unwrap();
-}
+static REGISTRY_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)").unwrap());
+static GIT_PACKAGE_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)").unwrap());
 
 
 /// A representation of a package from the main [`crates.io`](https://crates.io) repository.
