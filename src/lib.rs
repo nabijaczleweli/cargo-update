@@ -387,6 +387,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(redundant_field_names))]
 
 
+extern crate json_deserializer;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -400,7 +401,6 @@ extern crate clap;
 extern crate curl;
 extern crate dirs;
 extern crate toml;
-extern crate json;
 extern crate hex;
 extern crate url;
 

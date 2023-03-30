@@ -16,6 +16,7 @@ use std::{cmp, env, mem, str, fs};
 use std::ffi::{OsString, OsStr};
 use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
+use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
 use std::process::Command;
@@ -25,7 +26,6 @@ use std::sync::Mutex;
 use regex::Regex;
 use url::Url;
 use toml;
-use json;
 use hex;
 
 mod config;
@@ -221,10 +221,10 @@ impl RegistryPackage {
         let mut vers_git;
         let vers = match (registry, registry_parent) {
             (RegistryTree::Git(registry), Registry::Git(registry_parent)) => {
-                vers_git = crate_versions(&find_package_data(&self.name, registry, registry_parent)
+                vers_git = find_package_data(&self.name, registry, registry_parent)
                     .ok_or_else(|| format!("package {} not found", self.name))
-                    .and_then(|d| String::from_utf8(d).map_err(|e| format!("package {}: {}", self.name, e)))
-                    .unwrap());
+                    .and_then(|pd| crate_versions(&pd).map_err(|e| format!("package {}: {}", self.name, e)))
+                    .unwrap();
                 vers_git.sort();
                 &vers_git
             }
@@ -956,19 +956,27 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
 /// # use cargo_update::ops::crate_versions;
 /// # use std::fs;
 /// # let desc_path = "test-data/checksums-versions.json";
-/// let versions = crate_versions(&fs::read_to_string(desc_path).unwrap());
+/// # let package = "checksums";
+/// let versions = crate_versions(&fs::read(desc_path).unwrap()).expect(package);
 ///
 /// println!("Released versions of checksums:");
 /// for ver in &versions {
 ///     println!("  {}", ver);
 /// }
 /// ```
-pub fn crate_versions(buf: &str) -> Vec<Semver> {
-    buf.lines()
-        .map(|p| json::parse(p).unwrap())
-        .filter(|j| !j["yanked"].as_bool().unwrap())
-        .map(|j| Semver::parse(j["vers"].as_str().unwrap()).unwrap())
-        .collect()
+pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
+    buf.split(|&b| b == b'\n').filter(|l| !l.is_empty()).try_fold(vec![], |mut acc, p| match json::parse(p).map_err(|e| e.to_string())? {
+        json::Value::Object(o) => {
+            if !matches!(o.get("yanked"), Some(&json::Value::Bool(true))) {
+                match o.get("vers").ok_or("no \"vers\" key")? {
+                    json::Value::String(ref v) => acc.push(Semver::parse(&v).map_err(|e| e.to_string())?),
+                    _ => Err("\"vers\" not string")?,
+                }
+            }
+            Ok(acc)
+        }
+        _ => Err(Cow::from("line not object")),
+    })
 }
 
 /// Get the location of the registry index corresponding ot the given URL; if not present – make it and its parents.
@@ -1156,7 +1164,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                 let pkg = mem::take(&mut c.get_mut().0);
                 match c.response_code().map_err(|e| format!("response_code: {}", e))? {
                     200 => {
-                        let mut resp = crate_versions(str::from_utf8(&c.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?);
+                        let mut resp = crate_versions(&c.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
                         resp.sort();
                         registry.insert(pkg, resp);
                     }
@@ -1192,7 +1200,8 @@ impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
 }
 
 
-/// Either an open git repository with a git registry, or a map of (package, sorted versions), populated by [`update_index()`](fn.update_index.html)
+/// Either an open git repository with a git registry, or a map of (package, sorted versions), populated by
+/// [`update_index()`](fn.update_index.html)
 pub enum Registry {
     Git(Repository),
     Sparse(BTreeMap<String, Vec<Semver>>),
