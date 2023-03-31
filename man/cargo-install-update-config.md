@@ -139,7 +139,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Benoît CORTIER &lt;<bcortier@proton.me>&gt;,
            Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;,
            Shiraz &lt;<smcclennon@protonmail.com>&gt;,
-       and Victor Song &lt;<vms2@rice.edu>&gt;
+           Victor Song &lt;<vms2@rice.edu>&gt;,
+       and chrisalcantara &lt;<chris@chrisalcantara.com>&gt;
 
 ## SPECIAL THANKS
 
