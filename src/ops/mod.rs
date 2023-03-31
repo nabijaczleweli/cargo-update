@@ -1467,7 +1467,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
 }
 
 
-/// Split `cargo-update` into `[ca, rg, cargo-update]`, `jot` into `[3, j, jot]`, &c.
+/// Split and lower-case `cargo-update` into `[ca, rg, cargo-update]`, `jot` into `[3, j, jot]`, &c.
 pub fn split_package_path(cratename: &str) -> Vec<Cow<str>> {
     let mut elems = Vec::new();
     if cratename.len() <= 3 {
@@ -1476,14 +1476,22 @@ pub fn split_package_path(cratename: &str) -> Vec<Cow<str>> {
     match cratename.len() {
         0 => panic!("0-length cratename"),
         1 | 2 => {}
-        3 => elems.push(cratename[0..1].into()),
+        3 => elems.push(lcase(&cratename[0..1])),
         _ => {
-            elems.push(cratename[0..2].into());
-            elems.push(cratename[2..4].into());
+            elems.push(lcase(&cratename[0..2]));
+            elems.push(lcase(&cratename[2..4]));
         }
     }
-    elems.push(cratename.into());
+    elems.push(lcase(cratename));
     elems
+}
+
+fn lcase(s: &str) -> Cow<str> {
+    if s.bytes().any(|b| b.is_ascii_uppercase()) {
+        s.to_ascii_lowercase().into()
+    } else {
+        s.into()
+    }
 }
 
 /// Find package data in the specified cargo git index tree.
