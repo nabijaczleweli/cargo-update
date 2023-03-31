@@ -150,6 +150,7 @@ impl ConfigOptions {
     pub fn parse() -> ConfigOptions {
         let matches = App::new("cargo")
             .bin_name("cargo")
+            .version(crate_version!())
             .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
             .subcommand(SubCommand::with_name("install-update-config")
                 .version(crate_version!())
