@@ -10,6 +10,7 @@ use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use lazysort::SortedBy;
 use std::fmt::Display;
+use std::ffi::OsStr;
 #[cfg(target_os="windows")]
 use std::fs::File;
 use std::env;
@@ -225,7 +226,7 @@ fn actual_main() -> Result<(), i32> {
                     };
                     let install_res = {
                             let cfg = configuration.get(&package.name);
-                            if opts.install_cargo == "cargo" && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
+                            if opts.install_cargo == None && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
                                (cfg == None || cfg == Some(&Default::default())) {
                                     Command::new("cargo-binstall")
                                         .arg("--roots")
@@ -241,7 +242,7 @@ fn actual_main() -> Result<(), i32> {
                                     Err(IoErrorKind::NotFound.into())
                                 }
                                 .or_else(|_| if let Some(cfg) = cfg {
-                                    Command::new(&opts.install_cargo)
+                                    Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")))
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                         .arg("--root")
                                         .arg(&opts.cargo_dir)
@@ -258,7 +259,7 @@ fn actual_main() -> Result<(), i32> {
                                         .args(&opts.cargo_install_args)
                                         .status()
                                 } else {
-                                    Command::new(&opts.install_cargo)
+                                    Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")))
                                         .arg("install")
                                         .arg("--root")
                                         .arg(&opts.cargo_dir)
@@ -382,7 +383,7 @@ fn actual_main() -> Result<(), i32> {
                         }
 
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                                let mut cmd = Command::new(&opts.install_cargo);
+                                let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                 cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
                                     .arg("--root")
                                     .arg(&opts.cargo_dir)
@@ -395,7 +396,7 @@ fn actual_main() -> Result<(), i32> {
                                 }
                                 cmd.args(&opts.cargo_install_args).status()
                             } else {
-                                let mut cmd = Command::new(&opts.install_cargo);
+                                let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                 cmd.arg("install")
                                     .arg("--root")
                                     .arg(&opts.cargo_dir)
