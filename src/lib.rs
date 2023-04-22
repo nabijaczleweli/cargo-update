@@ -398,7 +398,7 @@ extern crate git2;
 #[macro_use]
 extern crate clap;
 extern crate curl;
-extern crate dirs;
+extern crate home;
 extern crate toml;
 extern crate hex;
 extern crate url;

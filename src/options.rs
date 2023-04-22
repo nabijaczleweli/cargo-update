@@ -21,7 +21,7 @@ use std::fmt::Arguments;
 use std::process::exit;
 use std::path::PathBuf;
 use std::str::FromStr;
-use dirs::home_dir;
+use home::home_dir;
 use std::{env, fs};
 
 
