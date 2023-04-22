@@ -21,8 +21,8 @@ use std::fmt::Arguments;
 use std::process::exit;
 use std::path::PathBuf;
 use std::str::FromStr;
-use home::home_dir;
 use std::{env, fs};
+use home;
 
 
 /// Representation of the application's all configurable values.
@@ -95,8 +95,7 @@ impl Options {
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .number_of_values(1)
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
-                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'")
-                            .allow_invalid_utf8(true),
+                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").allow_invalid_utf8(true),
                         Arg::with_name("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
@@ -232,22 +231,12 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
             Err(_) => clerror(format_args!("--cargo-dir={:?} doesn't exist", dir)),
         }
     } else {
-        match env::var("CARGO_INSTALL_ROOT").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-            Ok(ch) => ch,
-            Err(()) =>
-                match env::var("CARGO_HOME").map_err(|_| ()).and_then(|ch| fs::canonicalize(ch).map_err(|_| ())) {
-                    Ok(ch) => ch,
-                    Err(()) =>
-                        match home_dir().and_then(|hd| hd.canonicalize().ok()) {
-                            Some(mut hd) => {
-                                hd.push(".cargo");
-                                fs::create_dir_all(&hd).unwrap();
-                                hd
-                            }
-                            None => clerror(format_args!("$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, \
-                                                          please specify the cargo home directory with the -c option")),
-                        },
-                },
+        match env::var_os("CARGO_INSTALL_ROOT").map(PathBuf::from).or_else(|| home::cargo_home().ok()).and_then(|ch| fs::canonicalize(ch).ok()) {
+            Some(hd) => hd,
+            None => {
+                clerror(format_args!("$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, please specify the cargo home directory with the -c \
+                                      option"))
+            }
         }
     }
 }
