@@ -709,7 +709,7 @@ pub struct CargoConfig {
 }
 
 impl CargoConfig {
-    pub fn load(crates_file: &Path /* , cargo: &OsStr */) -> CargoConfig {
+    pub fn load(crates_file: &Path) -> CargoConfig {
         let mut cfg = fs::read_to_string(crates_file.with_file_name("config"))
             .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
             .ok()
@@ -1132,7 +1132,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
             sucker.pipelining(true, true).map_err(|e| format!("pipelining: {}", e))?;
 
             let writussy = Mutex::new(&mut *out);
-            let conns: Vec<_> = Result::from_iter(packages.map(|pkg| {
+            let mut conns: Vec<_> = Result::from_iter(packages.map(|pkg| {
                 let mut conn = CurlEasy::new(SparseHandler(pkg.as_ref().to_string(), vec![], Some(&writussy)));
                 conn.url(&split_package_path(pkg.as_ref()).into_iter().fold(repo_url.to_string(), |mut u, s| {
                         if !u.ends_with('/') {
@@ -1147,7 +1147,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                 }
                 conn.pipewait(true).map_err(|e| format!("pipewait: {}", e))?;
                 conn.progress(true).map_err(|e| format!("progress: {}", e))?;
-                sucker.add2(conn).map_err(|e| format!("add2: {}", e))
+                sucker.add2(conn).map(|h| (h, Ok(()))).map_err(|e| format!("add2: {}", e))
             }))?;
 
             while sucker.perform().map_err(|e| format!("perform: {}", e))? > 0 {
@@ -1159,11 +1159,23 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                 .and_then(|mut out| writeln!(out).map_err(|e| e.to_string()))
                 .map_err(|e| format!("failed to write post-update newline: {}", e))?;
 
+            sucker.messages(|m| {
+                for c in &mut conns {
+                    // Yes, a linear search; this is much faster than adding 2+n sets of CURLINFO_PRIVATE calls
+                    if let Some(err) = m.result_for2(&c.0) {
+                        c.1 = err;
+                    }
+                }
+            });
+
             for mut c in conns {
-                let pkg = mem::take(&mut c.get_mut().0);
-                match c.response_code().map_err(|e| format!("response_code: {}", e))? {
+                let pkg = mem::take(&mut c.0.get_mut().0);
+                if let Err(e) = c.1 {
+                    return Err(format!("package {}: {}", pkg, e));
+                }
+                match c.0.response_code().map_err(|e| format!("response_code: {}", e))? {
                     200 => {
-                        let mut resp = crate_versions(&c.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
+                        let mut resp = crate_versions(&c.0.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
                         resp.sort();
                         registry.insert(pkg, resp);
                     }
