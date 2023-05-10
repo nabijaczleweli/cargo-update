@@ -378,7 +378,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;,
            Shiraz &lt;<smcclennon@protonmail.com>&gt;,
            Victor Song &lt;<vms2@rice.edu>&gt;,
-       and chrisalcantara &lt;<chris@chrisalcantara.com>&gt;
+           chrisalcantara &lt;<chris@chrisalcantara.com>&gt;,
+       and Utkarsh Gupta &lt;<utkarshgupta137@gmail.com>&gt;
 
 ## SPECIAL THANKS
 
