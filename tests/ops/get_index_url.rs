@@ -14,9 +14,9 @@ fn default_vs_sparse() {
         fs::remove_file(crates_file.with_file_name(suffix)).unwrap();
 
         assert_eq!(get_index_url(&crates_file, "https://github.com/rust-lang/crates.io-index", false),
-            Ok(("https://github.com/rust-lang/crates.io-index".to_string(), false, "crates-io".into())));
+                   Ok(("https://github.com/rust-lang/crates.io-index".to_string(), false, "crates-io".into())));
         assert_eq!(get_index_url(&crates_file, "https://github.com/rust-lang/crates.io-index", true),
-            Ok(("https://index.crates.io/".to_string(), true, "crates-io".into())));
+                   Ok(("https://index.crates.io/".to_string(), true, "crates-io".into())));
     }
 }
 

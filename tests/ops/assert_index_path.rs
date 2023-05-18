@@ -7,7 +7,8 @@ use std::env::temp_dir;
 #[test]
 fn sparse() {
     let indices = prep_indices("sparse");
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", true), Ok(PathBuf::from("/ENOENT")));
+    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", true),
+               Ok(PathBuf::from("/ENOENT")));
     assert_eq!(assert_index_path(&indices, "dupa", true), Ok(PathBuf::from("/ENOENT")));
 }
 
