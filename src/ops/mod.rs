@@ -988,6 +988,8 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// # Examples
 ///
 /// ```
+/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
+/// # {
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
 /// # use std::path::Path;
@@ -998,6 +1000,7 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// // Use find_package_data() to look for packages
 /// # assert_eq!(index, idx_dir);
 /// # assert_eq!(assert_index_path(&cargo_dir, "https://index.crates.io/", true).unwrap(), Path::new("/ENOENT"));
+/// # }
 /// ```
 pub fn assert_index_path(cargo_dir: &Path, registry_url: &str, sparse: bool) -> Result<PathBuf, Cow<'static, str>> {
     if sparse {
