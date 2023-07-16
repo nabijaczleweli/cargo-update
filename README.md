@@ -116,7 +116,7 @@ Confer the [initial implementation](https://github.com/nabijaczleweli/cargo-upda
 [final broken testcase](https://github.com/nabijaczleweli/cargo-update/issues/137) and
 [final debug implementation](https://github.com/nabijaczleweli/cargo-update/pull/138) threads
 (h/t [@DCJanus](https://github.com/DCjanus) for help debugging and testcases, also
- dealing with me as I slowly [spiraled](https://twitter.com/nabijaczleweli/status/1288559898763157511) into insanity).
+ dealing with me as I slowly [spiraled](https://lfs.nabijaczleweli.xyz/0017-twitter-export#1288559898763157511) into insanity).
 
 ## Special thanks
 
