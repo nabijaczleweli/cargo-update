@@ -15,7 +15,7 @@ cargo install cargo-update
 ```
 
 If that doesn't work:
- * [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/alexcrichton/git2-rs/issues/257),
+ * [re-try with `PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig`](https://github.com/rust-lang/git2-rs/issues/257),
  * [re-try with `LIBSSH2_SYS_USE_PKG_CONFIG=whatever`](https://github.com/nabijaczleweli/cargo-update/issues/129#issuecomment-599269219),
  * [install OpenSSL via `brew`, and re-try with `LDFLAGS="-L/usr/local/opt/openssl@1.1/lib" CPPFLAGS="-I/usr/local/opt/openssl@1.1/include"`](https://github.com/nabijaczleweli/cargo-update/issues/123),
  * [verify that you don't `openssl` installed twice via `brew`](https://github.com/nabijaczleweli/cargo-update/issues/121#issuecomment-570673813),
@@ -27,13 +27,13 @@ If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli
 
 #### Dependencies
 
-| Dependency                                                                             | Debian package   | Fedora package   | MSYS2 package                 |
-|----------------------------------------------------------------------------------------|------------------|------------------|-------------------------------|
-| [`libgit2`](https://libgit2.github.com)                                                | `libgit2-dev`    | `libgit2-devel`  | `mingw-w64-x86_64-libgit2`    |
-| [`libcurl`](https://curl.se/libcurl/)                                                  | `libcurl4-*-dev` | `libcurl-devel ` | `libcurl-devel`               |
-| [`libssh2`](https://libssh2.org)                                                       | `libssh-dev`     | `libssh2-devel`  | `mingw-w64-x86_64-libssh2`    |
-| [`openssl`](https://openssl.org)                                                       | `libssl-dev`     | `openssl-devel`  | `mingw-w64-x86_64-openssl`    |
-| [`pkg-config`](https://www.freedesktop.org/wiki/Software/pkg-config/) (some platforms) | `pkg-config`     | `pkg-config`     | `mingw-w64-x86_64-pkg-config` |
+| Dependency                                       | Debian package   | Fedora package   | MSYS2 package                 |
+|--------------------------------------------------|------------------|------------------|-------------------------------|
+| [`libgit2`](https://libgit2.github.com)          | `libgit2-dev`    | `libgit2-devel`  | `mingw-w64-x86_64-libgit2`    |
+| [`libcurl`](https://curl.se/libcurl/)            | `libcurl4-*-dev` | `libcurl-devel ` | `libcurl-devel`               |
+| [`libssh2`](https://libssh2.org)                 | `libssh-dev`     | `libssh2-devel`  | `mingw-w64-x86_64-libssh2`    |
+| [`openssl`](https://openssl.org)                 | `libssl-dev`     | `openssl-devel`  | `mingw-w64-x86_64-openssl`    |
+| [`pkgconf`](http://pkgconf.org) (some platforms) | `pkgconf`        | `pkgconf`        | `mingw-w64-x86_64-pkgconf`    |
 
 ### Usage
 
