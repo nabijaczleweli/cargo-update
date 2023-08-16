@@ -8,7 +8,7 @@
 
 use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions,
            ProxyOptions, Repository, Tree, Oid};
-use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, Easy2 as CurlEasy};
+use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::io::{ErrorKind as IoErrorKind, Write};
 use curl::multi::Multi as CurlMulti;
@@ -706,6 +706,7 @@ pub struct CargoConfig {
     /// https://blog.rust-lang.org/2023/03/09/Rust-1.68.0.html#cargos-sparse-protocol
     /// https://doc.rust-lang.org/stable/cargo/reference/registry-index.html#sparse-protocol
     pub registries_crates_io_protocol_sparse: bool,
+    pub http_check_revoke: bool,
 }
 
 impl CargoConfig {
@@ -757,6 +758,18 @@ impl CargoConfig {
                 // })
                 // .unwrap_or(false),
                 .unwrap_or(true),
+            http_check_revoke: env::var("CARGO_HTTP_CHECK_REVOKE")
+                .ok()
+                .map(|e| toml::Value::String(e))
+                .or_else(|| {
+                    Some(cfg.as_mut()?
+                        .as_table_mut()?
+                        .remove("http")?
+                        .as_table_mut()?
+                        .remove("check-revoke")?)
+                })
+                .map(CargoConfig::truthy)
+                .unwrap_or(cfg!(target_os = "windows")),
         }
     }
 
@@ -1094,7 +1107,7 @@ pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, 
 ///
 /// Only in this mode is the package list used.
 pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: &mut Registry, repo_url: &str, packages: I, http_proxy: Option<&str>,
-                                                                    fork_git: bool, out: &mut W)
+                                                                    fork_git: bool, http_check_revoke: bool, out: &mut W)
                                                                     -> Result<(), String> {
     write!(out,
            "    {} registry '{}'{}",
@@ -1150,6 +1163,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                 }
                 conn.pipewait(true).map_err(|e| format!("pipewait: {}", e))?;
                 conn.progress(true).map_err(|e| format!("progress: {}", e))?;
+                conn.ssl_options(CurlSslOpt::new().no_revoke(!http_check_revoke)).map_err(|e| format!("ssl_options: {}", e))?;
                 sucker.add2(conn).map(|h| (h, Ok(()))).map_err(|e| format!("add2: {}", e))
             }))?;
 
