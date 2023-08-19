@@ -110,7 +110,7 @@ fn actual_main() -> Result<(), i32> {
                                         registry_urls[i].1.iter(),
                                         http_proxy.as_ref().map(String::as_str),
                                         cargo_config.net_git_fetch_with_cli,
-                                        cargo_config.http_check_revoke,
+                                        &cargo_config.http,
                                         &mut if !opts.quiet {
                                             Box::new(stdout()) as Box<dyn Write>
                                         } else {

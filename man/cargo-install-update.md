@@ -142,6 +142,14 @@ Exit values and possible errors:
 
     Overrides the git executable in net.git-fetch-with-cli=true mode.
 
+  `$CARGO_HTTP_CAINFO`
+
+    Overrides the http.cainfo Cargo configuration key.
+
+  `$CARGO_HTTP_CHECK_REVOKE`
+
+    Overrides the http.check-revoke Cargo configuration key.
+
 ## EXAMPLES
 
   `cargo install-update -a`
