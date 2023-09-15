@@ -2,7 +2,7 @@
 A [`cargo` subcommand](https://github.com/rust-lang/cargo/wiki/Third-party-cargo-subcommands) for checking and applying updates to installed executables
 
 ## [Documentation](https://rawcdn.githack.com/nabijaczleweli/cargo-update/doc/cargo_update/index.html)
-## [Manpage](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html)
+## [Manual](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html)
 
 ### Installation
 
@@ -37,11 +37,15 @@ If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli
 
 ### Usage
 
-`cargo install-update -a` - check for newer versions and update all installed packages.
+`cargo install-update -a` — check for newer versions and update all installed packages.
 
-`cargo install-update crate1 crate2 ...` - check for newer versions and update selected packages, will not install new packages.
+`cargo install-update crate1 crate2 ...` — check for newer versions and update selected packages, will not install new packages.
 
-For more information and examples see the [manpage](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html).
+For more information and examples see the [manual](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update.1.html).
+
+`cargo install-update-config -t unstable -f feature1 -d false crate` — when building crate, do so with the unstable toolchain with feature1 and no default features.
+
+For more information and examples see the [manual](https://rawcdn.githack.com/nabijaczleweli/cargo-update/man/cargo-install-update-config.1.html).
 
 #### Self-update
 
