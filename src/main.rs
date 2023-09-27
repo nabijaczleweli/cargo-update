@@ -1,3 +1,8 @@
+// libcurl crashes on Somona unless CoreServices is linked in
+// See https://github.com/nabijaczleweli/cargo-update/issues/240 and https://github.com/mitsuhiko/rye/issues/428
+#[cfg_attr(target_os = "macos", link(name = "CoreServices", kind = "framework"))]
+extern "C" {}
+
 extern crate cargo_update;
 extern crate tabwriter;
 extern crate lazysort;
