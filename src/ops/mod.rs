@@ -11,10 +11,10 @@ use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitErr
 use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::io::{ErrorKind as IoErrorKind, Write};
+use std::collections::{BTreeMap, BTreeSet};
 use curl::multi::Multi as CurlMulti;
 use std::{cmp, env, mem, str, fs};
 use std::ffi::{OsString, OsStr};
-use std::collections::BTreeMap;
 use std::path::{PathBuf, Path};
 use json_deserializer as json;
 use std::hash::{Hasher, Hash};
@@ -823,6 +823,13 @@ impl CargoConfig {
 /// # let _ = cargo_dir;
 /// ```
 pub fn crates_file_in(cargo_dir: &Path) -> PathBuf {
+    crates_file_in_impl(cargo_dir, BTreeSet::new())
+}
+fn crates_file_in_impl<'cd>(cargo_dir: &'cd Path, mut seen: BTreeSet<&'cd Path>) -> PathBuf {
+    if !seen.insert(cargo_dir) {
+        panic!("Cargo config install.root loop at {:?} (saw {:?})", cargo_dir.display(), seen);
+    }
+
     let mut config_file = cargo_dir.join("config");
     if !config_file.exists() {
         config_file.set_file_name("config.toml");
@@ -834,7 +841,7 @@ pub fn crates_file_in(cargo_dir: &Path) -> PathBuf {
             .and_then(|t| t.as_table())
             .and_then(|t| t.get("root"))
             .and_then(|t| t.as_str()) {
-            return crates_file_in(Path::new(idir));
+            return crates_file_in_impl(Path::new(idir), seen);
         }
     }
 
