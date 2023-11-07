@@ -243,7 +243,7 @@ fn actual_main() -> Result<(), i32> {
                                     Err(IoErrorKind::NotFound.into())
                                 }
                                 .or_else(|_| if let Some(cfg) = cfg {
-                                    Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")))
+                                    cfg.environmentalise(&mut Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo"))))
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                         .arg("--root")
                                         .arg(&opts.cargo_dir)

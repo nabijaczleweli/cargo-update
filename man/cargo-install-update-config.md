@@ -18,6 +18,7 @@ Settable options:
   * whether to install prereleases,
   * Cargo.lock enforcement,
   * version range locks.
+  * environment variable value or removal,
 
 See cargo-install-update(1) for general information.
 
@@ -88,6 +89,18 @@ See cargo-install-update(1) for general information.
 
     Allow any version.
 
+  -e --environment [VARIABLE=VALUE]...
+
+    Set environment VARIABLE to VALUE in the cargo install process.
+
+  -E --clear-environment [VARIABLE]...
+
+    Remove environment VARIABLE from the cargo install process.
+
+  --inherit-environment [VARIABLE]...
+
+    Don't do anything to environment VARIABLE.
+
   -r --reset
 
     Roll back the configuration to the empty defaults.
@@ -100,16 +113,17 @@ See cargo-install-update(1) for general information.
 
 ## EXAMPLES
 
-  `cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 clippy`
+  `cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 -e RUSTC_WRAPPER=sccache clippy`
 
     Set clippy to be compiled with the nightly toolchain without default
     features, with log and colour features.
 
     Example output:
-      Toolchain         nightly
-      Default features  true
-      Features          log
-                        colour
+      Toolchain              nightly
+      Default features       true
+      Features               log
+                             colour
+      Environment variables  RUSTC_WRAPPER=sccache
 
 ## AUTHOR
 

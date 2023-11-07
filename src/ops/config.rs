@@ -1,9 +1,12 @@
+use std::fmt::{Formatter as FFormatter, Result as FResult, Write as FWrite};
+use serde::{Deserializer, Deserialize, Serializer, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::Write as FWrite;
+use std::process::Command;
 use std::default::Default;
 use semver::VersionReq;
 use std::borrow::Cow;
 use std::path::Path;
+use serde::de;
 use std::fs;
 use toml;
 
@@ -33,6 +36,12 @@ pub enum ConfigOperation {
     SetTargetVersion(VersionReq),
     /// Always install latest package version.
     RemoveTargetVersion,
+    /// Set environment variable to given value for `cargo install`.
+    SetEnvironment(String, String),
+    /// Remove environment variable for `cargo install`.
+    ClearEnvironment(String),
+    /// Remove configuration for an environment variable.
+    InheritEnvironment(String),
     /// Reset configuration to default values.
     ResetConfig,
 }
@@ -74,6 +83,8 @@ pub struct PackageConfig {
     pub respect_binaries: Option<bool>,
     /// Versions to constrain to.
     pub target_version: Option<VersionReq>,
+    /// Environment variables to alter for cargo. `None` to remove.
+    pub environment: Option<BTreeMap<String, EnvironmentOverride>>,
 }
 
 
@@ -86,8 +97,9 @@ impl PackageConfig {
     /// # extern crate cargo_update;
     /// # extern crate semver;
     /// # fn main() {
-    /// # use cargo_update::ops::{ConfigOperation, PackageConfig};
+    /// # use cargo_update::ops::{EnvironmentOverride, ConfigOperation, PackageConfig};
     /// # use std::collections::BTreeSet;
+    /// # use std::collections::BTreeMap;
     /// # use semver::VersionReq;
     /// # use std::str::FromStr;
     /// assert_eq!(PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string()),
@@ -97,7 +109,9 @@ impl PackageConfig {
     ///                                  ConfigOperation::SetInstallPrereleases(false),
     ///                                  ConfigOperation::SetEnforceLock(true),
     ///                                  ConfigOperation::SetRespectBinaries(true),
-    ///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(">=0.1").unwrap())]),
+    ///                                  ConfigOperation::SetTargetVersion(VersionReq::from_str(">=0.1").unwrap()),
+    ///                                  ConfigOperation::SetEnvironment("RUSTC_WRAPPER".to_string(), "sccache".to_string()),
+    ///                                  ConfigOperation::ClearEnvironment("CC".to_string())]),
     ///            PackageConfig {
     ///                toolchain: Some("nightly".to_string()),
     ///                default_features: false,
@@ -111,6 +125,12 @@ impl PackageConfig {
     ///                enforce_lock: Some(true),
     ///                respect_binaries: Some(true),
     ///                target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
+    ///                environment: Some({
+    ///                    let mut vars = BTreeMap::new();
+    ///                    vars.insert("RUSTC_WRAPPER".to_string(), EnvironmentOverride(Some("sccache".to_string())));
+    ///                    vars.insert("CC".to_string(), EnvironmentOverride(None));
+    ///                    vars
+    ///                }),
     ///            });
     /// # }
     /// ```
@@ -181,6 +201,20 @@ impl PackageConfig {
         res
     }
 
+    /// Apply transformations from `self.environment` to `cmd`.
+    pub fn environmentalise<'c>(&self, cmd: &'c mut Command) -> &'c mut Command {
+        if let Some(env) = self.environment.as_ref() {
+            for (var, val) in env {
+                dbg!((var, val));
+                match val {
+                    EnvironmentOverride(Some(val)) => cmd.env(var, val),
+                    EnvironmentOverride(None) => cmd.env_remove(var),
+                };
+            }
+        }
+        cmd
+    }
+
     /// Modify `self` according to the specified set of operations.
     ///
     /// # Examples
@@ -206,6 +240,7 @@ impl PackageConfig {
     ///     enforce_lock: None,
     ///     respect_binaries: None,
     ///     target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
+    ///     environment: None,
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
     ///                          ConfigOperation::AddFeature("serde".to_string()),
@@ -226,6 +261,7 @@ impl PackageConfig {
     ///                enforce_lock: None,
     ///                respect_binaries: None,
     ///                target_version: None,
+    ///                environment: None,
     ///            });
     /// # }
     /// ```
@@ -252,6 +288,15 @@ impl PackageConfig {
             ConfigOperation::SetRespectBinaries(rb) => self.respect_binaries = Some(rb),
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
+            ConfigOperation::SetEnvironment(ref var, ref val) => {
+                self.environment.get_or_insert(Default::default()).insert(var.clone(), EnvironmentOverride(Some(val.clone())));
+            }
+            ConfigOperation::ClearEnvironment(ref var) => {
+                self.environment.get_or_insert(Default::default()).insert(var.clone(), EnvironmentOverride(None));
+            }
+            ConfigOperation::InheritEnvironment(ref var) => {
+                self.environment.get_or_insert(Default::default()).remove(var);
+            }
             ConfigOperation::ResetConfig => *self = Default::default(),
         }
     }
@@ -290,6 +335,7 @@ impl PackageConfig {
     ///         enforce_lock: None,
     ///         respect_binaries: None,
     ///         target_version: None,
+    ///         environment: None,
     ///     });
     ///     pkgs
     /// }));
@@ -330,6 +376,7 @@ impl PackageConfig {
     ///         enforce_lock: None,
     ///         respect_binaries: None,
     ///         target_version: None,
+    ///         environment: None,
     ///     });
     ///     pkgs
     /// }, &config_file).unwrap();
@@ -355,6 +402,47 @@ impl Default for PackageConfig {
             enforce_lock: None,
             respect_binaries: None,
             target_version: None,
+            environment: None,
         }
+    }
+}
+
+
+/// Wrapper that serialises `None` as a boolean.
+///
+/// serde's default `BTreeMap<String, Option<String>>` implementation simply loses `None` values.
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct EnvironmentOverride(pub Option<String>);
+
+impl<'de> Deserialize<'de> for EnvironmentOverride {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_any(EnvironmentOverrideVisitor)
+    }
+}
+
+impl Serialize for EnvironmentOverride {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match &self.0 {
+            Some(data) => serializer.serialize_str(&data),
+            None => serializer.serialize_bool(false),
+        }
+    }
+}
+
+struct EnvironmentOverrideVisitor;
+
+impl<'de> de::Visitor<'de> for EnvironmentOverrideVisitor {
+    type Value = EnvironmentOverride;
+
+    fn expecting(&self, formatter: &mut FFormatter) -> FResult {
+        write!(formatter, "A string or boolean")
+    }
+
+    fn visit_bool<E: de::Error>(self, _: bool) -> Result<Self::Value, E> {
+        Ok(EnvironmentOverride(None))
+    }
+
+    fn visit_str<E: de::Error>(self, s: &str) -> Result<Self::Value, E> {
+        Ok(EnvironmentOverride(Some(s.to_string())))
     }
 }

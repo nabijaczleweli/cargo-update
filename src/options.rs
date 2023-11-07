@@ -175,6 +175,27 @@ impl ConfigOptions {
                             .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
                             .conflicts_with("any-version"),
                         Arg::from_usage("-a --any-version 'Allow any version'").conflicts_with("version"),
+                        Arg::from_usage("-e --environment=[VARIABLE=VALUE]... 'Environment variable to set'")
+                            .number_of_values(1)
+                            .validator(|s| if s.contains('=') {
+                                Ok(())
+                            } else {
+                                Err("Missing VALUE")
+                            }),
+                        Arg::from_usage("-E --clear-environment=[VARIABLE]... 'Environment variable to clear'")
+                            .number_of_values(1)
+                            .validator(|s| if s.contains('=') {
+                                Err("VARIABLE can't contain a =")
+                            } else {
+                                Ok(())
+                            }),
+                        Arg::from_usage("--inherit-environment=[VARIABLE]... 'Environment variable to use from the environment'")
+                            .number_of_values(1)
+                            .validator(|s| if s.contains('=') {
+                                Err("VARIABLE can't contain a =")
+                            } else {
+                                Ok(())
+                            }),
                         Arg::from_usage("-r --reset 'Roll back the configuration to the defaults.'"),
                         Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
             .get_matches();
@@ -218,6 +239,13 @@ impl ConfigOptions {
                     (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
                     _ => None,
                 })
+                .chain(matches.values_of("environment")
+                    .into_iter()
+                    .flatten()
+                    .map(|s| s.split_once('=').unwrap())
+                    .map(|(k, v)| ConfigOperation::SetEnvironment(k.to_string(), v.to_string())))
+                .chain(matches.values_of("clear-environment").into_iter().flatten().map(str::to_string).map(ConfigOperation::ClearEnvironment))
+                .chain(matches.values_of("inherit-environment").into_iter().flatten().map(str::to_string).map(ConfigOperation::InheritEnvironment))
                 .chain(matches.index_of("reset").map(|_| ConfigOperation::ResetConfig))
                 .collect(),
         }

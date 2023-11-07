@@ -59,6 +59,17 @@ fn actual_main() -> Result<(), i32> {
                 writeln!(out, "\t{}", f).unwrap();
             }
         }
+        if let Some(env) = cfg.environment.as_ref() {
+            if !env.is_empty() {
+                write!(out, "Environment variables").unwrap();
+                for (var, val) in env {
+                    match val {
+                        cargo_update::ops::EnvironmentOverride(Some(val)) => writeln!(out, "\t{}={}", var, val).unwrap(),
+                        cargo_update::ops::EnvironmentOverride(None) => writeln!(out, "\t{}\tcleared", var).unwrap(),
+                    }
+                }
+            }
+        }
         out.flush().unwrap();
     } else {
         println!("No configuration for package {}.", opts.package);

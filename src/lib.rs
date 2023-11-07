@@ -393,6 +393,7 @@ extern crate serde_derive;
 extern crate array_tool;
 extern crate once_cell;
 extern crate semver;
+extern crate serde;
 extern crate regex;
 extern crate git2;
 #[macro_use]
