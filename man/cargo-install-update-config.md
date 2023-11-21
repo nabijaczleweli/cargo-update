@@ -163,6 +163,8 @@ To all who support further development, in particular:
 
   * ThePhD
   * Embark Studios
+  * Lars Strojny
+  * EvModder
 
 ## REPORTING BUGS
 
