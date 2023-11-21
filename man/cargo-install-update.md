@@ -87,6 +87,10 @@ Exit values and possible errors:
     Don't print status messages to stdout
     and pass down --quiet to cargo subprocesses.
 
+  -j --jobs <JOBS>...
+
+    Run at most JOBS jobs at once, forwarded verbatim to cargo install.
+
   -s --filter <PACKAGE_FILTER>...
 
     Only consider packages matching all filters.

@@ -54,6 +54,8 @@ pub struct Options {
     pub cargo_install_args: Vec<OsString>,
     /// The cargo to run for installations. Default: `None` (use "cargo")
     pub install_cargo: Option<OsString>,
+    /// Limit of concurrent jobs. Default: `None`
+    pub jobs: Option<OsString>,
 }
 
 /// Representation of the config application's all configurable values.
@@ -96,6 +98,7 @@ impl Options {
                             .number_of_values(1)
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
                         Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").allow_invalid_utf8(true),
+                        Arg::from_usage("-j --jobs=[JOBS] 'Limit number of parallel jobs.'").allow_invalid_utf8(true),
                         Arg::with_name("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
@@ -140,6 +143,7 @@ impl Options {
             },
             cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
             install_cargo: matches.value_of_os("install-cargo").map(OsStr::to_os_string),
+            jobs: matches.value_of_os("jobs").map(OsStr::to_os_string),
         }
     }
 }

@@ -243,7 +243,8 @@ fn actual_main() -> Result<(), i32> {
                                     Err(IoErrorKind::NotFound.into())
                                 }
                                 .or_else(|_| if let Some(cfg) = cfg {
-                                    cfg.environmentalise(&mut Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo"))))
+                                    let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                    cfg.environmentalise(&mut cmd)
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                         .arg("--root")
                                         .arg(&opts.cargo_dir)
@@ -255,13 +256,16 @@ fn actual_main() -> Result<(), i32> {
                                             package.update_to_version().unwrap().to_string()
                                         })
                                         .arg("--registry")
-                                        .arg(registry_name.as_ref())
-                                        .arg(&package.name)
+                                        .arg(registry_name.as_ref());
+                                    if let Some(ref j) = opts.jobs.as_ref() {
+                                        cmd.arg("-j").arg(j);
+                                    }
+                                    cmd.arg(&package.name)
                                         .args(&opts.cargo_install_args)
                                         .status()
                                 } else {
-                                    Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")))
-                                        .arg("install")
+                                    let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                    cmd.arg("install")
                                         .arg("--root")
                                         .arg(&opts.cargo_dir)
                                         .arg("-f")
@@ -269,8 +273,11 @@ fn actual_main() -> Result<(), i32> {
                                         .arg("--version")
                                         .arg(package.update_to_version().unwrap().to_string())
                                         .arg("--registry")
-                                        .arg(registry_name.as_ref())
-                                        .arg(&package.name)
+                                        .arg(registry_name.as_ref());
+                                    if let Some(ref j) = opts.jobs.as_ref() {
+                                        cmd.arg("-j").arg(j);
+                                    }
+                                    cmd.arg(&package.name)
                                         .args(&opts.cargo_install_args)
                                         .status()
                                 })
@@ -395,6 +402,9 @@ fn actual_main() -> Result<(), i32> {
                                 if let Some(ref b) = package.branch.as_ref() {
                                     cmd.arg("--branch").arg(b);
                                 }
+                                if let Some(ref j) = opts.jobs.as_ref() {
+                                    cmd.arg("-j").arg(j);
+                                }
                                 cmd.args(&opts.cargo_install_args).status()
                             } else {
                                 let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
@@ -408,6 +418,9 @@ fn actual_main() -> Result<(), i32> {
                                     .arg(&package.name);
                                 if let Some(ref b) = package.branch.as_ref() {
                                     cmd.arg("--branch").arg(b);
+                                }
+                                if let Some(ref j) = opts.jobs.as_ref() {
+                                    cmd.arg("-j").arg(j);
                                 }
                                 cmd.args(&opts.cargo_install_args).status()
                             }
