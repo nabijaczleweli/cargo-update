@@ -46,8 +46,9 @@ pub struct Options {
     pub quiet: bool,
     /// Update all packages. Default: empty
     pub filter: Vec<PackageFilterElement>,
-    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
-    pub cargo_dir: PathBuf,
+    /// The `cargo` home directory; (original, canonicalised). Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`,
+    /// then `"$HOME/.cargo"`
+    pub cargo_dir: (PathBuf, PathBuf),
     /// The temporary directory to clone git repositories to. Default: `"$TEMP/cargo-update"`
     pub temp_dir: PathBuf,
     /// Arbitrary arguments to forward to `cargo install`, acquired from `$CARGO_INSTALL_OPTS`. Default: `[]`
@@ -206,7 +207,7 @@ impl ConfigOptions {
         let matches = matches.subcommand_matches("install-update-config").unwrap();
 
         ConfigOptions {
-            cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
+            cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")).1,
             package: matches.value_of("PACKAGE").unwrap().to_string(),
             ops: matches.value_of("toolchain")
                 .map(|t| if t.is_empty() {
@@ -256,15 +257,18 @@ impl ConfigOptions {
     }
 }
 
-fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> PathBuf {
+fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> (PathBuf, PathBuf) {
     if let Some(dir) = opt_cargo_dir {
-        match fs::canonicalize(dir) {
-            Ok(dir) => dir,
+        match fs::canonicalize(&dir) {
+            Ok(cdir) => (dir.into(), cdir),
             Err(_) => clerror(format_args!("--cargo-dir={:?} doesn't exist", dir)),
         }
     } else {
-        match env::var_os("CARGO_INSTALL_ROOT").map(PathBuf::from).or_else(|| home::cargo_home().ok()).and_then(|ch| fs::canonicalize(ch).ok()) {
-            Some(hd) => hd,
+        match env::var_os("CARGO_INSTALL_ROOT")
+            .map(PathBuf::from)
+            .or_else(|| home::cargo_home().ok())
+            .and_then(|ch| fs::canonicalize(&ch).map(|can| (ch, can)).ok()) {
+            Some(cd) => cd,
             None => {
                 clerror(format_args!("$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, please specify the cargo home directory with the -c \
                                       option"))

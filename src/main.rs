@@ -34,7 +34,7 @@ fn actual_main() -> Result<(), i32> {
         }
     }
 
-    let crates_file = cargo_update::ops::crates_file_in(&opts.cargo_dir);
+    let crates_file = cargo_update::ops::crates_file_in(&opts.cargo_dir.1);
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
     let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")).map_err(|(e, r)| {
             eprintln!("Reading config: {}", e);
@@ -83,7 +83,7 @@ fn actual_main() -> Result<(), i32> {
 
     let registries: Vec<_> = Result::from_iter(registry_urls.iter()
         .map(|((registry_url, sparse, _), pkg_names)| {
-            cargo_update::ops::assert_index_path(&opts.cargo_dir, &registry_url[..], *sparse)
+            cargo_update::ops::assert_index_path(&opts.cargo_dir.1, &registry_url[..], *sparse)
                 .map(|path| (path, *sparse, &pkg_names[..]))
                 .map_err(|e| {
                     eprintln!("Couldn't get package repository: {}.", e);
@@ -231,7 +231,7 @@ fn actual_main() -> Result<(), i32> {
                                (cfg == None || cfg == Some(&Default::default())) {
                                     Command::new("cargo-binstall")
                                         .arg("--roots")
-                                        .arg(&opts.cargo_dir)
+                                        .arg(&opts.cargo_dir.0)
                                         .arg("--no-confirm")
                                         .arg("--version")
                                         .arg(&format!("={}", package.update_to_version().unwrap()))
@@ -247,7 +247,7 @@ fn actual_main() -> Result<(), i32> {
                                     cfg.environmentalise(&mut cmd)
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                         .arg("--root")
-                                        .arg(&opts.cargo_dir)
+                                        .arg(&opts.cargo_dir.0)
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .arg("--version")
                                         .arg(if let Some(tv) = cfg.target_version.as_ref() {
@@ -267,7 +267,7 @@ fn actual_main() -> Result<(), i32> {
                                     let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                     cmd.arg("install")
                                         .arg("--root")
-                                        .arg(&opts.cargo_dir)
+                                        .arg(&opts.cargo_dir.0)
                                         .arg("-f")
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .arg("--version")
@@ -394,7 +394,7 @@ fn actual_main() -> Result<(), i32> {
                                 let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                 cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
                                     .arg("--root")
-                                    .arg(&opts.cargo_dir)
+                                    .arg(&opts.cargo_dir.0)
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
@@ -410,7 +410,7 @@ fn actual_main() -> Result<(), i32> {
                                 let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                 cmd.arg("install")
                                     .arg("--root")
-                                    .arg(&opts.cargo_dir)
+                                    .arg(&opts.cargo_dir.0)
                                     .arg("-f")
                                     .args(if opts.quiet { Some("--quiet") } else { None })
                                     .arg("--git")
