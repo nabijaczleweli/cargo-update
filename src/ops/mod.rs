@@ -34,7 +34,7 @@ mod config;
 pub use self::config::*;
 
 
-static REGISTRY_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \(registry+\+([^\s]+)\)").unwrap());
+static REGISTRY_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \((?:registry|sparse)+\+([^\s]+)\)").unwrap());
 static GIT_PACKAGE_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)").unwrap());
 
 
@@ -1392,7 +1392,7 @@ pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_pr
     if let Some(registries_tabls) = config.get("registries") {
         let table = registries_tabls.as_table().ok_or("registries is not a table")?;
         for (name, url) in table.iter().flat_map(|(name, val)| val.as_table()?.get("index")?.as_str().map(|v| (name, v))) {
-            if cur_source == url {
+            if cur_source == url.strip_prefix("sparse+").unwrap_or(url).to_string() {
                 cur_source = name.into()
             }
             registries.insert(name, url.into());
