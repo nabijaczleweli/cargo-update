@@ -34,7 +34,8 @@ fn actual_main() -> Result<(), i32> {
 
     let crates_file = cargo_update::ops::crates_file_in(&opts.cargo_dir.1);
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
-    let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml")).map_err(|(e, r)| {
+    let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml"),
+                                                               &crates_file.with_file_name(".crates2.json")).map_err(|(e, r)| {
             eprintln!("Reading config: {}", e);
             r
         })?;

@@ -20,6 +20,15 @@ Settable options:
   * version range locks.
   * environment variable value or removal,
 
+If there is no configuration for a package,
+the `$CARGO_DIR/.crates2.json` file is parsed instead,
+which may yield, depending on the Cargo version, the following subset of the data:
+
+  * whether to use default features,
+  * additional feature list,
+  * build profile (equivalent to --debug if "debug", ignored otherwise),
+  * version range locks.
+
 See cargo-install-update(1) for general information.
 
 ## OPTIONS

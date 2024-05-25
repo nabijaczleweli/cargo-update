@@ -15,7 +15,7 @@ fn actual_main() -> Result<(), i32> {
     let opts = cargo_update::ConfigOptions::parse();
     let config_file = cargo_update::ops::crates_file_in(&opts.cargo_dir).with_file_name(".install_config.toml");
 
-    let mut configuration = cargo_update::ops::PackageConfig::read(&config_file).map_err(|(e, r)| {
+    let mut configuration = cargo_update::ops::PackageConfig::read(&config_file, &config_file.with_file_name(".crates2.json")).map_err(|(e, r)| {
             eprintln!("Reading config: {}", e);
             r
         })?;

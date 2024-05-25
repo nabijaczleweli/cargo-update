@@ -44,10 +44,12 @@ fn parse_registry_package_ident(ident: &str) -> Option<(&str, &str, &str)> {
     Some((name, version, reg.strip_prefix("registry+").or_else(|| reg.strip_prefix("sparse+"))?))
 }
 // alacritty 0.1.0 (git+https://github.com/jwilm/alacritty#eb231b3e70b87875df4bdd1974d5e94704024d70)
-// chattium-oxide-client 0.1.0 (git+https://github.com/nabijaczleweli/chattium-oxide-client?branch=master#108a7b94f0e0dcb2a875f70fc0459d5a682df14c)
+// chattium-oxide-client 0.1.0
+// (git+https://github.com/nabijaczleweli/chattium-oxide-client?branch=master#108a7b94f0e0dcb2a875f70fc0459d5a682df14c)
 // -> (name, url, sha)
 //    ("alacritty", "https://github.com/jwilm/alacritty", "eb231b3e70b87875df4bdd1974d5e94704024d70")
-//    ("chattium-oxide-client", "https://github.com/nabijaczleweli/chattium-oxide-client?branch=master", "108a7b94f0e0dcb2a875f70fc0459d5a682df14c")
+// ("chattium-oxide-client", "https://github.com/nabijaczleweli/chattium-oxide-client?branch=master",
+//                           "108a7b94f0e0dcb2a875f70fc0459d5a682df14c")
 fn parse_git_package_ident(ident: &str) -> Option<(&str, &str, &str)> {
     let mut idx = ident.splitn(3, ' ');
     let (name, _, blob) = (idx.next()?, idx.next()?, idx.next()?);
@@ -1054,7 +1056,8 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// # Examples
 ///
 /// ```
-/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
+/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] //
+/// https://github.com/nabijaczleweli/cargo-update/issues/235
 /// # {
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;

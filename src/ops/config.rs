@@ -1,6 +1,8 @@
 use std::fmt::{Formatter as FFormatter, Result as FResult, Write as FWrite};
 use serde::{Deserializer, Deserialize, Serializer, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
+use std::io::ErrorKind as IoErrorKind;
+use json_deserializer as json;
 use std::process::Command;
 use std::default::Default;
 use semver::VersionReq;
@@ -56,12 +58,13 @@ pub enum ConfigOperation {
 /// ```
 /// # use cargo_update::ops::PackageConfig;
 /// # use std::fs::{File, create_dir_all};
+/// # use std::path::Path;
 /// # use std::env::temp_dir;
 /// # let td = temp_dir().join("cargo_update-doctest").join("PackageConfig-0");
 /// # create_dir_all(&td).unwrap();
 /// # let config_file = td.join(".install_config.toml");
 /// # let operations = [];
-/// let mut configuration = PackageConfig::read(&config_file).unwrap();
+/// let mut configuration = PackageConfig::read(&config_file, Path::new("/ENOENT")).unwrap();
 /// configuration.insert("cargo_update".to_string(), PackageConfig::from(&operations));
 /// PackageConfig::write(&configuration, &config_file).unwrap();
 /// ```
@@ -301,7 +304,10 @@ impl PackageConfig {
         }
     }
 
-    /// Read a configset from the specified file.
+    /// Read a configset from the specified file, or from the given `.cargo2.json`.
+    ///
+    /// The first file (usually `.install_config.toml`) is used by default for each package;
+    /// `.cargo2.json`, if any, is used to backfill existing data from cargo.
     ///
     /// If the specified file doesn't exist an empty configset is returned.
     ///
@@ -312,6 +318,7 @@ impl PackageConfig {
     /// # use cargo_update::ops::PackageConfig;
     /// # use std::fs::{self, create_dir_all};
     /// # use std::env::temp_dir;
+    /// # use std::path::Path;
     /// # use std::io::Write;
     /// # let td = temp_dir().join("cargo_update-doctest").join("PackageConfig-read-0");
     /// # create_dir_all(&td).unwrap();
@@ -320,7 +327,7 @@ impl PackageConfig {
     ///    [cargo-update]\n\
     ///    default_features = true\n\
     ///    features = [\"serde\"]\n"[..]).unwrap();
-    /// assert_eq!(PackageConfig::read(&config_file), Ok({
+    /// assert_eq!(PackageConfig::read(&config_file, Path::new("/ENOENT")), Ok({
     ///     let mut pkgs = BTreeMap::new();
     ///     pkgs.insert("cargo-update".to_string(), PackageConfig {
     ///         toolchain: None,
@@ -340,12 +347,76 @@ impl PackageConfig {
     ///     pkgs
     /// }));
     /// ```
-    pub fn read(p: &Path) -> Result<BTreeMap<String, PackageConfig>, (String, i32)> {
-        if p.exists() {
-            toml::from_str(&fs::read_to_string(p).map_err(|e| (e.to_string(), 1))?).map_err(|e| (e.to_string(), 2))
-        } else {
-            Ok(BTreeMap::new())
+    pub fn read(p: &Path, cargo2_json: &Path) -> Result<BTreeMap<String, PackageConfig>, (String, i32)> {
+        let mut base = match fs::read_to_string(p) {
+            Ok(s) => toml::from_str(&s).map_err(|e| (e.to_string(), 2))?,
+            Err(e) if e.kind() == IoErrorKind::NotFound => BTreeMap::new(),
+            Err(e) => Err((e.to_string(), 1))?,
+        };
+        // {
+        //   "installs": {
+        //     "pixelmatch 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)": {
+        //       "version_req": null,
+        //       "bins": [
+        //         "pixelmatch"
+        //       ],
+        //       "features": [
+        //         "build-binary"
+        //       ],
+        //       "all_features": false,
+        //       "no_default_features": false,
+        //       "profile": "release",
+        //       "target": "x86_64-unknown-linux-gnu",
+        //       "rustc": "rustc 1.54.0 (a178d0322 2021-07-26)\nbinary: ..."
+        //     },
+        if let Ok(cargo2_data) = fs::read(cargo2_json) {
+            if let Ok(json::Value::Object(mut cargo2)) = json::parse(&cargo2_data[..]) {
+                if let Some(json::Value::Object(installs)) = cargo2.remove("installs") {
+                    for (k, v) in installs {
+                        if let json::Value::Object(v) = v {
+                            if let Some((name, _, _)) = super::parse_registry_package_ident(&k).or_else(|| super::parse_git_package_ident(&k)) {
+                                if !base.contains_key(name) {
+                                    base.insert(name.to_string(), PackageConfig::cargo2_package_config(v));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+        Ok(base)
+    }
+
+    fn cargo2_package_config(mut blob: json::Object) -> PackageConfig {
+        let mut ret = PackageConfig::default();
+        // Nothing to parse PackageConfig::toolchain from
+        if let Some(json::Value::Bool(ndf)) = blob.get("no_default_features") {
+            ret.default_features = !ndf;
+        }
+        if let Some(json::Value::Array(fs)) = blob.remove("features") {
+            ret.features = fs.into_iter()
+                .filter_map(|f| match f {
+                    json::Value::String(s) => Some(s.into_owned()),
+                    _ => None,
+                })
+                .collect();
+        }
+        // Nothing to parse "all_features" into
+        if let Some(json::Value::String(prof)) = blob.get("profile") {
+            if prof == "debug" {
+                ret.debug = Some(true);
+            }
+        }
+        // Nothing to parse PackageConfig::install_prereleases from
+        // Nothing to parse PackageConfig::enforce_lock from
+        // "bins" is kinda like PackageConfig::respect_binaries but no really
+        if let Some(json::Value::String(prof)) = blob.get("version_req") {
+            if let Ok(req) = VersionReq::parse(prof) {
+                ret.target_version = Some(req);
+            }
+        }
+        // Nothing to parse PackageConfig::environment from
+        ret
     }
 
     /// Save a configset to the specified file.

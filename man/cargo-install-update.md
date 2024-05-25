@@ -14,7 +14,8 @@ updates for my cargo-installed executables, which was long and boring.
 
 Updates packages from the main repository and git repositories.
 
-See cargo-install-update-config(1) for further configuring updates.
+See cargo-install-update-config(1) for further configuring updates,
+and the metadata from `cargo install` that may be preserved by default.
 
 The `CARGO_INSTALL_OPTS` environment variable can be set,
 containing options to forward to the end of `cargo install` invocations'
