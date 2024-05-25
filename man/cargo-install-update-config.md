@@ -17,8 +17,8 @@ Settable options:
   * build profile,
   * whether to install prereleases,
   * Cargo.lock enforcement,
-  * version range locks.
-  * environment variable value or removal,
+  * version range locks,
+  * environment variable value or removal.
 
 If there is no configuration for a package,
 the `$CARGO_DIR/.crates2.json` file is parsed instead,
