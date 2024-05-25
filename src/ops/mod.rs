@@ -1056,8 +1056,7 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// # Examples
 ///
 /// ```
-/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] //
-/// https://github.com/nabijaczleweli/cargo-update/issues/235
+/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
 /// # {
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
