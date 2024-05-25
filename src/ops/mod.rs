@@ -19,12 +19,10 @@ use std::path::{PathBuf, Path};
 use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
-use once_cell::sync::Lazy;
 use std::process::Command;
 use std::time::Duration;
 use std::borrow::Cow;
 use std::sync::Mutex;
-use regex::Regex;
 use url::Url;
 use toml;
 use hex;
@@ -34,8 +32,31 @@ mod config;
 pub use self::config::*;
 
 
-static REGISTRY_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \((?:registry|sparse)+\+([^\s]+)\)").unwrap());
-static GIT_PACKAGE_RGX: Lazy<Regex> = Lazy::new(|| Regex::new(r"([^\s]+) ([^\s]+) \(git+\+([^#\s]+)#([^\s]{40})\)").unwrap());
+// cargo-audit 0.17.5 (registry+https://github.com/rust-lang/crates.io-index)
+// cargo-audit 0.17.5 (sparse+https://index.crates.io/)
+// -> (name, version, registry)
+//    ("cargo-audit", "0.17.5", "https://github.com/rust-lang/crates.io-index")
+//    ("cargo-audit", "0.17.5", "https://index.crates.io/")
+fn parse_registry_package_ident(ident: &str) -> Option<(&str, &str, &str)> {
+    let mut idx = ident.splitn(3, ' ');
+    let (name, version, mut reg) = (idx.next()?, idx.next()?, idx.next()?);
+    reg = reg.strip_prefix('(')?.strip_suffix(')')?;
+    Some((name, version, reg.strip_prefix("registry+").or_else(|| reg.strip_prefix("sparse+"))?))
+}
+// alacritty 0.1.0 (git+https://github.com/jwilm/alacritty#eb231b3e70b87875df4bdd1974d5e94704024d70)
+// chattium-oxide-client 0.1.0 (git+https://github.com/nabijaczleweli/chattium-oxide-client?branch=master#108a7b94f0e0dcb2a875f70fc0459d5a682df14c)
+// -> (name, url, sha)
+//    ("alacritty", "https://github.com/jwilm/alacritty", "eb231b3e70b87875df4bdd1974d5e94704024d70")
+//    ("chattium-oxide-client", "https://github.com/nabijaczleweli/chattium-oxide-client?branch=master", "108a7b94f0e0dcb2a875f70fc0459d5a682df14c")
+fn parse_git_package_ident(ident: &str) -> Option<(&str, &str, &str)> {
+    let mut idx = ident.splitn(3, ' ');
+    let (name, _, blob) = (idx.next()?, idx.next()?, idx.next()?);
+    let (url, sha) = blob.strip_prefix("(git+")?.strip_suffix(')')?.split_once('#')?;
+    if sha.len() != 40 {
+        return None;
+    }
+    Some((name, url, sha))
+}
 
 
 /// A representation of a package from the main [`crates.io`](https://crates.io) repository.
@@ -202,11 +223,11 @@ impl RegistryPackage {
     /// assert!(RegistryPackage::parse(package_s, vec!["treesize".to_string()]).is_none());
     /// ```
     pub fn parse(what: &str, executables: Vec<String>) -> Option<RegistryPackage> {
-        REGISTRY_RGX.captures(what).map(|c| {
+        parse_registry_package_ident(what).map(|(name, version, registry)| {
             RegistryPackage {
-                name: c.get(1).unwrap().as_str().to_string(),
-                registry: c.get(3).unwrap().as_str().to_string(),
-                version: Some(Semver::parse(c.get(2).unwrap().as_str()).unwrap()),
+                name: name.to_string(),
+                registry: registry.to_string(),
+                version: Some(Semver::parse(version).unwrap()),
                 newest_version: None,
                 alternative_version: None,
                 max_version: None,
@@ -465,15 +486,15 @@ impl GitRepoPackage {
     /// assert!(GitRepoPackage::parse(package_s, vec!["racer".to_string()]).is_none());
     /// ```
     pub fn parse(what: &str, executables: Vec<String>) -> Option<GitRepoPackage> {
-        GIT_PACKAGE_RGX.captures(what).map(|c| {
-            let mut url = Url::parse(c.get(3).unwrap().as_str()).unwrap();
+        parse_git_package_ident(what).map(|(name, url, sha)| {
+            let mut url = Url::parse(url).unwrap();
             let branch = url.query_pairs().find(|&(ref name, _)| name == "branch").map(|(_, value)| value.to_string());
             url.set_query(None);
             GitRepoPackage {
-                name: c.get(1).unwrap().as_str().to_string(),
+                name: name.to_string(),
                 url: url.into(),
                 branch: branch,
-                id: Oid::from_str(c.get(4).unwrap().as_str()).unwrap(),
+                id: Oid::from_str(sha).unwrap(),
                 newest_id: None,
                 executables: executables,
             }
