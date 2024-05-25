@@ -1,6 +1,5 @@
 extern crate cargo_update;
 extern crate tabwriter;
-extern crate lazysort;
 extern crate git2;
 
 use std::io::{ErrorKind as IoErrorKind, Write, stdout, sink};
@@ -8,7 +7,6 @@ use std::process::{Command, exit};
 use std::collections::BTreeMap;
 use std::iter::FromIterator;
 use tabwriter::TabWriter;
-use lazysort::SortedBy;
 use std::fmt::Display;
 use std::ffi::OsStr;
 #[cfg(target_os="windows")]
@@ -145,14 +143,18 @@ fn actual_main() -> Result<(), i32> {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
         for (package, package_target_version, package_install_prereleases) in
-            packages.iter()
-                .map(|p| {
-                    let cfg = configuration.get(&p.name);
-                    (p, cfg.as_ref().and_then(|c| c.target_version.as_ref()), cfg.as_ref().and_then(|c| c.install_prereleases))
-                })
-                .sorted_by(|&(ref lhs, lhstv, lhsip), &(ref rhs, rhstv, rhsip)| {
+            {
+                let mut pkgs = packages.iter()
+                    .map(|p| {
+                        let cfg = configuration.get(&p.name);
+                        (p, cfg.as_ref().and_then(|c| c.target_version.as_ref()), cfg.as_ref().and_then(|c| c.install_prereleases))
+                    })
+                    .collect::<Vec<_>>();
+                pkgs.sort_by(|&(ref lhs, lhstv, lhsip), &(ref rhs, rhstv, rhsip)| {
                     (!lhs.needs_update(lhstv, lhsip, opts.downdate), &lhs.name).cmp(&(!rhs.needs_update(rhstv, rhsip, opts.downdate), &rhs.name))
-                }) {
+                });
+                pkgs
+            } {
             write!(out, "{}\t", package.name).unwrap();
 
             if let Some(ref v) = package.version {
@@ -360,8 +362,8 @@ fn actual_main() -> Result<(), i32> {
         if !opts.quiet {
             let mut out = TabWriter::new(stdout());
             writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
-            for package in packages.iter()
-                .sorted_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name))) {
+            packages.sort_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name)));
+            for package in &packages {
                 writeln!(out,
                          "{}\t{}\t{}\t{}",
                          package.name,
