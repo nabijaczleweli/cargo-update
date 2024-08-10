@@ -244,9 +244,12 @@ impl RegistryPackage {
         }
 
         // otherwise only want to install prerelease if the current version is a prerelease with the same maj.min.patch
-        let cur =self.version.as_ref().unwrap();
-        cur.is_prerelease() && cur.major == version_to_install.major && cur.minor == version_to_install.minor &&
-        cur.patch == version_to_install.patch
+        match self.version.as_ref() {
+            Some(cur) =>
+                cur.is_prerelease() && cur.major == version_to_install.major && cur.minor == version_to_install.minor &&
+                cur.patch == version_to_install.patch,
+            None => false,
+        }
     }
 
     /// Read the version list for this crate off the specified repository tree and set the latest and alternative versions.
@@ -1068,8 +1071,7 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// # Examples
 ///
 /// ```
-/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] //
-/// https://github.com/nabijaczleweli/cargo-update/issues/235
+/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
 /// # {
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
