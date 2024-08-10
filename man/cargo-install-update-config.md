@@ -15,7 +15,7 @@ Settable options:
   * whether to use default features,
   * additional feature list,
   * build profile,
-  * whether to install prereleases,
+  * whether to install prereleases other than those for the currently-installed version,
   * Cargo.lock enforcement,
   * version range locks,
   * environment variable value or removal.
@@ -70,7 +70,12 @@ See cargo-install-update(1) for general information.
 
   --no-install-prereleases
 
-    Don't update to prerelease versions (default).
+    Don't update to prerelease versions.
+
+    If the currently-installed version is a prerelease,
+    and the candidate version is a newer prerelease for the same major.minor.patch version,
+    it will be installed regardless of this setting.
+    (To wit: this setting controls updates to prereleases, not within them.)
 
   --enforce-lock
 

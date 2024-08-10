@@ -238,6 +238,17 @@ impl RegistryPackage {
         })
     }
 
+    fn want_to_install_prerelease(&self, version_to_install: &Semver, install_prereleases: Option<bool>) -> bool {
+        if install_prereleases.unwrap_or(false) {
+            return true;
+        }
+
+        // otherwise only want to install prerelease if the current version is a prerelease with the same maj.min.patch
+        let cur =self.version.as_ref().unwrap();
+        cur.is_prerelease() && cur.major == version_to_install.major && cur.minor == version_to_install.minor &&
+        cur.patch == version_to_install.patch
+    }
+
     /// Read the version list for this crate off the specified repository tree and set the latest and alternative versions.
     pub fn pull_version(&mut self, registry: &RegistryTree, registry_parent: &Registry, install_prereleases: Option<bool>) {
         let mut vers_git;
@@ -261,7 +272,8 @@ impl RegistryPackage {
         if let Some(newest) = vers.next() {
             self.newest_version = Some(newest.clone());
 
-            if self.newest_version.as_ref().unwrap().is_prerelease() && !install_prereleases.unwrap_or(false) {
+            if self.newest_version.as_ref().unwrap().is_prerelease() &&
+               !self.want_to_install_prerelease(self.newest_version.as_ref().unwrap(), install_prereleases) {
                 if let Some(newest_nonpre) = vers.find(|v| !v.is_prerelease()) {
                     mem::swap(&mut self.alternative_version, &mut self.newest_version);
                     self.newest_version = Some(newest_nonpre.clone());
@@ -390,7 +402,7 @@ impl RegistryPackage {
         (req.into_iter().zip(self.version.as_ref()).map(|(sr, cv)| !sr.matches(cv)).next().unwrap_or(true) ||
          req.into_iter().zip(update_to_version).map(|(sr, uv)| sr.matches(uv)).next().unwrap_or(true)) &&
         update_to_version.map(|upd_v| {
-                (!upd_v.is_prerelease() || install_prereleases.unwrap_or(false)) &&
+                (!upd_v.is_prerelease() || self.want_to_install_prerelease(upd_v, install_prereleases)) &&
                 (self.version.is_none() || criterion(self.version.as_ref().unwrap(), upd_v, downdate))
             })
             .unwrap_or(false)
@@ -1056,7 +1068,8 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// # Examples
 ///
 /// ```
-/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
+/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] //
+/// https://github.com/nabijaczleweli/cargo-update/issues/235
 /// # {
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
