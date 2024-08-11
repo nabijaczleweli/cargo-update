@@ -458,7 +458,7 @@ impl PackageConfig {
     ///             features = [\"serde\"]\n");
     /// ```
     pub fn write(configuration: &BTreeMap<String, PackageConfig>, p: &Path) -> Result<(), (String, i32)> {
-        fs::write(p, &toml::to_vec(configuration).map_err(|e| (e.to_string(), 2))?).map_err(|e| (e.to_string(), 3))
+        fs::write(p, &toml::to_string(configuration).map_err(|e| (e.to_string(), 2))?).map_err(|e| (e.to_string(), 3))
     }
 }
 
