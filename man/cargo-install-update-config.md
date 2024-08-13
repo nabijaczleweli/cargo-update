@@ -26,8 +26,7 @@ which may yield, depending on the Cargo version, the following subset of the dat
 
   * whether to use default features,
   * additional feature list,
-  * build profile (equivalent to --debug if "debug", ignored otherwise),
-  * version range locks.
+  * build profile (equivalent to --debug if "debug", ignored otherwise).
 
 See cargo-install-update(1) for general information.
 

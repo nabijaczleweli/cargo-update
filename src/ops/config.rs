@@ -410,11 +410,7 @@ impl PackageConfig {
         // Nothing to parse PackageConfig::install_prereleases from
         // Nothing to parse PackageConfig::enforce_lock from
         // "bins" is kinda like PackageConfig::respect_binaries but no really
-        if let Some(json::Value::String(prof)) = blob.get("version_req") {
-            if let Ok(req) = VersionReq::parse(prof) {
-                ret.target_version = Some(req);
-            }
-        }
+        // "version_req" is set by cargo install --version, so we'd lock after the first update if we parsed it like this
         // Nothing to parse PackageConfig::environment from
         ret
     }
