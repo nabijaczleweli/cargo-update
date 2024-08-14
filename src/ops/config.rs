@@ -88,6 +88,9 @@ pub struct PackageConfig {
     pub target_version: Option<VersionReq>,
     /// Environment variables to alter for cargo. `None` to remove.
     pub environment: Option<BTreeMap<String, EnvironmentOverride>>,
+    /// Read in from `.crates2.json`, shouldn't be saved
+    #[serde(skip)]
+    pub from_transient: bool,
 }
 
 
@@ -134,6 +137,7 @@ impl PackageConfig {
     ///                    vars.insert("CC".to_string(), EnvironmentOverride(None));
     ///                    vars
     ///                }),
+    ///                from_transient: false,
     ///            });
     /// # }
     /// ```
@@ -220,6 +224,8 @@ impl PackageConfig {
 
     /// Modify `self` according to the specified set of operations.
     ///
+    /// If this config was transient (read in from `.crates2.json`), it is made real and will be saved.
+    ///
     /// # Examples
     ///
     /// ```
@@ -244,6 +250,7 @@ impl PackageConfig {
     ///     respect_binaries: None,
     ///     target_version: Some(VersionReq::from_str(">=0.1").unwrap()),
     ///     environment: None,
+    ///     from_transient: false,
     /// };
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
     ///                          ConfigOperation::AddFeature("serde".to_string()),
@@ -265,10 +272,12 @@ impl PackageConfig {
     ///                respect_binaries: None,
     ///                target_version: None,
     ///                environment: None,
+    ///                from_transient: false,
     ///            });
     /// # }
     /// ```
     pub fn execute_operations<'o, O: IntoIterator<Item = &'o ConfigOperation>>(&mut self, ops: O) {
+        self.from_transient = false;
         for op in ops {
             self.execute_operation(op)
         }
@@ -343,6 +352,7 @@ impl PackageConfig {
     ///         respect_binaries: None,
     ///         target_version: None,
     ///         environment: None,
+    ///         from_transient: false,
     ///     });
     ///     pkgs
     /// }));
@@ -389,6 +399,8 @@ impl PackageConfig {
 
     fn cargo2_package_config(mut blob: json::Object) -> PackageConfig {
         let mut ret = PackageConfig::default();
+        ret.from_transient = true;
+
         // Nothing to parse PackageConfig::toolchain from
         if let Some(json::Value::Bool(ndf)) = blob.get("no_default_features") {
             ret.default_features = !ndf;
@@ -415,7 +427,7 @@ impl PackageConfig {
         ret
     }
 
-    /// Save a configset to the specified file.
+    /// Save a configset to the specified file, transient (`.crates2.json`) configs are removed.
     ///
     /// # Examples
     ///
@@ -444,6 +456,7 @@ impl PackageConfig {
     ///         respect_binaries: None,
     ///         target_version: None,
     ///         environment: None,
+    ///         from_transient: false,
     ///     });
     ///     pkgs
     /// }, &config_file).unwrap();
@@ -454,7 +467,7 @@ impl PackageConfig {
     ///             features = [\"serde\"]\n");
     /// ```
     pub fn write(configuration: &BTreeMap<String, PackageConfig>, p: &Path) -> Result<(), (String, i32)> {
-        fs::write(p, &toml::to_string(configuration).map_err(|e| (e.to_string(), 2))?).map_err(|e| (e.to_string(), 3))
+        fs::write(p, &toml::to_string(&FilteredPackageConfigMap(configuration)).map_err(|e| (e.to_string(), 2))?).map_err(|e| (e.to_string(), 3))
     }
 }
 
@@ -470,7 +483,16 @@ impl Default for PackageConfig {
             respect_binaries: None,
             target_version: None,
             environment: None,
+            from_transient: false,
         }
+    }
+}
+
+struct FilteredPackageConfigMap<'a>(pub &'a BTreeMap<String, PackageConfig>);
+impl<'a> Serialize for FilteredPackageConfigMap<'a> {
+    #[inline]
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.collect_map(self.0.iter().filter(|(_, v)| !v.from_transient))
     }
 }
 
