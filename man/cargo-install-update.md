@@ -88,6 +88,13 @@ Exit values and possible errors:
     Don't print status messages to stdout
     and pass down --quiet to cargo subprocesses.
 
+  --locked
+
+    Enforce packages' embedded Cargo.lock files.
+    This is equivalent to CARGO_INSTALL_OPTS=--locked (globally)
+    and cargo-install-update-config(1) --enforce-lock (per package)
+    except it doesn't disable cargo-binstall.
+
   -j --jobs <JOBS>...
 
     Run at most JOBS jobs at once, forwarded verbatim to cargo install.

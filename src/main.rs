@@ -240,6 +240,7 @@ fn actual_main() -> Result<(), i32> {
                                         .arg(&format!("={}", package.update_to_version().unwrap()))
                                         .arg("--force")
                                         .args(if opts.quiet { Some("--quiet") } else { None })
+                                        .args(if opts.locked { Some("--locked") } else { None })
                                         .arg(&package.name)
                                         .status()
                                 } else {
@@ -252,6 +253,7 @@ fn actual_main() -> Result<(), i32> {
                                         .arg("--root")
                                         .arg(&opts.cargo_dir.0)
                                         .args(if opts.quiet { Some("--quiet") } else { None })
+                                        .args(if opts.locked { Some("--locked") } else { None })
                                         .arg("--version")
                                         .arg(if let Some(tv) = cfg.target_version.as_ref() {
                                             tv.to_string()
@@ -273,6 +275,7 @@ fn actual_main() -> Result<(), i32> {
                                         .arg(&opts.cargo_dir.0)
                                         .arg("-f")
                                         .args(if opts.quiet { Some("--quiet") } else { None })
+                                        .args(if opts.locked { Some("--locked") } else { None })
                                         .arg("--version")
                                         .arg(package.update_to_version().unwrap().to_string())
                                         .arg("--registry")

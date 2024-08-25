@@ -44,6 +44,8 @@ pub struct Options {
     pub update_git: bool,
     /// Don't output messages and pass --quiet to `cargo` subprocesses. Default: `false`
     pub quiet: bool,
+    /// Enforce packages' embedded `Cargo.lock`. Exactly like `CARGO_INSTALL_OPTS=--locked` (or `--enforce-lock` per package) except doesn't disable cargo-binstall. Default: `false`
+    pub locked: bool,
     /// Update all packages. Default: empty
     pub filter: Vec<PackageFilterElement>,
     /// The `cargo` home directory; (original, canonicalised). Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`,
@@ -95,6 +97,7 @@ impl Options {
                         Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
                         Arg::from_usage("-g --git 'Also update git packages'"),
                         Arg::from_usage("-q --quiet 'No output printed to stdout'"),
+                        Arg::from_usage("--locked 'Enforce packages' embedded Cargo.lock'"),
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .number_of_values(1)
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
@@ -133,6 +136,7 @@ impl Options {
             downdate: matches.is_present("downdate"),
             update_git: matches.is_present("git"),
             quiet: matches.is_present("quiet"),
+            locked: matches.is_present("locked"),
             filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_else(|| vec![]),
             cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             temp_dir: {
