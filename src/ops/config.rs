@@ -68,7 +68,7 @@ pub enum ConfigOperation {
 /// configuration.insert("cargo_update".to_string(), PackageConfig::from(&operations));
 /// PackageConfig::write(&configuration, &config_file).unwrap();
 /// ```
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Eq, Serialize, Deserialize)]
 pub struct PackageConfig {
     /// Toolchain to use to compile the package, or `None` for default.
     pub toolchain: Option<String>,
@@ -91,6 +91,20 @@ pub struct PackageConfig {
     /// Read in from `.crates2.json`, shouldn't be saved
     #[serde(skip)]
     pub from_transient: bool,
+}
+impl PartialEq for PackageConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.toolchain /************/ == other.toolchain && // !
+        self.default_features /*****/ == other.default_features && // !
+        self.features /*************/ == other.features && // !
+        self.debug /****************/ == other.debug && // !
+        self.install_prereleases /**/ == other.install_prereleases && // !
+        self.enforce_lock /*********/ == other.enforce_lock && // !
+        self.respect_binaries /*****/ == other.respect_binaries && // !
+        self.target_version /*******/ == other.target_version && // !
+        self.environment /**********/ == other.environment
+        // No from_transient
+    }
 }
 
 
