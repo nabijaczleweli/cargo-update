@@ -149,7 +149,7 @@ pub struct RegistryPackage {
 /// # /*
 /// package.pull_version(&registry_tree, &registry);
 /// # */
-/// # package.newest_id = Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap());
+/// # package.newest_id = Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").map_err(|x| x.to_string()));
 /// assert!(package.newest_id.is_some());
 /// # }
 /// ```
@@ -166,7 +166,7 @@ pub struct GitRepoPackage {
     /// The latest version of the package available at the main [`crates.io`](https://crates.io) repository.
     ///
     /// `None` by default, acquire via `GitRepoPackage::pull_version()`.
-    pub newest_id: Result<Oid, String>,
+    pub newest_id: Option<Result<Oid, String>>,
     /// Executables currently installed for this package.
     pub executables: Vec<String>,
 }
@@ -512,7 +512,7 @@ impl GitRepoPackage {
                 url: url.into(),
                 branch: branch,
                 id: Oid::from_str(sha).unwrap(),
-                newest_id: Ok(Oid::zero()),
+                newest_id: None,
                 executables: executables,
             }
         })
@@ -531,7 +531,7 @@ impl GitRepoPackage {
 
         let repo = self.pull_version_repo(&clone_dir, http_proxy, fork_git);
 
-        self.newest_id = repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).map_err(|x| x.to_string());
+        self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).map_err(|x| x.to_string()));
     }
 
     fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
@@ -667,7 +667,7 @@ impl GitRepoPackage {
     ///             url: "https://github.com/jwilm/alacritty".to_string(),
     ///             branch: None,
     ///             id: git2::Oid::from_str("eb231b3e70b87875df4bdd1974d5e94704024d70").unwrap(),
-    ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
+    ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").map_err(|x| x.to_string())),
     ///             executables: vec!["alacritty".to_string()],
     ///         }.needs_update());
     /// assert!(!GitRepoPackage {
@@ -675,13 +675,16 @@ impl GitRepoPackage {
     ///             url: "https://github.com/jwilm/alacritty".to_string(),
     ///             branch: None,
     ///             id: git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap(),
-    ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").unwrap()),
+    ///             newest_id: Some(git2::Oid::from_str("5f7885749c4d7e48869b1fc0be4d430601cdbbfa").map_err(|x| x.to_string())),
     ///             executables: vec!["alacritty".to_string()],
     ///         }.needs_update());
     /// # }
     /// ```
     pub fn needs_update(&self) -> bool {
-        self.newest_id.is_ok() && self.id != *self.newest_id.as_ref().unwrap()
+        match self.newest_id {
+            Some(Ok(x)) => x != self.id,
+            _ => false
+        }
     }
 }
 
