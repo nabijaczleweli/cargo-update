@@ -1581,7 +1581,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
             }
         }
 
-        Err(GitError::from_str(&msg)).unwrap()
+        Err(GitError::from_str(&msg))
     }
 }
 
