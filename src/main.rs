@@ -372,7 +372,7 @@ fn actual_main() -> Result<(), i32> {
                          "{}\t{}\t{}\t{}",
                          package.name,
                          package.id,
-                         package.newest_id.as_ref().unwrap(),
+                         package.newest_id.clone().map(|x| x.to_string()).unwrap_or_else(|x| x),
                          if package.needs_update() { "Yes" } else { "No" })
                     .unwrap();
             }

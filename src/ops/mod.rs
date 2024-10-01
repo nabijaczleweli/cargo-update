@@ -166,7 +166,7 @@ pub struct GitRepoPackage {
     /// The latest version of the package available at the main [`crates.io`](https://crates.io) repository.
     ///
     /// `None` by default, acquire via `GitRepoPackage::pull_version()`.
-    pub newest_id: Option<Oid>,
+    pub newest_id: Result<Oid, String>,
     /// Executables currently installed for this package.
     pub executables: Vec<String>,
 }
@@ -512,7 +512,7 @@ impl GitRepoPackage {
                 url: url.into(),
                 branch: branch,
                 id: Oid::from_str(sha).unwrap(),
-                newest_id: None,
+                newest_id: Ok(Oid::zero()),
                 executables: executables,
             }
         })
@@ -531,7 +531,7 @@ impl GitRepoPackage {
 
         let repo = self.pull_version_repo(&clone_dir, http_proxy, fork_git);
 
-        self.newest_id = Some(repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).unwrap());
+        self.newest_id = repo.and_then(|r| r.head().and_then(|h| h.target().ok_or_else(|| GitError::from_str("HEAD not a direct reference")))).map_err(|x| x.to_string());
     }
 
     fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
@@ -681,7 +681,7 @@ impl GitRepoPackage {
     /// # }
     /// ```
     pub fn needs_update(&self) -> bool {
-        self.newest_id.is_some() && self.id != *self.newest_id.as_ref().unwrap()
+        self.newest_id.is_ok() && self.id != *self.newest_id.as_ref().unwrap()
     }
 }
 
