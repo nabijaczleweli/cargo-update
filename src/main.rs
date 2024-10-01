@@ -3,11 +3,11 @@ extern crate tabwriter;
 extern crate git2;
 
 use std::io::{ErrorKind as IoErrorKind, Write, stdout, sink};
+use std::fmt::{self, Formatter, Display};
 use std::process::{Command, exit};
 use std::collections::BTreeMap;
 use std::iter::FromIterator;
 use tabwriter::TabWriter;
-use std::fmt::Display;
 use std::ffi::OsStr;
 #[cfg(target_os="windows")]
 use std::fs::File;
@@ -368,11 +368,20 @@ fn actual_main() -> Result<(), i32> {
             writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
             packages.sort_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name)));
             for package in &packages {
+                struct OidOrError<'a, Oid: Display, GitError: Display>(&'a Result<Oid, GitError>);
+                impl<Oid: Display, GitError: Display> Display for OidOrError<'_, Oid, GitError> {
+                    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
+                        match self.0 {
+                            Ok(oid) => write!(f, "{}", oid),
+                            Err(err) => write!(f, "git error: {}", err),
+                        }
+                    }
+                }
                 writeln!(out,
                          "{}\t{}\t{}\t{}",
                          package.name,
                          package.id,
-                         package.newest_id.as_ref().unwrap(),
+                         OidOrError(&package.newest_id),
                          if package.needs_update() { "Yes" } else { "No" })
                     .unwrap();
             }
