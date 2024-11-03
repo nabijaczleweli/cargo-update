@@ -26,7 +26,7 @@ which may yield, depending on the Cargo version, the following subset of the dat
 
   * whether to use default features,
   * additional feature list,
-  * build profile (equivalent to --debug if "debug", ignored otherwise).
+  * build profile.
 
 See cargo-install-update(1) for general information.
 
@@ -58,10 +58,17 @@ See cargo-install-update(1) for general information.
   --debug
 
     Compile in debug mode.
+    Same as --build-profile dev.
 
   --release
 
     Compile in release mode (default).
+    Same as --build-profile release.
+
+  --build-profile [PROFILE]
+
+    Compile with PROFILE
+    (dev/release/test/bench or defined in $CARGO_DIR/.cargo/config.toml under [profile.PROFILE]).
 
   --install-prereleases
 

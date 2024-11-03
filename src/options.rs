@@ -172,8 +172,9 @@ impl ConfigOptions {
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
-                        Arg::from_usage("--debug 'Compile the package in debug mode'").conflicts_with("release"),
-                        Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug"),
+                        Arg::from_usage("--debug 'Compile the package in debug (\"dev\") mode'").conflicts_with("release").conflicts_with("build-profile"),
+                        Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug").conflicts_with("build-profile"),
+                        Arg::from_usage("--build-profile=[PROFILE] 'Compile the package in the given profile'").conflicts_with("debug").conflicts_with("release"),
                         Arg::from_usage("--install-prereleases 'Install prerelease versions'").conflicts_with("no-install-prereleases"),
                         Arg::from_usage("--no-install-prereleases 'Filter out prerelease versions'").conflicts_with("install-prereleases"),
                         Arg::from_usage("--enforce-lock 'Require Cargo.lock to be up to date'").conflicts_with("no-enforce-lock"),
@@ -223,9 +224,10 @@ impl ConfigOptions {
                 .chain(matches.values_of("feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::AddFeature))
                 .chain(matches.values_of("no-feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::RemoveFeature))
                 .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
-                .chain(match (matches.is_present("debug"), matches.is_present("release")) {
-                    (true, _) => Some(ConfigOperation::SetDebugMode(true)),
-                    (_, true) => Some(ConfigOperation::SetDebugMode(false)),
+                .chain(match (matches.is_present("debug"), matches.is_present("release"), matches.value_of("build-profile")) {
+                    (true, _, _) => Some(ConfigOperation::SetBuildProfile("dev".into())),
+                    (_, true, _) => Some(ConfigOperation::SetBuildProfile("release".into())),
+                    (_, _, Some(prof)) => Some(ConfigOperation::SetBuildProfile(prof.to_string().into())),
                     _ => None,
                 })
                 .chain(match (matches.is_present("install-prereleases"), matches.is_present("no-install-prereleases")) {

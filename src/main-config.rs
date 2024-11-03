@@ -37,8 +37,8 @@ fn actual_main() -> Result<(), i32> {
         if let Some(ref t) = cfg.toolchain {
             writeln!(out, "Toolchain\t{}", t).unwrap();
         }
-        if let Some(d) = cfg.debug {
-            writeln!(out, "Debug mode\t{}", d).unwrap();
+        if let Some(p) = cfg.build_profile.as_deref().or_else(|| cfg.debug.and_then(|d| if d { Some("dev") } else { None })) {
+            writeln!(out, "Build profile\t{}", p).unwrap();
         }
         if let Some(ip) = cfg.install_prereleases {
             writeln!(out, "Install prereleases\t{}", ip).unwrap();

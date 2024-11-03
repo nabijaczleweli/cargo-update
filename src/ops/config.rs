@@ -26,8 +26,8 @@ pub enum ConfigOperation {
     AddFeature(String),
     /// Remove the feature from the list of features to compile with.
     RemoveFeature(String),
-    /// Set debug mode being enabled to the specified value.
-    SetDebugMode(bool),
+    /// Set build profile (`dev`/`release`/*~/.cargo/config.toml* `[profile.gaming]`/&c.)
+    SetBuildProfile(Cow<'static, str>),
     /// Set allowing to install prereleases to the specified value.
     SetInstallPrereleases(bool),
     /// Set enforcing Cargo.lock to the specified value.
@@ -76,8 +76,11 @@ pub struct PackageConfig {
     pub default_features: bool,
     /// Features to compile the package with.
     pub features: BTreeSet<String>,
-    /// Whether to compile in debug mode.
+    /// Equivalent to `build_profile = Some("dev")` but binds stronger
     pub debug: Option<bool>,
+    /// The build profile (`test` or `bench` or one from *~/.cargo/config.toml* `[profile.gaming]`); CANNOT be `dev` (`debug =
+    /// Some(true)`) or `release` (`debug = build_profile = None`)
+    pub build_profile: Option<Cow<'static, str>>,
     /// Whether to install pre-release versions.
     pub install_prereleases: Option<bool>,
     /// Whether to enforce Cargo.lock versions.
@@ -98,6 +101,7 @@ impl PartialEq for PackageConfig {
         self.default_features /*****/ == other.default_features && // !
         self.features /*************/ == other.features && // !
         self.debug /****************/ == other.debug && // !
+        self.build_profile /********/ == other.build_profile && // !
         self.install_prereleases /**/ == other.install_prereleases && // !
         self.enforce_lock /*********/ == other.enforce_lock && // !
         self.respect_binaries /*****/ == other.respect_binaries && // !
@@ -125,7 +129,7 @@ impl PackageConfig {
     /// assert_eq!(PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string()),
     ///                                  ConfigOperation::DefaultFeatures(false),
     ///                                  ConfigOperation::AddFeature("rustc-serialize".to_string()),
-    ///                                  ConfigOperation::SetDebugMode(true),
+    ///                                  ConfigOperation::SetBuildProfile("dev".into()),
     ///                                  ConfigOperation::SetInstallPrereleases(false),
     ///                                  ConfigOperation::SetEnforceLock(true),
     ///                                  ConfigOperation::SetRespectBinaries(true),
@@ -141,6 +145,7 @@ impl PackageConfig {
     ///                    feats
     ///                },
     ///                debug: Some(true),
+    ///                build_profile: None,
     ///                install_prereleases: Some(false),
     ///                enforce_lock: Some(true),
     ///                respect_binaries: Some(true),
@@ -218,6 +223,9 @@ impl PackageConfig {
         }
         if let Some(true) = self.debug {
             res.push("--debug".into());
+        } else if let Some(prof) = self.build_profile.as_ref() {
+            res.push("--profile".into());
+            res.push(prof.clone());
         }
         res
     }
@@ -259,6 +267,7 @@ impl PackageConfig {
     ///         feats
     ///     },
     ///     debug: None,
+    ///     build_profile: None,
     ///     install_prereleases: None,
     ///     enforce_lock: None,
     ///     respect_binaries: None,
@@ -269,7 +278,7 @@ impl PackageConfig {
     /// cfg.execute_operations(&[ConfigOperation::RemoveToolchain,
     ///                          ConfigOperation::AddFeature("serde".to_string()),
     ///                          ConfigOperation::RemoveFeature("rustc-serialize".to_string()),
-    ///                          ConfigOperation::SetDebugMode(true),
+    ///                          ConfigOperation::SetBuildProfile("dev".into()),
     ///                          ConfigOperation::RemoveTargetVersion]);
     /// assert_eq!(cfg,
     ///            PackageConfig {
@@ -281,6 +290,7 @@ impl PackageConfig {
     ///                    feats
     ///                },
     ///                debug: Some(true),
+    ///                build_profile: None,
     ///                install_prereleases: None,
     ///                enforce_lock: None,
     ///                respect_binaries: None,
@@ -298,20 +308,24 @@ impl PackageConfig {
     }
 
     fn execute_operation(&mut self, op: &ConfigOperation) {
-        match *op {
+        match op {
             ConfigOperation::SetToolchain(ref tchn) => self.toolchain = Some(tchn.clone()),
             ConfigOperation::RemoveToolchain => self.toolchain = None,
-            ConfigOperation::DefaultFeatures(f) => self.default_features = f,
+            ConfigOperation::DefaultFeatures(f) => self.default_features = *f,
             ConfigOperation::AddFeature(ref feat) => {
                 self.features.insert(feat.clone());
             }
             ConfigOperation::RemoveFeature(ref feat) => {
                 self.features.remove(feat);
             }
-            ConfigOperation::SetDebugMode(d) => self.debug = Some(d),
-            ConfigOperation::SetInstallPrereleases(pr) => self.install_prereleases = Some(pr),
-            ConfigOperation::SetEnforceLock(el) => self.enforce_lock = Some(el),
-            ConfigOperation::SetRespectBinaries(rb) => self.respect_binaries = Some(rb),
+            ConfigOperation::SetBuildProfile(d) => {
+                self.debug = None;
+                self.build_profile = Some(d.clone());
+                self.normalise();
+            }
+            ConfigOperation::SetInstallPrereleases(pr) => self.install_prereleases = Some(*pr),
+            ConfigOperation::SetEnforceLock(el) => self.enforce_lock = Some(*el),
+            ConfigOperation::SetRespectBinaries(rb) => self.respect_binaries = Some(*rb),
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
             ConfigOperation::SetEnvironment(ref var, ref val) => {
@@ -361,6 +375,7 @@ impl PackageConfig {
     ///             feats
     ///         },
     ///         debug: None,
+    ///         build_profile: None,
     ///         install_prereleases: None,
     ///         enforce_lock: None,
     ///         respect_binaries: None,
@@ -408,7 +423,31 @@ impl PackageConfig {
                 }
             }
         }
+        for (_, v) in &mut base {
+            v.normalise();
+        }
         Ok(base)
+    }
+
+    fn normalise(&mut self) {
+        if self.debug.unwrap_or(false) && self.build_profile.is_none() {
+            self.build_profile = Some("dev".into());
+        }
+
+        match self.build_profile.as_deref().unwrap_or("release") {
+            "dev" => {
+                self.debug = Some(true);
+                self.build_profile = None;
+            }
+            "release" => {
+                self.debug = None;
+                self.build_profile = None;
+            }
+            _ => {
+                self.debug = None;
+                // self.build_profile unchanged
+            }
+        }
     }
 
     fn cargo2_package_config(mut blob: json::Object) -> PackageConfig {
@@ -429,9 +468,7 @@ impl PackageConfig {
         }
         // Nothing to parse "all_features" into
         if let Some(json::Value::String(prof)) = blob.get("profile") {
-            if prof == "debug" {
-                ret.debug = Some(true);
-            }
+            ret.build_profile = Some(prof.clone().into_owned().into());
         }
         // Nothing to parse PackageConfig::install_prereleases from
         // Nothing to parse PackageConfig::enforce_lock from
@@ -465,6 +502,7 @@ impl PackageConfig {
     ///             feats
     ///         },
     ///         debug: None,
+    ///         build_profile: None,
     ///         install_prereleases: None,
     ///         enforce_lock: None,
     ///         respect_binaries: None,
@@ -492,6 +530,7 @@ impl Default for PackageConfig {
             default_features: true,
             features: BTreeSet::new(),
             debug: None,
+            build_profile: None,
             install_prereleases: None,
             enforce_lock: None,
             respect_binaries: None,
