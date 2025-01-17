@@ -400,7 +400,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Victor Song &lt;<vms2@rice.edu>&gt;,
            chrisalcantara &lt;<chris@chrisalcantara.com>&gt;,
            Utkarsh Gupta &lt;<utkarshgupta137@gmail.com>&gt;,
-       and nevsal
+           nevsal,
+       and Rui Chen &lt;<chenrui.dev>&gt;
 
 ## SPECIAL THANKS
 
