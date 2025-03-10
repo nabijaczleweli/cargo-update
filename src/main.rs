@@ -355,15 +355,25 @@ fn actual_main() -> Result<(), i32> {
             packages.retain(|p| opts.to_update.iter().any(|u| p.name == u.0));
         }
 
+        if !opts.quiet {
+            print!("    Pulling {} git packages", packages.len());
+            stdout().flush().unwrap();
+        }
+
         let git_db_dir = crates_file.with_file_name("git").join("db");
         for package in &mut packages {
             package.pull_version(&opts.temp_dir,
                                  &git_db_dir,
                                  http_proxy.as_ref().map(String::as_str),
                                  cargo_config.net_git_fetch_with_cli);
+            if !opts.quiet {
+                print!(".");
+                stdout().flush().unwrap();
+            }
         }
 
         if !opts.quiet {
+            println!("\n");
             let mut out = TabWriter::new(stdout());
             writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
             packages.sort_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name)));
