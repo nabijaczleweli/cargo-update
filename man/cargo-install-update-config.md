@@ -177,7 +177,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            chrisalcantara &lt;<chris@chrisalcantara.com>&gt;,
            Utkarsh Gupta &lt;<utkarshgupta137@gmail.com>&gt;,
            nevsal,
-       and Rui Chen &lt;<chenrui.dev>&gt;
+           Rui Chen &lt;<https://chenrui.dev>&gt;,
+       and Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;
 
 ## SPECIAL THANKS
 
