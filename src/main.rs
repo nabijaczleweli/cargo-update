@@ -357,7 +357,7 @@ fn actual_main() -> Result<(), i32> {
 
         if !opts.quiet {
             print!("    Pulling {} git packages", packages.len());
-            stdout().flush().unwrap();
+            let _ = stdout().flush();
         }
 
         let git_db_dir = crates_file.with_file_name("git").join("db");
@@ -367,13 +367,13 @@ fn actual_main() -> Result<(), i32> {
                                  http_proxy.as_ref().map(String::as_str),
                                  cargo_config.net_git_fetch_with_cli);
             if !opts.quiet {
-                print!(".");
-                stdout().flush().unwrap();
+                let _ = stdout().write_all(b".").and_then(|_| stdout().flush());
             }
         }
 
         if !opts.quiet {
             println!("\n");
+
             let mut out = TabWriter::new(stdout());
             writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
             packages.sort_by(|lhs, rhs| (!lhs.needs_update(), &lhs.name).cmp(&(!rhs.needs_update(), &rhs.name)));
