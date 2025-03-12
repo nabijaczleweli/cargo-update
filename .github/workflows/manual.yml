@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - 'master'
+
+name: manual
+
+permissions:
+  contents: write
+
+jobs:
+  manual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build manual
+        run: |
+          sudo apt-get purge -y man-db
+          sudo apt-get install -y --no-install-recommends ronn
+          ronn --organization="cargo-update developers" man/*.md
+      - name: Commit report
+        run: |
+          git fetch origin man:man
+          git worktree add ../man
+          rm ../man/*cargo*
+          ronn --organization="cargo-update developers" man/*.md
+          mv man/* ../man/
+          cd ../man
+          git config --global user.email "nabijaczleweli@gmail.com"
+          git config --global user.name "Nabijaczleweli Autouploader Bot"
+          git add .
+          git commit -m "Update manual for commits $GITHUB_SHA"
+          git push origin man:man
