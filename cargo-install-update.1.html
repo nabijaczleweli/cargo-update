@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv='content-type' value='text/html;charset=utf8'>
-  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <meta http-equiv='content-type' content='text/html;charset=utf8'>
+  <meta name='generator' content='Ronn-NG/v0.9.1 (http://github.com/apjanke/ronn-ng/tree/0.9.1)'>
   <title>cargo-install-update(1) - Cargo subcommand for checking and applying updates to installed executables</title>
   <style type='text/css' media='all'>
   /* style: man */
@@ -71,11 +71,12 @@
     <li class='tr'>cargo-install-update(1)</li>
   </ol>
 
-  <h2 id="NAME">NAME</h2>
+  
+
+<h2 id="NAME">NAME</h2>
 <p class="man-name">
   <code>cargo-install-update</code> - <span class="man-whatis">Cargo subcommand for checking and applying updates to installed executables</span>
 </p>
-
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
 <p><code>cargo install-update</code> [OPTIONS] [PACKAGE...]</p>
@@ -89,12 +90,18 @@ updates for my cargo-installed executables, which was long and boring.</p>
 
 <p>Updates packages from the main repository and git repositories.</p>
 
-<p>See <a class="man-ref" href="cargo-install-update-config.1.html">cargo-install-update-config<span class="s">(1)</span></a> for further configuring updates.</p>
+<p>See <a class="man-ref" href="cargo-install-update-config.1.html">cargo-install-update-config<span class="s">(1)</span></a> for further configuring updates,
+and the metadata from <code>cargo install</code> that may be preserved by default.</p>
 
 <p>The <code>CARGO_INSTALL_OPTS</code> environment variable can be set,
 containing options to forward to the end of <code>cargo install</code> invocations'
 argument lists.
 Note, that <a class="man-ref" href="cargo-install-update-config.1.html">cargo-install-update-config<span class="s">(1)</span></a> is preferred in the general case.</p>
+
+<p>If <code>cargo-binstall</code> (&gt;=0.13.1) is available in the <code>PATH</code>,
+<code>-r</code> was not overriden, <code>CARGO_INSTALL_OPTS</code> is empty,
+the package is in the default registry, and has no non-default configuration,
+it will be used to install the package instead.</p>
 
 <p>Exit values and possible errors:</p>
 
@@ -106,14 +113,14 @@ X  - bubbled-up cargo install exit value
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
-<p>  -a --all</p>
+<p>-a --all</p>
 
 <pre><code>Update all currently installed executables.
 
 Required if list of packages not given.
 </code></pre>
 
-<p>  [PACKAGE...]</p>
+<p>[PACKAGE...]</p>
 
 <pre><code>List of packages to update in the [(registry_url):]package_name[:version] format.
 
@@ -127,24 +134,24 @@ will add the specified packages to the update list
 Required if --all not given.
 </code></pre>
 
-<p>  -l --list</p>
+<p>-l --list</p>
 
 <pre><code>Don't update any packages, just list them.
 
 If PACKAGE is empty, act as if --all was specified.
 </code></pre>
 
-<p>  -f --force</p>
+<p>-f --force</p>
 
 <pre><code>Update all packages, regardless of whether they need to be version-wise.
 </code></pre>
 
-<p>  -d --downdate</p>
+<p>-d --downdate</p>
 
 <pre><code>Downdate packages to match the latest unyanked version from the registry.
 </code></pre>
 
-<p>  -i --allow-no-update</p>
+<p>-i --allow-no-update</p>
 
 <pre><code>Allow to fresh install packages passed as PACKAGE argument.
 
@@ -153,20 +160,33 @@ This is useful, for example, in pairing with cargo-install-update-config(1).
 Off by default.
 </code></pre>
 
-<p>  -g --git</p>
+<p>-g --git</p>
 
 <pre><code>Also update git-originating packages.
 
 Off by default, because it's expensive.
 </code></pre>
 
-<p>  -q --quiet</p>
+<p>-q --quiet</p>
 
 <pre><code>Don't print status messages to stdout
 and pass down --quiet to cargo subprocesses.
 </code></pre>
 
-<p>  -s --filter <var>PACKAGE_FILTER</var>...</p>
+<p>--locked</p>
+
+<pre><code>Enforce packages' embedded Cargo.lock files.
+This is equivalent to CARGO_INSTALL_OPTS=--locked (globally)
+and cargo-install-update-config(1) --enforce-lock (per package)
+except it doesn't disable cargo-binstall.
+</code></pre>
+
+<p>-j --jobs <var>JOBS</var>...</p>
+
+<pre><code>Run at most JOBS jobs at once, forwarded verbatim to cargo install.
+</code></pre>
+
+<p>-s --filter <var>PACKAGE_FILTER</var>...</p>
 
 <pre><code>Only consider packages matching all filters.
 
@@ -175,7 +195,7 @@ PACKAGE_FILTER is in the form "key=value", where key is any of:
                  the specified toolchain via cargo-install-update-config(1).
 </code></pre>
 
-<p>  -r --install-cargo <var>CARGO_EXECUTABLE</var></p>
+<p>-r --install-cargo <var>CARGO_EXECUTABLE</var></p>
 
 <pre><code>Cargo executable to run for installations.
 
@@ -186,14 +206,18 @@ and installed executables) and the arguments it accepts.
 Required. Default: "cargo"
 </code></pre>
 
-<p>  -c --cargo-dir <var>CARGO_DIR</var></p>
+<p>-c --cargo-dir <var>CARGO_DIR</var>
+     --root      <var>CARGO_DIR</var></p>
 
 <pre><code>Set the directory containing cargo metadata.
 
-Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
+Equivalent to, and forwarded as, cargo install --root.
+
+Required. Default: "$CARGO_INSTALL_ROOT", then "$CARGO_HOME",
+then "$HOME/.cargo", otherwise manual.
 </code></pre>
 
-<p>  -t --temp-dir <var>TEMP_DIR</var></p>
+<p>-t --temp-dir <var>TEMP_DIR</var></p>
 
 <pre><code>Set the directory in which to clone git repositories.
 
@@ -204,24 +228,44 @@ Required. Default: system temp, otherwise manual.
 
 <h2 id="ENVIRONMENT-VARIABLES">ENVIRONMENT VARIABLES</h2>
 
-<p>  <code>$CARGO_NET_GIT_FETCH_WITH_CLI</code></p>
+<p><code>$CARGO_REGISTRIES_CRATES_IO_PROTOCOL</code></p>
+
+<pre><code>Overrides the registries.crates-io.protocol Cargo configuration key.
+
+The default is "sparse", and the crates.io URL is
+sparse+https://index.crates.io/.
+Set to some other value to use the git registry
+(https://github.com/rust-lang/crates.io-index) for crates.io.
+</code></pre>
+
+<p><code>$CARGO_NET_GIT_FETCH_WITH_CLI</code></p>
 
 <pre><code>Overrides the net.git-fetch-with-cli Cargo configuration key.
 </code></pre>
 
-<p>  <code>$GIT</code></p>
+<p><code>$GIT</code></p>
 
 <pre><code>Overrides the git executable in net.git-fetch-with-cli=true mode.
 </code></pre>
 
+<p><code>$CARGO_HTTP_CAINFO</code></p>
+
+<pre><code>Overrides the http.cainfo Cargo configuration key.
+</code></pre>
+
+<p><code>$CARGO_HTTP_CHECK_REVOKE</code></p>
+
+<pre><code>Overrides the http.check-revoke Cargo configuration key.
+</code></pre>
+
 <h2 id="EXAMPLES">EXAMPLES</h2>
 
-<p>  <code>cargo install-update -a</code></p>
+<p><code>cargo install-update -a</code></p>
 
 <pre><code>Update all installed packages.
 
 Example output:
-      Updating registry `https://github.com/rust-lang/crates.io-index`
+      Polling registry 'https://index.crates.io/'........
 
   Package         Installed  Latest   Needs update
   checksums       v0.5.0     v0.5.2   Yes
@@ -252,7 +296,7 @@ Example output:
   Updated 2 packages.
 </code></pre>
 
-<p>  <code>cargo install-update racer treesize cargo-cln</code></p>
+<p><code>cargo install-update racer treesize cargo-cln</code></p>
 
 <pre><code>Only consider racer, treesize and cargo-cln for updates.
 Since cargo-cln is not installed, it'll be ignored.
@@ -275,7 +319,7 @@ Since cargo-cln is not installed, it'll be ignored.
   Updated 1 package.
 </code></pre>
 
-<p>  <code>cargo install-update -al</code></p>
+<p><code>cargo install-update -al</code></p>
 
 <pre><code>List all installed packages, don't update any.
 
@@ -293,7 +337,7 @@ Example output:
   rustfmt         v0.6.2     v0.6.2   No
 </code></pre>
 
-<p>  <code>cargo install-update -af</code></p>
+<p><code>cargo install-update -af</code></p>
 
 <pre><code>Update all installed packages.
 
@@ -338,7 +382,7 @@ Example output:
   Failed to update clippy, clippy_lints.
 </code></pre>
 
-<p>  <code>cargo install-update -i checksums rustfmt treesize</code></p>
+<p><code>cargo install-update -i checksums rustfmt treesize</code></p>
 
 <pre><code>Install specified packages, their installation status notwithstanding
 
@@ -369,7 +413,7 @@ Example output:
   Updated 2 packages.
 </code></pre>
 
-<p>  <code>cargo install-update -i (file:///usr/local/share/cargo):zram-generator:0.1.1</code></p>
+<p><code>cargo install-update -i (file:///usr/local/share/cargo):zram-generator:0.1.1</code></p>
 
 <pre><code>Install zram-generator from a local repository in /usr/local/share/cargo
 (but a remote one or a short name  will work just as well), at most version 0.1.1.
@@ -392,7 +436,7 @@ Example output:
   Updated 1 package.
 </code></pre>
 
-<p>  <code>cargo install-update -ag</code></p>
+<p><code>cargo install-update -ag</code></p>
 
 <pre><code>Update all installed packages, including ones from git.
 
@@ -430,35 +474,49 @@ Example output:
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
-<p>Written by наб &lt;<a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#58;&#110;&#97;&#98;&#105;&#106;&#x61;&#x63;&#x7a;&#108;&#x65;&#119;&#101;&#108;&#105;&#64;&#110;&#x61;&#98;&#x69;&#106;&#x61;&#99;&#122;&#108;&#x65;&#119;&#101;&#x6c;&#x69;&#46;&#120;&#x79;&#122;" data-bare-link="true">&#110;&#x61;&#98;&#x69;&#106;&#x61;&#x63;&#x7a;&#x6c;&#101;&#x77;&#101;&#108;&#x69;&#x40;&#110;&#97;&#x62;&#x69;&#106;&#x61;&#x63;&#x7a;&#108;&#x65;&#x77;&#x65;&#x6c;&#x69;&#46;&#x78;&#x79;&#x7a;</a>&gt;,
-           Yann Simon &lt;<a href="&#109;&#97;&#x69;&#x6c;&#x74;&#111;&#x3a;&#x79;&#x61;&#x6e;&#x6e;&#46;&#115;&#x69;&#109;&#111;&#x6e;&#46;&#x66;&#114;&#x40;&#x67;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;" data-bare-link="true">&#x79;&#x61;&#110;&#110;&#46;&#115;&#105;&#x6d;&#x6f;&#x6e;&#46;&#x66;&#x72;&#x40;&#103;&#x6d;&#x61;&#x69;&#x6c;&#46;&#99;&#x6f;&#109;</a>&gt;,
-           ven &lt;<a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#58;&#x76;&#101;&#x6e;&#100;&#x65;&#116;&#104;&#x69;&#x65;&#x6c;&#x40;&#104;&#111;&#116;&#x6d;&#x61;&#105;&#108;&#46;&#x66;&#114;" data-bare-link="true">&#118;&#101;&#110;&#100;&#101;&#x74;&#104;&#x69;&#101;&#108;&#64;&#104;&#111;&#116;&#x6d;&#97;&#105;&#x6c;&#x2e;&#102;&#114;</a>&gt;,
-           Cat Plus Plus &lt;<a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#112;&#105;&#x6f;&#116;&#114;&#x6c;&#x65;&#103;&#110;&#x69;&#x63;&#97;&#x40;&#112;&#x69;&#x6f;&#116;&#114;&#x6c;&#x2e;&#x70;&#x6c;" data-bare-link="true">&#x70;&#x69;&#111;&#x74;&#114;&#x6c;&#x65;&#103;&#x6e;&#x69;&#99;&#97;&#x40;&#x70;&#105;&#111;&#x74;&#114;&#x6c;&#x2e;&#x70;&#x6c;</a>&gt;,
-           Liigo &lt;<a href="&#x6d;&#97;&#105;&#x6c;&#116;&#111;&#58;&#108;&#x69;&#x69;&#x67;&#x6f;&#x40;&#x71;&#113;&#46;&#99;&#111;&#x6d;" data-bare-link="true">&#108;&#105;&#105;&#x67;&#111;&#x40;&#x71;&#x71;&#46;&#99;&#111;&#x6d;</a>&gt;,
-           azyobuzin &lt;<a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#x3a;&#97;&#x7a;&#121;&#111;&#98;&#x75;&#x7a;&#x69;&#x6e;&#x40;&#x75;&#115;&#101;&#x72;&#x73;&#x2e;&#115;&#111;&#117;&#x72;&#99;&#101;&#x66;&#111;&#x72;&#x67;&#101;&#46;&#x6a;&#112;" data-bare-link="true">&#x61;&#122;&#x79;&#x6f;&#98;&#x75;&#x7a;&#x69;&#110;&#64;&#x75;&#x73;&#x65;&#x72;&#x73;&#46;&#115;&#x6f;&#117;&#x72;&#99;&#101;&#x66;&#x6f;&#114;&#x67;&#101;&#46;&#x6a;&#x70;</a>&gt;,
-           Tatsuyuki Ishi &lt;<a href="&#109;&#97;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#105;&#x73;&#x68;&#x69;&#116;&#x61;&#116;&#x73;&#117;&#121;&#x75;&#x6b;&#105;&#64;&#x67;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;" data-bare-link="true">&#x69;&#115;&#104;&#x69;&#x74;&#x61;&#116;&#115;&#117;&#x79;&#117;&#x6b;&#x69;&#x40;&#x67;&#109;&#x61;&#x69;&#108;&#46;&#x63;&#111;&#x6d;</a>&gt;,
-           Tom Prince &lt;<a href="&#x6d;&#97;&#x69;&#108;&#x74;&#x6f;&#58;&#x74;&#111;&#109;&#x2e;&#x70;&#x72;&#x69;&#110;&#99;&#x65;&#x40;&#116;&#119;&#x69;&#x73;&#x74;&#x65;&#100;&#109;&#x61;&#116;&#x72;&#105;&#x78;&#46;&#99;&#111;&#x6d;" data-bare-link="true">&#116;&#x6f;&#x6d;&#x2e;&#x70;&#x72;&#x69;&#x6e;&#99;&#101;&#x40;&#116;&#x77;&#105;&#115;&#x74;&#x65;&#x64;&#109;&#x61;&#x74;&#114;&#105;&#x78;&#x2e;&#99;&#111;&#x6d;</a>&gt;,
-           Mateusz Mikuła &lt;<a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#x6f;&#58;&#x6d;&#97;&#x74;&#105;&#x38;&#x36;&#x35;&#x40;&#103;&#x6d;&#97;&#x69;&#x6c;&#x2e;&#x63;&#111;&#x6d;" data-bare-link="true">&#x6d;&#97;&#116;&#105;&#x38;&#x36;&#53;&#64;&#x67;&#109;&#x61;&#x69;&#108;&#x2e;&#99;&#111;&#x6d;</a>&gt;,
-           sinkuu &lt;<a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#58;&#x73;&#105;&#x6e;&#107;&#117;&#x75;&#x70;&#x75;&#109;&#112;&#64;&#x67;&#x6d;&#97;&#x69;&#108;&#46;&#99;&#x6f;&#109;" data-bare-link="true">&#x73;&#x69;&#x6e;&#107;&#x75;&#117;&#x70;&#117;&#x6d;&#112;&#x40;&#103;&#109;&#97;&#x69;&#108;&#46;&#99;&#111;&#109;</a>&gt;,
-           Alex Burka &lt;<a href="&#109;&#97;&#x69;&#x6c;&#116;&#111;&#58;&#97;&#98;&#x75;&#x72;&#x6b;&#x61;&#64;&#115;&#101;&#97;&#x73;&#x2e;&#117;&#x70;&#101;&#110;&#x6e;&#46;&#x65;&#100;&#117;" data-bare-link="true">&#97;&#98;&#117;&#114;&#107;&#x61;&#64;&#115;&#x65;&#97;&#115;&#x2e;&#x75;&#x70;&#x65;&#110;&#x6e;&#x2e;&#x65;&#100;&#117;</a>&gt;,
-           Matthias Krüger &lt;<a href="&#109;&#97;&#x69;&#108;&#116;&#111;&#58;&#109;&#97;&#x74;&#116;&#104;&#x69;&#97;&#115;&#x2e;&#107;&#114;&#117;&#101;&#x67;&#101;&#114;&#64;&#x66;&#97;&#109;&#115;&#x69;&#107;&#46;&#x64;&#101;" data-bare-link="true">&#x6d;&#x61;&#116;&#x74;&#104;&#105;&#97;&#x73;&#46;&#107;&#114;&#x75;&#x65;&#x67;&#x65;&#x72;&#64;&#102;&#97;&#109;&#115;&#x69;&#x6b;&#46;&#x64;&#x65;</a>&gt;,
-           Daniel Holbert &lt;<a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#111;&#x3a;&#x64;&#x68;&#x6f;&#108;&#x62;&#101;&#114;&#116;&#64;&#x63;&#x73;&#46;&#x73;&#116;&#97;&#x6e;&#x66;&#111;&#x72;&#100;&#x2e;&#x65;&#x64;&#117;" data-bare-link="true">&#x64;&#104;&#x6f;&#x6c;&#x62;&#x65;&#114;&#116;&#64;&#x63;&#115;&#46;&#x73;&#x74;&#97;&#x6e;&#102;&#x6f;&#x72;&#x64;&#x2e;&#x65;&#100;&#117;</a>&gt;,
-           Jonas Bushart &lt;<a href="&#x6d;&#x61;&#105;&#108;&#x74;&#x6f;&#58;&#106;&#x6f;&#x6e;&#x61;&#115;&#64;&#x62;&#x75;&#x73;&#104;&#x61;&#x72;&#x74;&#46;&#x6f;&#x72;&#x67;" data-bare-link="true">&#106;&#111;&#110;&#x61;&#115;&#x40;&#98;&#x75;&#115;&#104;&#97;&#x72;&#116;&#46;&#111;&#x72;&#103;</a>&gt;,
-           Harrison Metzger &lt;<a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#104;&#97;&#x72;&#x72;&#x69;&#115;&#111;&#x6e;&#109;&#101;&#x74;&#122;&#x40;&#x67;&#109;&#97;&#x69;&#108;&#x2e;&#x63;&#111;&#x6d;" data-bare-link="true">&#x68;&#97;&#x72;&#x72;&#x69;&#115;&#111;&#110;&#x6d;&#101;&#x74;&#122;&#x40;&#103;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a>&gt;,
-           Benjamin Bannier &lt;<a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#98;&#98;&#97;&#110;&#x6e;&#x69;&#x65;&#x72;&#x40;&#103;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#111;&#109;" data-bare-link="true">&#x62;&#x62;&#97;&#110;&#110;&#105;&#101;&#114;&#x40;&#103;&#x6d;&#97;&#x69;&#x6c;&#x2e;&#x63;&#111;&#109;</a>&gt;,
-           Dimitris Apostolou &lt;<a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#58;&#100;&#105;&#x6d;&#105;&#116;&#114;&#x69;&#x73;&#46;&#97;&#112;&#111;&#115;&#116;&#111;&#108;&#x6f;&#117;&#x40;&#x69;&#x63;&#108;&#x6f;&#117;&#100;&#46;&#99;&#x6f;&#109;" data-bare-link="true">&#x64;&#105;&#109;&#x69;&#x74;&#114;&#105;&#x73;&#46;&#x61;&#112;&#111;&#x73;&#116;&#111;&#x6c;&#111;&#x75;&#x40;&#x69;&#99;&#108;&#111;&#x75;&#x64;&#46;&#x63;&#x6f;&#109;</a>&gt;,
-           Corbin Uselton &lt;<a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#x6f;&#58;&#99;&#x6f;&#114;&#98;&#105;&#110;&#117;&#64;&#100;&#x65;&#x63;&#x69;&#109;&#97;&#108;&#46;&#105;&#111;" data-bare-link="true">&#x63;&#x6f;&#x72;&#x62;&#x69;&#x6e;&#117;&#64;&#x64;&#x65;&#99;&#105;&#x6d;&#x61;&#x6c;&#x2e;&#x69;&#x6f;</a>&gt;,
-       and QuarticCat &lt;<a href="&#x6d;&#97;&#x69;&#108;&#x74;&#x6f;&#x3a;&#x51;&#x75;&#x61;&#x72;&#116;&#x69;&#x63;&#x43;&#97;&#116;&#64;&#112;&#114;&#x6f;&#x74;&#x6f;&#x6e;&#x6d;&#97;&#105;&#108;&#46;&#99;&#x6f;&#x6d;" data-bare-link="true">&#81;&#x75;&#x61;&#x72;&#116;&#105;&#99;&#x43;&#x61;&#x74;&#x40;&#x70;&#114;&#x6f;&#x74;&#111;&#x6e;&#x6d;&#97;&#105;&#108;&#x2e;&#99;&#x6f;&#109;</a>&gt;</p>
+<p>Written by наб &lt;<a href="mailto:nabijaczleweli@nabijaczleweli.xyz" data-bare-link="true">nabijaczleweli@nabijaczleweli.xyz</a>&gt;,
+           Yann Simon &lt;<a href="mailto:yann.simon.fr@gmail.com" data-bare-link="true">yann.simon.fr@gmail.com</a>&gt;,
+           ven &lt;<a href="mailto:vendethiel@hotmail.fr" data-bare-link="true">vendethiel@hotmail.fr</a>&gt;,
+           Cat Plus Plus &lt;<a href="mailto:piotrlegnica@piotrl.pl" data-bare-link="true">piotrlegnica@piotrl.pl</a>&gt;,
+           Liigo &lt;<a href="mailto:liigo@qq.com" data-bare-link="true">liigo@qq.com</a>&gt;,
+           azyobuzin &lt;<a href="mailto:azyobuzin@users.sourceforge.jp" data-bare-link="true">azyobuzin@users.sourceforge.jp</a>&gt;,
+           Tatsuyuki Ishi &lt;<a href="mailto:ishitatsuyuki@gmail.com" data-bare-link="true">ishitatsuyuki@gmail.com</a>&gt;,
+           Tom Prince &lt;<a href="mailto:tom.prince@twistedmatrix.com" data-bare-link="true">tom.prince@twistedmatrix.com</a>&gt;,
+           Mateusz Mikuła &lt;<a href="mailto:mati865@gmail.com" data-bare-link="true">mati865@gmail.com</a>&gt;,
+           sinkuu &lt;<a href="mailto:sinkuupump@gmail.com" data-bare-link="true">sinkuupump@gmail.com</a>&gt;,
+           Alex Burka &lt;<a href="mailto:aburka@seas.upenn.edu" data-bare-link="true">aburka@seas.upenn.edu</a>&gt;,
+           Matthias Krüger &lt;<a href="mailto:matthias.krueger@famsik.de" data-bare-link="true">matthias.krueger@famsik.de</a>&gt;,
+           Daniel Holbert &lt;<a href="mailto:dholbert@cs.stanford.edu" data-bare-link="true">dholbert@cs.stanford.edu</a>&gt;,
+           Jonas Bushart &lt;<a href="mailto:jonas@bushart.org" data-bare-link="true">jonas@bushart.org</a>&gt;,
+           Harrison Metzger &lt;<a href="mailto:harrisonmetz@gmail.com" data-bare-link="true">harrisonmetz@gmail.com</a>&gt;,
+           Benjamin Bannier &lt;<a href="mailto:bbannier@gmail.com" data-bare-link="true">bbannier@gmail.com</a>&gt;,
+           Dimitris Apostolou &lt;<a href="mailto:dimitris.apostolou@icloud.com" data-bare-link="true">dimitris.apostolou@icloud.com</a>&gt;,
+           Corbin Uselton &lt;<a href="mailto:corbinu@decimal.io" data-bare-link="true">corbinu@decimal.io</a>&gt;,
+           QuarticCat &lt;<a href="mailto:QuarticCat@protonmail.com" data-bare-link="true">QuarticCat@protonmail.com</a>&gt;,
+           Artur Sinila &lt;<a href="mailto:freesoftware@logarithmus.dev" data-bare-link="true">freesoftware@logarithmus.dev</a>&gt;,
+           qthree &lt;<a href="mailto:qthree3@gmail.com" data-bare-link="true">qthree3@gmail.com</a>&gt;,
+           tranzystorekk &lt;<a href="mailto:tranzystorek.io@protonmail.com" data-bare-link="true">tranzystorek.io@protonmail.com</a>&gt;,
+           Paul Barker &lt;<a href="mailto:paul@pbarker.dev" data-bare-link="true">paul@pbarker.dev</a>&gt;,
+           Benoît CORTIER &lt;<a href="mailto:bcortier@proton.me" data-bare-link="true">bcortier@proton.me</a>&gt;,
+           Biswapriyo Nath &lt;<a href="mailto:nathbappai@gmail.com" data-bare-link="true">nathbappai@gmail.com</a>&gt;,
+           Shiraz &lt;<a href="mailto:smcclennon@protonmail.com" data-bare-link="true">smcclennon@protonmail.com</a>&gt;,
+           Victor Song &lt;<a href="mailto:vms2@rice.edu" data-bare-link="true">vms2@rice.edu</a>&gt;,
+           chrisalcantara &lt;<a href="mailto:chris@chrisalcantara.com" data-bare-link="true">chris@chrisalcantara.com</a>&gt;,
+           Utkarsh Gupta &lt;<a href="mailto:utkarshgupta137@gmail.com" data-bare-link="true">utkarshgupta137@gmail.com</a>&gt;,
+           nevsal,
+           Rui Chen &lt;<a href="https://chenrui.dev" data-bare-link="true">https://chenrui.dev</a>&gt;,
+       and Lynnesbian &lt;<a href="https://fedi.lynnesbian.space/@lynnesbian" data-bare-link="true">https://fedi.lynnesbian.space/@lynnesbian</a>&gt;</p>
 
 <h2 id="SPECIAL-THANKS">SPECIAL THANKS</h2>
 
 <p>To all who support further development, in particular:</p>
 
 <ul>
-<li>ThePhD</li>
-<li>Embark Studios</li>
+  <li>ThePhD</li>
+  <li>Embark Studios</li>
+  <li>Lars Strojny</li>
+  <li>EvModder</li>
 </ul>
-
 
 <h2 id="REPORTING-BUGS">REPORTING BUGS</h2>
 
@@ -468,10 +526,11 @@ Example output:
 
 <p>&lt;<a href="https://github.com/nabijaczleweli/cargo-update" data-bare-link="true">https://github.com/nabijaczleweli/cargo-update</a>&gt;</p>
 
+<p>&lt;<a href="https://github.com/ryankurte/cargo-binstall" data-bare-link="true">https://github.com/ryankurte/cargo-binstall</a>&gt;</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>cargo-update developers</li>
-    <li class='tc'>December 2021</li>
+    <li class='tc'>March 2025</li>
     <li class='tr'>cargo-install-update(1)</li>
   </ol>
 

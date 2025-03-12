@@ -14,12 +14,18 @@ updates for my cargo-installed executables, which was long and boring.
 
 Updates packages from the main repository and git repositories.
 
-See cargo-install-update-config(1) for further configuring updates.
+See cargo-install-update-config(1) for further configuring updates,
+and the metadata from `cargo install` that may be preserved by default.
 
 The `CARGO_INSTALL_OPTS` environment variable can be set,
 containing options to forward to the end of `cargo install` invocations'
 argument lists.
 Note, that cargo-install-update-config(1) is preferred in the general case.
+
+If `cargo-binstall` (>=0.13.1) is available in the `PATH`,
+`-r` was not overriden, `CARGO_INSTALL_OPTS` is empty,
+the package is in the default registry, and has no non-default configuration,
+it will be used to install the package instead.
 
 Exit values and possible errors:
 
@@ -82,6 +88,17 @@ Exit values and possible errors:
     Don't print status messages to stdout
     and pass down --quiet to cargo subprocesses.
 
+  --locked
+
+    Enforce packages' embedded Cargo.lock files.
+    This is equivalent to CARGO_INSTALL_OPTS=--locked (globally)
+    and cargo-install-update-config(1) --enforce-lock (per package)
+    except it doesn't disable cargo-binstall.
+
+  -j --jobs <JOBS>...
+
+    Run at most JOBS jobs at once, forwarded verbatim to cargo install.
+
   -s --filter <PACKAGE_FILTER>...
 
     Only consider packages matching all filters.
@@ -101,10 +118,14 @@ Exit values and possible errors:
     Required. Default: "cargo"
 
   -c --cargo-dir <CARGO_DIR>
+     --root      <CARGO_DIR>
 
     Set the directory containing cargo metadata.
 
-    Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
+    Equivalent to, and forwarded as, cargo install --root.
+
+    Required. Default: "$CARGO_INSTALL_ROOT", then "$CARGO_HOME",
+    then "$HOME/.cargo", otherwise manual.
 
   -t --temp-dir <TEMP_DIR>
 
@@ -116,6 +137,15 @@ Exit values and possible errors:
 
 ## ENVIRONMENT VARIABLES
 
+  `$CARGO_REGISTRIES_CRATES_IO_PROTOCOL`
+
+    Overrides the registries.crates-io.protocol Cargo configuration key.
+
+    The default is "sparse", and the crates.io URL is
+    sparse+https://index.crates.io/.
+    Set to some other value to use the git registry
+    (https://github.com/rust-lang/crates.io-index) for crates.io.
+
   `$CARGO_NET_GIT_FETCH_WITH_CLI`
 
     Overrides the net.git-fetch-with-cli Cargo configuration key.
@@ -124,6 +154,14 @@ Exit values and possible errors:
 
     Overrides the git executable in net.git-fetch-with-cli=true mode.
 
+  `$CARGO_HTTP_CAINFO`
+
+    Overrides the http.cainfo Cargo configuration key.
+
+  `$CARGO_HTTP_CHECK_REVOKE`
+
+    Overrides the http.check-revoke Cargo configuration key.
+
 ## EXAMPLES
 
   `cargo install-update -a`
@@ -131,7 +169,7 @@ Exit values and possible errors:
     Update all installed packages.
 
     Example output:
-          Updating registry `https://github.com/rust-lang/crates.io-index`
+          Polling registry 'https://index.crates.io/'........
 
       Package         Installed  Latest   Needs update
       checksums       v0.5.0     v0.5.2   Yes
@@ -351,7 +389,20 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Benjamin Bannier &lt;<bbannier@gmail.com>&gt;,
            Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;,
            Corbin Uselton &lt;<corbinu@decimal.io>&gt;,
-       and QuarticCat &lt;<QuarticCat@protonmail.com>&gt;
+           QuarticCat &lt;<QuarticCat@protonmail.com>&gt;,
+           Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;,
+           qthree &lt;<qthree3@gmail.com>&gt;,
+           tranzystorekk &lt;<tranzystorek.io@protonmail.com>&gt;,
+           Paul Barker &lt;<paul@pbarker.dev>&gt;,
+           Benoît CORTIER &lt;<bcortier@proton.me>&gt;,
+           Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;,
+           Shiraz &lt;<smcclennon@protonmail.com>&gt;,
+           Victor Song &lt;<vms2@rice.edu>&gt;,
+           chrisalcantara &lt;<chris@chrisalcantara.com>&gt;,
+           Utkarsh Gupta &lt;<utkarshgupta137@gmail.com>&gt;,
+           nevsal,
+           Rui Chen &lt;<https://chenrui.dev>&gt;,
+       and Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;
 
 ## SPECIAL THANKS
 
@@ -359,6 +410,8 @@ To all who support further development, in particular:
 
   * ThePhD
   * Embark Studios
+  * Lars Strojny
+  * EvModder
 
 ## REPORTING BUGS
 
@@ -367,3 +420,5 @@ To all who support further development, in particular:
 ## SEE ALSO
 
 &lt;<https://github.com/nabijaczleweli/cargo-update>&gt;
+
+&lt;<https://github.com/ryankurte/cargo-binstall>&gt;

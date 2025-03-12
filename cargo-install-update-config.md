@@ -15,9 +15,18 @@ Settable options:
   * whether to use default features,
   * additional feature list,
   * build profile,
-  * whether to install prereleases,
+  * whether to install prereleases other than those for the currently-installed version,
   * Cargo.lock enforcement,
-  * version range locks.
+  * version range locks,
+  * environment variable value or removal.
+
+If there is no configuration for a package,
+the `$CARGO_DIR/.crates2.json` file is parsed instead,
+which may yield, depending on the Cargo version, the following subset of the data:
+
+  * whether to use default features,
+  * additional feature list,
+  * build profile.
 
 See cargo-install-update(1) for general information.
 
@@ -49,10 +58,17 @@ See cargo-install-update(1) for general information.
   --debug
 
     Compile in debug mode.
+    Same as --build-profile dev.
 
   --release
 
     Compile in release mode (default).
+    Same as --build-profile release.
+
+  --build-profile [PROFILE]
+
+    Compile with PROFILE
+    (dev/release/test/bench or defined in $CARGO_DIR/.cargo/config.toml under [profile.PROFILE]).
 
   --install-prereleases
 
@@ -60,7 +76,12 @@ See cargo-install-update(1) for general information.
 
   --no-install-prereleases
 
-    Don't update to prerelease versions (default).
+    Don't update to prerelease versions.
+
+    If the currently-installed version is a prerelease,
+    and the candidate version is a newer prerelease for the same major.minor.patch version,
+    it will be installed regardless of this setting.
+    (To wit: this setting controls updates to prereleases, not within them.)
 
   --enforce-lock
 
@@ -88,6 +109,18 @@ See cargo-install-update(1) for general information.
 
     Allow any version.
 
+  -e --environment [VARIABLE=VALUE]...
+
+    Set environment VARIABLE to VALUE in the cargo install process.
+
+  -E --clear-environment [VARIABLE]...
+
+    Remove environment VARIABLE from the cargo install process.
+
+  --inherit-environment [VARIABLE]...
+
+    Don't do anything to environment VARIABLE.
+
   -r --reset
 
     Roll back the configuration to the empty defaults.
@@ -100,16 +133,17 @@ See cargo-install-update(1) for general information.
 
 ## EXAMPLES
 
-  `cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 clippy`
+  `cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 -e RUSTC_WRAPPER=sccache clippy`
 
     Set clippy to be compiled with the nightly toolchain without default
     features, with log and colour features.
 
     Example output:
-      Toolchain         nightly
-      Default features  true
-      Features          log
-                        colour
+      Toolchain              nightly
+      Default features       true
+      Features               log
+                             colour
+      Environment variables  RUSTC_WRAPPER=sccache
 
 ## AUTHOR
 
@@ -131,7 +165,20 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Benjamin Bannier &lt;<bbannier@gmail.com>&gt;,
            Dimitris Apostolou &lt;<dimitris.apostolou@icloud.com>&gt;,
            Corbin Uselton &lt;<corbinu@decimal.io>&gt;,
-       and QuarticCat &lt;<QuarticCat@protonmail.com>&gt;
+           QuarticCat &lt;<QuarticCat@protonmail.com>&gt;,
+           Artur Sinila &lt;<freesoftware@logarithmus.dev>&gt;,
+           qthree &lt;<qthree3@gmail.com>&gt;,
+           tranzystorekk &lt;<tranzystorek.io@protonmail.com>&gt;,
+           Paul Barker &lt;<paul@pbarker.dev>&gt;,
+           Benoît CORTIER &lt;<bcortier@proton.me>&gt;,
+           Biswapriyo Nath &lt;<nathbappai@gmail.com>&gt;,
+           Shiraz &lt;<smcclennon@protonmail.com>&gt;,
+           Victor Song &lt;<vms2@rice.edu>&gt;,
+           chrisalcantara &lt;<chris@chrisalcantara.com>&gt;,
+           Utkarsh Gupta &lt;<utkarshgupta137@gmail.com>&gt;,
+           nevsal,
+           Rui Chen &lt;<https://chenrui.dev>&gt;,
+       and Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;
 
 ## SPECIAL THANKS
 
@@ -139,6 +186,8 @@ To all who support further development, in particular:
 
   * ThePhD
   * Embark Studios
+  * Lars Strojny
+  * EvModder
 
 ## REPORTING BUGS
 

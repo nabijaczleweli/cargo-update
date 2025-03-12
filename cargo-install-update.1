@@ -1,67 +1,45 @@
-.\" generated with Ronn/v0.7.3
-.\" http://github.com/rtomayko/ronn/tree/0.7.3
-.
-.TH "CARGO\-INSTALL\-UPDATE" "1" "December 2021" "cargo-update developers" ""
-.
+.\" generated with Ronn-NG/v0.9.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.9.1
+.TH "CARGO\-INSTALL\-UPDATE" "1" "March 2025" "cargo-update developers"
 .SH "NAME"
 \fBcargo\-install\-update\fR \- Cargo subcommand for checking and applying updates to installed executables
-.
 .SH "SYNOPSIS"
-\fBcargo install\-update\fR [OPTIONS] [PACKAGE\.\.\.]
-.
+\fBcargo install\-update\fR [OPTIONS] [PACKAGE\|\.\|\.\|\.]
 .SH "DESCRIPTION"
 Cargo subcommand for checking and applying updates to installed executables\.
-.
 .P
 This was mostly built out of a frustration with periodically checking for updates for my cargo\-installed executables, which was long and boring\.
-.
 .P
 Updates packages from the main repository and git repositories\.
-.
 .P
-See cargo\-install\-update\-config(1) for further configuring updates\.
-.
+See cargo\-install\-update\-config(1) for further configuring updates, and the metadata from \fBcargo install\fR that may be preserved by default\.
 .P
-The \fBCARGO_INSTALL_OPTS\fR environment variable can be set, containing options to forward to the end of \fBcargo install\fR invocations\' argument lists\. Note, that cargo\-install\-update\-config(1) is preferred in the general case\.
-.
+The \fBCARGO_INSTALL_OPTS\fR environment variable can be set, containing options to forward to the end of \fBcargo install\fR invocations' argument lists\. Note, that cargo\-install\-update\-config(1) is preferred in the general case\.
+.P
+If \fBcargo\-binstall\fR (>=0\.13\.1) is available in the \fBPATH\fR, \fB\-r\fR was not overriden, \fBCARGO_INSTALL_OPTS\fR is empty, the package is in the default registry, and has no non\-default configuration, it will be used to install the package instead\.
 .P
 Exit values and possible errors:
-.
 .IP "" 4
-.
 .nf
-
 \-1 \- cargo subprocess was terminated by a signal (Linux\-only)
 1  \- option parsing error
 2  \- registry repository error
 X  \- bubbled\-up cargo install exit value
-.
 .fi
-.
 .IP "" 0
-.
 .SH "OPTIONS"
 \-a \-\-all
-.
 .IP "" 4
-.
 .nf
-
 Update all currently installed executables\.
 
 Required if list of packages not given\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
-[PACKAGE\.\.\.]
-.
+[PACKAGE\|\.\|\.\|\.]
 .IP "" 4
-.
 .nf
-
 List of packages to update in the [(registry_url):]package_name[:version] format\.
 
 Registry defaults to the default crates\.io registry,
@@ -72,122 +50,91 @@ will add the specified packages to the update list
 (useful, e\.g\., in conjunction with \-\-allow\-no\-update)\.
 
 Required if \-\-all not given\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \-l \-\-list
-.
 .IP "" 4
-.
 .nf
-
-Don\'t update any packages, just list them\.
+Don't update any packages, just list them\.
 
 If PACKAGE is empty, act as if \-\-all was specified\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \-f \-\-force
-.
 .IP "" 4
-.
 .nf
-
 Update all packages, regardless of whether they need to be version\-wise\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \-d \-\-downdate
-.
 .IP "" 4
-.
 .nf
-
 Downdate packages to match the latest unyanked version from the registry\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \-i \-\-allow\-no\-update
-.
 .IP "" 4
-.
 .nf
-
 Allow to fresh install packages passed as PACKAGE argument\.
 
 This is useful, for example, in pairing with cargo\-install\-update\-config(1)\.
 
 Off by default\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \-g \-\-git
-.
 .IP "" 4
-.
 .nf
-
 Also update git\-originating packages\.
 
-Off by default, because it\'s expensive\.
-.
+Off by default, because it's expensive\.
 .fi
-.
 .IP "" 0
-.
 .P
 \-q \-\-quiet
-.
 .IP "" 4
-.
 .nf
-
-Don\'t print status messages to stdout
+Don't print status messages to stdout
 and pass down \-\-quiet to cargo subprocesses\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
-\-s \-\-filter \fIPACKAGE_FILTER\fR\.\.\.
-.
+\-\-locked
 .IP "" 4
-.
 .nf
-
+Enforce packages' embedded Cargo\.lock files\.
+This is equivalent to CARGO_INSTALL_OPTS=\-\-locked (globally)
+and cargo\-install\-update\-config(1) \-\-enforce\-lock (per package)
+except it doesn't disable cargo\-binstall\.
+.fi
+.IP "" 0
+.P
+\-j \-\-jobs \fIJOBS\fR\|\.\|\.\|\.
+.IP "" 4
+.nf
+Run at most JOBS jobs at once, forwarded verbatim to cargo install\.
+.fi
+.IP "" 0
+.P
+\-s \-\-filter \fIPACKAGE_FILTER\fR\|\.\|\.\|\.
+.IP "" 4
+.nf
 Only consider packages matching all filters\.
 
 PACKAGE_FILTER is in the form "key=value", where key is any of:
   \- "toolchain": the package must be configured to be compiled with
                  the specified toolchain via cargo\-install\-update\-config(1)\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \-r \-\-install\-cargo \fICARGO_EXECUTABLE\fR
-.
 .IP "" 4
-.
 .nf
-
 Cargo executable to run for installations\.
 
 *Must* behave indistinguishably from the default cargo
@@ -195,80 +142,79 @@ with regards to on\-disk state ("$CARGO_DIR/\.crates\.toml"
 and installed executables) and the arguments it accepts\.
 
 Required\. Default: "cargo"
-.
 .fi
-.
 .IP "" 0
-.
 .P
-\-c \-\-cargo\-dir \fICARGO_DIR\fR
-.
+\-c \-\-cargo\-dir \fICARGO_DIR\fR \-\-root \fICARGO_DIR\fR
 .IP "" 4
-.
 .nf
-
 Set the directory containing cargo metadata\.
 
-Required\. Default: "$CARGO_HOME", then "$HOME/\.cargo", otherwise manual\.
-.
+Equivalent to, and forwarded as, cargo install \-\-root\.
+
+Required\. Default: "$CARGO_INSTALL_ROOT", then "$CARGO_HOME",
+then "$HOME/\.cargo", otherwise manual\.
 .fi
-.
 .IP "" 0
-.
 .P
 \-t \-\-temp\-dir \fITEMP_DIR\fR
-.
 .IP "" 4
-.
 .nf
-
 Set the directory in which to clone git repositories\.
 
 Adjoined with "cargo\-update" as last segment\.
 
 Required\. Default: system temp, otherwise manual\.
-.
 .fi
-.
 .IP "" 0
-.
 .SH "ENVIRONMENT VARIABLES"
-\fB$CARGO_NET_GIT_FETCH_WITH_CLI\fR
-.
+\fB$CARGO_REGISTRIES_CRATES_IO_PROTOCOL\fR
 .IP "" 4
-.
 .nf
+Overrides the registries\.crates\-io\.protocol Cargo configuration key\.
 
-Overrides the net\.git\-fetch\-with\-cli Cargo configuration key\.
-.
+The default is "sparse", and the crates\.io URL is
+sparse+https://index\.crates\.io/\.
+Set to some other value to use the git registry
+(https://github\.com/rust\-lang/crates\.io\-index) for crates\.io\.
 .fi
-.
 .IP "" 0
-.
+.P
+\fB$CARGO_NET_GIT_FETCH_WITH_CLI\fR
+.IP "" 4
+.nf
+Overrides the net\.git\-fetch\-with\-cli Cargo configuration key\.
+.fi
+.IP "" 0
 .P
 \fB$GIT\fR
-.
 .IP "" 4
-.
 .nf
-
 Overrides the git executable in net\.git\-fetch\-with\-cli=true mode\.
-.
 .fi
-.
 .IP "" 0
-.
+.P
+\fB$CARGO_HTTP_CAINFO\fR
+.IP "" 4
+.nf
+Overrides the http\.cainfo Cargo configuration key\.
+.fi
+.IP "" 0
+.P
+\fB$CARGO_HTTP_CHECK_REVOKE\fR
+.IP "" 4
+.nf
+Overrides the http\.check\-revoke Cargo configuration key\.
+.fi
+.IP "" 0
 .SH "EXAMPLES"
 \fBcargo install\-update \-a\fR
-.
 .IP "" 4
-.
 .nf
-
 Update all installed packages\.
 
 Example output:
-      Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
+      Polling registry 'https://index\.crates\.io/'\|\.\|\.\|\.\|\.\|\.\|\.\.\.
 
   Package         Installed  Latest   Needs update
   checksums       v0\.5\.0     v0\.5\.2   Yes
@@ -283,7 +229,7 @@ Example output:
   Updating checksums
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading checksums v0\.5\.2
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling checksums v0\.5\.2
       Finished release [optimized] target(s) in 95\.2 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\echecksums\.exe
@@ -291,26 +237,20 @@ Example output:
   Updating treesize
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading treesize v0\.2\.1
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling treesize v0\.2\.1
       Finished release [optimized] target(s) in 76\.77 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\etreesize\.exe
 
   Updated 2 packages\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \fBcargo install\-update racer treesize cargo\-cln\fR
-.
 .IP "" 4
-.
 .nf
-
 Only consider racer, treesize and cargo\-cln for updates\.
-Since cargo\-cln is not installed, it\'ll be ignored\.
+Since cargo\-cln is not installed, it'll be ignored\.
 
  Example output:
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
@@ -322,25 +262,19 @@ Since cargo\-cln is not installed, it\'ll be ignored\.
   Updating treesize
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading treesize v0\.2\.1
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling treesize v0\.2\.1
       Finished release [optimized] target(s) in 76\.77 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\etreesize\.exe
 
   Updated 1 package\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \fBcargo install\-update \-al\fR
-.
 .IP "" 4
-.
 .nf
-
-List all installed packages, don\'t update any\.
+List all installed packages, don't update any\.
 
 Example output:
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
@@ -354,18 +288,12 @@ Example output:
   identicon       v0\.1\.1     v0\.1\.1   No
   racer           v1\.2\.10    v1\.2\.10  No
   rustfmt         v0\.6\.2     v0\.6\.2   No
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \fBcargo install\-update \-af\fR
-.
 .IP "" 4
-.
 .nf
-
 Update all installed packages\.
 
 Example output:
@@ -380,7 +308,7 @@ Example output:
   Updating racer
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading racer v1\.2\.10
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling racer v1\.2\.10
       Finished release [optimized] target(s) in 51\.43 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\eracer\.exe
@@ -388,15 +316,15 @@ Example output:
   Updating clippy
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading clippy v0\.0\.99
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling clippy v0\.0\.99
-     [\.\.\.]
+     [\|\.\|\.\|\.]
   error: failed to compile `clippy v0\.0\.99`, intermediate artifacts can be found at `T:\e\-_\-TEM~1\ecargo\-install\.WOcMlrKQ5Sok`
 
   Updating treesize
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading treesize v0\.2\.1
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling treesize v0\.2\.1
       Finished release [optimized] target(s) in 76\.77 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\etreesize\.exe
@@ -407,18 +335,12 @@ Example output:
 
   Updated 2 packages\.
   Failed to update clippy, clippy_lints\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \fBcargo install\-update \-i checksums rustfmt treesize\fR
-.
 .IP "" 4
-.
 .nf
-
 Install specified packages, their installation status notwithstanding
 
 Example output:
@@ -432,7 +354,7 @@ Example output:
   Installing checksums
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading checksums v0\.5\.2
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling checksums v0\.5\.2
       Finished release [optimized] target(s) in 95\.2 secs
      Installing D:\eUsers\enabijaczleweli\e\.cargo\ebin\echecksums\.exe
@@ -440,24 +362,18 @@ Example output:
   Updating treesize
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading treesize v0\.2\.1
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling treesize v0\.2\.1
       Finished release [optimized] target(s) in 76\.77 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\etreesize\.exe
 
   Updated 2 packages\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \fBcargo install\-update \-i (file:///usr/local/share/cargo):zram\-generator:0\.1\.1\fR
-.
 .IP "" 4
-.
 .nf
-
 Install zram\-generator from a local repository in /usr/local/share/cargo
 (but a remote one or a short name  will work just as well), at most version 0\.1\.1\.
 
@@ -470,25 +386,19 @@ Install zram\-generator from a local repository in /usr/local/share/cargo
   Installing zram\-generator
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading zram\-generator v0\.1\.1
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling zram\-generator v0\.1\.1
       Finished release [optimized] target(s) in 21\.62 secs
     Installing /home/nabijaczleweli/\.cargo/bin/zram\-generator
      Installed package `zram\-generator v0\.1\.1` (executable `zram\-generator`)
 
   Updated 1 package\.
-.
 .fi
-.
 .IP "" 0
-.
 .P
 \fBcargo install\-update \-ag\fR
-.
 .IP "" 4
-.
 .nf
-
 Update all installed packages, including ones from git\.
 
 Example output:
@@ -501,7 +411,7 @@ Example output:
   Updating checksums
       Updating registry `https://github\.com/rust\-lang/crates\.io\-index`
      Downloading checksums v0\.5\.2
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling checksums v0\.5\.2
       Finished release [optimized] target(s) in 95\.2 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\echecksums\.exe
@@ -515,33 +425,30 @@ Example output:
   Updating alacritty from https://github\.com/jwilm/alacritty
       Updating git repository `https://github\.com/jwilm/alacritty`
      Installing alacritty v0\.1\.0 (https://github\.com/jwilm/alacritty#5f788574)
-     [\.\.\.]
+     [\|\.\|\.\|\.]
      Compiling alacritty v0\.1\.0
       Finished release [optimized] target(s) in 127\.6 secs
      Replacing D:\eUsers\enabijaczleweli\e\.cargo\ebin\ealacritty\.exe
 
   Updated 1 package\.
-.
 .fi
-.
 .IP "" 0
-.
 .SH "AUTHOR"
-Written by наб <\fInabijaczleweli@nabijaczleweli\.xyz\fR>, Yann Simon <\fIyann\.simon\.fr@gmail\.com\fR>, ven <\fIvendethiel@hotmail\.fr\fR>, Cat Plus Plus <\fIpiotrlegnica@piotrl\.pl\fR>, Liigo <\fIliigo@qq\.com\fR>, azyobuzin <\fIazyobuzin@users\.sourceforge\.jp\fR>, Tatsuyuki Ishi <\fIishitatsuyuki@gmail\.com\fR>, Tom Prince <\fItom\.prince@twistedmatrix\.com\fR>, Mateusz Mikuła <\fImati865@gmail\.com\fR>, sinkuu <\fIsinkuupump@gmail\.com\fR>, Alex Burka <\fIaburka@seas\.upenn\.edu\fR>, Matthias Krüger <\fImatthias\.krueger@famsik\.de\fR>, Daniel Holbert <\fIdholbert@cs\.stanford\.edu\fR>, Jonas Bushart <\fIjonas@bushart\.org\fR>, Harrison Metzger <\fIharrisonmetz@gmail\.com\fR>, Benjamin Bannier <\fIbbannier@gmail\.com\fR>, Dimitris Apostolou <\fIdimitris\.apostolou@icloud\.com\fR>, Corbin Uselton <\fIcorbinu@decimal\.io\fR>, and QuarticCat <\fIQuarticCat@protonmail\.com\fR>
-.
+Written by наб <\fInabijaczleweli@nabijaczleweli\.xyz\fR>, Yann Simon <\fIyann\.simon\.fr@gmail\.com\fR>, ven <\fIvendethiel@hotmail\.fr\fR>, Cat Plus Plus <\fIpiotrlegnica@piotrl\.pl\fR>, Liigo <\fIliigo@qq\.com\fR>, azyobuzin <\fIazyobuzin@users\.sourceforge\.jp\fR>, Tatsuyuki Ishi <\fIishitatsuyuki@gmail\.com\fR>, Tom Prince <\fItom\.prince@twistedmatrix\.com\fR>, Mateusz Mikuła <\fImati865@gmail\.com\fR>, sinkuu <\fIsinkuupump@gmail\.com\fR>, Alex Burka <\fIaburka@seas\.upenn\.edu\fR>, Matthias Krüger <\fImatthias\.krueger@famsik\.de\fR>, Daniel Holbert <\fIdholbert@cs\.stanford\.edu\fR>, Jonas Bushart <\fIjonas@bushart\.org\fR>, Harrison Metzger <\fIharrisonmetz@gmail\.com\fR>, Benjamin Bannier <\fIbbannier@gmail\.com\fR>, Dimitris Apostolou <\fIdimitris\.apostolou@icloud\.com\fR>, Corbin Uselton <\fIcorbinu@decimal\.io\fR>, QuarticCat <\fIQuarticCat@protonmail\.com\fR>, Artur Sinila <\fIfreesoftware@logarithmus\.dev\fR>, qthree <\fIqthree3@gmail\.com\fR>, tranzystorekk <\fItranzystorek\.io@protonmail\.com\fR>, Paul Barker <\fIpaul@pbarker\.dev\fR>, Benoît CORTIER <\fIbcortier@proton\.me\fR>, Biswapriyo Nath <\fInathbappai@gmail\.com\fR>, Shiraz <\fIsmcclennon@protonmail\.com\fR>, Victor Song <\fIvms2@rice\.edu\fR>, chrisalcantara <\fIchris@chrisalcantara\.com\fR>, Utkarsh Gupta <\fIutkarshgupta137@gmail\.com\fR>, nevsal, Rui Chen <\fIhttps://chenrui\.dev\fR>, and Lynnesbian <\fIhttps://fedi\.lynnesbian\.space/@lynnesbian\fR>
 .SH "SPECIAL THANKS"
 To all who support further development, in particular:
-.
-.IP "\(bu" 4
+.IP "\[ci]" 4
 ThePhD
-.
-.IP "\(bu" 4
+.IP "\[ci]" 4
 Embark Studios
-.
+.IP "\[ci]" 4
+Lars Strojny
+.IP "\[ci]" 4
+EvModder
 .IP "" 0
-.
 .SH "REPORTING BUGS"
 <\fIhttps://github\.com/nabijaczleweli/cargo\-update/issues\fR>
-.
 .SH "SEE ALSO"
 <\fIhttps://github\.com/nabijaczleweli/cargo\-update\fR>
+.P
+<\fIhttps://github\.com/ryankurte/cargo\-binstall\fR>

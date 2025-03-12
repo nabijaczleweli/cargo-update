@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv='content-type' value='text/html;charset=utf8'>
-  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <meta http-equiv='content-type' content='text/html;charset=utf8'>
+  <meta name='generator' content='Ronn-NG/v0.9.1 (http://github.com/apjanke/ronn-ng/tree/0.9.1)'>
   <title>cargo-install-update-config(1) - Cargo subcommand for checking and applying updates to installed executables -- configuration</title>
   <style type='text/css' media='all'>
   /* style: man */
@@ -70,11 +70,12 @@
     <li class='tr'>cargo-install-update-config(1)</li>
   </ol>
 
-  <h2 id="NAME">NAME</h2>
+  
+
+<h2 id="NAME">NAME</h2>
 <p class="man-name">
   <code>cargo-install-update-config</code> - <span class="man-whatis">Cargo subcommand for checking and applying updates to installed executables -- configuration</span>
 </p>
-
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
 <p><code>cargo install-update-config</code> <a href="#OPTIONS" title="OPTIONS" data-bare-link="true">OPTIONS</a> <var>PACKAGE</var></p>
@@ -86,41 +87,51 @@
 <p>Settable options:</p>
 
 <ul>
-<li>toolchain,</li>
-<li>whether to use default features,</li>
-<li>additional feature list,</li>
-<li>build profile,</li>
-<li>whether to install prereleases,</li>
-<li>Cargo.lock enforcement,</li>
-<li>version range locks.</li>
+  <li>toolchain,</li>
+  <li>whether to use default features,</li>
+  <li>additional feature list,</li>
+  <li>build profile,</li>
+  <li>whether to install prereleases other than those for the currently-installed version,</li>
+  <li>Cargo.lock enforcement,</li>
+  <li>version range locks,</li>
+  <li>environment variable value or removal.</li>
 </ul>
 
+<p>If there is no configuration for a package,
+the <code>$CARGO_DIR/.crates2.json</code> file is parsed instead,
+which may yield, depending on the Cargo version, the following subset of the data:</p>
+
+<ul>
+  <li>whether to use default features,</li>
+  <li>additional feature list,</li>
+  <li>build profile.</li>
+</ul>
 
 <p>See <a class="man-ref" href="cargo-install-update.1.html">cargo-install-update<span class="s">(1)</span></a> for general information.</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
-<p>  <var>PACKAGE</var></p>
+<p><var>PACKAGE</var></p>
 
 <pre><code>Package to adjust settings for.
 </code></pre>
 
-<p>  -t --toolchain [TOOLCHAIN]</p>
+<p>-t --toolchain [TOOLCHAIN]</p>
 
 <pre><code>Set the toolchain to use. Pass empty string to use the cargo default.
 </code></pre>
 
-<p>  -f --feature [FEATURE]...</p>
+<p>-f --feature [FEATURE]...</p>
 
 <pre><code>Enable a cargo feature.
 </code></pre>
 
-<p>  -n --no-feature [FEATURE]...</p>
+<p>-n --no-feature [FEATURE]...</p>
 
 <pre><code>Disable/remove a cargo feature.
 </code></pre>
 
-<p>  -d --default-features [DEFAULT]</p>
+<p>-d --default-features [DEFAULT]</p>
 
 <pre><code>Enable or disable default features.
 
@@ -128,64 +139,92 @@ The argument can have the value "yes", "true", "1" to enable,
 or "no", "false", "0" to disable.
 </code></pre>
 
-<p>  --debug</p>
+<p>--debug</p>
 
 <pre><code>Compile in debug mode.
+Same as --build-profile dev.
 </code></pre>
 
-<p>  --release</p>
+<p>--release</p>
 
 <pre><code>Compile in release mode (default).
+Same as --build-profile release.
 </code></pre>
 
-<p>  --install-prereleases</p>
+<p>--build-profile [PROFILE]</p>
+
+<pre><code>Compile with PROFILE
+(dev/release/test/bench or defined in $CARGO_DIR/.cargo/config.toml under [profile.PROFILE]).
+</code></pre>
+
+<p>--install-prereleases</p>
 
 <pre><code>Install version even if it's a prerelease.
 </code></pre>
 
-<p>  --no-install-prereleases</p>
+<p>--no-install-prereleases</p>
 
-<pre><code>Don't update to prerelease versions (default).
+<pre><code>Don't update to prerelease versions.
+
+If the currently-installed version is a prerelease,
+and the candidate version is a newer prerelease for the same major.minor.patch version,
+it will be installed regardless of this setting.
+(To wit: this setting controls updates to prereleases, not within them.)
 </code></pre>
 
-<p>  --enforce-lock</p>
+<p>--enforce-lock</p>
 
 <pre><code>Require Cargo.lock is up to date.
 </code></pre>
 
-<p>  --no-enforce-lock</p>
+<p>--no-enforce-lock</p>
 
 <pre><code>Don't require Cargo.lock to be up to date. (default).
 </code></pre>
 
-<p>  --respect-binaries</p>
+<p>--respect-binaries</p>
 
 <pre><code>Only install the binaries that are already installed for this package.
 </code></pre>
 
-<p>  --no-respect-binaries</p>
+<p>--no-respect-binaries</p>
 
 <pre><code>Install all binaries. (default).
 </code></pre>
 
-<p>  -v --version [VERSION_REQ]</p>
+<p>-v --version [VERSION_REQ]</p>
 
 <pre><code>Require a cargo-compatible version range not to update beyond.
 
 Example: "&gt;1.3", "^0.1.8".
 </code></pre>
 
-<p>  -a --any-version</p>
+<p>-a --any-version</p>
 
 <pre><code>Allow any version.
 </code></pre>
 
-<p>  -r --reset</p>
+<p>-e --environment [VARIABLE=VALUE]...</p>
+
+<pre><code>Set environment VARIABLE to VALUE in the cargo install process.
+</code></pre>
+
+<p>-E --clear-environment [VARIABLE]...</p>
+
+<pre><code>Remove environment VARIABLE from the cargo install process.
+</code></pre>
+
+<p>--inherit-environment [VARIABLE]...</p>
+
+<pre><code>Don't do anything to environment VARIABLE.
+</code></pre>
+
+<p>-r --reset</p>
 
 <pre><code>Roll back the configuration to the empty defaults.
 </code></pre>
 
-<p>  -c --cargo-dir <var>CARGO_DIR</var></p>
+<p>-c --cargo-dir <var>CARGO_DIR</var></p>
 
 <pre><code>Set the directory containing cargo metadata.
 
@@ -194,49 +233,64 @@ Required. Default: "$CARGO_HOME", then "$HOME/.cargo", otherwise manual.
 
 <h2 id="EXAMPLES">EXAMPLES</h2>
 
-<p>  <code>cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 clippy</code></p>
+<p><code>cargo install-update-config -t nightly -d 0 -f log -f colour -v ~2.3 -e RUSTC_WRAPPER=sccache clippy</code></p>
 
 <pre><code>Set clippy to be compiled with the nightly toolchain without default
 features, with log and colour features.
 
 Example output:
-  Toolchain         nightly
-  Default features  true
-  Features          log
-                    colour
+  Toolchain              nightly
+  Default features       true
+  Features               log
+                         colour
+  Environment variables  RUSTC_WRAPPER=sccache
 </code></pre>
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
-<p>Written by наб &lt;<a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#x3a;&#110;&#x61;&#x62;&#105;&#x6a;&#x61;&#x63;&#122;&#x6c;&#101;&#119;&#x65;&#108;&#105;&#64;&#x6e;&#97;&#x62;&#105;&#106;&#x61;&#x63;&#x7a;&#x6c;&#x65;&#x77;&#101;&#108;&#105;&#x2e;&#x78;&#121;&#122;" data-bare-link="true">&#110;&#97;&#x62;&#x69;&#106;&#x61;&#x63;&#122;&#x6c;&#101;&#119;&#x65;&#108;&#105;&#x40;&#x6e;&#97;&#98;&#105;&#x6a;&#x61;&#x63;&#122;&#108;&#x65;&#119;&#x65;&#108;&#105;&#x2e;&#120;&#121;&#122;</a>&gt;,
-           Yann Simon &lt;<a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#x79;&#x61;&#x6e;&#x6e;&#x2e;&#x73;&#105;&#x6d;&#x6f;&#110;&#46;&#102;&#x72;&#64;&#103;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#111;&#x6d;" data-bare-link="true">&#x79;&#x61;&#x6e;&#x6e;&#46;&#115;&#x69;&#109;&#x6f;&#110;&#x2e;&#102;&#x72;&#64;&#103;&#109;&#x61;&#105;&#108;&#x2e;&#99;&#x6f;&#109;</a>&gt;,
-           ven &lt;<a href="&#x6d;&#97;&#x69;&#108;&#x74;&#111;&#58;&#118;&#x65;&#110;&#100;&#101;&#116;&#104;&#105;&#101;&#108;&#64;&#x68;&#111;&#116;&#109;&#x61;&#105;&#x6c;&#x2e;&#x66;&#x72;" data-bare-link="true">&#x76;&#101;&#x6e;&#100;&#101;&#116;&#x68;&#x69;&#x65;&#x6c;&#x40;&#104;&#x6f;&#x74;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#102;&#x72;</a>&gt;,
-           Cat Plus Plus &lt;<a href="&#x6d;&#97;&#x69;&#x6c;&#x74;&#111;&#58;&#x70;&#x69;&#x6f;&#116;&#x72;&#108;&#x65;&#x67;&#x6e;&#105;&#99;&#97;&#x40;&#x70;&#105;&#x6f;&#x74;&#x72;&#108;&#x2e;&#112;&#108;" data-bare-link="true">&#x70;&#105;&#x6f;&#x74;&#x72;&#108;&#x65;&#x67;&#110;&#105;&#99;&#97;&#64;&#x70;&#105;&#x6f;&#116;&#x72;&#x6c;&#46;&#x70;&#x6c;</a>&gt;,
-           Liigo &lt;<a href="&#109;&#97;&#105;&#x6c;&#x74;&#111;&#58;&#108;&#105;&#x69;&#103;&#x6f;&#64;&#x71;&#x71;&#x2e;&#x63;&#111;&#x6d;" data-bare-link="true">&#x6c;&#105;&#105;&#x67;&#111;&#x40;&#x71;&#113;&#x2e;&#99;&#x6f;&#109;</a>&gt;,
-           azyobuzin &lt;<a href="&#109;&#x61;&#105;&#x6c;&#x74;&#111;&#x3a;&#x61;&#x7a;&#121;&#x6f;&#98;&#117;&#122;&#105;&#110;&#x40;&#117;&#x73;&#x65;&#114;&#x73;&#46;&#115;&#x6f;&#x75;&#114;&#99;&#x65;&#102;&#111;&#x72;&#x67;&#101;&#46;&#106;&#112;" data-bare-link="true">&#x61;&#x7a;&#x79;&#x6f;&#98;&#117;&#122;&#x69;&#110;&#64;&#117;&#115;&#x65;&#x72;&#115;&#x2e;&#x73;&#111;&#117;&#x72;&#x63;&#101;&#102;&#x6f;&#114;&#103;&#101;&#46;&#106;&#x70;</a>&gt;,
-           Tatsuyuki Ishi &lt;<a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x69;&#115;&#104;&#x69;&#116;&#97;&#x74;&#115;&#117;&#121;&#x75;&#107;&#105;&#64;&#x67;&#109;&#x61;&#105;&#108;&#x2e;&#x63;&#111;&#x6d;" data-bare-link="true">&#105;&#115;&#x68;&#105;&#116;&#x61;&#x74;&#115;&#117;&#x79;&#117;&#107;&#105;&#64;&#x67;&#109;&#97;&#x69;&#x6c;&#x2e;&#x63;&#111;&#109;</a>&gt;,
-           Tom Prince &lt;<a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#111;&#x3a;&#x74;&#111;&#x6d;&#x2e;&#112;&#114;&#105;&#110;&#99;&#101;&#x40;&#x74;&#119;&#x69;&#x73;&#x74;&#x65;&#100;&#109;&#x61;&#x74;&#x72;&#x69;&#x78;&#46;&#99;&#111;&#x6d;" data-bare-link="true">&#116;&#111;&#109;&#x2e;&#112;&#114;&#105;&#x6e;&#99;&#101;&#x40;&#116;&#x77;&#105;&#x73;&#x74;&#101;&#x64;&#x6d;&#x61;&#x74;&#x72;&#105;&#120;&#x2e;&#x63;&#x6f;&#x6d;</a>&gt;,
-           Mateusz Mikuła &lt;<a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#x6d;&#x61;&#x74;&#105;&#x38;&#54;&#x35;&#64;&#x67;&#x6d;&#x61;&#105;&#x6c;&#46;&#x63;&#x6f;&#x6d;" data-bare-link="true">&#x6d;&#x61;&#x74;&#105;&#x38;&#x36;&#x35;&#64;&#x67;&#109;&#97;&#x69;&#108;&#x2e;&#99;&#x6f;&#109;</a>&gt;,
-           sinkuu &lt;<a href="&#109;&#x61;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#115;&#105;&#110;&#x6b;&#x75;&#x75;&#112;&#117;&#x6d;&#112;&#64;&#103;&#x6d;&#97;&#105;&#108;&#46;&#99;&#x6f;&#109;" data-bare-link="true">&#x73;&#105;&#110;&#107;&#117;&#x75;&#112;&#117;&#109;&#112;&#x40;&#103;&#109;&#x61;&#x69;&#x6c;&#x2e;&#99;&#111;&#109;</a>&gt;,
-           Alex Burka &lt;<a href="&#109;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#x61;&#x62;&#117;&#x72;&#107;&#97;&#x40;&#115;&#x65;&#97;&#x73;&#x2e;&#117;&#x70;&#101;&#x6e;&#x6e;&#x2e;&#101;&#100;&#117;" data-bare-link="true">&#97;&#98;&#117;&#114;&#x6b;&#97;&#x40;&#x73;&#x65;&#97;&#115;&#46;&#x75;&#112;&#101;&#x6e;&#x6e;&#x2e;&#101;&#100;&#117;</a>&gt;,
-           Matthias Krüger &lt;<a href="&#x6d;&#97;&#x69;&#x6c;&#x74;&#111;&#x3a;&#109;&#97;&#x74;&#116;&#x68;&#105;&#x61;&#115;&#46;&#107;&#x72;&#x75;&#x65;&#103;&#x65;&#114;&#64;&#102;&#x61;&#x6d;&#x73;&#105;&#x6b;&#x2e;&#x64;&#101;" data-bare-link="true">&#109;&#x61;&#x74;&#116;&#104;&#x69;&#97;&#x73;&#46;&#x6b;&#x72;&#x75;&#x65;&#103;&#x65;&#x72;&#x40;&#102;&#x61;&#x6d;&#115;&#x69;&#x6b;&#46;&#100;&#101;</a>&gt;,
-           Daniel Holbert &lt;<a href="&#109;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#x64;&#x68;&#111;&#x6c;&#x62;&#101;&#x72;&#x74;&#x40;&#99;&#115;&#x2e;&#x73;&#x74;&#x61;&#110;&#102;&#111;&#114;&#x64;&#x2e;&#101;&#100;&#x75;" data-bare-link="true">&#100;&#104;&#111;&#108;&#98;&#x65;&#114;&#x74;&#64;&#x63;&#115;&#x2e;&#x73;&#x74;&#97;&#110;&#x66;&#x6f;&#114;&#x64;&#46;&#x65;&#x64;&#x75;</a>&gt;,
-           Jonas Bushart &lt;<a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#x3a;&#106;&#111;&#x6e;&#97;&#115;&#64;&#x62;&#117;&#115;&#104;&#97;&#x72;&#x74;&#46;&#111;&#x72;&#x67;" data-bare-link="true">&#x6a;&#x6f;&#110;&#x61;&#115;&#x40;&#98;&#x75;&#x73;&#x68;&#x61;&#x72;&#x74;&#46;&#x6f;&#114;&#x67;</a>&gt;,
-           Harrison Metzger &lt;<a href="&#109;&#97;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#x68;&#x61;&#114;&#x72;&#x69;&#x73;&#111;&#110;&#x6d;&#x65;&#x74;&#x7a;&#64;&#103;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#x6f;&#109;" data-bare-link="true">&#104;&#97;&#114;&#x72;&#105;&#x73;&#x6f;&#x6e;&#109;&#101;&#116;&#122;&#x40;&#x67;&#x6d;&#97;&#x69;&#108;&#x2e;&#x63;&#111;&#x6d;</a>&gt;,
-           Benjamin Bannier &lt;<a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#58;&#98;&#x62;&#x61;&#x6e;&#x6e;&#105;&#x65;&#114;&#x40;&#103;&#109;&#97;&#x69;&#108;&#x2e;&#99;&#111;&#x6d;" data-bare-link="true">&#98;&#98;&#97;&#x6e;&#110;&#105;&#101;&#x72;&#x40;&#103;&#x6d;&#97;&#105;&#x6c;&#46;&#x63;&#111;&#x6d;</a>&gt;,
-           Dimitris Apostolou &lt;<a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#111;&#x3a;&#x64;&#x69;&#109;&#x69;&#x74;&#114;&#x69;&#x73;&#46;&#97;&#112;&#111;&#115;&#x74;&#x6f;&#108;&#111;&#117;&#x40;&#105;&#99;&#108;&#111;&#x75;&#100;&#46;&#x63;&#x6f;&#109;" data-bare-link="true">&#100;&#105;&#x6d;&#x69;&#116;&#114;&#105;&#115;&#46;&#x61;&#x70;&#111;&#x73;&#x74;&#x6f;&#x6c;&#x6f;&#x75;&#x40;&#x69;&#99;&#x6c;&#x6f;&#x75;&#100;&#46;&#x63;&#111;&#109;</a>&gt;,
-           Corbin Uselton &lt;<a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x63;&#x6f;&#x72;&#x62;&#105;&#110;&#117;&#64;&#x64;&#x65;&#x63;&#105;&#109;&#97;&#x6c;&#x2e;&#105;&#111;" data-bare-link="true">&#99;&#111;&#x72;&#x62;&#105;&#x6e;&#x75;&#64;&#x64;&#x65;&#x63;&#105;&#x6d;&#97;&#x6c;&#46;&#105;&#x6f;</a>&gt;,
-       and QuarticCat &lt;<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#x51;&#x75;&#97;&#114;&#x74;&#105;&#99;&#x43;&#x61;&#x74;&#x40;&#112;&#114;&#x6f;&#x74;&#x6f;&#110;&#x6d;&#x61;&#105;&#108;&#x2e;&#99;&#111;&#109;" data-bare-link="true">&#81;&#x75;&#97;&#x72;&#116;&#105;&#x63;&#x43;&#97;&#x74;&#64;&#x70;&#114;&#x6f;&#116;&#x6f;&#110;&#x6d;&#97;&#x69;&#108;&#x2e;&#x63;&#111;&#109;</a>&gt;</p>
+<p>Written by наб &lt;<a href="mailto:nabijaczleweli@nabijaczleweli.xyz" data-bare-link="true">nabijaczleweli@nabijaczleweli.xyz</a>&gt;,
+           Yann Simon &lt;<a href="mailto:yann.simon.fr@gmail.com" data-bare-link="true">yann.simon.fr@gmail.com</a>&gt;,
+           ven &lt;<a href="mailto:vendethiel@hotmail.fr" data-bare-link="true">vendethiel@hotmail.fr</a>&gt;,
+           Cat Plus Plus &lt;<a href="mailto:piotrlegnica@piotrl.pl" data-bare-link="true">piotrlegnica@piotrl.pl</a>&gt;,
+           Liigo &lt;<a href="mailto:liigo@qq.com" data-bare-link="true">liigo@qq.com</a>&gt;,
+           azyobuzin &lt;<a href="mailto:azyobuzin@users.sourceforge.jp" data-bare-link="true">azyobuzin@users.sourceforge.jp</a>&gt;,
+           Tatsuyuki Ishi &lt;<a href="mailto:ishitatsuyuki@gmail.com" data-bare-link="true">ishitatsuyuki@gmail.com</a>&gt;,
+           Tom Prince &lt;<a href="mailto:tom.prince@twistedmatrix.com" data-bare-link="true">tom.prince@twistedmatrix.com</a>&gt;,
+           Mateusz Mikuła &lt;<a href="mailto:mati865@gmail.com" data-bare-link="true">mati865@gmail.com</a>&gt;,
+           sinkuu &lt;<a href="mailto:sinkuupump@gmail.com" data-bare-link="true">sinkuupump@gmail.com</a>&gt;,
+           Alex Burka &lt;<a href="mailto:aburka@seas.upenn.edu" data-bare-link="true">aburka@seas.upenn.edu</a>&gt;,
+           Matthias Krüger &lt;<a href="mailto:matthias.krueger@famsik.de" data-bare-link="true">matthias.krueger@famsik.de</a>&gt;,
+           Daniel Holbert &lt;<a href="mailto:dholbert@cs.stanford.edu" data-bare-link="true">dholbert@cs.stanford.edu</a>&gt;,
+           Jonas Bushart &lt;<a href="mailto:jonas@bushart.org" data-bare-link="true">jonas@bushart.org</a>&gt;,
+           Harrison Metzger &lt;<a href="mailto:harrisonmetz@gmail.com" data-bare-link="true">harrisonmetz@gmail.com</a>&gt;,
+           Benjamin Bannier &lt;<a href="mailto:bbannier@gmail.com" data-bare-link="true">bbannier@gmail.com</a>&gt;,
+           Dimitris Apostolou &lt;<a href="mailto:dimitris.apostolou@icloud.com" data-bare-link="true">dimitris.apostolou@icloud.com</a>&gt;,
+           Corbin Uselton &lt;<a href="mailto:corbinu@decimal.io" data-bare-link="true">corbinu@decimal.io</a>&gt;,
+           QuarticCat &lt;<a href="mailto:QuarticCat@protonmail.com" data-bare-link="true">QuarticCat@protonmail.com</a>&gt;,
+           Artur Sinila &lt;<a href="mailto:freesoftware@logarithmus.dev" data-bare-link="true">freesoftware@logarithmus.dev</a>&gt;,
+           qthree &lt;<a href="mailto:qthree3@gmail.com" data-bare-link="true">qthree3@gmail.com</a>&gt;,
+           tranzystorekk &lt;<a href="mailto:tranzystorek.io@protonmail.com" data-bare-link="true">tranzystorek.io@protonmail.com</a>&gt;,
+           Paul Barker &lt;<a href="mailto:paul@pbarker.dev" data-bare-link="true">paul@pbarker.dev</a>&gt;,
+           Benoît CORTIER &lt;<a href="mailto:bcortier@proton.me" data-bare-link="true">bcortier@proton.me</a>&gt;,
+           Biswapriyo Nath &lt;<a href="mailto:nathbappai@gmail.com" data-bare-link="true">nathbappai@gmail.com</a>&gt;,
+           Shiraz &lt;<a href="mailto:smcclennon@protonmail.com" data-bare-link="true">smcclennon@protonmail.com</a>&gt;,
+           Victor Song &lt;<a href="mailto:vms2@rice.edu" data-bare-link="true">vms2@rice.edu</a>&gt;,
+           chrisalcantara &lt;<a href="mailto:chris@chrisalcantara.com" data-bare-link="true">chris@chrisalcantara.com</a>&gt;,
+           Utkarsh Gupta &lt;<a href="mailto:utkarshgupta137@gmail.com" data-bare-link="true">utkarshgupta137@gmail.com</a>&gt;,
+           nevsal,
+           Rui Chen &lt;<a href="https://chenrui.dev" data-bare-link="true">https://chenrui.dev</a>&gt;,
+       and Lynnesbian &lt;<a href="https://fedi.lynnesbian.space/@lynnesbian" data-bare-link="true">https://fedi.lynnesbian.space/@lynnesbian</a>&gt;</p>
 
 <h2 id="SPECIAL-THANKS">SPECIAL THANKS</h2>
 
 <p>To all who support further development, in particular:</p>
 
 <ul>
-<li>ThePhD</li>
-<li>Embark Studios</li>
+  <li>ThePhD</li>
+  <li>Embark Studios</li>
+  <li>Lars Strojny</li>
+  <li>EvModder</li>
 </ul>
-
 
 <h2 id="REPORTING-BUGS">REPORTING BUGS</h2>
 
@@ -246,10 +300,9 @@ Example output:
 
 <p>&lt;<a href="https://github.com/nabijaczleweli/cargo-update" data-bare-link="true">https://github.com/nabijaczleweli/cargo-update</a>&gt;</p>
 
-
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>cargo-update developers</li>
-    <li class='tc'>December 2021</li>
+    <li class='tc'>March 2025</li>
     <li class='tr'>cargo-install-update-config(1)</li>
   </ol>
 
