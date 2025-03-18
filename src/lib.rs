@@ -141,7 +141,7 @@
 //! ```text
 //! Set the directory in which to clone git repositories.
 //!
-//! Adjoined with "cargo-update" as last segment.
+//! Adjoined with "cargo-update.$(id -un)" as last segment.
 //!
 //! Required. Default: system temp, otherwise manual.
 //! ```
@@ -389,6 +389,7 @@ extern crate json_deserializer;
 extern crate serde_derive;
 extern crate array_tool;
 extern crate semver;
+extern crate whoami;
 extern crate serde;
 extern crate git2;
 #[macro_use]

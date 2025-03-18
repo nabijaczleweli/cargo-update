@@ -16,10 +16,11 @@ use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{self, AppSettings, SubCommand, App, Arg};
 use std::ffi::{OsString, OsStr};
+use std::path::{PathBuf, Path};
 use array_tool::vec::Uniq;
 use std::fmt::Arguments;
+use whoami::username_os;
 use std::process::exit;
-use std::path::PathBuf;
 use std::str::FromStr;
 use std::{env, fs};
 use home;
@@ -44,7 +45,8 @@ pub struct Options {
     pub update_git: bool,
     /// Don't output messages and pass --quiet to `cargo` subprocesses. Default: `false`
     pub quiet: bool,
-    /// Enforce packages' embedded `Cargo.lock`. Exactly like `CARGO_INSTALL_OPTS=--locked` (or `--enforce-lock` per package) except doesn't disable cargo-binstall. Default: `false`
+    /// Enforce packages' embedded `Cargo.lock`. Exactly like `CARGO_INSTALL_OPTS=--locked` (or `--enforce-lock` per package)
+    /// except doesn't disable cargo-binstall. Default: `false`
     pub locked: bool,
     /// Update all packages. Default: empty
     pub filter: Vec<PackageFilterElement>,
@@ -141,10 +143,11 @@ impl Options {
             cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             temp_dir: {
                 if let Some(tmpdir) = matches.value_of("temp-dir") {
-                    fs::canonicalize(tmpdir).unwrap().join("cargo-update")
-                } else {
-                    env::temp_dir().join("cargo-update")
-                }
+                        fs::canonicalize(tmpdir).unwrap()
+                    } else {
+                        env::temp_dir()
+                    }
+                    .join(Path::new("cargo-update").with_extension(username_os()))
             },
             cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
             install_cargo: matches.value_of_os("install-cargo").map(OsStr::to_os_string),
@@ -174,7 +177,9 @@ impl ConfigOptions {
                             .hide_possible_values(true),
                         Arg::from_usage("--debug 'Compile the package in debug (\"dev\") mode'").conflicts_with("release").conflicts_with("build-profile"),
                         Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug").conflicts_with("build-profile"),
-                        Arg::from_usage("--build-profile=[PROFILE] 'Compile the package in the given profile'").conflicts_with("debug").conflicts_with("release"),
+                        Arg::from_usage("--build-profile=[PROFILE] 'Compile the package in the given profile'")
+                            .conflicts_with("debug")
+                            .conflicts_with("release"),
                         Arg::from_usage("--install-prereleases 'Install prerelease versions'").conflicts_with("no-install-prereleases"),
                         Arg::from_usage("--no-install-prereleases 'Filter out prerelease versions'").conflicts_with("install-prereleases"),
                         Arg::from_usage("--enforce-lock 'Require Cargo.lock to be up to date'").conflicts_with("no-enforce-lock"),
