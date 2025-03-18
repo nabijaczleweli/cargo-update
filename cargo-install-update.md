@@ -131,7 +131,7 @@ Exit values and possible errors:
 
     Set the directory in which to clone git repositories.
 
-    Adjoined with "cargo-update" as last segment.
+    Adjoined with "cargo-update.$(id -un)" as last segment.
 
     Required. Default: system temp, otherwise manual.
 
