@@ -356,7 +356,7 @@ fn actual_main() -> Result<(), i32> {
         }
 
         if !opts.quiet {
-            print!("    Pulling {} git packages", packages.len());
+            print!("    Checking {} git packages", packages.len());
             let _ = stdout().flush();
         }
 

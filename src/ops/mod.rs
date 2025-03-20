@@ -13,13 +13,13 @@ use semver::{VersionReq as SemverReq, Version as Semver};
 use std::io::{ErrorKind as IoErrorKind, Write};
 use std::collections::{BTreeMap, BTreeSet};
 use curl::multi::Multi as CurlMulti;
+use std::process::{Command, Stdio};
 use std::{cmp, env, mem, str, fs};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
 use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
-use std::process::Command;
 use std::time::Duration;
 use std::borrow::Cow;
 use std::sync::Mutex;
@@ -542,6 +542,53 @@ impl GitRepoPackage {
 
     fn pull_version_impl(&mut self, temp_dir: &Path, git_db_dir: &Path, http_proxy: Option<&str>, fork_git: bool) {
         let clone_dir = find_git_db_repo(git_db_dir, &self.url).unwrap_or_else(|| temp_dir.join(&self.name));
+        if !clone_dir.exists() {
+            self.newest_id = if fork_git {
+                Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
+                    .args(&["ls-remote", "--", &self.url, self.branch.as_ref().map(String::as_str).unwrap_or("HEAD")])
+                    .arg(&clone_dir)
+                    .stderr(Stdio::inherit())
+                    .output()
+                    .ok()
+                    .filter(|s| s.status.success())
+                    .map(|s| s.stdout)
+                    .and_then(|o| String::from_utf8(o).ok())
+                    .and_then(|o| o.split('\t').next().and_then(|o| Oid::from_str(o).ok()))
+                    .ok_or(GitError::from_str(""))
+            } else {
+                with_authentication(&self.url, |creds| {
+                    git2::Remote::create_detached(self.url.clone())
+                        .and_then(|mut r| {
+                            let mut cb = RemoteCallbacks::new();
+                            cb.credentials(|a, b, c| creds(a, b, c));
+                            r.connect_auth(git2::Direction::Fetch,
+                                              Some(cb),
+                                              http_proxy.map(|http_proxy| proxy_options_from_proxy_url(&self.url, http_proxy)))
+                                .and_then(|rc| {
+                                    rc.list()?
+                                        .into_iter()
+                                        .find(|rh| match self.branch.as_ref() {
+                                            Some(b) => {
+                                                if rh.name().starts_with("refs/heads/") {
+                                                    rh.name()["refs/heads/".len()..] == b[..]
+                                                } else if rh.name().starts_with("refs/tags/") {
+                                                    rh.name()["refs/tags/".len()..] == b[..]
+                                                } else {
+                                                    false
+                                                }
+                                            }
+                                            None => rh.name() == "HEAD",
+                                        })
+                                        .map(|rh| rh.oid())
+                                        .ok_or(git2::Error::from_str(""))
+                                })
+                        })
+                })
+            };
+            if self.newest_id.is_ok() {
+                return;
+            }
+        }
 
         let repo = self.pull_version_repo(&clone_dir, http_proxy, fork_git);
 
@@ -1085,7 +1132,8 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
 /// # Examples
 ///
 /// ```
-/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
+/// # #[cfg(all(target_pointer_width="64", target_endian="little"))] //
+/// https://github.com/nabijaczleweli/cargo-update/issues/235
 /// # {
 /// # use cargo_update::ops::assert_index_path;
 /// # use std::env::temp_dir;
@@ -1342,27 +1390,29 @@ pub fn parse_registry_head(registry_repo: &Registry) -> Result<RegistryTree, Git
 }
 
 
+fn proxy_options_from_proxy_url<'a>(repo_url: &str, proxy_url: &str) -> ProxyOptions<'a> {
+    let mut prx = ProxyOptions::new();
+    let mut url = Cow::from(proxy_url);
+
+    // Cargo allows [protocol://]host[:port], but git needs the protocol, try to crudely add it here if missing;
+    // confer https://github.com/nabijaczleweli/cargo-update/issues/144.
+    if Url::parse(proxy_url).is_err() {
+        if let Ok(rurl) = Url::parse(repo_url) {
+            let replacement_proxy_url = format!("{}://{}", rurl.scheme(), proxy_url);
+            if Url::parse(&replacement_proxy_url).is_ok() {
+                url = Cow::from(replacement_proxy_url);
+            }
+        }
+    }
+
+    prx.url(&url);
+    prx
+}
+
 fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Option<&str>, callbacks: RemoteCallbacks<'a>) -> FetchOptions<'a> {
     let mut ret = FetchOptions::new();
     if let Some(proxy_url) = proxy_url {
-        ret.proxy_options({
-            let mut prx = ProxyOptions::new();
-            let mut url = Cow::from(proxy_url);
-
-            // Cargo allows [protocol://]host[:port], but git needs the protocol, try to crudely add it here if missing;
-            // confer https://github.com/nabijaczleweli/cargo-update/issues/144.
-            if Url::parse(proxy_url).is_err() {
-                if let Ok(rurl) = Url::parse(repo_url) {
-                    let replacement_proxy_url = format!("{}://{}", rurl.scheme(), proxy_url);
-                    if Url::parse(&replacement_proxy_url).is_ok() {
-                        url = Cow::from(replacement_proxy_url);
-                    }
-                }
-            }
-
-            prx.url(&url);
-            prx
-        });
+        ret.proxy_options(proxy_options_from_proxy_url(repo_url, proxy_url));
     }
     ret.remote_callbacks(callbacks);
     ret
