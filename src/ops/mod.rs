@@ -541,10 +541,7 @@ impl GitRepoPackage {
     }
 
     fn pull_version_impl(&mut self, temp_dir: &Path, git_db_dir: &Path, http_proxy: Option<&str>, fork_git: bool) {
-        let clone_dir = find_git_db_repo(git_db_dir, &self.url).unwrap_or_else(|| {
-            fs::create_dir_all(temp_dir).unwrap();
-            temp_dir.join(&self.name)
-        });
+        let clone_dir = find_git_db_repo(git_db_dir, &self.url).unwrap_or_else(|| temp_dir.join(&self.name));
 
         let repo = self.pull_version_repo(&clone_dir, http_proxy, fork_git);
 
