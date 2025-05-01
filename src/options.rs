@@ -14,7 +14,7 @@
 
 use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
-use clap::{self, AppSettings, SubCommand, App, Arg};
+use clap::{AppSettings, SubCommand, App, Arg};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
 use array_tool::vec::Uniq;
@@ -84,7 +84,7 @@ impl Options {
             .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
             .subcommand(SubCommand::with_name("install-update")
                 .version(crate_version!())
-                .author(crate_authors!("\n"))
+                .author("https://github.com/nabijaczleweli/cargo-update")
                 .about("A cargo subcommand for checking and applying updates to installed executables")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .visible_alias("root")
@@ -165,7 +165,7 @@ impl ConfigOptions {
             .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
             .subcommand(SubCommand::with_name("install-update-config")
                 .version(crate_version!())
-                .author(crate_authors!("\n"))
+                .author("https://github.com/nabijaczleweli/cargo-update")
                 .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .validator(|s| existing_dir_validator("Cargo", &s)),
