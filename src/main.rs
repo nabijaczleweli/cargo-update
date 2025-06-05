@@ -421,6 +421,7 @@ fn actual_main() -> Result<(), i32> {
                                     .arg("--root")
                                     .arg(&opts.cargo_dir.0)
                                     .args(if opts.quiet { Some("--quiet") } else { None })
+                                    .args(if opts.locked { Some("--locked") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
                                     .arg(&package.name);
@@ -438,6 +439,7 @@ fn actual_main() -> Result<(), i32> {
                                     .arg(&opts.cargo_dir.0)
                                     .arg("-f")
                                     .args(if opts.quiet { Some("--quiet") } else { None })
+                                    .args(if opts.locked { Some("--locked") } else { None })
                                     .arg("--git")
                                     .arg(&package.url)
                                     .arg(&package.name);
