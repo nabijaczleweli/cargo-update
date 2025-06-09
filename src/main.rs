@@ -9,9 +9,9 @@ use std::collections::BTreeMap;
 use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use std::ffi::OsStr;
+use std::{env, mem};
 #[cfg(target_os="windows")]
 use std::fs::File;
-use std::env;
 use std::fs;
 
 
@@ -187,6 +187,8 @@ fn actual_main() -> Result<(), i32> {
         writeln!(out).unwrap();
         out.flush().unwrap();
     }
+
+    note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
 
     let mut success_global = vec![];
     let mut errored_global = vec![];
@@ -399,6 +401,8 @@ fn actual_main() -> Result<(), i32> {
             out.flush().unwrap();
         }
 
+        note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
+
         if opts.update {
             if !opts.force {
                 packages.retain(cargo_update::ops::GitRepoPackage::needs_update);
@@ -547,6 +551,39 @@ fn actual_main() -> Result<(), i32> {
     }
 
     Ok(())
+}
+
+
+fn note_removed_executables<'a, T: Iterator<Item = (&'a String, &'a Vec<String>)>>(opts: &cargo_update::Options, packages: T) {
+    if opts.quiet {
+        return;
+    }
+
+    // https://manpages.debian.org/unstable/cargo/cargo-install.1.en.html
+    // •   --root option                            we render this as -c
+    // •   CARGO_INSTALL_ROOT environment variable  same
+    // •   install.root Cargo config value          we don't support this
+    // •   CARGO_HOME environment variable          same
+    // •   $HOME/.cargo                             same
+    let mut any = false;
+    let bindir = opts.cargo_dir.1.join("bin");
+    for (name, executables) in packages {
+        let mut first = true;
+        for e in executables.iter().filter(|e| !fs::exists(bindir.join(e)).unwrap_or(false)) {
+            if mem::replace(&mut first, false) {
+                print!("{} contains removed executables ({}", name, e);
+            } else {
+                print!(", {}", e);
+            }
+        }
+        if !first {
+            println!("), which will be re-installed on update — you can remove it with cargo uninstall {}", name);
+            any = true;
+        }
+    }
+    if any {
+        println!();
+    }
 }
 
 
