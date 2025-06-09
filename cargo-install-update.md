@@ -224,6 +224,7 @@ Exit values and possible errors:
   `cargo install-update -al`
 
     List all installed packages, don't update any.
+    ~/.cargo/bin/identicon.exe was removed manually, so a note is issued.
 
     Example output:
           Updating registry `https://github.com/rust-lang/crates.io-index`
@@ -237,6 +238,8 @@ Exit values and possible errors:
       identicon       v0.1.1     v0.1.1   No
       racer           v1.2.10    v1.2.10  No
       rustfmt         v0.6.2     v0.6.2   No
+
+      identicon contains removed executables (identicon.exe), which will be re-installed on update ‒ you can remove it with cargo uninstall identicon
 
   `cargo install-update -af`
 
