@@ -1203,8 +1203,7 @@ pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, 
 /// But then, a [man of steel eyes and hawk will](https://github.com/Eh2406) has emerged, seemingly from nowhere, remarking:
 ///
 /// > [21:09] Eh2406:
-/// https://github.com/rust-lang/cargo/blob/1ee1ef0ea7ab47d657ca675e3b1bd2fcd68b5aab/src/cargo/sources/registry/remote.
-/// rs#L204<br />
+/// https://github.com/rust-lang/cargo/blob/1ee1ef0ea7ab47d657ca675e3b1bd2fcd68b5aab/src/cargo/sources/registry/remote.rs#L204<br />
 /// > [21:10] Eh2406: looks like it is a git fetch of "refs/heads/master:refs/remotes/origin/master"<br />
 /// > [21:11] Eh2406: You are already poking about in cargos internal representation of the index, is this so much more?
 ///
