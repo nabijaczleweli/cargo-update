@@ -68,6 +68,8 @@ pub enum ConfigOperation {
 /// configuration.insert("cargo_update".to_string(), PackageConfig::from(&operations));
 /// PackageConfig::write(&configuration, &config_file).unwrap();
 /// ```
+// Allow clippy error to serde skip from_transient
+#[allow(clippy::derived_hash_with_manual_eq)]
 #[derive(Debug, Clone, Hash, Eq, Serialize, Deserialize)]
 pub struct PackageConfig {
     /// Toolchain to use to compile the package, or `None` for default.
@@ -189,7 +191,7 @@ impl PackageConfig {
     pub fn cargo_args<S: AsRef<str>, I: IntoIterator<Item = S>>(&self, executables: I) -> Vec<Cow<'static, str>> {
         let mut res = vec![];
         if let Some(ref t) = self.toolchain {
-            res.push(format!("+{}", t).into());
+            res.push(format!("+{t}").into());
         }
         res.push("install".into());
         res.push("-f".into());
@@ -200,7 +202,7 @@ impl PackageConfig {
             res.push("--features".into());
             let mut a = String::new();
             for f in &self.features {
-                write!(a, "{} ", f).unwrap();
+                write!(a, "{f} ").unwrap();
             }
             res.push(a.into());
         }
@@ -212,8 +214,8 @@ impl PackageConfig {
                 let x = x.as_ref();
 
                 res.push("--bin".into());
-                res.push(if x.ends_with(".exe") {
-                        &x[..x.len() - 4]
+                res.push(if let Some(s) = x.strip_suffix(".exe") {
+                        s
                     } else {
                         x
                     }
@@ -423,7 +425,7 @@ impl PackageConfig {
                 }
             }
         }
-        for (_, v) in &mut base {
+        for v in base.values_mut() {
             v.normalise();
         }
         Ok(base)
@@ -451,8 +453,7 @@ impl PackageConfig {
     }
 
     fn cargo2_package_config(mut blob: json::Object) -> PackageConfig {
-        let mut ret = PackageConfig::default();
-        ret.from_transient = true;
+        let mut ret = PackageConfig { from_transient: true, ..Default::default() };
 
         // Nothing to parse PackageConfig::toolchain from
         if let Some(json::Value::Bool(ndf)) = blob.get("no_default_features") {
@@ -565,7 +566,7 @@ impl<'de> Deserialize<'de> for EnvironmentOverride {
 impl Serialize for EnvironmentOverride {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match &self.0 {
-            Some(data) => serializer.serialize_str(&data),
+            Some(data) => serializer.serialize_str(data),
             None => serializer.serialize_bool(false),
         }
     }

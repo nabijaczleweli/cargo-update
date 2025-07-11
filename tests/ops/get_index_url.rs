@@ -92,7 +92,7 @@ fn dead_end() {
 
 
 fn prep_config(subname: &str, suffix: &str) -> PathBuf {
-    let td = temp_dir().join("cargo_update-test").join(format!("get_index_url-{}-{}", subname, suffix));
+    let td = temp_dir().join("cargo_update-test").join(format!("get_index_url-{subname}-{suffix}"));
     let _ = fs::create_dir_all(&td);
 
     fs::write(td.join(suffix), TEST_DATA).unwrap();

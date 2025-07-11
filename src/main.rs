@@ -36,7 +36,7 @@ fn actual_main() -> Result<(), i32> {
     let http_proxy = cargo_update::ops::find_proxy(&crates_file);
     let configuration = cargo_update::ops::PackageConfig::read(&crates_file.with_file_name(".install_config.toml"),
                                                                &crates_file.with_file_name(".crates2.json")).map_err(|(e, r)| {
-            eprintln!("Reading config: {}", e);
+            eprintln!("Reading config: {e}");
             r
         })?;
     let cargo_config = cargo_update::ops::CargoConfig::load(&crates_file);
@@ -54,7 +54,7 @@ fn actual_main() -> Result<(), i32> {
         (true, true) => {}
         (true, false) => {
             for pkg in cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install, &installed_git_packages).into_iter() {
-                if packages.iter().find(|p| p.name == pkg.name).is_none() {
+                if !packages.iter().any(|p| p.name == pkg.name) {
                     packages.push(pkg);
                 }
             }
@@ -85,7 +85,7 @@ fn actual_main() -> Result<(), i32> {
             cargo_update::ops::assert_index_path(&opts.cargo_dir.1, &registry_url[..], *sparse)
                 .map(|path| (path, *sparse, &pkg_names[..]))
                 .map_err(|e| {
-                    eprintln!("Couldn't get package repository: {}.", e);
+                    eprintln!("Couldn't get package repository: {e}.");
                     2
                 })
         }))?;
@@ -103,11 +103,11 @@ fn actual_main() -> Result<(), i32> {
             2
         })
     }))?;
-    for (i, mut registry_repo) in registry_repos.iter_mut().enumerate() {
-        cargo_update::ops::update_index(&mut registry_repo,
+    for (i, registry_repo) in registry_repos.iter_mut().enumerate() {
+        cargo_update::ops::update_index(registry_repo,
                                         &(registry_urls[i].0).0,
                                         registry_urls[i].1.iter(),
-                                        http_proxy.as_ref().map(String::as_str),
+                                        http_proxy.as_deref(),
                                         cargo_config.net_git_fetch_with_cli,
                                         &cargo_config.http,
                                         &mut if !opts.quiet {
@@ -151,7 +151,7 @@ fn actual_main() -> Result<(), i32> {
                         (p, cfg.as_ref().and_then(|c| c.target_version.as_ref()), cfg.as_ref().and_then(|c| c.install_prereleases))
                     })
                     .collect::<Vec<_>>();
-                pkgs.sort_by(|&(ref lhs, lhstv, lhsip), &(ref rhs, rhstv, rhsip)| {
+                pkgs.sort_by(|&(lhs, lhstv, lhsip), &(rhs, rhstv, rhsip)| {
                     (!lhs.needs_update(lhstv, lhsip, opts.downdate), &lhs.name).cmp(&(!rhs.needs_update(rhstv, rhsip, opts.downdate), &rhs.name))
                 });
                 pkgs
@@ -159,17 +159,17 @@ fn actual_main() -> Result<(), i32> {
             write!(out, "{}\t", package.name).unwrap();
 
             if let Some(ref v) = package.version {
-                write!(out, "v{}", v).unwrap();
+                write!(out, "v{v}").unwrap();
             } else {
                 write!(out, "No").unwrap();
             }
 
             if let Some(tv) = package_target_version {
-                write!(out, "\t{}", tv).unwrap();
+                write!(out, "\t{tv}").unwrap();
             } else if let Some(upd_v) = package.update_to_version() {
-                write!(out, "\tv{}", upd_v).unwrap();
+                write!(out, "\tv{upd_v}").unwrap();
                 if let Some(alt_v) = package.alternative_version.as_ref() {
-                    write!(out, " (v{} available)", alt_v).unwrap();
+                    write!(out, " (v{alt_v} available)").unwrap();
                 }
             } else {
                 write!(out, "\tN/A").unwrap();
@@ -232,14 +232,14 @@ fn actual_main() -> Result<(), i32> {
                     };
                     let install_res = {
                             let cfg = configuration.get(&package.name);
-                            if opts.install_cargo == None && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
-                               (cfg == None || cfg == Some(&Default::default())) {
+                            if opts.install_cargo.is_none() && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
+                               (cfg.is_none() || cfg == Some(&Default::default())) {
                                     Command::new("cargo-binstall")
                                         .arg("--roots")
                                         .arg(&opts.cargo_dir.0)
                                         .arg("--no-confirm")
                                         .arg("--version")
-                                        .arg(&format!("={}", package.update_to_version().unwrap()))
+                                        .arg(format!("={}", package.update_to_version().unwrap()))
                                         .arg("--force")
                                         .args(if opts.quiet { Some("--quiet") } else { None })
                                         .args(if opts.locked { Some("--locked") } else { None })
@@ -249,7 +249,7 @@ fn actual_main() -> Result<(), i32> {
                                     Err(IoErrorKind::NotFound.into())
                                 }
                                 .or_else(|_| if let Some(cfg) = cfg {
-                                    let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                    let mut cmd = Command::new(opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                     cfg.environmentalise(&mut cmd)
                                         .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                         .arg("--root")
@@ -271,7 +271,7 @@ fn actual_main() -> Result<(), i32> {
                                         .args(&opts.cargo_install_args)
                                         .status()
                                 } else {
-                                    let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                    let mut cmd = Command::new(opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                     cmd.arg("install")
                                         .arg("--root")
                                         .arg(&opts.cargo_dir.0)
@@ -312,7 +312,7 @@ fn actual_main() -> Result<(), i32> {
                     }
                     Err(pr) => {
                         e.push(pn);
-                        (s, e, r.or_else(|| Some(pr)))
+                        (s, e, r.or(Some(pr)))
                     }
                 });
 
@@ -328,7 +328,7 @@ fn actual_main() -> Result<(), i32> {
                     if i != 0 {
                         eprint!(", ");
                     }
-                    eprint!("{}", e);
+                    eprint!("{e}");
                 }
                 eprintln!(".");
                 eprintln!();
@@ -340,10 +340,8 @@ fn actual_main() -> Result<(), i32> {
                     return Err(result.unwrap());
                 }
             }
-        } else {
-            if !opts.quiet {
-                println!("No packages need updating.");
-            }
+        } else if !opts.quiet {
+            println!("No packages need updating.");
         }
     }
 
@@ -366,7 +364,7 @@ fn actual_main() -> Result<(), i32> {
         for package in &mut packages {
             package.pull_version(&opts.temp_dir,
                                  &git_db_dir,
-                                 http_proxy.as_ref().map(String::as_str),
+                                 http_proxy.as_deref(),
                                  cargo_config.net_git_fetch_with_cli);
             if !opts.quiet {
                 let _ = stdout().write_all(b".").and_then(|_| stdout().flush());
@@ -384,8 +382,8 @@ fn actual_main() -> Result<(), i32> {
                 impl<Oid: Display, GitError: Display> Display for OidOrError<'_, Oid, GitError> {
                     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
                         match self.0 {
-                            Ok(oid) => write!(f, "{}", oid),
-                            Err(err) => write!(f, "git error: {}", err),
+                            Ok(oid) => write!(f, "{oid}"),
+                            Err(err) => write!(f, "git error: {err}"),
                         }
                     }
                 }
@@ -420,7 +418,7 @@ fn actual_main() -> Result<(), i32> {
                         }
 
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                                let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                let mut cmd = Command::new(opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                 cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
                                     .arg("--root")
                                     .arg(&opts.cargo_dir.0)
@@ -437,7 +435,7 @@ fn actual_main() -> Result<(), i32> {
                                 }
                                 cmd.args(&opts.cargo_install_args).status()
                             } else {
-                                let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                let mut cmd = Command::new(opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
                                 cmd.arg("install")
                                     .arg("--root")
                                     .arg(&opts.cargo_dir.0)
@@ -477,7 +475,7 @@ fn actual_main() -> Result<(), i32> {
                         }
                         Err(pr) => {
                             e.push(pn);
-                            (s, e, r.or_else(|| Some(pr)))
+                            (s, e, r.or(Some(pr)))
                         }
                     });
 
@@ -493,7 +491,7 @@ fn actual_main() -> Result<(), i32> {
                         if i != 0 {
                             eprint!(", ");
                         }
-                        eprint!("{}", e);
+                        eprint!("{e}");
                     }
                     eprintln!(".");
                     eprintln!();
@@ -504,10 +502,8 @@ fn actual_main() -> Result<(), i32> {
                         return Err(result.unwrap());
                     }
                 }
-            } else {
-                if !opts.quiet {
-                    println!("No git packages need updating.");
-                }
+            } else if !opts.quiet {
+                println!("No git packages need updating.");
             }
         }
     }
@@ -525,7 +521,7 @@ fn actual_main() -> Result<(), i32> {
                 if i != 0 {
                     print!(", ");
                 }
-                print!("{}", e);
+                print!("{e}");
             }
             println!(".");
         }
@@ -542,7 +538,7 @@ fn actual_main() -> Result<(), i32> {
                 if i != 0 {
                     eprint!(", ");
                 }
-                eprint!("{}", e);
+                eprint!("{e}");
             }
             eprintln!(".");
 
@@ -571,13 +567,13 @@ fn note_removed_executables<'a, T: Iterator<Item = (&'a String, &'a Vec<String>)
         let mut first = true;
         for e in executables.iter().filter(|e| !fs::exists(bindir.join(e)).unwrap_or(false)) {
             if mem::replace(&mut first, false) {
-                print!("{} contains removed executables ({}", name, e);
+                print!("{name} contains removed executables ({e}");
             } else {
-                print!(", {}", e);
+                print!(", {e}");
             }
         }
         if !first {
-            println!("), which will be re-installed on update — you can remove it with cargo uninstall {}", name);
+            println!("), which will be re-installed on update — you can remove it with cargo uninstall {name}");
             any = true;
         }
     }

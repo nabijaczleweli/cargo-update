@@ -16,7 +16,7 @@ fn actual_main() -> Result<(), i32> {
     let config_file = cargo_update::ops::crates_file_in(&opts.cargo_dir).with_file_name(".install_config.toml");
 
     let mut configuration = cargo_update::ops::PackageConfig::read(&config_file, &config_file.with_file_name(".crates2.json")).map_err(|(e, r)| {
-            eprintln!("Reading config: {}", e);
+            eprintln!("Reading config: {e}");
             r
         })?;
     if !opts.ops.is_empty() {
@@ -27,7 +27,7 @@ fn actual_main() -> Result<(), i32> {
         }
 
         cargo_update::ops::PackageConfig::write(&configuration, &config_file).map_err(|(e, r)| {
-                eprintln!("Writing config: {}", e);
+                eprintln!("Writing config: {e}");
                 r
             })?;
     }
@@ -35,28 +35,28 @@ fn actual_main() -> Result<(), i32> {
     if let Some(cfg) = configuration.get(&opts.package) {
         let mut out = TabWriter::new(stdout());
         if let Some(ref t) = cfg.toolchain {
-            writeln!(out, "Toolchain\t{}", t).unwrap();
+            writeln!(out, "Toolchain\t{t}").unwrap();
         }
         if let Some(p) = cfg.build_profile.as_deref().or_else(|| cfg.debug.and_then(|d| if d { Some("dev") } else { None })) {
-            writeln!(out, "Build profile\t{}", p).unwrap();
+            writeln!(out, "Build profile\t{p}").unwrap();
         }
         if let Some(ip) = cfg.install_prereleases {
-            writeln!(out, "Install prereleases\t{}", ip).unwrap();
+            writeln!(out, "Install prereleases\t{ip}").unwrap();
         }
         if let Some(el) = cfg.enforce_lock {
-            writeln!(out, "Enforce lock\t{}", el).unwrap();
+            writeln!(out, "Enforce lock\t{el}").unwrap();
         }
         if let Some(rb) = cfg.respect_binaries {
-            writeln!(out, "Respect binaries\t{}", rb).unwrap();
+            writeln!(out, "Respect binaries\t{rb}").unwrap();
         }
         if let Some(ref tv) = cfg.target_version {
-            writeln!(out, "Target version\t{}", tv).unwrap();
+            writeln!(out, "Target version\t{tv}").unwrap();
         }
         writeln!(out, "Default features\t{}", cfg.default_features).unwrap();
         if !cfg.features.is_empty() {
             write!(out, "Features").unwrap();
             for f in &cfg.features {
-                writeln!(out, "\t{}", f).unwrap();
+                writeln!(out, "\t{f}").unwrap();
             }
         }
         if let Some(env) = cfg.environment.as_ref() {
@@ -64,8 +64,8 @@ fn actual_main() -> Result<(), i32> {
                 write!(out, "Environment variables").unwrap();
                 for (var, val) in env {
                     match val {
-                        cargo_update::ops::EnvironmentOverride(Some(val)) => writeln!(out, "\t{}={}", var, val).unwrap(),
-                        cargo_update::ops::EnvironmentOverride(None) => writeln!(out, "\t{}\tcleared", var).unwrap(),
+                        cargo_update::ops::EnvironmentOverride(Some(val)) => writeln!(out, "\t{var}={val}").unwrap(),
+                        cargo_update::ops::EnvironmentOverride(None) => writeln!(out, "\t{var}\tcleared").unwrap(),
                     }
                 }
             }

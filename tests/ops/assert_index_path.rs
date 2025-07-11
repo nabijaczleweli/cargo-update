@@ -70,7 +70,7 @@ fn two() {
 }
 
 fn prep_indices(subname: &str) -> PathBuf {
-    let td = temp_dir().join("cargo_update-test").join(format!("assert_index_path-{}", subname));
+    let td = temp_dir().join("cargo_update-test").join(format!("assert_index_path-{subname}"));
     let _ = fs::create_dir_all(&td);
     td
 }
@@ -80,6 +80,6 @@ fn prepare_indices(index: &Path, shortnames: &[(&str, &str)]) {
     let _ = fs::create_dir_all(&index);
 
     for (name, hash) in shortnames {
-        let _ = fs::create_dir(index.join(format!("{}-{}", name, hash)));
+        let _ = fs::create_dir(index.join(format!("{name}-{hash}")));
     }
 }

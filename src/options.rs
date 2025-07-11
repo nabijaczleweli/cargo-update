@@ -89,9 +89,9 @@ impl Options {
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .visible_alias("root")
                             .allow_invalid_utf8(true)
-                            .validator(|s| existing_dir_validator("Cargo", &s)),
+                            .validator(|s| existing_dir_validator("Cargo", s)),
                         Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
-                            .validator(|s| existing_dir_validator("Temporary", &s)),
+                            .validator(|s| existing_dir_validator("Temporary", s)),
                         Arg::from_usage("-a --all 'Update all packages'"),
                         Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update (all packages by default)'"),
                         Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
@@ -102,7 +102,7 @@ impl Options {
                         Arg::from_usage("--locked 'Enforce packages' embedded Cargo.lock'"),
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .number_of_values(1)
-                            .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
+                            .validator(|s| PackageFilterElement::parse(s).map(|_| ())),
                         Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").allow_invalid_utf8(true),
                         Arg::from_usage("-j --jobs=[JOBS] 'Limit number of parallel jobs.'").allow_invalid_utf8(true),
                         Arg::with_name("cargo_install_opts")
@@ -131,15 +131,15 @@ impl Options {
                 (true, None) => vec![],
                 (false, None) => clerror(format_args!("Need at least one PACKAGE without --all")),
             },
-            all: all,
-            update: update,
+            all,
+            update,
             install: matches.is_present("allow-no-update"),
             force: matches.is_present("force"),
             downdate: matches.is_present("downdate"),
             update_git: matches.is_present("git"),
             quiet: matches.is_present("quiet"),
             locked: matches.is_present("locked"),
-            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_else(|| vec![]),
+            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_default(),
             cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             temp_dir: {
                 if let Some(tmpdir) = matches.value_of("temp-dir") {
@@ -168,12 +168,12 @@ impl ConfigOptions {
                 .author("https://github.com/nabijaczleweli/cargo-update")
                 .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
                 .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
-                            .validator(|s| existing_dir_validator("Cargo", &s)),
+                            .validator(|s| existing_dir_validator("Cargo", s)),
                         Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
                         Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'").number_of_values(1),
                         Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'").number_of_values(1),
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
-                            .possible_values(&["1", "yes", "true", "0", "no", "false"])
+                            .possible_values(["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
                         Arg::from_usage("--debug 'Compile the package in debug (\"dev\") mode'").conflicts_with("release").conflicts_with("build-profile"),
                         Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug").conflicts_with("build-profile"),
@@ -187,7 +187,7 @@ impl ConfigOptions {
                         Arg::from_usage("--respect-binaries 'Only install already installed binaries'").conflicts_with("no-respect-binaries"),
                         Arg::from_usage("--no-respect-binaries 'Install all binaries'").conflicts_with("respect-binaries"),
                         Arg::from_usage("-v --version=[VERSION_REQ] 'Require a cargo-compatible version range'")
-                            .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
+                            .validator(|s| SemverReq::from_str(s).map(|_| ()).map_err(|e| e.to_string()))
                             .conflicts_with("any-version"),
                         Arg::from_usage("-a --any-version 'Allow any version'").conflicts_with("version"),
                         Arg::from_usage("-e --environment=[VARIABLE=VALUE]... 'Environment variable to set'")
@@ -228,7 +228,7 @@ impl ConfigOptions {
                 .into_iter()
                 .chain(matches.values_of("feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::AddFeature))
                 .chain(matches.values_of("no-feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::RemoveFeature))
-                .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
+                .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures))
                 .chain(match (matches.is_present("debug"), matches.is_present("release"), matches.value_of("build-profile")) {
                     (true, _, _) => Some(ConfigOperation::SetBuildProfile("dev".into())),
                     (_, true, _) => Some(ConfigOperation::SetBuildProfile("release".into())),
@@ -270,9 +270,9 @@ impl ConfigOptions {
 
 fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> (PathBuf, PathBuf) {
     if let Some(dir) = opt_cargo_dir {
-        match fs::canonicalize(&dir) {
+        match fs::canonicalize(dir) {
             Ok(cdir) => (dir.into(), cdir),
-            Err(_) => clerror(format_args!("--cargo-dir={:?} doesn't exist", dir)),
+            Err(_) => clerror(format_args!("--cargo-dir={dir:?} doesn't exist")),
         }
     } else {
         match env::var_os("CARGO_INSTALL_ROOT")
@@ -289,12 +289,12 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> (PathBuf, PathBuf) {
 }
 
 fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
-    fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
+    fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{label} directory \"{s}\" not found"))
 }
 
 fn package_parse(s: &str) -> Result<(String, Option<Semver>, String), String> {
     let mut registry_url = None;
-    let mut s = &s[..];
+    let mut s = s;
     if s.starts_with('(') {
         if let Some(idx) = s.find("):") {
             registry_url = Some(s[1..idx].to_string());
@@ -315,6 +315,6 @@ fn package_parse(s: &str) -> Result<(String, Option<Semver>, String), String> {
 
 
 fn clerror(f: Arguments) -> ! {
-    eprintln!("{}", f);
+    eprintln!("{f}");
     exit(1)
 }

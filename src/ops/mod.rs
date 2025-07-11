@@ -15,7 +15,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use curl::multi::Multi as CurlMulti;
 use std::process::{Command, Stdio};
 use std::{cmp, env, mem, str, fs};
-use std::ffi::{OsString, OsStr};
+use std::ffi::OsStr;
 use std::path::{PathBuf, Path};
 use json_deserializer as json;
 use std::hash::{Hasher, Hash};
@@ -250,7 +250,7 @@ impl RegistryPackage {
                 newest_version: None,
                 alternative_version: None,
                 max_version: None,
-                executables: executables,
+                executables,
             }
         })
     }
@@ -522,15 +522,15 @@ impl GitRepoPackage {
     pub fn parse(what: &str, executables: Vec<String>) -> Option<GitRepoPackage> {
         parse_git_package_ident(what).map(|(name, url, sha)| {
             let mut url = Url::parse(url).unwrap();
-            let branch = url.query_pairs().find(|&(ref name, _)| name == "branch").map(|(_, value)| value.to_string());
+            let branch = url.query_pairs().find(|(name, _)| name == "branch").map(|(_, value)| value.to_string());
             url.set_query(None);
             GitRepoPackage {
                 name: name.to_string(),
                 url: url.into(),
-                branch: branch,
+                branch,
                 id: Oid::from_str(sha).unwrap(),
                 newest_id: Err(GitError::from_str("")),
-                executables: executables,
+                executables,
             }
         })
     }
@@ -544,8 +544,8 @@ impl GitRepoPackage {
         let clone_dir = find_git_db_repo(git_db_dir, &self.url).unwrap_or_else(|| temp_dir.join(&self.name));
         if !clone_dir.exists() {
             self.newest_id = if fork_git {
-                Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
-                    .args(&["ls-remote", "--", &self.url, self.branch.as_ref().map(String::as_str).unwrap_or("HEAD")])
+                Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
+                    .args(["ls-remote", "--", &self.url, self.branch.as_deref().unwrap_or("HEAD")])
                     .arg(&clone_dir)
                     .stderr(Stdio::inherit())
                     .output()
@@ -566,7 +566,7 @@ impl GitRepoPackage {
                                               http_proxy.map(|http_proxy| proxy_options_from_proxy_url(&self.url, http_proxy)))
                                 .and_then(|rc| {
                                     rc.list()?
-                                        .into_iter()
+                                        .iter()
                                         .find(|rh| match self.branch.as_ref() {
                                             Some(b) => {
                                                 if rh.name().starts_with("refs/heads/") {
@@ -597,11 +597,11 @@ impl GitRepoPackage {
 
     fn pull_version_fresh_clone(&self, clone_dir: &Path, http_proxy: Option<&str>, fork_git: bool) -> Result<Repository, GitError> {
         if fork_git {
-            Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
+            Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
                 .arg("clone")
                 .args(self.branch.as_ref().map(|_| "-b"))
                 .args(self.branch.as_ref())
-                .args(&["--bare", "--", &self.url])
+                .args(["--bare", "--", &self.url])
                 .arg(clone_dir)
                 .status()
                 .map_err(|e| GitError::from_str(&e.to_string()))
@@ -617,12 +617,12 @@ impl GitRepoPackage {
                 let mut cb = RemoteCallbacks::new();
                 cb.credentials(|a, b, c| creds(a, b, c));
                 bldr.fetch_options(fetch_options_from_proxy_url_and_callbacks(&self.url, http_proxy, cb));
-                if let Some(ref b) = self.branch.as_ref() {
+                if let Some(b) = self.branch.as_ref() {
                     bldr.branch(b);
                 }
 
                 bldr.bare(true);
-                bldr.clone(&self.url, &clone_dir)
+                bldr.clone(&self.url, clone_dir)
             })
         }
     }
@@ -637,7 +637,7 @@ impl GitRepoPackage {
                 Some(b) => {
                     // Cargo doesn't point the HEAD at the chosen (via "--branch") branch when installing
                     // https://github.com/nabijaczleweli/cargo-update/issues/143
-                    r.set_head(&format!("refs/heads/{}", b)).map_err(|e| panic!("Couldn't set HEAD to chosen branch {}: {}", b, e)).unwrap();
+                    r.set_head(&format!("refs/heads/{b}")).map_err(|e| panic!("Couldn't set HEAD to chosen branch {}: {}", b, e)).unwrap();
                     (Cow::from(b), Cow::from(b))
                 }
 
@@ -669,10 +669,10 @@ impl GitRepoPackage {
                     r.remote_anonymous(&self.url)
                 })
                 .and_then(|mut rm| if fork_git {
-                    Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git")))
+                    Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git")))
                         .arg("-C")
                         .arg(r.path())
-                        .args(&["fetch", remote, &tofetch])
+                        .args(["fetch", remote, &tofetch])
                         .status()
                         .map_err(|e| GitError::from_str(&e.to_string()))
                         .and_then(|e| if e.success() {
@@ -707,7 +707,7 @@ impl GitRepoPackage {
             // If we could not open the repository either it does not exist, or exists but is invalid,
             // in which case remove it to trigger a fresh clone.
             if clone_dir.exists() {
-                fs::remove_dir_all(&clone_dir).unwrap();
+                fs::remove_dir_all(clone_dir).unwrap();
             }
 
             self.pull_version_fresh_clone(clone_dir, http_proxy, fork_git)
@@ -770,12 +770,12 @@ impl PackageFilterElement {
     /// assert!(PackageFilterElement::parse("communism=good").is_err());
     /// ```
     pub fn parse(from: &str) -> Result<PackageFilterElement, String> {
-        let (key, value) = from.split_at(from.find('=').ok_or_else(|| format!(r#"Filter string "{}" does not contain the key/value separator "=""#, from))?);
+        let (key, value) = from.split_at(from.find('=').ok_or_else(|| format!(r#"Filter string "{from}" does not contain the key/value separator "=""#))?);
         let value = &value[1..];
 
         Ok(match key {
             "toolchain" => PackageFilterElement::Toolchain(value.to_string()),
-            _ => return Err(format!(r#"Unrecognised filter key "{}""#, key)),
+            _ => return Err(format!(r#"Unrecognised filter key "{key}""#)),
         })
     }
 
@@ -876,13 +876,13 @@ impl CargoConfig {
                     }),
                 check_revoke: env::var("CARGO_HTTP_CHECK_REVOKE")
                     .ok()
-                    .map(|e| toml::Value::String(e))
+                    .map(toml::Value::String)
                     .or_else(|| {
-                        Some(cfg.as_mut()?
+                        cfg.as_mut()?
                             .as_table_mut()?
                             .get_mut("http")?
                             .as_table_mut()?
-                            .remove("check-revoke")?)
+                            .remove("check-revoke")
                     })
                     .map(CargoConfig::truthy)
                     .unwrap_or(cfg!(target_os = "windows")),
@@ -892,8 +892,8 @@ impl CargoConfig {
 
     fn truthy(v: toml::Value) -> bool {
         match v {
-            toml::Value::String(ref s) if s == "" => false,
-            toml::Value::Float(f) if f == 0. => false,
+            toml::Value::String(ref s) if s.is_empty() => false,
+            toml::Value::Float(0.) => false,
             toml::Value::Integer(0) |
             toml::Value::Boolean(false) => false,
             _ => true,
@@ -1076,7 +1076,7 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
         .cloned()
         .map(|p| RegistryPackage { max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()), ..p })
         .chain(to_update.iter()
-            .filter(|p| allow_installs && installed.iter().find(|i| i.name == p.0).is_none() && installed_git.iter().find(|i| i.name == p.0).is_none())
+            .filter(|p| allow_installs && !installed.iter().any(|i| i.name == p.0) && !installed_git.iter().any(|i| i.name == p.0))
             .map(|p| {
                 RegistryPackage {
                     name: p.0.clone(),
@@ -1112,7 +1112,7 @@ pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
         json::Value::Object(o) => {
             if !matches!(o.get("yanked"), Some(&json::Value::Bool(true))) {
                 match o.get("vers").ok_or("no \"vers\" key")? {
-                    json::Value::String(ref v) => acc.push(Semver::parse(&v).map_err(|e| e.to_string())?),
+                    json::Value::String(ref v) => acc.push(Semver::parse(v).map_err(|e| e.to_string())?),
                     _ => Err("\"vers\" not string")?,
                 }
             }
@@ -1174,8 +1174,8 @@ pub fn assert_index_path(cargo_dir: &Path, registry_url: &str, sparse: bool) -> 
 pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, (bool, GitError)> {
     match sparse {
         false => {
-            Repository::open(&registry).map(Registry::Git).or_else(|e| if e.code() == GitErrorCode::NotFound {
-                Repository::init(&registry).map(Registry::Git).map_err(|e| (true, e))
+            Repository::open(registry).map(Registry::Git).or_else(|e| if e.code() == GitErrorCode::NotFound {
+                Repository::init(registry).map(Registry::Git).map_err(|e| (true, e))
             } else {
                 Err((false, e))
             })
@@ -1203,8 +1203,8 @@ pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, 
 /// But then, a [man of steel eyes and hawk will](https://github.com/Eh2406) has emerged, seemingly from nowhere, remarking:
 ///
 /// > [21:09] Eh2406:
-/// https://github.com/rust-lang/cargo/blob/1ee1ef0ea7ab47d657ca675e3b1bd2fcd68b5aab/src/cargo/sources/registry/remote.
-/// rs#L204<br />
+/// > https://github.com/rust-lang/cargo/blob/1ee1ef0ea7ab47d657ca675e3b1bd2fcd68b5aab/src/cargo/sources/registry/remote.
+/// > rs#L204<br />
 /// > [21:10] Eh2406: looks like it is a git fetch of "refs/heads/master:refs/remotes/origin/master"<br />
 /// > [21:11] Eh2406: You are already poking about in cargos internal representation of the index, is this so much more?
 ///
@@ -1245,13 +1245,13 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
            ["Updating", "Polling"][matches!(index_repo, Registry::Sparse(_)) as usize],
            repo_url,
            ["\n", ""][matches!(index_repo, Registry::Sparse(_)) as usize]).and_then(|_| out.flush())
-        .map_err(|e| format!("failed to write updating message: {}", e))?;
+        .map_err(|e| format!("failed to write updating message: {e}"))?;
     match index_repo {
         Registry::Git(index_repo) => {
             if fork_git {
-                Command::new(env::var_os("GIT").as_ref().map(OsString::as_os_str).unwrap_or(OsStr::new("git"))).arg("-C")
+                Command::new(env::var_os("GIT").as_deref().unwrap_or(OsStr::new("git"))).arg("-C")
                     .arg(index_repo.path())
-                    .args(&["fetch", "-f", repo_url, "HEAD:refs/remotes/origin/HEAD"])
+                    .args(["fetch", "-f", repo_url, "HEAD:refs/remotes/origin/HEAD"])
                     .status()
                     .map_err(|e| e.to_string())
                     .and_then(|e| if e.success() {
@@ -1276,7 +1276,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
         }
         Registry::Sparse(registry) => {
             let mut sucker = CurlMulti::new();
-            sucker.pipelining(true, true).map_err(|e| format!("pipelining: {}", e))?;
+            sucker.pipelining(true, true).map_err(|e| format!("pipelining: {e}"))?;
 
             let writussy = Mutex::new(&mut *out);
             let mut conns: Vec<_> = Result::from_iter(packages.map(|pkg| {
@@ -1288,27 +1288,27 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                         u.push_str(&s);
                         u
                     }))
-                    .map_err(|e| format!("url: {}", e))?;
+                    .map_err(|e| format!("url: {e}"))?;
                 if let Some(http_proxy) = http_proxy {
-                    conn.proxy(http_proxy).map_err(|e| format!("proxy: {}", e))?;
+                    conn.proxy(http_proxy).map_err(|e| format!("proxy: {e}"))?;
                 }
-                conn.pipewait(true).map_err(|e| format!("pipewait: {}", e))?;
-                conn.progress(true).map_err(|e| format!("progress: {}", e))?;
+                conn.pipewait(true).map_err(|e| format!("pipewait: {e}"))?;
+                conn.progress(true).map_err(|e| format!("progress: {e}"))?;
                 if let Some(cainfo) = http.cainfo.as_ref() {
-                    conn.cainfo(cainfo).map_err(|e| format!("cainfo: {}", e))?;
+                    conn.cainfo(cainfo).map_err(|e| format!("cainfo: {e}"))?;
                 }
-                conn.ssl_options(CurlSslOpt::new().no_revoke(!http.check_revoke)).map_err(|e| format!("ssl_options: {}", e))?;
-                sucker.add2(conn).map(|h| (h, Ok(()))).map_err(|e| format!("add2: {}", e))
+                conn.ssl_options(CurlSslOpt::new().no_revoke(!http.check_revoke)).map_err(|e| format!("ssl_options: {e}"))?;
+                sucker.add2(conn).map(|h| (h, Ok(()))).map_err(|e| format!("add2: {e}"))
             }))?;
 
-            while sucker.perform().map_err(|e| format!("perform: {}", e))? > 0 {
-                sucker.wait(&mut [], Duration::from_millis(200)).map_err(|e| format!("wait: {}", e))?;
+            while sucker.perform().map_err(|e| format!("perform: {e}"))? > 0 {
+                sucker.wait(&mut [], Duration::from_millis(200)).map_err(|e| format!("wait: {e}"))?;
             }
 
             writussy.lock()
                 .map_err(|e| e.to_string())
                 .and_then(|mut out| writeln!(out).map_err(|e| e.to_string()))
-                .map_err(|e| format!("failed to write post-update newline: {}", e))?;
+                .map_err(|e| format!("failed to write post-update newline: {e}"))?;
 
             sucker.messages(|m| {
                 for c in &mut conns {
@@ -1322,21 +1322,21 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
             for mut c in conns {
                 let pkg = mem::take(&mut c.0.get_mut().0);
                 if let Err(e) = c.1 {
-                    return Err(format!("package {}: {}", pkg, e));
+                    return Err(format!("package {pkg}: {e}"));
                 }
-                match c.0.response_code().map_err(|e| format!("response_code: {}", e))? {
+                match c.0.response_code().map_err(|e| format!("response_code: {e}"))? {
                     200 => {
-                        let mut resp = crate_versions(&c.0.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
+                        let mut resp = crate_versions(&c.0.get_ref().1).map_err(|e| format!("package {pkg}: {e}"))?;
                         resp.sort();
                         registry.insert(pkg, resp);
                     }
-                    rc @ 404 | rc @ 410 | rc @ 451 => return Err(format!("package {} doesn't exist: HTTP {}", pkg, rc)),
-                    rc => return Err(format!("package {}: HTTP {}", pkg, rc)),
+                    rc @ 404 | rc @ 410 | rc @ 451 => return Err(format!("package {pkg} doesn't exist: HTTP {rc}")),
+                    rc => return Err(format!("package {pkg}: HTTP {rc}")),
                 }
             }
         }
     }
-    writeln!(out).map_err(|e| format!("failed to write post-update newline: {}", e))?;
+    writeln!(out).map_err(|e| format!("failed to write post-update newline: {e}"))?;
 
     Ok(())
 }
@@ -1441,20 +1441,18 @@ pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_pr
         fs::read_to_string(&config_file)
     }) {
         toml::from_str::<toml::Value>(&cfg).map_err(|e| format!("{} not TOML: {}", config_file.display(), e))?
-    } else {
-        if registry == "https://github.com/rust-lang/crates.io-index" {
-            if registries_crates_io_protocol_sparse {
-                return Ok(("https://index.crates.io/".to_string(), true, "crates-io".into()));
-            } else {
-                return Ok((registry.to_string(), false, "crates-io".into()));
-            }
+    } else if registry == "https://github.com/rust-lang/crates.io-index" {
+        if registries_crates_io_protocol_sparse {
+            return Ok(("https://index.crates.io/".to_string(), true, "crates-io".into()));
         } else {
-            Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
-                         Due to a Cargo limitation we will not be able to install from there \
-                         until it's given a [source.NAME] in that file!",
-                        config_file.with_file_name("config").display(),
-                        config_file.display()))?
+            return Ok((registry.to_string(), false, "crates-io".into()));
         }
+    } else {
+        Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
+                     Due to a Cargo limitation we will not be able to install from there \
+                     until it's given a [source.NAME] in that file!",
+                    config_file.with_file_name("config").display(),
+                    config_file.display()))?
     };
 
     let mut replacements = BTreeMap::new();
@@ -1476,11 +1474,11 @@ pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_pr
         for (name, v) in source.as_table().ok_or("source not table")? {
             if let Some(replacement) = v.get("replace-with") {
                 replacements.insert(&name[..],
-                                    replacement.as_str().ok_or_else(|| format!("source.{}.replacement not string", name))?);
+                                    replacement.as_str().ok_or_else(|| format!("source.{name}.replacement not string"))?);
             }
 
             if let Some(url) = v.get("registry") {
-                let url = url.as_str().ok_or_else(|| format!("source.{}.registry not string", name))?.to_string().into();
+                let url = url.as_str().ok_or_else(|| format!("source.{name}.registry not string"))?.to_string().into();
                 if cur_source == url {
                     cur_source = name.into();
                 }
@@ -1602,9 +1600,9 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
     if res.is_ok() || !any_attempts {
         res
     } else {
-        let err = res.err().map(|e| format!("{}: ", e)).unwrap_or_default();
+        let err = res.err().map(|e| format!("{e}: ")).unwrap_or_default();
 
-        let mut msg = format!("{}failed to authenticate when downloading repository {}", err, url);
+        let mut msg = format!("{err}failed to authenticate when downloading repository {url}");
         if !ssh_agent_attempts.is_empty() {
             msg.push_str(" (tried ssh-agent, but none of the following usernames worked: ");
             for (i, uname) in ssh_agent_attempts.into_iter().enumerate() {
@@ -1723,7 +1721,7 @@ pub fn find_proxy(crates_file: &Path) -> Option<String> {
         }
     }
 
-    ["http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"].iter().flat_map(env::var).filter(|proxy| !proxy.is_empty()).next()
+    ["http_proxy", "HTTP_PROXY", "https_proxy", "HTTPS_PROXY"].iter().flat_map(env::var).find(|proxy| !proxy.is_empty())
 }
 
 /// Find the bare git repository in the specified directory for the specified crate
@@ -1738,7 +1736,7 @@ pub fn find_git_db_repo(git_db_dir: &Path, url: &str) -> Option<PathBuf> {
                                        match Url::parse(url)
                                            .ok()?
                                            .path_segments()
-                                           .and_then(|segs| segs.rev().next())
+                                           .and_then(|mut segs| segs.next_back())
                                            .unwrap_or("") {
                                            "" => "_empty",
                                            url => url,
@@ -1767,7 +1765,7 @@ pub fn registry_shortname(url: &str) -> String {
     }
 
     format!("{}-{}",
-            Url::parse(url).map_err(|e| format!("{} not an URL: {}", url, e)).unwrap().host_str().unwrap_or(""),
+            Url::parse(url).map_err(|e| format!("{url} not an URL: {e}")).unwrap().host_str().unwrap_or(""),
             cargo_hash(RegistryHash(url)))
 }
 
@@ -1780,7 +1778,7 @@ pub fn cargo_hash<T: Hash>(whom: T) -> String {
     let mut hasher = SipHasher::new_with_keys(0, 0);
     whom.hash(&mut hasher);
     let hash = hasher.finish();
-    hex::encode(&[(hash >> 0) as u8,
+    hex::encode([hash as u8,
                   (hash >> 8) as u8,
                   (hash >> 16) as u8,
                   (hash >> 24) as u8,
