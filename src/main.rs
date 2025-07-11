@@ -54,7 +54,7 @@ fn actual_main() -> Result<(), i32> {
         (true, true) => {}
         (true, false) => {
             for pkg in cargo_update::ops::intersect_packages(&packages, &opts.to_update, opts.install, &installed_git_packages).into_iter() {
-                if packages.iter().find(|p| p.name == pkg.name).is_none() {
+                if !packages.iter().any(|p| p.name == pkg.name) {
                     packages.push(pkg);
                 }
             }
@@ -312,7 +312,7 @@ fn actual_main() -> Result<(), i32> {
                     }
                     Err(pr) => {
                         e.push(pn);
-                        (s, e, r.or_else(|| Some(pr)))
+                        (s, e, r.or(Some(pr)))
                     }
                 });
 

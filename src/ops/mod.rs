@@ -876,13 +876,13 @@ impl CargoConfig {
                     }),
                 check_revoke: env::var("CARGO_HTTP_CHECK_REVOKE")
                     .ok()
-                    .map(|e| toml::Value::String(e))
+                    .map(toml::Value::String)
                     .or_else(|| {
-                        Some(cfg.as_mut()?
+                        cfg.as_mut()?
                             .as_table_mut()?
                             .get_mut("http")?
                             .as_table_mut()?
-                            .remove("check-revoke")?)
+                            .remove("check-revoke")
                     })
                     .map(CargoConfig::truthy)
                     .unwrap_or(cfg!(target_os = "windows")),
@@ -893,7 +893,7 @@ impl CargoConfig {
     fn truthy(v: toml::Value) -> bool {
         match v {
             toml::Value::String(ref s) if s == "" => false,
-            toml::Value::Float(f) if f == 0. => false,
+            toml::Value::Float(0.) => false,
             toml::Value::Integer(0) |
             toml::Value::Boolean(false) => false,
             _ => true,
@@ -1076,7 +1076,7 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
         .cloned()
         .map(|p| RegistryPackage { max_version: to_update.iter().find(|u| p.name == u.0).and_then(|u| u.1.clone()), ..p })
         .chain(to_update.iter()
-            .filter(|p| allow_installs && installed.iter().find(|i| i.name == p.0).is_none() && installed_git.iter().find(|i| i.name == p.0).is_none())
+            .filter(|p| allow_installs && !installed.iter().any(|i| i.name == p.0) && !installed_git.iter().any(|i| i.name == p.0))
             .map(|p| {
                 RegistryPackage {
                     name: p.0.clone(),
@@ -1738,7 +1738,7 @@ pub fn find_git_db_repo(git_db_dir: &Path, url: &str) -> Option<PathBuf> {
                                        match Url::parse(url)
                                            .ok()?
                                            .path_segments()
-                                           .and_then(|segs| segs.rev().next())
+                                           .and_then(|mut segs| segs.next_back())
                                            .unwrap_or("") {
                                            "" => "_empty",
                                            url => url,

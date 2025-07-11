@@ -139,7 +139,7 @@ impl Options {
             update_git: matches.is_present("git"),
             quiet: matches.is_present("quiet"),
             locked: matches.is_present("locked"),
-            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_else(|| vec![]),
+            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_default(),
             cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             temp_dir: {
                 if let Some(tmpdir) = matches.value_of("temp-dir") {
