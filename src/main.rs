@@ -70,15 +70,50 @@ fn actual_main() -> Result<(), i32> {
 
     // These are all in the same order and (item => [package names]) maps
     let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
+    let mut non_registry_packages = Vec::new();
     for package in &packages {
-        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse).map_err(|e| {
+        match cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse) {
+            Ok(url) => {
+                registry_urls.entry(url).or_default().push(package.name.clone());
+            }
+            Err(e) => {
+                if !opts.update {
+                    // When listing, don't fail on non-crates.io packages, just mark them
+                    non_registry_packages.push(package.name.clone());
+                    if !opts.quiet {
+                        eprintln!("Warning: Couldn't get registry for {}: {}.", package.name, e);
+                    }
+                } else {
                     eprintln!("Couldn't get registry for {}: {}.", package.name, e);
-                    2
-                })?)
-            .or_default()
-            .push(package.name.clone());
+                    return Err(2);
+                }
+            }
+        }
     }
     let registry_urls: Vec<_> = registry_urls.into_iter().collect();
+
+    if !opts.update && registry_urls.is_empty() {
+        if !opts.quiet {
+            let mut out = TabWriter::new(stdout());
+            writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
+            
+            for package in &packages {
+                if non_registry_packages.contains(&package.name) {
+                    write!(out, "{}\t", package.name).unwrap();
+                    if let Some(ref v) = package.version {
+                        write!(out, "v{}", v).unwrap();
+                    } else {
+                        write!(out, "No").unwrap();
+                    }
+                    writeln!(out, "\tN/A\tN/A").unwrap();
+                }
+            }
+            
+            writeln!(out).unwrap();
+            out.flush().unwrap();
+        }
+        return Ok(());
+    }
 
     let registries: Vec<_> = Result::from_iter(registry_urls.iter()
         .map(|((registry_url, sparse, _), pkg_names)| {
@@ -128,6 +163,11 @@ fn actual_main() -> Result<(), i32> {
     }))?;
 
     for package in &mut packages {
+        // Skip packages that non-registry URL resolution
+        if non_registry_packages.contains(&package.name) {
+            continue;
+        }
+        
         let registry_idx = match registries.iter().position(|(.., pkg_names)| pkg_names.contains(&package.name)) {
             Some(i) => i,
             None => {
@@ -143,9 +183,11 @@ fn actual_main() -> Result<(), i32> {
     if !opts.quiet {
         let mut out = TabWriter::new(stdout());
         writeln!(out, "Package\tInstalled\tLatest\tNeeds update").unwrap();
+        
         for (package, package_target_version, package_install_prereleases) in
             {
                 let mut pkgs = packages.iter()
+                    .filter(|p| !non_registry_packages.contains(&p.name)) // Filter out non-registry packages
                     .map(|p| {
                         let cfg = configuration.get(&p.name);
                         (p, cfg.as_ref().and_then(|c| c.target_version.as_ref()), cfg.as_ref().and_then(|c| c.install_prereleases))
@@ -184,17 +226,34 @@ fn actual_main() -> Result<(), i32> {
                      })
                 .unwrap();
         }
+
+        // Process non-registry packages
+        for package in &packages {
+            if non_registry_packages.contains(&package.name) {
+                write!(out, "{}\t", package.name).unwrap();
+                if let Some(ref v) = package.version {
+                    write!(out, "v{}", v).unwrap();
+                } else {
+                    write!(out, "No").unwrap();
+                }
+                writeln!(out, "\tN/A\tN/A").unwrap();
+            }
+        }
+        
         writeln!(out).unwrap();
         out.flush().unwrap();
     }
 
-    note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
+    note_removed_executables(&opts, packages.iter().filter(|p| !non_registry_packages.contains(&p.name)).map(|p| (&p.name, &p.executables)));
 
     let mut success_global = vec![];
     let mut errored_global = vec![];
     let mut result_global = None;
 
     if opts.update {
+        // Remove non-registry packages from the list of packages to update
+        packages.retain(|p| !non_registry_packages.contains(&p.name));
+
         if !opts.force {
             packages.retain(|p| {
                 let cfg = configuration.get(&p.name);
