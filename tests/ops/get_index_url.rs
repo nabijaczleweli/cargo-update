@@ -90,6 +90,22 @@ fn dead_end() {
     }
 }
 
+#[test]
+fn ssh_registry_fails() {
+    for suffix in &["config", "config.toml"] {
+        let crates_file = prep_config("ssh_registry_fails", suffix);
+        fs::remove_file(crates_file.with_file_name(suffix)).unwrap();
+
+        assert!(get_index_url(&crates_file, "ssh://example.com/private-index", false).is_err());
+        
+        let error = get_index_url(&crates_file, "ssh://example.com/private-index", false).unwrap_err();
+        let error_msg = error.to_string();
+        assert!(error_msg.contains("Non-crates.io registry specified"));
+        assert!(error_msg.contains("no config file found"));
+        assert!(error_msg.contains("Due to a Cargo limitation"));
+    }
+}
+
 
 fn prep_config(subname: &str, suffix: &str) -> PathBuf {
     let td = temp_dir().join("cargo_update-test").join(format!("get_index_url-{}-{}", subname, suffix));
