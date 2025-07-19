@@ -72,7 +72,7 @@ fn actual_main() -> Result<(), i32> {
     let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
     let mut registry_urls_err = None;
     packages.retain(|package| {
-        let iu = match cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse)
+        let mut iu = match cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse)
             .map(Some)
             .or_else(|e| {
                 if opts.update || !opts.quiet {
@@ -86,15 +86,12 @@ fn actual_main() -> Result<(), i32> {
                 return true;
             }
         };
-        match iu {
-            Some(iu) => {
-                registry_urls.entry(iu)
-                    .or_default()
-                    .push(package.name.clone());
-                true
-            }
-            None => false,
+        if let Some(iu) = iu.as_mut().map(|x| mem::replace(x, Default::default())) {
+            registry_urls.entry(iu)
+                .or_default()
+                .push(package.name.clone());
         }
+        iu.is_some()
     });
     if let Some(ret) = registry_urls_err {
         return Err(ret);
