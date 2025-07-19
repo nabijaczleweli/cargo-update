@@ -43,6 +43,15 @@ fn existent() {
                         alternative_version: None,
                         max_version: None,
                         executables: vec!["cargo-fmt.exe".to_string(), "rustfmt.exe".to_string()],
+                    },
+                    RegistryPackage {
+                        name: "ssh-package".to_string(),
+                        registry: "ssh://example.com/private-index".to_string(),
+                        version: Some(Semver::parse("1.0.0").unwrap()),
+                        newest_version: None,
+                        alternative_version: None,
+                        max_version: None,
+                        executables: vec!["ssh-package.exe".to_string()],
                     }]);
 }
 
