@@ -405,7 +405,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Utkarsh Gupta &lt;<utkarshgupta137@gmail.com>&gt;,
            nevsal,
            Rui Chen &lt;<https://chenrui.dev>&gt;,
-       and Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;
+           Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;,
+       and Rene Leonhardt
 
 ## SPECIAL THANKS
 
