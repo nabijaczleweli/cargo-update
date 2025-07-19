@@ -70,13 +70,34 @@ fn actual_main() -> Result<(), i32> {
 
     // These are all in the same order and (item => [package names]) maps
     let mut registry_urls = BTreeMap::<_, Vec<_>>::new();
-    for package in &packages {
-        registry_urls.entry(cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse).map_err(|e| {
+    let mut registry_urls_err = None;
+    packages.retain(|package| {
+        let iu = match cargo_update::ops::get_index_url(&crates_file, &package.registry, cargo_config.registries_crates_io_protocol_sparse)
+            .map(Some)
+            .or_else(|e| {
+                if opts.update || !opts.quiet {
                     eprintln!("Couldn't get registry for {}: {}.", package.name, e);
-                    2
-                })?)
-            .or_default()
-            .push(package.name.clone());
+                }
+                if opts.update { Err(2) } else { Ok(None) }
+            }) {
+            Ok(iu) => iu,
+            Err(err) => {
+                registry_urls_err = Some(err);
+                return true;
+            }
+        };
+        match iu {
+            Some(iu) => {
+                registry_urls.entry(iu)
+                    .or_default()
+                    .push(package.name.clone());
+                true
+            }
+            None => false,
+        }
+    });
+    if let Some(ret) = registry_urls_err {
+        return Err(ret);
     }
     let registry_urls: Vec<_> = registry_urls.into_iter().collect();
 
