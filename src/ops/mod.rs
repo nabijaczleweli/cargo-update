@@ -10,16 +10,17 @@ use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitErr
            ProxyOptions, Repository, Tree, Oid};
 use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy};
 use semver::{VersionReq as SemverReq, Version as Semver};
-use std::io::{ErrorKind as IoErrorKind, Write};
+use std::io::{self, ErrorKind as IoErrorKind, Write};
 use std::collections::{BTreeMap, BTreeSet};
 use curl::multi::Multi as CurlMulti;
 use std::process::{Command, Stdio};
-use std::{cmp, env, mem, str, fs};
+use std::{cmp, env, mem, str};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
 use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
+use std::fs::{self, File};
 use std::time::Duration;
 use std::borrow::Cow;
 use std::sync::Mutex;
@@ -557,32 +558,31 @@ impl GitRepoPackage {
                     .ok_or(GitError::from_str(""))
             } else {
                 with_authentication(&self.url, |creds| {
-                    git2::Remote::create_detached(self.url.clone())
-                        .and_then(|mut r| {
-                            let mut cb = RemoteCallbacks::new();
-                            cb.credentials(|a, b, c| creds(a, b, c));
-                            r.connect_auth(git2::Direction::Fetch,
-                                              Some(cb),
-                                              http_proxy.map(|http_proxy| proxy_options_from_proxy_url(&self.url, http_proxy)))
-                                .and_then(|rc| {
-                                    rc.list()?
-                                        .into_iter()
-                                        .find(|rh| match self.branch.as_ref() {
-                                            Some(b) => {
-                                                if rh.name().starts_with("refs/heads/") {
-                                                    rh.name()["refs/heads/".len()..] == b[..]
-                                                } else if rh.name().starts_with("refs/tags/") {
-                                                    rh.name()["refs/tags/".len()..] == b[..]
-                                                } else {
-                                                    false
-                                                }
+                    git2::Remote::create_detached(self.url.clone()).and_then(|mut r| {
+                        let mut cb = RemoteCallbacks::new();
+                        cb.credentials(|a, b, c| creds(a, b, c));
+                        r.connect_auth(git2::Direction::Fetch,
+                                          Some(cb),
+                                          http_proxy.map(|http_proxy| proxy_options_from_proxy_url(&self.url, http_proxy)))
+                            .and_then(|rc| {
+                                rc.list()?
+                                    .into_iter()
+                                    .find(|rh| match self.branch.as_ref() {
+                                        Some(b) => {
+                                            if rh.name().starts_with("refs/heads/") {
+                                                rh.name()["refs/heads/".len()..] == b[..]
+                                            } else if rh.name().starts_with("refs/tags/") {
+                                                rh.name()["refs/tags/".len()..] == b[..]
+                                            } else {
+                                                false
                                             }
-                                            None => rh.name() == "HEAD",
-                                        })
-                                        .map(|rh| rh.oid())
-                                        .ok_or(git2::Error::from_str(""))
-                                })
-                        })
+                                        }
+                                        None => rh.name() == "HEAD",
+                                    })
+                                    .map(|rh| rh.oid())
+                                    .ok_or(git2::Error::from_str(""))
+                            })
+                    })
                 })
             };
             if self.newest_id.is_ok() {
@@ -706,8 +706,10 @@ impl GitRepoPackage {
         } else {
             // If we could not open the repository either it does not exist, or exists but is invalid,
             // in which case remove it to trigger a fresh clone.
-            if clone_dir.exists() {
-                fs::remove_dir_all(&clone_dir).unwrap();
+            match fs::remove_dir_all(&clone_dir) {
+                Err(e) if e.kind() == IoErrorKind::NotFound => {}
+                Err(e) if e.kind() == IoErrorKind::NotADirectory => drop(fs::remove_file(&clone_dir)),
+                _ => {}
             }
 
             self.pull_version_fresh_clone(clone_dir, http_proxy, fork_git)
@@ -930,11 +932,13 @@ fn crates_file_in_impl<'cd>(cargo_dir: &'cd Path, mut seen: BTreeSet<&'cd Path>)
     }
 
     let mut config_file = cargo_dir.join("config");
-    if !config_file.exists() {
+    let mut config_f = File::open(&config_file);
+    if config_f.is_err() {
         config_file.set_file_name("config.toml");
+        config_f = File::open(&config_file);
     }
-    if config_file.exists() {
-        if let Some(idir) = toml::from_str::<toml::Value>(&fs::read_to_string(&config_file).unwrap())
+    if let Ok(mut config_f) = config_f {
+        if let Some(idir) = toml::from_str::<toml::Value>(&io::read_to_string(&mut config_f).unwrap())
             .unwrap()
             .get("install")
             .and_then(|t| t.as_table())
@@ -969,9 +973,9 @@ fn crates_file_in_impl<'cd>(cargo_dir: &'cd Path, mut seen: BTreeSet<&'cd Path>)
 /// }
 /// ```
 pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
-    if crates_file.exists() {
+    if let Ok(crates_file) = fs::read_to_string(crates_file) {
         let mut res = Vec::<RegistryPackage>::new();
-        for pkg in match toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap().get("v1") {
+        for pkg in match toml::from_str::<toml::Value>(&crates_file).unwrap().get("v1") {
                 Some(tbl) => tbl,
                 None => return Vec::new(),
             }
@@ -1014,9 +1018,9 @@ pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
 /// }
 /// ```
 pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
-    if crates_file.exists() {
+    if let Ok(crates_file) = fs::read_to_string(crates_file) {
         let mut res = Vec::<GitRepoPackage>::new();
-        for pkg in match toml::from_str::<toml::Value>(&fs::read_to_string(crates_file).unwrap()).unwrap().get("v1") {
+        for pkg in match toml::from_str::<toml::Value>(&crates_file).unwrap().get("v1") {
                 Some(tbl) => tbl,
                 None => return Vec::new(),
             }
@@ -1700,9 +1704,8 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
 /// }
 /// ```
 pub fn find_proxy(crates_file: &Path) -> Option<String> {
-    let config_file = crates_file.with_file_name("config");
-    if config_file.exists() {
-        if let Some(proxy) = toml::from_str::<toml::Value>(&fs::read_to_string(config_file).unwrap())
+    if let Ok(crates_file) = fs::read_to_string(crates_file) {
+        if let Some(proxy) = toml::from_str::<toml::Value>(&crates_file)
             .unwrap()
             .get("http")
             .and_then(|t| t.as_table())
