@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 use std::iter::FromIterator;
 use tabwriter::TabWriter;
 use std::{env, mem};
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 use std::fs::File;
 use std::fs;
 

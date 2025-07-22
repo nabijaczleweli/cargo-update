@@ -385,10 +385,12 @@
 
 
 extern crate json_deserializer;
+#[cfg(target_vendor = "apple")]
+extern crate security_framework;
 #[macro_use]
 extern crate serde_derive;
 extern crate array_tool;
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 extern crate windows;
 extern crate semver;
 extern crate whoami;

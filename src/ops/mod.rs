@@ -10,7 +10,9 @@ use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitErr
            ProxyOptions, Repository, Tree, Oid};
 use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy, List as CurlList};
 use semver::{VersionReq as SemverReq, Version as Semver};
-#[cfg(target_os="windows")]
+#[cfg(target_vendor = "apple")]
+use security_framework::os::macos::keychain::SecKeychain;
+#[cfg(target_os = "windows")]
 use windows::Win32::Security::Credentials as WinCred;
 use std::io::{self, ErrorKind as IoErrorKind, Write};
 use std::collections::{BTreeMap, BTreeSet};
@@ -23,10 +25,10 @@ use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
 use std::fs::{self, File};
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 use windows::core::PCSTR;
 use std::time::Duration;
-#[cfg(target_os="windows")]
+#[cfg(target_os = "windows")]
 use std::{slice, ptr};
 use std::borrow::Cow;
 use std::sync::Mutex;
@@ -857,7 +859,7 @@ pub enum SparseRegistryAuthProvider {
     Token,
     /// `cargo:wincred`
     Wincred,
-    /// `cargo:macos-keychain` (not implemented)
+    /// `cargo:macos-keychain`
     MacosKeychain,
     /// `cargo:libsecret` (not implemented)
     Libsecret,
@@ -1421,7 +1423,18 @@ impl<'sr> SparseRegistryAuthProviderBundle<'sr> {
                     }
                     ret
                 }
-                SparseRegistryAuthProvider::MacosKeychain => None, // TODO
+                SparseRegistryAuthProvider::MacosKeychain => {
+                    #[allow(unused_mut, unused_assignments)]
+                    let mut ret = None;
+                    #[cfg(target_vendor = "apple")]
+                    {
+                        ret = SecKeychain::default()
+                            .and_then(|k| k.find_generic_password(&format!("cargo-registry:{}", repo_url), ""))
+                            .ok()
+                            .and_then(|(p, _)| str::from_utf8(&*p).map(str::to_string).map(Cow::from).ok());
+                    }
+                    ret
+                }
                 SparseRegistryAuthProvider::Libsecret => None, // TODO
                 SparseRegistryAuthProvider::TokenFromStdout(args) => {
                     Command::new(&args[0])
