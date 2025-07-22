@@ -834,7 +834,7 @@ impl SparseRegistryConfig {
                                 -> Option<SparseRegistryAuthProvider> {
         match v {
             toml::Value::String(s) => Some(CargoConfig::string_provider(s, &credential_aliases)),
-            toml::Value::Array(a) => Some(SparseRegistryAuthProvider::Provider(CargoConfig::string_array(a))),
+            toml::Value::Array(a) => Some(SparseRegistryAuthProvider::from_config(CargoConfig::string_array(a))),
             _ => None,
         }
     }
@@ -864,16 +864,15 @@ pub enum SparseRegistryAuthProvider {
 }
 
 impl SparseRegistryAuthProvider {
-    /// Parses a `cargo:token-from-stdout whatever`-style entry
-    pub fn from_config(s: &str) -> SparseRegistryAuthProvider {
-        let mut toks = s.split(' ').peekable();
-        match toks.peek().unwrap_or(&"") {
+    /// Parses a `["cargo:token-from-stdout", "whatever"]`-style entry
+    pub fn from_config(toks: Vec<String>) -> SparseRegistryAuthProvider {
+        match &toks.get(0).unwrap_or(&"".to_string()).as_str() {
             &"cargo:token" => SparseRegistryAuthProvider::Token,
             &"cargo:wincred" => SparseRegistryAuthProvider::Wincred,
             &"cargo:macos-keychain" => SparseRegistryAuthProvider::MacosKeychain,
             &"cargo:libsecret" => SparseRegistryAuthProvider::Libsecret,
-            &"cargo:token-from-stdout" => SparseRegistryAuthProvider::TokenFromStdout(toks.skip(1).map(String::from).collect()),
-            _ => SparseRegistryAuthProvider::Provider(toks.map(String::from).collect()),
+            &"cargo:token-from-stdout" => SparseRegistryAuthProvider::TokenFromStdout(toks.into_iter().skip(1).map(String::from).collect()),
+            _ => SparseRegistryAuthProvider::Provider(toks.into_iter().map(String::from).collect()),
         }
     }
 }
@@ -1088,7 +1087,7 @@ impl CargoConfig {
     fn string_provider(s: String, credential_aliases: &BTreeMap<CargoConfigEnvironmentNormalisedString, Vec<String>>) -> SparseRegistryAuthProvider {
         match credential_aliases.get(&CargoConfigEnvironmentNormalisedString::normalise(s.clone())) {
             Some(av) => SparseRegistryAuthProvider::Provider(av.clone()),
-            None => SparseRegistryAuthProvider::from_config(&s),
+            None => SparseRegistryAuthProvider::from_config(s.split(' ').peekable().map(String::from).collect()),
         }
     }
 }
