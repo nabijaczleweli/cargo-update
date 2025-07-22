@@ -1437,7 +1437,7 @@ fn fetch_options_from_proxy_url_and_callbacks<'a>(repo_url: &str, proxy_url: Opt
 /// the Cargo Book for details: https://doc.rust-lang.org/cargo/reference/source-replacement.html,
 /// https://doc.rust-lang.org/cargo/reference/registries.html.
 pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_protocol_sparse: bool)
-                     -> Result<(String, bool, Cow<'static, str>), Cow<'static, str>> {
+                     -> Result<(Cow<'static, str>, bool, Cow<'static, str>), Cow<'static, str>> {
     let mut config_file = crates_file.with_file_name("config");
     let config = if let Ok(cfg) = fs::read_to_string(&config_file).or_else(|_| {
         config_file.set_file_name("config.toml");
@@ -1447,9 +1447,9 @@ pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_pr
     } else {
         if registry == "https://github.com/rust-lang/crates.io-index" {
             if registries_crates_io_protocol_sparse {
-                return Ok(("https://index.crates.io/".to_string(), true, "crates-io".into()));
+                return Ok(("https://index.crates.io/".into(), true, "crates-io".into()));
             } else {
-                return Ok((registry.to_string(), false, "crates-io".into()));
+                return Ok((registry.to_string().into(), false, "crates-io".into()));
             }
         } else {
             Err(format!("Non-crates.io registry specified and no config file found at {} or {}. \
@@ -1516,7 +1516,7 @@ pub fn get_index_url(crates_file: &Path, registry: &str, registries_crates_io_pr
     }
 
     registries.get(&cur_source[..])
-        .map(|reg| (reg.strip_prefix("sparse+").unwrap_or(reg).to_string(), reg.starts_with("sparse+"), cur_source.to_string().into()))
+        .map(|reg| (reg.strip_prefix("sparse+").unwrap_or(reg).to_string().into(), reg.starts_with("sparse+"), cur_source.to_string().into()))
         .ok_or_else(|| {
             format!("Couldn't find appropriate source URL for {} in {} (resolved to {:?})",
                     registry,

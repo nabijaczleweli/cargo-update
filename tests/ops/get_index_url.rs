@@ -14,9 +14,9 @@ fn default_vs_sparse() {
         fs::remove_file(crates_file.with_file_name(suffix)).unwrap();
 
         assert_eq!(get_index_url(&crates_file, "https://github.com/rust-lang/crates.io-index", false),
-                   Ok(("https://github.com/rust-lang/crates.io-index".to_string(), false, "crates-io".into())));
+                   Ok(("https://github.com/rust-lang/crates.io-index".into(), false, "crates-io".into())));
         assert_eq!(get_index_url(&crates_file, "https://github.com/rust-lang/crates.io-index", true),
-                   Ok(("https://index.crates.io/".to_string(), true, "crates-io".into())));
+                   Ok(("https://index.crates.io/".into(), true, "crates-io".into())));
     }
 }
 
@@ -51,7 +51,7 @@ fn unknown() {
 fn default() {
     for suffix in &["config", "config.toml"] {
         assert_eq!(get_index_url(&prep_config("default", suffix), "https://github.com/rust-lang/crates.io-index", false),
-                   Ok(("outside-the-scope-of-this-document".to_string(), false, "tralternative".into())));
+                   Ok(("outside-the-scope-of-this-document".into(), false, "tralternative".into())));
     }
 }
 
@@ -59,7 +59,7 @@ fn default() {
 fn from_alt_url() {
     for suffix in &["config", "config.toml"] {
         assert_eq!(get_index_url(&prep_config("from_alt_url", suffix), "file:///usr/local/share/cargo", false),
-                   Ok(("outside-the-scope-of-this-document".to_string(), false, "tralternative".into())));
+                   Ok(("outside-the-scope-of-this-document".into(), false, "tralternative".into())));
     }
 }
 
@@ -67,7 +67,7 @@ fn from_alt_url() {
 fn from_name() {
     for suffix in &["config", "config.toml"] {
         assert_eq!(get_index_url(&prep_config("from_name", suffix), "alternative", false),
-                   Ok(("outside-the-scope-of-this-document".to_string(), false, "tralternative".into())));
+                   Ok(("outside-the-scope-of-this-document".into(), false, "tralternative".into())));
     }
 }
 
@@ -75,7 +75,7 @@ fn from_name() {
 fn sus() {
     for suffix in &["config", "config.toml"] {
         assert_eq!(get_index_url(&prep_config("sus", suffix), "sus", false),
-                   Ok(("zupa".to_string(), true, "sussy".into())));
+                   Ok(("zupa".into(), true, "sussy".into())));
     }
 }
 
