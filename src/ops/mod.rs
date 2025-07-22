@@ -869,7 +869,8 @@ pub enum SparseRegistryAuthProvider {
     ///
     /// https://doc.rust-lang.org/cargo/reference/credential-provider-protocol.html
     ///
-    /// We do *not* care about `"cache"`, `"expiration"`, or `"operation_independent"`, always behaving as-if `"never"`/`_`/`true`.
+    /// We do *not* care about `"cache"`, `"expiration"`, or `"operation_independent"`,
+    /// always behaving as-if `"never"`/`_`/`true`.
     ///
     /// We don't provide the optional `{"registry": {"headers": ...}}` field.
     Provider(Vec<String>),
@@ -1697,8 +1698,7 @@ pub fn auth_providers<'sr>(crates_file: &Path, install_cargo: Option<&'sr OsStr>
 ///
 /// Only in this mode is the package list used.
 pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: &mut Registry, repo_url: &str, packages: I, http_proxy: Option<&str>,
-                                                                    fork_git: bool, http: &HttpCargoConfig, auth_providers: SparseRegistryAuthProviderBundle,
-                                                                    out: &mut W)
+                                                                    fork_git: bool, http: &HttpCargoConfig, auth_token: Option<&str>, out: &mut W)
                                                                     -> Result<(), String> {
     write!(out,
            "    {} registry '{}'{}",
@@ -1735,8 +1735,6 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
             }
         }
         Registry::Sparse(registry) => {
-            let auth = auth_providers.try();
-
             let mut sucker = CurlMulti::new();
             sucker.pipelining(true, true).map_err(|e| format!("pipelining: {}", e))?;
 
@@ -1751,9 +1749,9 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                         u
                     }))
                     .map_err(|e| format!("url: {}", e))?;
-                if let Some(auth) = auth.as_ref() {
+                if let Some(auth_token) = auth_token.as_ref() {
                     let mut headers = CurlList::new();
-                    headers.append(&format!("Authorization: {}", auth)).map_err(|e| format!("append: {}", e))?;
+                    headers.append(&format!("Authorization: {}", auth_token)).map_err(|e| format!("append: {}", e))?;
                     conn.http_headers(headers).map_err(|e| format!("http_headers: {}", e))?;
                 }
                 if let Some(http_proxy) = http_proxy {

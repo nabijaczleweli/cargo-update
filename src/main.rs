@@ -134,7 +134,7 @@ fn actual_main() -> Result<(), i32> {
                                         http_proxy.as_ref().map(String::as_str),
                                         cargo_config.net_git_fetch_with_cli,
                                         &cargo_config.http,
-                                        auth_providers,
+                                        auth_providers.try().as_deref(),
                                         &mut if !opts.quiet {
                                             Box::new(stdout()) as Box<dyn Write>
                                         } else {
