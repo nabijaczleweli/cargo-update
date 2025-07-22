@@ -7,6 +7,7 @@ mod package_filter_element;
 #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
 mod assert_index_path;
 mod registry_package;
+mod package_config;
 mod get_index_url;
 
 

@@ -1,8 +1,7 @@
 use cargo_update::ops::{RegistryPackage, installed_registry_packages};
 use semver::Version as Semver;
-use std::fs::{self, File};
 use std::env::temp_dir;
-use std::io::Write;
+use std::fs;
 
 
 static CRATES: &[u8] = include_bytes!("../../test-data/.cargo-crates.toml");
@@ -14,7 +13,7 @@ fn existent() {
     let _ = fs::create_dir_all(&td);
     td.push(".crates.toml");
 
-    File::create(&td).unwrap().write_all(CRATES).unwrap();
+    fs::write(&td, CRATES).unwrap();
 
     assert_eq!(installed_registry_packages(&td),
                vec![RegistryPackage {

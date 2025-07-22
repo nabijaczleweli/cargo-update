@@ -2,10 +2,10 @@ use std::fmt::{Formatter as FFormatter, Result as FResult, Write as FWrite};
 use serde::{Deserializer, Deserialize, Serializer, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::ErrorKind as IoErrorKind;
-use json_deserializer as json;
 use std::process::Command;
 use std::default::Default;
 use semver::VersionReq;
+use serde_json as json;
 use std::borrow::Cow;
 use std::path::Path;
 use serde::de;
@@ -402,7 +402,7 @@ impl PackageConfig {
         //       "rustc": "rustc 1.54.0 (a178d0322 2021-07-26)\nbinary: ..."
         //     },
         if let Ok(cargo2_data) = fs::read(cargo2_json) {
-            if let Ok(json::Value::Object(mut cargo2)) = json::parse(&cargo2_data[..]) {
+            if let Ok(json::Value::Object(mut cargo2)) = json::from_slice(&cargo2_data[..]) {
                 if let Some(json::Value::Object(installs)) = cargo2.remove("installs") {
                     for (k, v) in installs {
                         if let json::Value::Object(v) = v {
@@ -443,7 +443,7 @@ impl PackageConfig {
         }
     }
 
-    fn cargo2_package_config(mut blob: json::Object) -> PackageConfig {
+    fn cargo2_package_config(mut blob: json::Map<String, json::Value>) -> PackageConfig {
         let mut ret = PackageConfig::default();
         ret.from_transient = true;
 
@@ -454,14 +454,14 @@ impl PackageConfig {
         if let Some(json::Value::Array(fs)) = blob.remove("features") {
             ret.features = fs.into_iter()
                 .filter_map(|f| match f {
-                    json::Value::String(s) => Some(s.into_owned()),
+                    json::Value::String(s) => Some(s),
                     _ => None,
                 })
                 .collect();
         }
         // Nothing to parse "all_features" into
-        if let Some(json::Value::String(prof)) = blob.get("profile") {
-            ret.build_profile = Some(prof.clone().into_owned().into());
+        if let Some(json::Value::String(prof)) = blob.remove("profile") {
+            ret.build_profile = Some(prof.into());
         }
         // Nothing to parse PackageConfig::install_prereleases from
         // Nothing to parse PackageConfig::enforce_lock from

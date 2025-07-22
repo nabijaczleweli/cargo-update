@@ -21,7 +21,6 @@ use std::process::{Command, Stdio};
 use std::{cmp, env, mem, str};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
-use json_deserializer as json;
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
 use std::fs::{self, File};
@@ -30,6 +29,7 @@ use windows::core::PCSTR;
 use std::time::Duration;
 #[cfg(all(unix, not(target_vendor = "apple")))]
 use std::sync::LazyLock;
+use serde_json as json;
 #[cfg(any(target_os = "windows", all(unix, not(target_vendor = "apple"))))]
 use std::{slice, ptr};
 use std::borrow::Cow;
@@ -1313,7 +1313,7 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
 /// }
 /// ```
 pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
-    buf.split(|&b| b == b'\n').filter(|l| !l.is_empty()).try_fold(vec![], |mut acc, p| match json::parse(p).map_err(|e| e.to_string())? {
+    buf.split(|&b| b == b'\n').filter(|l| !l.is_empty()).try_fold(vec![], |mut acc, p| match json::from_slice(p).map_err(|e| e.to_string())? {
         json::Value::Object(o) => {
             if !matches!(o.get("yanked"), Some(&json::Value::Bool(true))) {
                 match o.get("vers").ok_or("no \"vers\" key")? {
