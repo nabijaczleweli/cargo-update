@@ -34,6 +34,7 @@ If it still doesn't work, [slam open an issue](https://github.com/nabijaczleweli
 | [`libssh2`](https://libssh2.org)                 | `libssh-dev`     | `libssh2-devel`  | `mingw-w64-x86_64-libssh2`    |
 | [`openssl`](https://openssl.org)                 | `libssl-dev`     | `openssl-devel`  | `mingw-w64-x86_64-openssl`    |
 | [`pkgconf`](http://pkgconf.org) (some platforms) | `pkgconf`        | `pkgconf`        | `mingw-w64-x86_64-pkgconf`    |
+| [`libsecret`](https://wiki.gnome.org/Projects/Libsecret) (non-Apple UNIX; optional, dynamically loaded as `libsecret-1.so.0`) | `libsecret-1-0`  | `libsecret` | — |
 
 ### Usage
 
@@ -124,9 +125,9 @@ Confer the [initial implementation](https://github.com/nabijaczleweli/cargo-upda
 
 ### Registry authentication
 
-The default `cargo:token`-but-it-doesn't-read-the-environment, `cargo:token`, `cargo:token-from-stdout`, `cargo:wincred`, `cargo:macos-keychain` providers are implemented.
+The default `cargo:token`-but-it-doesn't-read-the-environment, `cargo:token`, `cargo:token-from-stdout`, `cargo:wincred` (Win32), `cargo:macos-keychain` (Apple), and `cargo:libsecret` (non-Apple UNIX) providers are implemented.
 
-`cargo:libsecret` and the provider protocol (not `cargo:`-prefixed) providers are not.
+The provider protocol (not `cargo:`-prefixed) providers is not.
 
 ## Special thanks
 

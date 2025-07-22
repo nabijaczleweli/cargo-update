@@ -28,7 +28,9 @@ use std::fs::{self, File};
 #[cfg(target_os = "windows")]
 use windows::core::PCSTR;
 use std::time::Duration;
-#[cfg(target_os = "windows")]
+#[cfg(all(unix, not(target_vendor = "apple")))]
+use std::sync::LazyLock;
+#[cfg(any(target_os = "windows", all(unix, not(target_vendor = "apple"))))]
 use std::{slice, ptr};
 use std::borrow::Cow;
 use std::sync::Mutex;
@@ -857,11 +859,11 @@ pub enum SparseRegistryAuthProvider {
     TokenNoEnvironment,
     /// `cargo:token`
     Token,
-    /// `cargo:wincred`
+    /// `cargo:wincred` (Win32)
     Wincred,
-    /// `cargo:macos-keychain`
+    /// `cargo:macos-keychain` (Apple)
     MacosKeychain,
-    /// `cargo:libsecret` (not implemented)
+    /// `cargo:libsecret`; this `dlopen()`s `libsecret-1.so.0` on non-Apple UNIX.
     Libsecret,
     /// `cargo:token-from-stdout prog arg arg`
     TokenFromStdout(Vec<String>),
@@ -1435,7 +1437,70 @@ impl<'sr> SparseRegistryAuthProviderBundle<'sr> {
                     }
                     ret
                 }
-                SparseRegistryAuthProvider::Libsecret => None, // TODO
+                SparseRegistryAuthProvider::Libsecret => {
+                    #[allow(unused_mut)]
+                    let mut ret = None;
+                    #[cfg(all(unix, not(target_vendor = "apple")))]
+                    #[allow(non_camel_case_types)]
+                    unsafe {
+                        #[repr(C)]
+                        struct SecretSchemaAttribute {
+                            name: *const u8,
+                            flags: libc::c_int, // SECRET_SCHEMA_ATTRIBUTE_STRING = 0
+                        }
+                        #[repr(C)]
+                        struct SecretSchema {
+                            name: *const u8,
+                            flags: libc::c_int,
+                            attributes: [SecretSchemaAttribute; 32],
+                            reserved: libc::c_int,
+                            reserved1: *const (),
+                            reserved2: *const (),
+                            reserved3: *const (),
+                            reserved4: *const (),
+                            reserved5: *const (),
+                            reserved6: *const (),
+                            reserved7: *const (),
+                        }
+                        unsafe impl Sync for SecretSchema {}
+                        type secret_password_lookup_sync_t = extern "C" fn(*const SecretSchema, *mut (), *mut (), ...) -> *mut u8;
+                        type secret_password_free_t = extern "C" fn(*mut u8);
+
+                        static LIBSECRET: LazyLock<Option<(secret_password_lookup_sync_t, secret_password_free_t)>> = LazyLock::new(|| unsafe {
+                            let libsecret = libc::dlopen(b"libsecret-1.so.0\0".as_ptr() as _, libc::RTLD_LAZY);
+                            if libsecret.is_null() {
+                                return None;
+                            }
+                            let lookup = libc::dlsym(libsecret, b"secret_password_lookup_sync\0".as_ptr() as _);
+                            let free = libc::dlsym(libsecret, b"secret_password_free\0".as_ptr() as _);
+                            if lookup.is_null() || free.is_null() {
+                                libc::dlclose(libsecret);
+                                return None;
+                            }
+                            Some((mem::transmute(lookup), mem::transmute(free)))
+                        });
+                        static SCHEMA: SecretSchema = unsafe {
+                            let mut schema: SecretSchema = mem::zeroed();
+                            schema.name = b"org.rust-lang.cargo.registry\0".as_ptr() as _;
+                            schema.attributes[0].name = b"url\0".as_ptr() as _;
+                            schema
+                        };
+
+                        if let Some((lookup, free)) = *LIBSECRET {
+                            let pass = lookup(&SCHEMA,
+                                              ptr::null_mut(),
+                                              ptr::null_mut(),
+                                              b"url\0".as_ptr(),
+                                              format!("{}\0", repo_url).as_ptr(),
+                                              ptr::null() as *const u8);
+                            if !pass.is_null() {
+                                ret = str::from_utf8(slice::from_raw_parts(pass, libc::strlen(pass as _))).map(str::to_string).map(Cow::from).ok();
+                                free(pass);
+                            }
+                        }
+                    }
+                    ret
+                }
                 SparseRegistryAuthProvider::TokenFromStdout(args) => {
                     Command::new(&args[0])
                         .args(&args[1..])

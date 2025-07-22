@@ -400,6 +400,8 @@ extern crate git2;
 extern crate clap;
 extern crate curl;
 extern crate home;
+#[cfg(all(unix, not(target_vendor = "apple")))]
+extern crate libc;
 extern crate toml;
 extern crate hex;
 extern crate url;
