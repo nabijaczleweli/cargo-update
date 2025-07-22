@@ -228,7 +228,6 @@ impl PackageConfig {
     pub fn environmentalise<'c>(&self, cmd: &'c mut Command) -> &'c mut Command {
         if let Some(env) = self.environment.as_ref() {
             for (var, val) in env {
-                dbg!((var, val));
                 match val {
                     EnvironmentOverride(Some(val)) => cmd.env(var, val),
                     EnvironmentOverride(None) => cmd.env_remove(var),

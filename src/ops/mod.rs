@@ -8,7 +8,7 @@
 
 use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions,
            ProxyOptions, Repository, Tree, Oid};
-use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy};
+use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy, List as CurlList};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use std::io::{self, ErrorKind as IoErrorKind, Write};
 use std::collections::{BTreeMap, BTreeSet};
@@ -808,6 +808,7 @@ pub struct CargoConfig {
     /// https://doc.rust-lang.org/stable/cargo/reference/registry-index.html#sparse-protocol
     pub registries_crates_io_protocol_sparse: bool,
     pub http: HttpCargoConfig,
+    pub sparse_registries: SparseRegistryConfig,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -816,12 +817,120 @@ pub struct HttpCargoConfig {
     pub check_revoke: bool,
 }
 
+/// https://github.com/nabijaczleweli/cargo-update/issues/300
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct SparseRegistryConfig {
+    pub global_credential_providers: Vec<SparseRegistryAuthProvider>,
+    pub crates_io_credential_provider: Option<[SparseRegistryAuthProvider; 1]>,
+    pub crates_io_token_env: Option<String>,
+    pub crates_io_token: Option<String>,
+    pub registry_tokens_env: BTreeMap<CargoConfigEnvironmentNormalisedString, String>,
+    pub registry_tokens: BTreeMap<String, String>,
+    pub credential_aliases: BTreeMap<CargoConfigEnvironmentNormalisedString, Vec<String>>,
+}
+
+impl SparseRegistryConfig {
+    pub fn credential_provider(&self, v: toml::Value) -> Option<SparseRegistryAuthProvider> {
+        SparseRegistryConfig::credential_provider_impl(&self.credential_aliases, v)
+    }
+
+    fn credential_provider_impl(credential_aliases: &BTreeMap<CargoConfigEnvironmentNormalisedString, Vec<String>>, v: toml::Value)
+                                -> Option<SparseRegistryAuthProvider> {
+        match v {
+            toml::Value::String(s) => Some(CargoConfig::string_provider(s, &credential_aliases)),
+            toml::Value::Array(a) => Some(SparseRegistryAuthProvider::Provider(CargoConfig::string_array(a))),
+            _ => None,
+        }
+    }
+}
+
+/// https://doc.rust-lang.org/cargo/reference/registry-authentication.html
+///
+/// Not implemented: `cargo:macos-keychain`
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum SparseRegistryAuthProvider {
+    /// The default; does not read `CARGO_REGISTRY_TOKEN` or `CARGO_REGISTRIES_{}_TOKEN` environment variables.
+    TokenNoEnvironment,
+    /// `cargo:token`
+    Token,
+    /// `cargo:wincred` (not implemented)
+    Wincred,
+    /// `cargo:macos-keychain` (not implemented)
+    MacosKeychain,
+    /// `cargo:libsecret` (not implemented)
+    Libsecret,
+    /// `cargo:token-from-stdout prog arg arg`
+    TokenFromStdout(Vec<String>),
+    /// Not `cargo:`-prefixed (not implemented)
+    ///
+    /// https://doc.rust-lang.org/cargo/reference/credential-provider-protocol.html
+    Provider(Vec<String>),
+}
+
+impl SparseRegistryAuthProvider {
+    /// Parses a `cargo:token-from-stdout whatever`-style entry
+    pub fn from_config(s: &str) -> SparseRegistryAuthProvider {
+        let mut toks = s.split(' ').peekable();
+        match toks.peek().unwrap_or(&"") {
+            &"cargo:token" => SparseRegistryAuthProvider::Token,
+            &"cargo:wincred" => SparseRegistryAuthProvider::Wincred,
+            &"cargo:macos-keychain" => SparseRegistryAuthProvider::MacosKeychain,
+            &"cargo:libsecret" => SparseRegistryAuthProvider::Libsecret,
+            &"cargo:token-from-stdout" => SparseRegistryAuthProvider::TokenFromStdout(toks.skip(1).map(String::from).collect()),
+            _ => SparseRegistryAuthProvider::Provider(toks.map(String::from).collect()),
+        }
+    }
+}
+
+/// https://doc.rust-lang.org/cargo/reference/config.html#environment-variables
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct CargoConfigEnvironmentNormalisedString(pub String);
+impl CargoConfigEnvironmentNormalisedString {
+    /// `tr a-z.- A-Z__`
+    pub fn normalise(mut s: String) -> CargoConfigEnvironmentNormalisedString {
+        s.make_ascii_uppercase();
+        while let Some(i) = s.find(['.', '-']) {
+            s.replace_range(i..i + 1, "_");
+        }
+        CargoConfigEnvironmentNormalisedString(s)
+    }
+}
+
 impl CargoConfig {
     pub fn load(crates_file: &Path) -> CargoConfig {
         let mut cfg = fs::read_to_string(crates_file.with_file_name("config"))
             .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
             .ok()
             .and_then(|s| s.parse::<toml::Value>().ok());
+        let mut creds = fs::read_to_string(crates_file.with_file_name("credentials"))
+            .or_else(|_| fs::read_to_string(crates_file.with_file_name("credentials.toml")))
+            .ok()
+            .and_then(|s| s.parse::<toml::Value>().ok());
+
+        let credential_aliases = None.or_else(|| match cfg.as_mut()?.as_table_mut()?.remove("credential-alias")? {
+                toml::Value::Table(t) => Some(t),
+                _ => None,
+            })
+            .unwrap_or_default()
+            .into_iter()
+            .flat_map(|(k, v)| {
+                match v {
+                        toml::Value::String(s) => Some(s.split(' ').map(String::from).collect()),
+                        toml::Value::Array(a) => Some(CargoConfig::string_array(a)),
+                        _ => None,
+                    }
+                    .map(|v| (CargoConfigEnvironmentNormalisedString::normalise(k), v))
+            })
+            .chain(env::vars_os()
+                .map(|(k, v)| (k.into_encoded_bytes(), v))
+                .filter(|(k, _)| k.starts_with(b"CARGO_CREDENTIAL_ALIAS_"))
+                .filter(|(k, _)| k["CARGO_CREDENTIAL_ALIAS_".len()..].iter().all(|&b| !(b.is_ascii_lowercase() || b == b'.' || b == b'-')))
+                .flat_map(|(mut k, v)| {
+                    let k = String::from_utf8(k.drain("CARGO_CREDENTIAL_ALIAS_".len()..).collect()).ok()?;
+                    let v = v.into_string().ok()?;
+                    Some((CargoConfigEnvironmentNormalisedString(k), v.split(' ').map(String::from).collect()))
+                }))
+            .collect();
 
         CargoConfig {
             net_git_fetch_with_cli: env::var("CARGO_NET_GIT_FETCH_WITH_CLI")
@@ -834,7 +943,7 @@ impl CargoConfig {
                 .or_else(|| {
                     cfg.as_mut()?
                         .as_table_mut()?
-                        .remove("net")?
+                        .get_mut("net")?
                         .as_table_mut()?
                         .remove("git-fetch-with-cli")
                 })
@@ -846,9 +955,9 @@ impl CargoConfig {
                 .or_else(|| {
                     Some(cfg.as_mut()?
                         .as_table_mut()?
-                        .remove("registries")?
+                        .get_mut("registries")?
                         .as_table_mut()?
-                        .remove("crates-io")?
+                        .get_mut("crates-io")?
                         .as_table_mut()?
                         .remove("protocol")?
                         .as_str()? == "sparse")
@@ -889,6 +998,66 @@ impl CargoConfig {
                     .map(CargoConfig::truthy)
                     .unwrap_or(cfg!(target_os = "windows")),
             },
+            sparse_registries: SparseRegistryConfig {
+                // Supposedly this is CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS but they don't specify how they serialise arrays so
+                global_credential_providers: None.or_else(|| {
+                        CargoConfig::string_array_v(cfg.as_mut()?
+                            .as_table_mut()?
+                            .get_mut("registry")?
+                            .as_table_mut()?
+                            .remove("global-credential-providers")?)
+                    })
+                    .map(|a| a.into_iter().map(|s| CargoConfig::string_provider(s, &credential_aliases)).collect())
+                    .unwrap_or_else(|| vec![SparseRegistryAuthProvider::TokenNoEnvironment]),
+                crates_io_credential_provider: env::var("CARGO_REGISTRY_CREDENTIAL_PROVIDER")
+                    .ok()
+                    .map(toml::Value::String)
+                    .or_else(|| {
+                        cfg.as_mut()?
+                            .as_table_mut()?
+                            .get_mut("registry")?
+                            .as_table_mut()?
+                            .remove("credential-provider")
+                    })
+                    .and_then(|v| SparseRegistryConfig::credential_provider_impl(&credential_aliases, v).map(|v| [v])),
+                crates_io_token_env: env::var("CARGO_REGISTRY_TOKEN").ok(),
+                crates_io_token: None.or_else(|| {
+                        CargoConfig::string(creds.as_mut()?
+                            .as_table_mut()?
+                            .get_mut("registry")?
+                            .as_table_mut()?
+                            .remove("token")?)
+                    })
+                    .or_else(|| {
+                        CargoConfig::string(cfg.as_mut()?
+                            .as_table_mut()?
+                            .get_mut("registry")?
+                            .as_table_mut()?
+                            .remove("token")?)
+                    }),
+                registry_tokens_env: env::vars_os()
+                    .map(|(k, v)| (k.into_encoded_bytes(), v))
+                    .filter(|(k, _)| k.starts_with(b"CARGO_REGISTRIES_") && k.ends_with(b"_TOKEN"))
+                    .filter(|(k, _)| {
+                        k["CARGO_REGISTRIES_".len()..k.len() - b"_TOKEN".len()].iter().all(|&b| !(b.is_ascii_lowercase() || b == b'.' || b == b'-'))
+                    })
+                    .flat_map(|(mut k, v)| {
+                        let k = String::from_utf8(k.drain("CARGO_REGISTRIES_".len()..k.len() - b"_TOKEN".len()).collect()).ok()?;
+                        Some((CargoConfigEnvironmentNormalisedString(k), v.into_string().ok()?))
+                    })
+                    .collect(),
+                registry_tokens: cfg.as_mut()
+                    .into_iter()
+                    .chain(creds.as_mut())
+                    .flat_map(|c| {
+                        c.as_table_mut()?
+                            .get_mut("registries")?
+                            .as_table_mut()
+                    })
+                    .flat_map(|r| r.into_iter().flat_map(|(name, v)| Some((name.clone(), CargoConfig::string(v.as_table_mut()?.remove("token")?)?))))
+                    .collect(),
+                credential_aliases: credential_aliases,
+            },
         }
     }
 
@@ -906,6 +1075,24 @@ impl CargoConfig {
         match v {
             toml::Value::String(s) => Some(s),
             _ => None,
+        }
+    }
+
+    fn string_array(a: Vec<toml::Value>) -> Vec<String> {
+        a.into_iter().flat_map(CargoConfig::string).collect()
+    }
+
+    fn string_array_v(v: toml::Value) -> Option<Vec<String>> {
+        match v {
+            toml::Value::Array(s) => Some(CargoConfig::string_array(s)),
+            _ => None,
+        }
+    }
+
+    fn string_provider(s: String, credential_aliases: &BTreeMap<CargoConfigEnvironmentNormalisedString, Vec<String>>) -> SparseRegistryAuthProvider {
+        match credential_aliases.get(&CargoConfigEnvironmentNormalisedString::normalise(s.clone())) {
+            Some(av) => SparseRegistryAuthProvider::Provider(av.clone()),
+            None => SparseRegistryAuthProvider::from_config(&s),
         }
     }
 }
@@ -1188,6 +1375,103 @@ pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, 
     }
 }
 
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct SparseRegistryAuthProviderBundle<'sr>(pub Cow<'sr, [SparseRegistryAuthProvider]>,
+                                                 pub &'sr OsStr,
+                                                 pub &'sr str,
+                                                 pub &'sr str,
+                                                 pub Option<&'sr str>,
+                                                 pub Option<&'sr str>);
+impl<'sr> SparseRegistryAuthProviderBundle<'sr> {
+    pub fn try(&self) -> Option<Cow<'sr, str>> {
+        let (repo_name, install_cargo, repo_url, token_env, token) = (self.1, self.2, self.3, self.4, self.5);
+        self.0
+            .iter()
+            .rev()
+            .find_map(|p| match p {
+                SparseRegistryAuthProvider::TokenNoEnvironment => token.map(Cow::from),
+                SparseRegistryAuthProvider::Token => token_env.or(token).map(Cow::from),
+                SparseRegistryAuthProvider::Wincred => None, // TODO
+                SparseRegistryAuthProvider::MacosKeychain => None, // TODO
+                SparseRegistryAuthProvider::Libsecret => None, // TODO
+                SparseRegistryAuthProvider::TokenFromStdout(args) => {
+                    Command::new(&args[0])
+                        .args(&args[1..])
+                        .env("CARGO", install_cargo)
+                        .env("CARGO_REGISTRY_INDEX_URL", repo_url)
+                        .env("CARGO_REGISTRY_NAME_OPT", repo_name)
+                        .stdin(Stdio::inherit())
+                        .stderr(Stdio::inherit())
+                        .output()
+                        .ok()
+                        .filter(|o| o.status.success())
+                        .map(|o| o.stdout)
+                        .and_then(|o| String::from_utf8(o).ok())
+                        .map(|mut o| {
+                            o.replace_range(o.rfind(|c| c != '\n').unwrap_or(o.len()) + 1..o.len(), "");
+                            o.replace_range(0..o.find(|c| c != '\n').unwrap_or(0), "");
+                            o.into()
+                        })
+                }
+                SparseRegistryAuthProvider::Provider(_) => None, // TODO
+            })
+    }
+}
+
+/// Collect everything needed to get an authentication token for the given registry.
+pub fn auth_providers<'sr>(crates_file: &Path, install_cargo: Option<&'sr OsStr>, sparse_registries: &'sr SparseRegistryConfig, sparse: bool,
+                           repo_name: &'sr str, repo_url: &'sr str)
+                           -> SparseRegistryAuthProviderBundle<'sr> {
+    let cargo = install_cargo.unwrap_or(OsStr::new("cargo"));
+    if !sparse {
+        return SparseRegistryAuthProviderBundle(vec![].into(), cargo, "!sparse", "!sparse", None, None);
+    }
+
+    if repo_name == "crates-io" {
+        let ret = match sparse_registries.crates_io_credential_provider.as_ref() {
+            Some(prov) => prov[..].into(),
+            None => sparse_registries.global_credential_providers[..].into(),
+        };
+        return SparseRegistryAuthProviderBundle(ret,
+                                                cargo,
+                                                repo_name,
+                                                repo_url,
+                                                sparse_registries.crates_io_token_env.as_deref(),
+                                                sparse_registries.crates_io_token.as_deref());
+    }
+
+    // Supposedly this is
+    //   format!("CARGO_REGISTRIES_{}_CREDENTIAL_PROVIDER",
+    //           CargoConfigEnvironmentNormalisedString::normalise(repo_name.to_string()).0)
+    // but they don't specify how they serialise arrays so
+    let ret: Cow<'sr, [SparseRegistryAuthProvider]> = match fs::read_to_string(crates_file.with_file_name("config"))
+        .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
+        .ok()
+        .and_then(|s| s.parse::<toml::Value>().ok())
+        .and_then(|mut c| {
+            sparse_registries.credential_provider(c.as_table_mut()?
+                .remove("registries")?
+                .as_table_mut()?
+                .remove(repo_name)?
+                .as_table_mut()?
+                .remove("credential-provider")?)
+        }) {
+        Some(prov) => vec![prov].into(),
+        None => sparse_registries.global_credential_providers[..].into(),
+    };
+    let token_env = if ret.contains(&SparseRegistryAuthProvider::Token) {
+        sparse_registries.registry_tokens_env.get(&CargoConfigEnvironmentNormalisedString::normalise(repo_name.to_string())).map(String::as_str)
+    } else {
+        None
+    };
+    SparseRegistryAuthProviderBundle(ret,
+                                     cargo,
+                                     repo_name,
+                                     repo_url,
+                                     token_env,
+                                     sparse_registries.registry_tokens.get(repo_name).map(String::as_str))
+}
+
 /// Update the specified index repository from the specified URL.
 ///
 /// Historically, `cargo search` was used, first of an
@@ -1241,7 +1525,8 @@ pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, 
 ///
 /// Only in this mode is the package list used.
 pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: &mut Registry, repo_url: &str, packages: I, http_proxy: Option<&str>,
-                                                                    fork_git: bool, http: &HttpCargoConfig, out: &mut W)
+                                                                    fork_git: bool, http: &HttpCargoConfig, auth_providers: SparseRegistryAuthProviderBundle,
+                                                                    out: &mut W)
                                                                     -> Result<(), String> {
     write!(out,
            "    {} registry '{}'{}",
@@ -1278,6 +1563,8 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
             }
         }
         Registry::Sparse(registry) => {
+            let auth = auth_providers.try();
+
             let mut sucker = CurlMulti::new();
             sucker.pipelining(true, true).map_err(|e| format!("pipelining: {}", e))?;
 
@@ -1292,6 +1579,11 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                         u
                     }))
                     .map_err(|e| format!("url: {}", e))?;
+                if let Some(auth) = auth.as_ref() {
+                    let mut headers = CurlList::new();
+                    headers.append(&format!("Authorization: {}", auth)).map_err(|e| format!("append: {}", e))?;
+                    conn.http_headers(headers).map_err(|e| format!("http_headers: {}", e))?;
+                }
                 if let Some(http_proxy) = http_proxy {
                     conn.proxy(http_proxy).map_err(|e| format!("proxy: {}", e))?;
                 }

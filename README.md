@@ -122,6 +122,12 @@ Confer the [initial implementation](https://github.com/nabijaczleweli/cargo-upda
 (h/t [@DCJanus](https://github.com/DCjanus) for help debugging and testcases, also
  dealing with me as I slowly [spiraled](https://lfs.nabijaczleweli.xyz/0017-twitter-export#1288559898763157511) into insanity).
 
+### Registry authentication
+
+The default `cargo:token`-but-it-doesn't-read-the-environment, `cargo:token`, and `cargo:token-from-stdout` providers are implemented.
+
+`cargo:wincred`, `cargo:macos-keychain`, `cargo:libsecret`, and the provider protocol (not `cargo:`-prefixed) providers are not.
+
 ## Special thanks
 
 To all who support further development on Patreon, in particular:

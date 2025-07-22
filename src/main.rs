@@ -5,10 +5,10 @@ extern crate git2;
 use std::io::{ErrorKind as IoErrorKind, Write, stdout, sink};
 use std::fmt::{self, Formatter, Display};
 use std::process::{Command, exit};
+use std::ffi::{OsString, OsStr};
 use std::collections::BTreeMap;
 use std::iter::FromIterator;
 use tabwriter::TabWriter;
-use std::ffi::OsStr;
 use std::{env, mem};
 #[cfg(target_os="windows")]
 use std::fs::File;
@@ -122,12 +122,19 @@ fn actual_main() -> Result<(), i32> {
         })
     }))?;
     for (i, mut registry_repo) in registry_repos.iter_mut().enumerate() {
+        let auth_providers = cargo_update::ops::auth_providers(&crates_file,
+                                                               opts.install_cargo.as_ref().map(OsString::as_os_str),
+                                                               &cargo_config.sparse_registries,
+                                                               (registry_urls[i].0).1,
+                                                               &(registry_urls[i].0).2,
+                                                               &(registry_urls[i].0).0);
         cargo_update::ops::update_index(&mut registry_repo,
                                         &(registry_urls[i].0).0,
                                         registry_urls[i].1.iter(),
                                         http_proxy.as_ref().map(String::as_str),
                                         cargo_config.net_git_fetch_with_cli,
                                         &cargo_config.http,
+                                        auth_providers,
                                         &mut if !opts.quiet {
                                             Box::new(stdout()) as Box<dyn Write>
                                         } else {
