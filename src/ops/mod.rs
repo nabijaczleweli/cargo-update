@@ -706,11 +706,7 @@ impl GitRepoPackage {
         } else {
             // If we could not open the repository either it does not exist, or exists but is invalid,
             // in which case remove it to trigger a fresh clone.
-            match fs::remove_dir_all(&clone_dir) {
-                Err(e) if e.kind() == IoErrorKind::NotFound => {}
-                Err(e) if e.kind() == IoErrorKind::NotADirectory => drop(fs::remove_file(&clone_dir)),
-                _ => {}
-            }
+            let _ = fs::remove_dir_all(&clone_dir).or_else(|_| fs::remove_file(&clone_dir));
 
             self.pull_version_fresh_clone(clone_dir, http_proxy, fork_git)
         }
