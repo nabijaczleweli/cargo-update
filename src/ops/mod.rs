@@ -14,7 +14,7 @@ use semver::{VersionReq as SemverReq, Version as Semver};
 use security_framework::os::macos::keychain::SecKeychain;
 #[cfg(target_os = "windows")]
 use windows::Win32::Security::Credentials as WinCred;
-use std::io::{self, ErrorKind as IoErrorKind, Write};
+use std::io::{self, ErrorKind as IoErrorKind, BufWriter, BufReader, BufRead, Write};
 use std::collections::{BTreeMap, BTreeSet};
 use curl::multi::Multi as CurlMulti;
 use std::process::{Command, Stdio};
@@ -851,8 +851,6 @@ impl SparseRegistryConfig {
 }
 
 /// https://doc.rust-lang.org/cargo/reference/registry-authentication.html
-///
-/// Not implemented: `cargo:macos-keychain`
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SparseRegistryAuthProvider {
     /// The default; does not read `CARGO_REGISTRY_TOKEN` or `CARGO_REGISTRIES_{}_TOKEN` environment variables.
@@ -867,9 +865,13 @@ pub enum SparseRegistryAuthProvider {
     Libsecret,
     /// `cargo:token-from-stdout prog arg arg`
     TokenFromStdout(Vec<String>),
-    /// Not `cargo:`-prefixed (not implemented)
+    /// Not `cargo:`-prefixed
     ///
     /// https://doc.rust-lang.org/cargo/reference/credential-provider-protocol.html
+    ///
+    /// We do *not* care about `"cache"`, `"expiration"`, or `"operation_independent"`, always behaving as-if `"never"`/`_`/`true`.
+    ///
+    /// We don't provide the optional `{"registry": {"headers": ...}}` field.
     Provider(Vec<String>),
 }
 
@@ -1393,12 +1395,12 @@ pub fn open_index_repository(registry: &Path, sparse: bool) -> Result<Registry, 
 pub struct SparseRegistryAuthProviderBundle<'sr>(pub Cow<'sr, [SparseRegistryAuthProvider]>,
                                                  pub &'sr OsStr,
                                                  pub &'sr str,
-                                                 pub &'sr str,
+                                                 pub Cow<'sr, str>,
                                                  pub Option<&'sr str>,
                                                  pub Option<&'sr str>);
 impl<'sr> SparseRegistryAuthProviderBundle<'sr> {
     pub fn try(&self) -> Option<Cow<'sr, str>> {
-        let (repo_name, install_cargo, repo_url, token_env, token) = (self.1, self.2, self.3, self.4, self.5);
+        let (install_cargo, repo_name, repo_url, token_env, token) = (self.1, self.2, &self.3, self.4, self.5);
         self.0
             .iter()
             .rev()
@@ -1505,7 +1507,7 @@ impl<'sr> SparseRegistryAuthProviderBundle<'sr> {
                     Command::new(&args[0])
                         .args(&args[1..])
                         .env("CARGO", install_cargo)
-                        .env("CARGO_REGISTRY_INDEX_URL", repo_url)
+                        .env("CARGO_REGISTRY_INDEX_URL", &repo_url[..])
                         .env("CARGO_REGISTRY_NAME_OPT", repo_name)
                         .stdin(Stdio::inherit())
                         .stderr(Stdio::inherit())
@@ -1520,7 +1522,69 @@ impl<'sr> SparseRegistryAuthProviderBundle<'sr> {
                             o.into()
                         })
                 }
-                SparseRegistryAuthProvider::Provider(_) => None, // TODO
+                SparseRegistryAuthProvider::Provider(args) => {
+                    Command::new(&args[0])
+                        .arg("--cargo-plugin")
+                        .stdin(Stdio::piped())
+                        .stdout(Stdio::piped())
+                        .spawn()
+                        .ok()
+                        .and_then(|mut child| {
+                            let mut stdin = BufWriter::new(child.stdin.take().unwrap());
+                            let mut stdout = BufReader::new(child.stdout.take().unwrap());
+
+                            let mut l = String::new();
+                            stdout.read_line(&mut l).map_err(|_| child.kill()).ok()?;
+                            {
+                                let mut hello: json::Value = json::from_str(&l).map_err(|_| child.kill()).ok()?;
+                                hello.as_object_mut()
+                                    .and_then(|h| h.remove("v"))
+                                    .and_then(|mut v| v.as_array_mut().filter(|vs| vs.contains(&json::Value::Number(1.into()))).map(drop))
+                                    .ok_or_else(|| child.kill())
+                                    .ok()?;
+                            }
+
+                            let req = json::Value::Object({
+                                let mut kv = json::Map::new();
+                                kv.insert("v".to_string(), json::Value::Number(1.into()));
+                                kv.insert("registry".to_string(),
+                                          json::Value::Object({
+                                              let mut kv = json::Map::new();
+                                              kv.insert("index-url".to_string(), json::Value::String(repo_url.to_string()));
+                                              kv.insert("name".to_string(), json::Value::String(repo_name.to_string()));
+                                              kv
+                                          }));
+                                kv.insert("kind".to_string(), json::Value::String("get".to_string()));
+                                kv.insert("operation".to_string(), json::Value::String("read".to_string()));
+                                kv.insert("args".to_string(),
+                                          json::Value::Array(args.into_iter().skip(1).cloned().map(json::Value::String).collect()));
+                                kv
+                            });
+                            json::to_writer(&mut stdin, &req).map_err(|_| child.kill()).ok()?;
+                            stdin.write_all(b"\n").map_err(|_| child.kill()).ok()?;
+                            stdin.flush().map_err(|_| child.kill()).ok()?;
+
+                            l.clear();
+                            stdout.read_line(&mut l).map_err(|_| child.kill()).ok()?;
+                            let mut res: json::Value = json::from_str(&l).map_err(|_| child.kill()).ok()?;
+                            match res.as_object_mut()
+                                .and_then(|h| h.remove("Ok"))
+                                .and_then(|mut ok| ok.as_object_mut().and_then(|ok| ok.remove("token"))) {
+                                Some(json::Value::String(tok)) => Some(tok.into()),
+                                Some(_) => {
+                                    let _ = child.kill();
+                                    None
+                                }
+                                None => {
+                                    let _ = io::stderr()
+                                        .write_all(b"\n")
+                                        .ok()
+                                        .and_then(|_| json::to_writer(&mut io::stderr(), &res).ok().and_then(|_| io::stderr().write_all(b"\n").ok()));
+                                    None
+                                }
+                            }
+                        })
+                }
             })
     }
 }
@@ -1531,7 +1595,7 @@ pub fn auth_providers<'sr>(crates_file: &Path, install_cargo: Option<&'sr OsStr>
                            -> SparseRegistryAuthProviderBundle<'sr> {
     let cargo = install_cargo.unwrap_or(OsStr::new("cargo"));
     if !sparse {
-        return SparseRegistryAuthProviderBundle(vec![].into(), cargo, "!sparse", "!sparse", None, None);
+        return SparseRegistryAuthProviderBundle(vec![].into(), cargo, "!sparse", "!sparse".into(), None, None);
     }
 
     if repo_name == "crates-io" {
@@ -1542,7 +1606,7 @@ pub fn auth_providers<'sr>(crates_file: &Path, install_cargo: Option<&'sr OsStr>
         return SparseRegistryAuthProviderBundle(ret,
                                                 cargo,
                                                 repo_name,
-                                                repo_url,
+                                                format!("sparse+{}", repo_url).into(),
                                                 sparse_registries.crates_io_token_env.as_deref(),
                                                 sparse_registries.crates_io_token.as_deref());
     }
@@ -1574,7 +1638,7 @@ pub fn auth_providers<'sr>(crates_file: &Path, install_cargo: Option<&'sr OsStr>
     SparseRegistryAuthProviderBundle(ret,
                                      cargo,
                                      repo_name,
-                                     repo_url,
+                                     format!("sparse+{}", repo_url).into(),
                                      token_env,
                                      sparse_registries.registry_tokens.get(repo_name).map(String::as_str))
 }

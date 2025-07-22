@@ -125,9 +125,10 @@ Confer the [initial implementation](https://github.com/nabijaczleweli/cargo-upda
 
 ### Registry authentication
 
-The default `cargo:token`-but-it-doesn't-read-the-environment, `cargo:token`, `cargo:token-from-stdout`, `cargo:wincred` (Win32), `cargo:macos-keychain` (Apple), and `cargo:libsecret` (non-Apple UNIX) providers are implemented.
+All providers as of Cargo 1.85.1 (default `cargo:token`-but-it-doesn't-read-the-environment, `cargo:token`, `cargo:token-from-stdout`, `cargo:wincred` (Win32), `cargo:macos-keychain` (Apple), `cargo:libsecret` (non-Apple UNIX), provider protocol (not `cargo:`-prefixed)) are implemented.
 
-The provider protocol (not `cargo:`-prefixed) providers is not.
+The provider protocol does *not* care about `"cache"`, `"expiration"`, or `"operation_independent"`, always behaving as-if `"never"`/`_`/`true`.
+It never gets the optional `{"registry": {"headers": ...}}` field.
 
 ## Special thanks
 
