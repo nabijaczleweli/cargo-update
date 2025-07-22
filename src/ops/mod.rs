@@ -865,14 +865,17 @@ pub enum SparseRegistryAuthProvider {
 
 impl SparseRegistryAuthProvider {
     /// Parses a `["cargo:token-from-stdout", "whatever"]`-style entry
-    pub fn from_config(toks: Vec<String>) -> SparseRegistryAuthProvider {
-        match &toks.get(0).unwrap_or(&"".to_string()).as_str() {
-            &"cargo:token" => SparseRegistryAuthProvider::Token,
-            &"cargo:wincred" => SparseRegistryAuthProvider::Wincred,
-            &"cargo:macos-keychain" => SparseRegistryAuthProvider::MacosKeychain,
-            &"cargo:libsecret" => SparseRegistryAuthProvider::Libsecret,
-            &"cargo:token-from-stdout" => SparseRegistryAuthProvider::TokenFromStdout(toks.into_iter().skip(1).map(String::from).collect()),
-            _ => SparseRegistryAuthProvider::Provider(toks.into_iter().map(String::from).collect()),
+    pub fn from_config(mut toks: Vec<String>) -> SparseRegistryAuthProvider {
+        match toks.get(0).map(String::as_str).unwrap_or("") {
+            "cargo:token" => SparseRegistryAuthProvider::Token,
+            "cargo:wincred" => SparseRegistryAuthProvider::Wincred,
+            "cargo:macos-keychain" => SparseRegistryAuthProvider::MacosKeychain,
+            "cargo:libsecret" => SparseRegistryAuthProvider::Libsecret,
+            "cargo:token-from-stdout" => {
+                toks.remove(0);
+                SparseRegistryAuthProvider::TokenFromStdout(toks)
+            }
+            _ => SparseRegistryAuthProvider::Provider(toks),
         }
     }
 }
@@ -1087,7 +1090,13 @@ impl CargoConfig {
     fn string_provider(s: String, credential_aliases: &BTreeMap<CargoConfigEnvironmentNormalisedString, Vec<String>>) -> SparseRegistryAuthProvider {
         match credential_aliases.get(&CargoConfigEnvironmentNormalisedString::normalise(s.clone())) {
             Some(av) => SparseRegistryAuthProvider::Provider(av.clone()),
-            None => SparseRegistryAuthProvider::from_config(s.split(' ').peekable().map(String::from).collect()),
+            None => {
+                SparseRegistryAuthProvider::from_config(if s.contains(' ') {
+                    s.split(' ').map(String::from).collect()
+                } else {
+                    vec![s]
+                })
+            }
         }
     }
 }
