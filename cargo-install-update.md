@@ -406,7 +406,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            nevsal,
            Rui Chen &lt;<https://chenrui.dev>&gt;,
            Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;,
-       and Rene Leonhardt
+           Rene Leonhardt,
+       and Maxime Guerreiro &lt;<maxime@cloudflare.com>&gt;
 
 ## SPECIAL THANKS
 
