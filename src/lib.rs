@@ -388,6 +388,8 @@ extern crate json_deserializer;
 #[macro_use]
 extern crate serde_derive;
 extern crate array_tool;
+#[cfg(target_os="windows")]
+extern crate windows;
 extern crate semver;
 extern crate whoami;
 extern crate serde;
