@@ -282,7 +282,7 @@ impl RegistryPackage {
                 vers_git.sort();
                 &vers_git
             }
-            (RegistryTree::Sparse(()), Registry::Sparse(registry_parent)) => &registry_parent[&self.name],
+            (RegistryTree::Sparse, Registry::Sparse(registry_parent)) => &registry_parent[&self.name],
             _ => unreachable!(),
         };
 
@@ -1375,7 +1375,7 @@ pub enum Registry {
 /// A git tree corresponding to the latest revision of a git registry.
 pub enum RegistryTree<'a> {
     Git(Tree<'a>),
-    Sparse(()),
+    Sparse,
 }
 
 /// Get `FETCH_HEAD` or `origin/HEAD`, then unwrap it to the tree it points to.
@@ -1387,7 +1387,7 @@ pub fn parse_registry_head(registry_repo: &Registry) -> Result<RegistryTree, Git
                 .map(|h| h.as_commit().unwrap().tree().unwrap())
                 .map(RegistryTree::Git)
         }
-        Registry::Sparse(_) => Ok(RegistryTree::Sparse(())),
+        Registry::Sparse(_) => Ok(RegistryTree::Sparse),
     }
 }
 
