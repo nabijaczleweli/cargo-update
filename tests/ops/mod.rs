@@ -19,9 +19,9 @@ fn intersect_packages() {
                                                                 vec!["cc".to_string()])
                                              .unwrap(),
                                          RegistryPackage::parse("racer 1.2.10 (registry+file:///usr/local/share/cargo)", vec!["r".to_string()]).unwrap()],
-                                       &[("cargo-count".to_string(), None, "https://github.com/rust-lang/crates.io-index".to_string()),
-                                         ("racer".to_string(), None, "https://github.com/rust-lang/crates.io-index".to_string()),
-                                         ("checksums".to_string(), None, "file:///usr/local/share/cargo".to_string())],
+                                       &[("cargo-count".to_string(), None, "https://github.com/rust-lang/crates.io-index".into()),
+                                         ("racer".to_string(), None, "https://github.com/rust-lang/crates.io-index".into()),
+                                         ("checksums".to_string(), None, "file:///usr/local/share/cargo".into())],
                                        false,
                                        &[]),
                vec![RegistryPackage::parse("cargo-count 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",

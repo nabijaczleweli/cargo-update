@@ -22,6 +22,7 @@ use std::fmt::Arguments;
 use whoami::username_os;
 use std::process::exit;
 use std::str::FromStr;
+use std::borrow::Cow;
 use std::{env, fs};
 use home;
 
@@ -30,7 +31,7 @@ use home;
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Options {
     /// (Additional) packages to update. Default: `[]`
-    pub to_update: Vec<(String, Option<Semver>, String)>,
+    pub to_update: Vec<(String, Option<Semver>, Cow<'static, str>)>,
     /// Whether to update all packages. Default: `false`
     pub all: bool,
     /// Whether to update packages or just list them. Default: `true`
@@ -125,7 +126,14 @@ impl Options {
         Options {
             to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
-                    let packages: Vec<_> = pkgs.map(package_parse).map(Result::unwrap).collect();
+                    let packages: Vec<_> = pkgs.map(package_parse)
+                        .map(Result::unwrap)
+                        .map(|(package, version, registry)| {
+                            (package.to_string(),
+                             version,
+                             registry.map(str::to_string).map(Cow::from).unwrap_or("https://github.com/rust-lang/crates.io-index".into()))
+                        })
+                        .collect();
                     packages.unique_via(|l, r| l.0 == r.0)
                 }
                 (true, None) => vec![],
@@ -292,24 +300,21 @@ fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
     fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
 }
 
-fn package_parse(s: &str) -> Result<(String, Option<Semver>, String), String> {
+fn package_parse(mut s: &str) -> Result<(&str, Option<Semver>, Option<&str>), String> {
     let mut registry_url = None;
-    let mut s = &s[..];
     if s.starts_with('(') {
         if let Some(idx) = s.find("):") {
-            registry_url = Some(s[1..idx].to_string());
+            registry_url = Some(&s[1..idx]);
             s = &s[idx + 2..];
         }
     }
 
-    let registry_url = registry_url.unwrap_or_else(|| "https://github.com/rust-lang/crates.io-index".to_string());
-
     if let Some(idx) = s.find(':') {
-        Ok((s[0..idx].to_string(),
+        Ok((&s[0..idx],
             Some(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))?),
             registry_url))
     } else {
-        Ok((s.to_string(), None, registry_url))
+        Ok((s, None, registry_url))
     }
 }
 

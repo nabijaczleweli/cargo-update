@@ -18,7 +18,7 @@ fn existent() {
     assert_eq!(installed_registry_packages(&td),
                vec![RegistryPackage {
                         name: "cargo-outdated".to_string(),
-                        registry: "https://github.com/rust-lang/crates.io-index".to_string(),
+                        registry: "https://github.com/rust-lang/crates.io-index".into(),
                         version: Some(Semver::parse("0.2.0").unwrap()),
                         newest_version: None,
                         alternative_version: None,
@@ -27,7 +27,7 @@ fn existent() {
                     },
                     RegistryPackage {
                         name: "racer".to_string(),
-                        registry: "https://github.com/rust-lang/crates.io-index".to_string(),
+                        registry: "https://github.com/rust-lang/crates.io-index".into(),
                         version: Some(Semver::parse("1.2.10").unwrap()),
                         newest_version: None,
                         alternative_version: None,
@@ -36,7 +36,7 @@ fn existent() {
                     },
                     RegistryPackage {
                         name: "rustfmt".to_string(),
-                        registry: "file:///usr/local/share/cargo".to_string(),
+                        registry: "file:///usr/local/share/cargo".into(),
                         version: Some(Semver::parse("0.6.2").unwrap()),
                         newest_version: None,
                         alternative_version: None,
@@ -45,7 +45,7 @@ fn existent() {
                     },
                     RegistryPackage {
                         name: "ssh-package".to_string(),
-                        registry: "ssh://example.com/private-index".to_string(),
+                        registry: "ssh://example.com/private-index".into(),
                         version: Some(Semver::parse("1.0.0").unwrap()),
                         newest_version: None,
                         alternative_version: None,

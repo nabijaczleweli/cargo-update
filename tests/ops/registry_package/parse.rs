@@ -8,7 +8,7 @@ fn main_registry() {
                                       vec!["cc".to_string()]),
                Some(RegistryPackage {
                    name: "cargo-count".to_string(),
-                   registry: "https://github.com/rust-lang/crates.io-index".to_string(),
+                   registry: "https://github.com/rust-lang/crates.io-index".into(),
                    version: Some(Semver::parse("0.2.2").unwrap()),
                    newest_version: None,
                    alternative_version: None,
@@ -22,7 +22,7 @@ fn alt_registry() {
     assert_eq!(RegistryPackage::parse("cargo-count 0.2.2 (registry+file:///usr/local/share/cargo)", vec!["cc".to_string()]),
                Some(RegistryPackage {
                    name: "cargo-count".to_string(),
-                   registry: "file:///usr/local/share/cargo".to_string(),
+                   registry: "file:///usr/local/share/cargo".into(),
                    version: Some(Semver::parse("0.2.2").unwrap()),
                    newest_version: None,
                    alternative_version: None,
