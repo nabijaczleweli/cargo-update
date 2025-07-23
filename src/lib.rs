@@ -388,7 +388,6 @@
 extern crate security_framework;
 #[macro_use]
 extern crate serde_derive;
-extern crate array_tool;
 extern crate serde_json;
 #[cfg(target_os = "windows")]
 extern crate windows;

@@ -17,7 +17,6 @@ use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{AppSettings, SubCommand, App, Arg};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
-use array_tool::vec::Uniq;
 use std::fmt::Arguments;
 use whoami::username_os;
 use std::process::exit;
@@ -126,7 +125,7 @@ impl Options {
         Options {
             to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
-                    let packages: Vec<_> = pkgs.map(package_parse)
+                    let mut packages: Vec<_> = pkgs.map(package_parse)
                         .map(Result::unwrap)
                         .map(|(package, version, registry)| {
                             (package.to_string(),
@@ -134,7 +133,9 @@ impl Options {
                              registry.map(str::to_string).map(Cow::from).unwrap_or("https://github.com/rust-lang/crates.io-index".into()))
                         })
                         .collect();
-                    packages.unique_via(|l, r| l.0 == r.0)
+                    packages.sort_by(|l, r| l.0.cmp(&r.0));
+                    packages.dedup_by(|l, r| l.0 == r.0);
+                    packages
                 }
                 (true, None) => vec![],
                 (false, None) => clerror(format_args!("Need at least one PACKAGE without --all")),
