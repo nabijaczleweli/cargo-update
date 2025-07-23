@@ -272,12 +272,12 @@ impl RegistryPackage {
         }
 
         // otherwise only want to install prerelease if the current version is a prerelease with the same maj.min.patch
-        match self.version.as_ref() {
-            Some(cur) => {
+        self.version
+            .as_ref()
+            .map(|cur| {
                 cur.is_prerelease() && cur.major == version_to_install.major && cur.minor == version_to_install.minor && cur.patch == version_to_install.patch
-            }
-            None => false,
-        }
+            })
+            .unwrap_or(false)
     }
 
     /// Read the version list for this crate off the specified repository tree and set the latest and alternative versions.
