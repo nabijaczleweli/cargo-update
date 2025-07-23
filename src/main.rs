@@ -441,7 +441,7 @@ fn actual_main() -> Result<(), i32> {
                         }
 
                         if cfg!(target_os = "windows") && package.name == "cargo-update" {
-                            save_cargo_update_exec(&package.id.to_string());
+                            save_cargo_update_exec(&package.id);
                         }
 
                         let install_res = if let Some(cfg) = configuration.get(&package.name) {
@@ -487,7 +487,7 @@ fn actual_main() -> Result<(), i32> {
                         }
                         if !install_res.success() {
                             if cfg!(target_os = "windows") && package.name == "cargo-update" {
-                                restore_cargo_update_exec(&package.id.to_string());
+                                restore_cargo_update_exec(&package.id);
                             }
 
                             (package.name, Err(install_res.code().unwrap_or(-1)))
