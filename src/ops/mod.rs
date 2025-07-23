@@ -16,9 +16,9 @@ use security_framework::os::macos::keychain::SecKeychain;
 use windows::Win32::Security::Credentials as WinCred;
 use std::io::{self, ErrorKind as IoErrorKind, BufWriter, BufReader, BufRead, Write};
 use std::collections::{BTreeMap, BTreeSet};
+use std::{slice, cmp, env, mem, str};
 use curl::multi::Multi as CurlMulti;
 use std::process::{Command, Stdio};
-use std::{cmp, env, mem, str};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
@@ -30,10 +30,10 @@ use std::time::Duration;
 #[cfg(all(unix, not(target_vendor = "apple")))]
 use std::sync::LazyLock;
 use serde_json as json;
-#[cfg(any(target_os = "windows", all(unix, not(target_vendor = "apple"))))]
-use std::{slice, ptr};
 use std::borrow::Cow;
 use std::sync::Mutex;
+#[cfg(any(target_os = "windows", all(unix, not(target_vendor = "apple"))))]
+use std::ptr;
 use url::Url;
 use toml;
 use hex;
@@ -827,7 +827,7 @@ pub struct HttpCargoConfig {
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SparseRegistryConfig {
     pub global_credential_providers: Vec<SparseRegistryAuthProvider>,
-    pub crates_io_credential_provider: Option<[SparseRegistryAuthProvider; 1]>,
+    pub crates_io_credential_provider: Option<SparseRegistryAuthProvider>,
     pub crates_io_token_env: Option<String>,
     pub crates_io_token: Option<String>,
     pub registry_tokens_env: BTreeMap<CargoConfigEnvironmentNormalisedString, String>,
@@ -1030,7 +1030,7 @@ impl CargoConfig {
                             .as_table_mut()?
                             .remove("credential-provider")
                     })
-                    .and_then(|v| SparseRegistryConfig::credential_provider_impl(&credential_aliases, v).map(|v| [v])),
+                    .and_then(|v| SparseRegistryConfig::credential_provider_impl(&credential_aliases, v)),
                 crates_io_token_env: env::var("CARGO_REGISTRY_TOKEN").ok(),
                 crates_io_token: None.or_else(|| {
                         CargoConfig::string(creds.as_mut()?
@@ -1601,7 +1601,7 @@ pub fn auth_providers<'sr>(crates_file: &Path, install_cargo: Option<&'sr OsStr>
 
     if repo_name == "crates-io" {
         let ret = match sparse_registries.crates_io_credential_provider.as_ref() {
-            Some(prov) => prov[..].into(),
+            Some(prov) => slice::from_ref(prov).into(),
             None => sparse_registries.global_credential_providers[..].into(),
         };
         return SparseRegistryAuthProviderBundle(ret,
