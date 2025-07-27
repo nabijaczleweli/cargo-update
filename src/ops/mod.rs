@@ -16,14 +16,13 @@ use security_framework::os::macos::keychain::SecKeychain;
 use windows::Win32::Security::Credentials as WinCred;
 use std::io::{self, ErrorKind as IoErrorKind, BufWriter, BufReader, BufRead, Write};
 use std::collections::{BTreeMap, BTreeSet};
-use std::{slice, cmp, env, mem, str};
+use std::{slice, cmp, env, mem, str, fs};
 use curl::multi::Multi as CurlMulti;
 use std::process::{Command, Stdio};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
 use std::hash::{Hasher, Hash};
 use std::iter::FromIterator;
-use std::fs::{self, File};
 #[cfg(target_os = "windows")]
 use windows::core::PCSTR;
 use std::time::Duration;
@@ -1136,13 +1135,13 @@ fn crates_file_in_impl<'cd>(cargo_dir: &'cd Path, mut seen: BTreeSet<&'cd Path>)
     }
 
     let mut config_file = cargo_dir.join("config");
-    let mut config_f = File::open(&config_file);
-    if config_f.is_err() {
+    let mut config_data = fs::read_to_string(&config_file);
+    if config_data.is_err() {
         config_file.set_file_name("config.toml");
-        config_f = File::open(&config_file);
+        config_data = fs::read_to_string(&config_file);
     }
-    if let Ok(mut config_f) = config_f {
-        if let Some(idir) = toml::from_str::<toml::Value>(&io::read_to_string(&mut config_f).unwrap())
+    if let Ok(config_data) = config_data {
+        if let Some(idir) = toml::from_str::<toml::Value>(&config_data)
             .unwrap()
             .get("install")
             .and_then(|t| t.as_table())
@@ -1154,6 +1153,11 @@ fn crates_file_in_impl<'cd>(cargo_dir: &'cd Path, mut seen: BTreeSet<&'cd Path>)
 
     config_file.set_file_name(".crates.toml");
     config_file
+}
+
+fn installed_packages_table(crates_file: &Path) -> Option<toml::Table> {
+    let crates_data = fs::read_to_string(crates_file).ok()?;
+    Some(toml::from_str::<toml::Value>(&crates_data).unwrap().get_mut("v1")?.as_table_mut().map(mem::take).unwrap())
 }
 
 /// List the installed packages at the specified location that originate
@@ -1177,30 +1181,21 @@ fn crates_file_in_impl<'cd>(cargo_dir: &'cd Path, mut seen: BTreeSet<&'cd Path>)
 /// }
 /// ```
 pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
-    if let Ok(crates_file) = fs::read_to_string(crates_file) {
-        let mut res = Vec::<RegistryPackage>::new();
-        for pkg in match toml::from_str::<toml::Value>(&crates_file).unwrap().get("v1") {
-                Some(tbl) => tbl,
-                None => return Vec::new(),
+    let mut res = Vec::<RegistryPackage>::new();
+    for pkg in installed_packages_table(crates_file)
+        .into_iter()
+        .flatten()
+        .flat_map(|(s, x)| CargoConfig::string_array_v(x).and_then(|x| RegistryPackage::parse(&s, x))) {
+        if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
+            if saved.version.is_none() || saved.version.as_ref().unwrap() < pkg.version.as_ref().unwrap() {
+                saved.version = pkg.version;
             }
-            .as_table()
-            .unwrap()
-            .iter()
-            .flat_map(|(s, x)| x.as_array().map(|x| (s, x)))
-            .flat_map(|(s, x)| RegistryPackage::parse(s, x.iter().flat_map(toml::Value::as_str).map(str::to_string).collect())) {
-            if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
-                if saved.version.is_none() || saved.version.as_ref().unwrap() < pkg.version.as_ref().unwrap() {
-                    saved.version = pkg.version;
-                }
-                continue;
-            }
-
-            res.push(pkg);
+            continue;
         }
-        res
-    } else {
-        Vec::new()
+
+        res.push(pkg);
     }
+    res
 }
 
 /// List the installed packages at the specified location that originate
@@ -1222,28 +1217,19 @@ pub fn installed_registry_packages(crates_file: &Path) -> Vec<RegistryPackage> {
 /// }
 /// ```
 pub fn installed_git_repo_packages(crates_file: &Path) -> Vec<GitRepoPackage> {
-    if let Ok(crates_file) = fs::read_to_string(crates_file) {
-        let mut res = Vec::<GitRepoPackage>::new();
-        for pkg in match toml::from_str::<toml::Value>(&crates_file).unwrap().get("v1") {
-                Some(tbl) => tbl,
-                None => return Vec::new(),
-            }
-            .as_table()
-            .unwrap()
-            .iter()
-            .flat_map(|(s, x)| x.as_array().map(|x| (s, x)))
-            .flat_map(|(s, x)| GitRepoPackage::parse(s, x.iter().flat_map(toml::Value::as_str).map(str::to_string).collect())) {
-            if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
-                saved.id = pkg.id;
-                continue;
-            }
-
-            res.push(pkg);
+    let mut res = Vec::<GitRepoPackage>::new();
+    for pkg in installed_packages_table(crates_file)
+        .into_iter()
+        .flatten()
+        .flat_map(|(s, x)| CargoConfig::string_array_v(x).and_then(|x| GitRepoPackage::parse(&s, x))) {
+        if let Some(saved) = res.iter_mut().find(|p| p.name == pkg.name) {
+            saved.id = pkg.id;
+            continue;
         }
-        res
-    } else {
-        Vec::new()
+
+        res.push(pkg);
     }
+    res
 }
 
 /// Filter out the installed packages not specified to be updated and add the packages you specify to install,
@@ -2041,7 +2027,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
             .into_iter()
             .chain(cfg.get_string("user.name"))
             .chain(["USERNAME", "USER"].iter().flat_map(env::var))
-            .chain(Some("git").into_iter().map(str::to_string)) {
+            .chain(Some("git".to_string())) {
             let mut ssh_attempts = 0;
 
             res = f(&mut |_, _, allowed| {
@@ -2100,11 +2086,13 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
 /// Split and lower-case `cargo-update` into `[ca, rg, cargo-update]`, `jot` into `[3, j, jot]`, &c.
 pub fn split_package_path(cratename: &str) -> Vec<Cow<str>> {
     let mut elems = Vec::new();
+    if cratename.is_empty() {
+        panic!("0-length cratename");
+    }
     if cratename.len() <= 3 {
-        elems.push(cratename.len().to_string().into());
+        elems.push(["1", "2", "3"][cratename.len() - 1].into())
     }
     match cratename.len() {
-        0 => panic!("0-length cratename"),
         1 | 2 => {}
         3 => elems.push(lcase(&cratename[0..1])),
         _ => {
@@ -2167,22 +2155,22 @@ pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_pare
 /// ```
 pub fn find_proxy(crates_file: &Path) -> Option<String> {
     if let Ok(crates_file) = fs::read_to_string(crates_file) {
-        if let Some(proxy) = toml::from_str::<toml::Value>(&crates_file)
-            .unwrap()
-            .get("http")
-            .and_then(|t| t.as_table())
-            .and_then(|t| t.get("proxy"))
-            .and_then(|t| t.as_str()) {
+        if let Some(toml::Value::String(proxy)) =
+            toml::from_str::<toml::Value>(&crates_file)
+                .unwrap()
+                .get_mut("http")
+                .and_then(|t| t.as_table_mut())
+                .and_then(|t| t.remove("proxy")) {
             if !proxy.is_empty() {
-                return Some(proxy.to_string());
+                return Some(proxy);
             }
         }
     }
 
     if let Ok(cfg) = GitConfig::open_default() {
-        if let Ok(proxy) = cfg.get_str("http.proxy") {
+        if let Ok(proxy) = cfg.get_string("http.proxy") {
             if !proxy.is_empty() {
-                return Some(proxy.to_string());
+                return Some(proxy);
             }
         }
     }

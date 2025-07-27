@@ -4,6 +4,7 @@ use std::fs;
 
 mod installed_registry_packages;
 mod package_filter_element;
+mod split_package_path;
 #[cfg(all(target_pointer_width="64", target_endian="little"))] // https://github.com/nabijaczleweli/cargo-update/issues/235
 mod assert_index_path;
 mod registry_package;
