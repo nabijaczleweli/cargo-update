@@ -1827,7 +1827,7 @@ pub enum RegistryTree<'a> {
 }
 
 /// Get `FETCH_HEAD` or `origin/HEAD`, then unwrap it to the tree it points to.
-pub fn parse_registry_head(registry_repo: &Registry) -> Result<RegistryTree, GitError> {
+pub fn parse_registry_head(registry_repo: &Registry) -> Result<RegistryTree<'_>, GitError> {
     match registry_repo {
         Registry::Git(registry_repo) => {
             registry_repo.revparse_single("FETCH_HEAD")
@@ -2084,7 +2084,7 @@ fn with_authentication<T, F>(url: &str, mut f: F) -> Result<T, GitError>
 
 
 /// Split and lower-case `cargo-update` into `[ca, rg, cargo-update]`, `jot` into `[3, j, jot]`, &c.
-pub fn split_package_path(cratename: &str) -> Vec<Cow<str>> {
+pub fn split_package_path(cratename: &str) -> Vec<Cow<'_, str>> {
     let mut elems = Vec::new();
     if cratename.is_empty() {
         panic!("0-length cratename");
@@ -2104,7 +2104,7 @@ pub fn split_package_path(cratename: &str) -> Vec<Cow<str>> {
     elems
 }
 
-fn lcase(s: &str) -> Cow<str> {
+fn lcase(s: &str) -> Cow<'_, str> {
     if s.bytes().any(|b| b.is_ascii_uppercase()) {
         s.to_ascii_lowercase().into()
     } else {
