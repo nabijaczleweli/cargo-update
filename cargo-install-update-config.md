@@ -180,7 +180,8 @@ Written by наб &lt;<nabijaczleweli@nabijaczleweli.xyz>&gt;,
            Rui Chen &lt;<https://chenrui.dev>&gt;,
            Lynnesbian &lt;<https://fedi.lynnesbian.space/@lynnesbian>&gt;,
            Rene Leonhardt,
-       and Maxime Guerreiro &lt;<maxime@cloudflare.com>&gt;
+           Maxime Guerreiro &lt;<maxime@cloudflare.com>&gt;,
+       and Brian
 
 ## SPECIAL THANKS
 
