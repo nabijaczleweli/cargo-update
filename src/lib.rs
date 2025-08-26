@@ -386,6 +386,7 @@
 
 #[cfg(target_vendor = "apple")]
 extern crate security_framework;
+#[allow(unused_imports)]
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
