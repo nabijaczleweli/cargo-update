@@ -2,18 +2,20 @@ extern crate cargo_update;
 extern crate tabwriter;
 extern crate git2;
 
-use std::io::{ErrorKind as IoErrorKind, Write, stdout, sink};
+use std::io::{Write, stdout, sink, BufReader, BufRead, IsTerminal};
 use std::fmt::{self, Formatter, Display};
-use std::process::{Command, exit};
+use std::process::{Command, exit, Stdio, ExitStatus};
 use std::ffi::{OsString, OsStr};
 use std::collections::BTreeMap;
 use std::iter::FromIterator;
 use tabwriter::TabWriter;
-use std::{env, mem};
+use std::{env, mem, panic};
 #[cfg(target_os = "windows")]
 use std::fs::File;
 use std::fs;
-
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicI32};
+use std::sync::atomic::Ordering::Relaxed;
 
 fn main() {
     let result = actual_main().err().unwrap_or(0);
@@ -231,9 +233,35 @@ fn actual_main() -> Result<(), i32> {
 
         packages.retain(|pkg| pkg.update_to_version().is_some());
 
+        let parallel_binaries = match opts.parallel_binaries as usize {
+            0 => 1,
+            x => {
+                if opts.jobs.as_ref().is_some() {
+                    eprintln!("--parallel-binaries overrides --jobs");
+                    exit(1);
+                }
+                env::var_os("CARGO_MAKEFLAGS").ok_or(0).unwrap_err();
+                env::var_os("MAKEFLAGS").ok_or(0).unwrap_err();
+                env::var_os("MFLAGS").ok_or(0).unwrap_err();
+                x
+            }
+        };
+        let jobserver_jobs = (std::thread::available_parallelism().unwrap().get() - parallel_binaries).max(1);
+        let jobserver = if !opts.jobs.as_ref().is_some() && parallel_binaries > 1 {
+            Some(jobserver::Client::new(jobserver_jobs).unwrap())
+        } else {
+            None
+        };
+        // Separate semaphore to prevent cargo's startup overhead from making things disk-bound
+        let semaphore = Arc::new(std_semaphore::Semaphore::new(parallel_binaries as isize));
+
         if !packages.is_empty() {
-            let (success, errored, result): (Vec<String>, Vec<String>, Option<i32>) = packages.into_iter()
-                .map(|package| -> (String, Result<(), i32>) {
+            let result = Arc::new(AtomicI32::new(0));
+            let mut reader_threads = vec![];
+            let results: Vec<Arc<AtomicBool>> = packages.iter()
+                .map(|package| {
+                    let bool_result = Arc::new(AtomicBool::new(true));
+                    semaphore.acquire();
                     if !opts.quiet {
                         println!("{} {}",
                                  if package.version.is_some() {
@@ -255,99 +283,127 @@ fn actual_main() -> Result<(), i32> {
                                    &package.name[..])
                         }
                     };
-                    let install_res = {
-                            let cfg = configuration.get(&package.name);
-                            if opts.install_cargo == None && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
-                               (cfg == None || cfg == Some(&Default::default())) {
-                                    Command::new("cargo-binstall")
-                                        .arg("--roots")
-                                        .arg(&opts.cargo_dir.0)
-                                        .arg("--no-confirm")
-                                        .arg("--version")
-                                        .arg(&format!("={}", package.update_to_version().unwrap()))
-                                        .arg("--force")
-                                        .args(if opts.quiet { Some("--quiet") } else { None })
-                                        .args(if opts.locked { Some("--locked") } else { None })
-                                        .arg(&package.name)
-                                        .status()
-                                } else {
-                                    Err(IoErrorKind::NotFound.into())
-                                }
-                                .or_else(|_| if let Some(cfg) = cfg {
-                                    let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
-                                    cfg.environmentalise(&mut cmd)
-                                        .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
-                                        .arg("--root")
-                                        .arg(&opts.cargo_dir.0)
-                                        .args(if opts.quiet { Some("--quiet") } else { None })
-                                        .args(if opts.locked { Some("--locked") } else { None })
-                                        .arg("--version")
-                                        .arg(if let Some(tv) = cfg.target_version.as_ref() {
-                                            tv.to_string()
-                                        } else {
-                                            package.update_to_version().unwrap().to_string()
-                                        })
-                                        .arg("--registry")
-                                        .arg(registry_name.as_ref());
-                                    if let Some(ref j) = opts.jobs.as_ref() {
-                                        cmd.arg("-j").arg(j);
-                                    }
-                                    cmd.arg(&package.name)
-                                        .args(&opts.cargo_install_args)
-                                        .status()
-                                } else {
-                                    let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
-                                    cmd.arg("install")
-                                        .arg("--root")
-                                        .arg(&opts.cargo_dir.0)
-                                        .arg("-f")
-                                        .args(if opts.quiet { Some("--quiet") } else { None })
-                                        .args(if opts.locked { Some("--locked") } else { None })
-                                        .arg("--version")
-                                        .arg(package.update_to_version().unwrap().to_string())
-                                        .arg("--registry")
-                                        .arg(registry_name.as_ref());
-                                    if let Some(ref j) = opts.jobs.as_ref() {
-                                        cmd.arg("-j").arg(j);
-                                    }
-                                    cmd.arg(&package.name)
-                                        .args(&opts.cargo_install_args)
-                                        .status()
-                                })
-                        }
-                        .unwrap();
 
-                    if !opts.quiet {
-                        println!();
-                    }
-                    if !install_res.success() {
-                        if cfg!(target_os = "windows") && package.version.is_some() && package.name == "cargo-update" {
-                            restore_cargo_update_exec(package.version.as_ref().unwrap());
-                        }
-
-                        (package.name, Err(install_res.code().unwrap_or(-1)))
+                    let cfg = configuration.get(&package.name);
+                    let install_res_opt: Option<ExitStatus> = if opts.install_cargo == None && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
+                        (cfg == None || cfg == Some(&Default::default())) {
+                        Command::new("cargo-binstall")
+                            .arg("--roots")
+                            .arg(&opts.cargo_dir.0)
+                            .arg("--no-confirm")
+                            .arg("--version")
+                            .arg(&format!("={}", package.update_to_version().unwrap()))
+                            .arg("--force")
+                            .args(if opts.quiet { Some("--quiet") } else { None })
+                            .args(if opts.locked { Some("--locked") } else { None })
+                            .arg(&package.name)
+                            .status().ok()
                     } else {
-                        (package.name, Ok(()))
+                        None
+                    }.or(if let Some(cfg) = cfg {
+                        let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                        cfg.environmentalise(&mut cmd)
+                            .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
+                            .arg("--root")
+                            .arg(&opts.cargo_dir.0)
+                            .args(if opts.quiet { Some("--quiet") } else { None })
+                            .args(if opts.locked { Some("--locked") } else { None })
+                            .arg("--version")
+                            .arg(if let Some(tv) = cfg.target_version.as_ref() {
+                                tv.to_string()
+                            } else {
+                                package.update_to_version().unwrap().to_string()
+                            })
+                            .arg("--registry")
+                            .arg(registry_name.as_ref());
+                        if let Some(ref j) = opts.jobs.as_ref() {
+                            cmd.arg("-j").arg(j);
+                        }
+                        if let Some(ref jobserver) = jobserver {
+                            jobserver.configure(&mut cmd);
+                            cmd.stderr(Stdio::piped());
+                            if !opts.quiet && stdout().is_terminal() {
+                                cmd.arg("--color").arg("always");
+                            }
+                        }
+                        cmd.arg(&package.name).args(&opts.cargo_install_args);
+                        let mut child = cmd.spawn().unwrap();
+                        if jobserver.is_some() {
+                            let err = BufReader::new(child.stderr.take().unwrap());
+                            let package_name = package.name.clone();
+                            let result = result.clone();
+                            let bool_result = bool_result.clone();
+                            let semaphore = semaphore.clone();
+                            reader_threads.push(std::thread::spawn(move || {
+                                err.lines().for_each(|line| {
+                                    println!("[{}] {}", package_name, line.unwrap());
+                                });
+                                let install_res = child.wait().unwrap();
+                                if !install_res.success() {
+                                    bool_result.store(false, Relaxed);
+                                    result.compare_exchange(0, install_res.code().unwrap_or(-1), Relaxed, Relaxed).ok();
+                                }
+                                semaphore.release();
+                            }));
+                            None
+                        } else {
+                            Some(child.wait().unwrap())
+                        }
+                    } else {
+                        let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                        cmd.arg("install")
+                            .arg("--root")
+                            .arg(&opts.cargo_dir.0)
+                            .arg("-f")
+                            .args(if opts.quiet { Some("--quiet") } else { None })
+                            .args(if opts.locked { Some("--locked") } else { None })
+                            .arg("--version")
+                            .arg(package.update_to_version().unwrap().to_string())
+                            .arg("--registry")
+                            .arg(registry_name.as_ref());
+                        if let Some(ref j) = opts.jobs.as_ref() {
+                            cmd.arg("-j").arg(j);
+                        }
+                        Some(cmd.arg(&package.name)
+                            .args(&opts.cargo_install_args)
+                            .status().unwrap())
+                    });
+                    if let Some(install_res) = install_res_opt {
+                        assert!(jobserver.is_none());
+                        if !opts.quiet {
+                            println!();
+                        }
+                        if !install_res.success() {
+                            bool_result.store(false, Relaxed);
+                            result.compare_exchange(0, install_res.code().unwrap_or(-1), Relaxed, Relaxed).ok();
+                        }
+                        semaphore.release();
                     }
-                })
-                .fold((vec![], vec![], None), |(mut s, mut e, r), (pn, p)| match p {
-                    Ok(()) => {
-                        s.push(pn);
-                        (s, e, r)
-                    }
-                    Err(pr) => {
-                        e.push(pn);
-                        (s, e, r.or(Some(pr)))
-                    }
-                });
 
+                    bool_result
+                })
+                .collect();
+
+            for x in reader_threads {
+                x.join().unwrap();
+            }
+
+            let success: Vec<String> = packages.iter().enumerate()
+                .filter(|(i, _)| results[*i].load(Relaxed)).map(|x| x.1.name.clone()).collect();
+            let errored: Vec<String> = packages.iter().enumerate()
+                .filter(|(i, _)| !results[*i].load(Relaxed)).map(|x| {
+                if cfg!(target_os = "windows") && x.1.version.is_some() && x.1.name == "cargo-update" {
+                    restore_cargo_update_exec(x.1.version.as_ref().unwrap());
+                }
+                x.1.name.clone()
+            }).collect();
             if !opts.quiet {
                 println!();
                 println!("Updated {} package{}.", success.len(), if success.len() == 1 { "" } else { "s" });
             }
             success_global = success;
 
-            if !errored.is_empty() && result.is_some() {
+            if !errored.is_empty() && result.load(Relaxed) != 0 {
                 eprint!("Failed to update ");
                 for (i, e) in errored.iter().enumerate() {
                     if i != 0 {
@@ -360,9 +416,12 @@ fn actual_main() -> Result<(), i32> {
 
                 if opts.update_git {
                     errored_global = errored;
-                    result_global = result;
+                    result_global = match result.load(Relaxed) {
+                        0 => None,
+                        x => Some(x)
+                    };
                 } else {
-                    return Err(result.unwrap());
+                    return Err(result.load(Relaxed));
                 }
             }
         } else {
@@ -370,6 +429,7 @@ fn actual_main() -> Result<(), i32> {
                 println!("No packages need updating.");
             }
         }
+        drop(semaphore);
     }
 
     if opts.update_git {
