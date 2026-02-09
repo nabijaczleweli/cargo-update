@@ -1,6 +1,6 @@
 .\" generated with Ronn-NG/v0.9.1
 .\" http://github.com/apjanke/ronn-ng/tree/0.9.1
-.TH "CARGO\-INSTALL\-UPDATE" "1" "October 2025" "cargo-update developers"
+.TH "CARGO\-INSTALL\-UPDATE" "1" "February 2026" "cargo-update developers"
 .SH "NAME"
 \fBcargo\-install\-update\fR \- Cargo subcommand for checking and applying updates to installed executables
 .SH "SYNOPSIS"
@@ -118,6 +118,38 @@ except it doesn't disable cargo\-binstall\.
 .IP "" 4
 .nf
 Run at most JOBS jobs at once, forwarded verbatim to cargo install\.
+
+Excludes \-J, which gives better utilisation\.
+.fi
+.IP "" 0
+.P
+\-J \-\-recursive\-jobs \-J\fIJOBS\fR \-\-recursive\-jobs \fIJOBS\fR
+.IP "" 4
+.nf
+Build crates in parallel to fill JOBS CPUs\.
+
+By default (and with \-j JOBS), each "cargo install" invocation runs serially,
+on as many CPUs as are installed on the system (on JOBS CPUs)\.
+
+With \-J (\-J JOBS), cargo install\-update creates a make jobserver with
+as many job slots as CPUs are installed on the system (JOBS job slots)
+and passes it to "cargo install"s via $CARGO_MAKEFLAGS/$MAKEFLAGS/$MFLAGS\.
+
+Building a crate consists of several build steps, which can be,
+with some restrictions, parallelised within a single crate build
+(like downloading sources or compiling different unrelated dependency crates)
+that all feed into a final long link step\.
+
+By default (with \-j) cargo runs as many jobs at once as allocated,
+within a single crate\.
+
+With \-J (\-J JOBS), job slots are shared across all cargo install processes,
+and they will collude to run as many jobs at once as allocated, overall\.
+
+Notice this means you may be building up to JOBS crates in parallel,
+which may induce significant filesystem and memory pressure\.
+
+If an empty value is given, defaults to the amount of CPUs installed on the system\.
 .fi
 .IP "" 0
 .P
