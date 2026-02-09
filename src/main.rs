@@ -1,4 +1,5 @@
 extern crate cargo_update;
+extern crate jobserver;
 extern crate tabwriter;
 extern crate git2;
 
@@ -215,10 +216,8 @@ fn actual_main() -> Result<(), i32> {
 
     note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
 
-    let exclude = std::sync::Mutex::new(());
+    let jobserver = jobserver::Client::new(0).expect("jobserver");
     std::thread::scope(|scope| {
-        let _exclude_prep = exclude.lock();
-
         let mut updaters = vec![];
         if opts.update {
             if !opts.force {
@@ -236,7 +235,7 @@ fn actual_main() -> Result<(), i32> {
                 updaters = packages.into_iter()
                     .map(|package| {
                         scope.spawn(|| -> (bool, String, Result<(), i32>) {
-                            let _exclude = exclude.lock();
+                            let _job = jobserver.acquire();
                             if !opts.quiet {
                                 println!("{} {}",
                                          if package.version.is_some() {
@@ -407,7 +406,8 @@ fn actual_main() -> Result<(), i32> {
                     updaters.extend(packages.into_iter()
                         .map(|package| {
                             scope.spawn(|| -> (bool, String, Result<(), i32>) {
-                                let _exclude = exclude.lock();
+                                let _job = jobserver.acquire();
+                                // let _exclude = exclude.lock();
                                 if !opts.quiet {
                                     println!("Updating {} from {}", package.name, package.url);
                                 }
@@ -476,7 +476,7 @@ fn actual_main() -> Result<(), i32> {
             }
         }
 
-        drop(_exclude_prep);
+        jobserver.release_raw().unwrap();
 
         if opts.update {
             let (success, errored, result): (Vec<(bool, String)>, Vec<(bool, String)>, Option<i32>) = updaters.into_iter()
