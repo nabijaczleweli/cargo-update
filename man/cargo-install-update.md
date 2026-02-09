@@ -99,6 +99,36 @@ Exit values and possible errors:
 
     Run at most JOBS jobs at once, forwarded verbatim to cargo install.
 
+    Excludes -J, which gives better utilisation.
+
+  -J --recursive-jobs
+  -J<JOBS> --recursive-jobs <JOBS>
+
+    Build crates in parallel to fill JOBS CPUs.
+
+    By default (and with -j JOBS), each "cargo install" invocation runs serially,
+    on as many CPUs as are installed on the system (on JOBS CPUs).
+
+    With -J (-J JOBS), cargo install-update creates a make jobserver with
+    as many job slots as CPUs are installed on the system (JOBS job slots)
+    and passes it to "cargo install"s via $CARGO_MAKEFLAGS/$MAKEFLAGS/$MFLAGS.
+
+    Building a crate consists of several build steps, which can be,
+    with some restrictions, parallelised within a single crate build
+    (like downloading sources or compiling different unrelated dependency crates)
+    that all feed into a final long link step.
+
+    By default (with -j) cargo runs as many jobs at once as allocated,
+    within a single crate.
+
+    With -J (-J JOBS), job slots are shared across all cargo install processes,
+    and they will collude to run as many jobs at once as allocated, overall.
+
+    Notice this means you may be building up to JOBS crates in parallel,
+    which may induce significant filesystem and memory pressure.
+
+    If an empty value is given, defaults to the amount of CPUs installed on the system.
+
   -s --filter <PACKAGE_FILTER>...
 
     Only consider packages matching all filters.

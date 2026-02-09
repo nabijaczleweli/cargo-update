@@ -216,7 +216,18 @@ fn actual_main() -> Result<(), i32> {
 
     note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
 
-    let jobserver = jobserver::Client::new(0).expect("jobserver");
+    let jobserver_jobs = opts.recursive_jobs.map(|nz| nz.get()).unwrap_or(1);
+    let jobserver = jobserver::Client::new(jobserver_jobs).expect("jobserver");
+    let jobserverise = |mut cmd| {
+        if opts.recursive_jobs.is_some() {
+            jobserver.configure_make(&mut cmd)
+        }
+        cmd
+    };
+    for _ in 0..jobserver_jobs {
+        // Initialising to 0 then filling up errors on Windows
+        jobserver.acquire_raw().unwrap();
+    }
     std::thread::scope(|scope| {
         let mut updaters = vec![];
         if opts.update {
@@ -261,7 +272,7 @@ fn actual_main() -> Result<(), i32> {
                                     let cfg = configuration.get(&package.name);
                                     if opts.install_cargo == None && registry_name == "crates-io" && opts.cargo_install_args.is_empty() &&
                                        (cfg == None || cfg == Some(&Default::default())) {
-                                            Command::new("cargo-binstall")
+                                            jobserverise(Command::new("cargo-binstall"))
                                                 .arg("--roots")
                                                 .arg(&opts.cargo_dir.0)
                                                 .arg("--no-confirm")
@@ -276,7 +287,7 @@ fn actual_main() -> Result<(), i32> {
                                             Err(IoErrorKind::NotFound.into())
                                         }
                                         .or_else(|_| if let Some(cfg) = cfg {
-                                            let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                            let mut cmd = jobserverise(Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo"))));
                                             cfg.environmentalise(&mut cmd)
                                                 .args(cfg.cargo_args(&package.executables).iter().map(AsRef::as_ref))
                                                 .arg("--root")
@@ -298,7 +309,7 @@ fn actual_main() -> Result<(), i32> {
                                                 .args(&opts.cargo_install_args)
                                                 .status()
                                         } else {
-                                            let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                            let mut cmd = jobserverise(Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo"))));
                                             cmd.arg("install")
                                                 .arg("--root")
                                                 .arg(&opts.cargo_dir.0)
@@ -476,7 +487,9 @@ fn actual_main() -> Result<(), i32> {
             }
         }
 
-        jobserver.release_raw().unwrap();
+        for _ in 0..jobserver_jobs {
+            jobserver.release_raw().unwrap();
+        }
 
         if opts.update {
             let (success, errored, result): (Vec<(bool, String)>, Vec<(bool, String)>, Option<i32>) = updaters.into_iter()

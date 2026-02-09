@@ -20,6 +20,7 @@ use std::path::{PathBuf, Path};
 use std::fmt::Arguments;
 use whoami::username_os;
 use std::process::exit;
+use std::num::NonZero;
 use std::str::FromStr;
 use std::borrow::Cow;
 use std::{env, fs};
@@ -61,6 +62,8 @@ pub struct Options {
     pub install_cargo: Option<OsString>,
     /// Limit of concurrent jobs. Default: `None`
     pub jobs: Option<OsString>,
+    /// Start jobserver to fill this many CPUs. Default: `None`
+    pub recursive_jobs: Option<NonZero<usize>>,
 }
 
 /// Representation of the config application's all configurable values.
@@ -78,6 +81,7 @@ pub struct ConfigOptions {
 impl Options {
     /// Parse `env`-wide command-line arguments into an `Options` instance
     pub fn parse() -> Options {
+        let recursive_jobs_default = std::thread::available_parallelism().unwrap_or(NonZero::new(1).unwrap());
         let matches = App::new("cargo")
             .bin_name("cargo")
             .version(crate_version!())
@@ -103,8 +107,24 @@ impl Options {
                         Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
                             .number_of_values(1)
                             .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
-                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'").allow_invalid_utf8(true),
-                        Arg::from_usage("-j --jobs=[JOBS] 'Limit number of parallel jobs.'").allow_invalid_utf8(true),
+                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'")
+                            .number_of_values(1)
+                            .allow_invalid_utf8(true),
+                        Arg::from_usage("-j --jobs=[JOBS] 'Limit number of parallel jobs.'")
+                            .number_of_values(1)
+                            .allow_invalid_utf8(true)
+                            .conflicts_with("recursive-jobs"),
+                        Arg::from_usage(&format!("-J --recursive-jobs=[JOBS] 'Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.'",
+                                                 recursive_jobs_default))
+                            .number_of_values(1)
+                            .conflicts_with("jobs")
+                            .forbid_empty_values(false)
+                            .default_missing_value("")
+                            .validator(|s| if !s.is_empty() {
+                                NonZero::<usize>::from_str(s).map(|_| ())
+                            } else {
+                                Ok(())
+                            }),
                         Arg::with_name("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
@@ -161,6 +181,11 @@ impl Options {
             cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
             install_cargo: matches.value_of_os("install-cargo").map(OsStr::to_os_string),
             jobs: matches.value_of_os("jobs").map(OsStr::to_os_string),
+            recursive_jobs: matches.value_of("recursive-jobs").map(|rj| if !rj.is_empty() {
+                rj.parse().unwrap()
+            } else {
+                recursive_jobs_default
+            }),
         }
     }
 }
