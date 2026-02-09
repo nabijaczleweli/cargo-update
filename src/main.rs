@@ -514,7 +514,7 @@ fn actual_main() -> Result<(), i32> {
                 }
             }
             if !opts.quiet {
-                let groupsum = |git, label| if success.iter().chain(errored.iter()).find(|(g, _)| *g == git).is_some() {
+                let groupsum = |git, label| if success.iter().chain(errored.iter()).any(|(g, _)| *g == git) {
                     let count = success.iter().filter(|(g, _)| *g == git).count();
                     println!();
                     println!("Updated {} {}package{}.", count, label, if count == 1 { "" } else { "s" });

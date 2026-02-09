@@ -124,7 +124,7 @@ Exit values and possible errors:
     With -J (-J JOBS), job slots are shared across all cargo install processes,
     and they will collude to run as many jobs at once as allocated, overall.
 
-    Notice this means you may be building up to JOBS crates in parallel,
+    Notice how this means you may be building up to JOBS crates in parallel,
     which may induce significant filesystem and memory pressure.
 
     If an empty value is given, defaults to the amount of CPUs installed on the system.
