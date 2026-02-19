@@ -64,6 +64,8 @@ pub struct Options {
     pub jobs: Option<OsString>,
     /// Start jobserver to fill this many CPUs. Default: `None`
     pub recursive_jobs: Option<NonZero<usize>>,
+    /// Maximum number of binaries compiled concurrently
+    pub parallel_binaries: NonZero<usize>,
 }
 
 /// Representation of the config application's all configurable values.
@@ -82,6 +84,7 @@ impl Options {
     /// Parse `env`-wide command-line arguments into an `Options` instance
     pub fn parse() -> Options {
         let recursive_jobs_default = std::thread::available_parallelism().unwrap_or(NonZero::new(1).unwrap());
+        let parallel_binaries_default = recursive_jobs_default.min(NonZero::new(4).unwrap());
         let matches = App::new("cargo")
             .bin_name("cargo")
             .version(crate_version!())
@@ -114,10 +117,21 @@ impl Options {
                             .number_of_values(1)
                             .allow_invalid_utf8(true)
                             .conflicts_with("recursive-jobs"),
-                        Arg::from_usage(&format!("-J --recursive-jobs=[JOBS] 'Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.'",
+                        Arg::from_usage(&format!("-J --recursive-jobs=[JOBS] 'Build on up to JOBS CPUs at once. {} if empty.'",
                                                  recursive_jobs_default))
                             .number_of_values(1)
                             .conflicts_with("jobs")
+                            .forbid_empty_values(false)
+                            .default_missing_value("")
+                            .validator(|s| if !s.is_empty() {
+                                NonZero::<usize>::from_str(s).map(|_| ())
+                            } else {
+                                Ok(())
+                            }),
+                        Arg::from_usage(&format!("--parallel-binaries=[JOBS] 'Build up to JOBS crates at once. {} if empty.'",
+                                                 parallel_binaries_default))
+                            .number_of_values(1)
+                            .requires("recursive-jobs")
                             .forbid_empty_values(false)
                             .default_missing_value("")
                             .validator(|s| if !s.is_empty() {
@@ -186,6 +200,7 @@ impl Options {
             } else {
                 recursive_jobs_default
             }),
+            parallel_binaries: matches.value_of("parallel-binaries").unwrap_or("").parse().unwrap_or(parallel_binaries_default),
         }
     }
 }

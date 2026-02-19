@@ -217,6 +217,7 @@ fn actual_main() -> Result<(), i32> {
     note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
 
     let jobserver_jobs = opts.recursive_jobs.map(|nz| nz.get()).unwrap_or(1);
+    let parallel_binaries = opts.parallel_binaries.get();
     let jobserver = jobserver::Client::new(jobserver_jobs).expect("jobserver");
     let jobserverise = |mut cmd| {
         if opts.recursive_jobs.is_some() {
@@ -228,6 +229,7 @@ fn actual_main() -> Result<(), i32> {
         // Initialising to 0 then filling up errors on Windows
         jobserver.acquire_raw().unwrap();
     }
+    let parallel_binaries_semaphore = std_semaphore::Semaphore::new(parallel_binaries as isize);
     std::thread::scope(|scope| {
         let mut updaters = vec![];
         if opts.update {
@@ -246,6 +248,7 @@ fn actual_main() -> Result<(), i32> {
                 updaters = packages.into_iter()
                     .map(|package| {
                         scope.spawn(|| -> (bool, String, Result<(), i32>) {
+                            parallel_binaries_semaphore.acquire();
                             let _job = jobserver.acquire();
                             if !opts.quiet {
                                 println!("{} {}",
@@ -329,6 +332,7 @@ fn actual_main() -> Result<(), i32> {
                                         })
                                 }
                                 .unwrap();
+                            parallel_binaries_semaphore.release();
 
                             if !opts.quiet {
                                 println!();
@@ -417,6 +421,7 @@ fn actual_main() -> Result<(), i32> {
                     updaters.extend(packages.into_iter()
                         .map(|package| {
                             scope.spawn(|| -> (bool, String, Result<(), i32>) {
+                                parallel_binaries_semaphore.acquire();
                                 let _job = jobserver.acquire();
                                 // let _exclude = exclude.lock();
                                 if !opts.quiet {
@@ -464,6 +469,7 @@ fn actual_main() -> Result<(), i32> {
                                         cmd.args(&opts.cargo_install_args).status()
                                     }
                                     .unwrap();
+                                parallel_binaries_semaphore.release();
 
                                 if !opts.quiet {
                                     println!();
