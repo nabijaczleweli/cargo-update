@@ -217,11 +217,12 @@ fn actual_main() -> Result<(), i32> {
     note_removed_executables(&opts, packages.iter().map(|p| (&p.name, &p.executables)));
 
     let jobserver_jobs = opts.recursive_jobs.map(|nz| nz.get()).unwrap_or(1);
-    let parallel_binaries = opts.parallel_binaries.get();
     let jobserver = jobserver::Client::new(jobserver_jobs).expect("jobserver");
     let jobserverise = |mut cmd| {
         if opts.recursive_jobs.is_some() {
             jobserver.configure_make(&mut cmd)
+        } else if let Some(ref j) = opts.jobs.as_ref() {
+            cmd.arg("-j").arg(j);
         }
         cmd
     };
@@ -229,6 +230,13 @@ fn actual_main() -> Result<(), i32> {
         // Initialising to 0 then filling up errors on Windows
         jobserver.acquire_raw().unwrap();
     }
+    let parallel_binaries = opts.recursive_jobs
+        .map(|nz| nz.get())
+        .map(|rj| {
+            let jobs = opts.jobs.as_ref().map(|os| os.to_str().unwrap().parse::<usize>().unwrap()).unwrap_or(1);
+            (rj + jobs - 1) / jobs
+        })
+        .unwrap_or(1);
     let parallel_binaries_semaphore = std_semaphore::Semaphore::new(parallel_binaries as isize);
     std::thread::scope(|scope| {
         let mut updaters = vec![];
@@ -305,9 +313,6 @@ fn actual_main() -> Result<(), i32> {
                                                 })
                                                 .arg("--registry")
                                                 .arg(registry_name.as_ref());
-                                            if let Some(ref j) = opts.jobs.as_ref() {
-                                                cmd.arg("-j").arg(j);
-                                            }
                                             cmd.arg(&package.name)
                                                 .args(&opts.cargo_install_args)
                                                 .status()
@@ -323,9 +328,6 @@ fn actual_main() -> Result<(), i32> {
                                                 .arg(package.update_to_version().unwrap().to_string())
                                                 .arg("--registry")
                                                 .arg(registry_name.as_ref());
-                                            if let Some(ref j) = opts.jobs.as_ref() {
-                                                cmd.arg("-j").arg(j);
-                                            }
                                             cmd.arg(&package.name)
                                                 .args(&opts.cargo_install_args)
                                                 .status()
@@ -433,7 +435,7 @@ fn actual_main() -> Result<(), i32> {
                                 }
 
                                 let install_res = if let Some(cfg) = configuration.get(&package.name) {
-                                        let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                        let mut cmd = jobserverise(Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo"))));
                                         cmd.args(cfg.cargo_args(package.executables).iter().map(AsRef::as_ref))
                                             .arg("--root")
                                             .arg(&opts.cargo_dir.0)
@@ -445,12 +447,9 @@ fn actual_main() -> Result<(), i32> {
                                         if let Some(ref b) = package.branch.as_ref() {
                                             cmd.arg("--branch").arg(b);
                                         }
-                                        if let Some(ref j) = opts.jobs.as_ref() {
-                                            cmd.arg("-j").arg(j);
-                                        }
                                         cmd.args(&opts.cargo_install_args).status()
                                     } else {
-                                        let mut cmd = Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo")));
+                                        let mut cmd = jobserverise(Command::new(&opts.install_cargo.as_deref().unwrap_or(OsStr::new("cargo"))));
                                         cmd.arg("install")
                                             .arg("--root")
                                             .arg(&opts.cargo_dir.0)
@@ -462,9 +461,6 @@ fn actual_main() -> Result<(), i32> {
                                             .arg(&package.name);
                                         if let Some(ref b) = package.branch.as_ref() {
                                             cmd.arg("--branch").arg(b);
-                                        }
-                                        if let Some(ref j) = opts.jobs.as_ref() {
-                                            cmd.arg("-j").arg(j);
                                         }
                                         cmd.args(&opts.cargo_install_args).status()
                                     }
