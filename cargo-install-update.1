@@ -114,25 +114,30 @@ except it doesn't disable cargo\-binstall\.
 .fi
 .IP "" 0
 .P
-\-j \-\-jobs \fIJOBS\fR\|\.\|\.\|\.
+\-j \-\-jobs \fIJOBS\fR \-j \-\-jobs default
 .IP "" 4
 .nf
-Run at most JOBS jobs at once, forwarded verbatim to cargo install\.
+Run at most JOBS jobs at once, forwarded as \-j JOBS to cargo install\.
 
-Excludes \-J, which gives better utilisation\.
+"default" is as many CPUs as are installed on the system
+(same as cargo install)\.
+
+When combined with \-J dedicate JOBS CPUs to each cargo install,
+and do not forward\. This means that at most around R_JOBS/JOBS crates
+will be built in parallel, so that each one can get around JOBS CPUs at once\.
 .fi
 .IP "" 0
 .P
-\-J \-\-recursive\-jobs \-J\fIJOBS\fR \-\-recursive\-jobs \fIJOBS\fR
+\-J \-\-recursive\-jobs \-J\fIR_JOBS\fR \-\-recursive\-jobs \fIR_JOBS\fR
 .IP "" 4
 .nf
-Build crates in parallel to fill JOBS CPUs\.
+Build crates in parallel to fill R_JOBS CPUs\.
 
 By default (and with \-j JOBS), each "cargo install" invocation runs serially,
-on as many CPUs as are installed on the system (on JOBS CPUs)\.
+on as many CPUs as are installed on the system (on R_JOBS CPUs)\.
 
-With \-J (\-J JOBS), cargo install\-update creates a make jobserver with
-as many job slots as CPUs are installed on the system (JOBS job slots)
+With \-J (\-J R_JOBS), cargo install\-update creates a make jobserver with
+as many job slots as CPUs are installed on the system (R_JOBS job slots)
 and passes it to "cargo install"s via $CARGO_MAKEFLAGS/$MAKEFLAGS/$MFLAGS\.
 
 Building a crate consists of several build steps, which can be,
@@ -143,11 +148,12 @@ that all feed into a final long link step\.
 By default (with \-j) cargo runs as many jobs at once as allocated,
 within a single crate\.
 
-With \-J (\-J JOBS), job slots are shared across all cargo install processes,
+With \-J (\-J R_JOBS), job slots are shared across all cargo install processes,
 and they will collude to run as many jobs at once as allocated, overall\.
 
-Notice how this means you may be building up to JOBS crates in parallel,
+Notice how this means you may be building up to R_JOBS crates in parallel,
 which may induce significant filesystem and memory pressure\.
+Use \-j JOBS to reduce the crates\-at\-a\-time figure to around R_JOBS/JOBS\.
 
 If an empty value is given, defaults to the amount of CPUs installed on the system\.
 .fi
