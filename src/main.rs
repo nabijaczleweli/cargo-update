@@ -303,7 +303,7 @@ fn actual_main() -> Result<(), i32> {
                                                 .arg("--registry")
                                                 .arg(registry_name.as_ref());
                                             if let Some(ref j) = opts.jobs.as_ref() {
-                                                cmd.arg("-j").arg(j);
+                                                cmd.arg("-j").arg(j.to_string());
                                             }
                                             cmd.arg(&package.name)
                                                 .args(&opts.cargo_install_args)
@@ -321,7 +321,7 @@ fn actual_main() -> Result<(), i32> {
                                                 .arg("--registry")
                                                 .arg(registry_name.as_ref());
                                             if let Some(ref j) = opts.jobs.as_ref() {
-                                                cmd.arg("-j").arg(j);
+                                                cmd.arg("-j").arg(j.to_string());
                                             }
                                             cmd.arg(&package.name)
                                                 .args(&opts.cargo_install_args)
@@ -441,7 +441,7 @@ fn actual_main() -> Result<(), i32> {
                                             cmd.arg("--branch").arg(b);
                                         }
                                         if let Some(ref j) = opts.jobs.as_ref() {
-                                            cmd.arg("-j").arg(j);
+                                            cmd.arg("-j").arg(j.to_string());
                                         }
                                         cmd.args(&opts.cargo_install_args).status()
                                     } else {
@@ -459,7 +459,7 @@ fn actual_main() -> Result<(), i32> {
                                             cmd.arg("--branch").arg(b);
                                         }
                                         if let Some(ref j) = opts.jobs.as_ref() {
-                                            cmd.arg("-j").arg(j);
+                                            cmd.arg("-j").arg(j.to_string());
                                         }
                                         cmd.args(&opts.cargo_install_args).status()
                                     }

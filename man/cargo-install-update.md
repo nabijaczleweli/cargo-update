@@ -95,9 +95,13 @@ Exit values and possible errors:
     and cargo-install-update-config(1) --enforce-lock (per package)
     except it doesn't disable cargo-binstall.
 
-  -j --jobs <JOBS>...
+  -j --jobs <JOBS>
+  -j --jobs default
 
-    Run at most JOBS jobs at once, forwarded verbatim to cargo install.
+    Run at most JOBS jobs at once, forwarded as -j JOBS to cargo install.
+
+    "default" is as many CPUs as are installed on the system
+    (same as cargo install).
 
     Excludes -J, which gives better utilisation.
 
