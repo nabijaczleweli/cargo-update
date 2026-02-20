@@ -228,6 +228,7 @@ fn actual_main() -> Result<(), i32> {
         // Initialising to 0 then filling up errors on Windows
         jobserver.acquire_raw().unwrap();
     }
+    let cargo_limiter = opts.concurrent_cargos.map(|cc| jobserver::Client::new(cc.get()).expect("cargo_limiter"));
     std::thread::scope(|scope| {
         let mut updaters = vec![];
         if opts.update {
@@ -246,6 +247,7 @@ fn actual_main() -> Result<(), i32> {
                 updaters = packages.into_iter()
                     .map(|package| {
                         scope.spawn(|| -> (bool, String, Result<(), i32>) {
+                            let _limit = cargo_limiter.as_ref().map(|cl| cl.acquire());
                             let _job = jobserver.acquire();
                             if !opts.quiet {
                                 println!("{} {}",
@@ -417,8 +419,8 @@ fn actual_main() -> Result<(), i32> {
                     updaters.extend(packages.into_iter()
                         .map(|package| {
                             scope.spawn(|| -> (bool, String, Result<(), i32>) {
+                                let _limit = cargo_limiter.as_ref().map(|cl| cl.acquire());
                                 let _job = jobserver.acquire();
-                                // let _exclude = exclude.lock();
                                 if !opts.quiet {
                                     println!("Updating {} from {}", package.name, package.url);
                                 }

@@ -60,10 +60,12 @@ pub struct Options {
     pub cargo_install_args: Vec<OsString>,
     /// The cargo to run for installations. Default: `None` (use "cargo")
     pub install_cargo: Option<OsString>,
-    /// Limit of concurrent jobs. Default: `None`
+    /// `cargo install -j` argument. Default: `None`
     pub jobs: Option<NonZero<usize>>,
     /// Start jobserver to fill this many CPUs. Default: `None`
     pub recursive_jobs: Option<NonZero<usize>>,
+    /// Additional limit of concurrent `cargo install`s. Default: `None`
+    pub concurrent_cargos: Option<NonZero<usize>>,
 }
 
 /// Representation of the config application's all configurable values.
@@ -112,12 +114,10 @@ impl Options {
                             .allow_invalid_utf8(true),
                         Arg::from_usage(&format!("-j --jobs=[JOBS] 'Limit number of parallel jobs or \"default\" for {}'", nproc))
                             .number_of_values(1)
-                            .conflicts_with("recursive-jobs")
                             .validator(|s| jobs_parse(s, "default", nproc)),
                         Arg::from_usage(&format!("-J --recursive-jobs=[JOBS] 'Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.'",
                                                  nproc))
                             .number_of_values(1)
-                            .conflicts_with("jobs")
                             .forbid_empty_values(false)
                             .default_missing_value("")
                             .validator(|s| jobs_parse(s, "", nproc)),
@@ -138,6 +138,8 @@ impl Options {
 
         let all = matches.is_present("all");
         let update = !matches.is_present("list");
+        let jobs_arg = matches.value_of("jobs").map(|j| jobs_parse(j, "default", nproc).unwrap());
+        let recursive_jobs = matches.value_of("recursive-jobs").map(|rj| jobs_parse(rj, "", nproc).unwrap());
         Options {
             to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
@@ -176,8 +178,16 @@ impl Options {
             },
             cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
             install_cargo: matches.value_of_os("install-cargo").map(OsStr::to_os_string),
-            jobs: matches.value_of("jobs").map(|j| jobs_parse(j, "default", nproc).unwrap()),
-            recursive_jobs: matches.value_of("recursive-jobs").map(|rj| jobs_parse(rj, "", nproc).unwrap()),
+            jobs: if recursive_jobs.is_some() {
+                None
+            } else {
+                jobs_arg
+            },
+            recursive_jobs: recursive_jobs,
+            concurrent_cargos: match (jobs_arg, recursive_jobs) {
+                (Some(j), Some(rj)) => Some(NonZero::new((rj.get() + (j.get() - 1)) / j).unwrap_or(NonZero::new(1).unwrap())),
+                _ => None,
+            },
         }
     }
 }
