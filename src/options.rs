@@ -348,7 +348,15 @@ fn package_parse(mut s: &str) -> Result<(&str, Option<Semver>, Option<&str>), St
 
 fn jobs_parse(s: &str, special: &str, default: NonZero<usize>) -> Result<NonZero<usize>, ParseIntError> {
     if s != special {
-        NonZero::<usize>::from_str(s)
+        if s.starts_with("-") {
+            NonZero::<usize>::from_str(&s[1..]).map(|sub| if sub >= default {
+                NonZero::new(1).unwrap()
+            } else {
+                NonZero::new(default.get() - sub.get()).unwrap()
+            })
+        } else {
+            NonZero::<usize>::from_str(s)
+        }
     } else {
         Ok(default)
     }

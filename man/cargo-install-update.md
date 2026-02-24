@@ -103,6 +103,9 @@ Exit values and possible errors:
     "default" is as many CPUs as are installed on the system
     (same as cargo install).
 
+    If negative, as many CPUs as are installed on the system + JOBS
+    (minimum of 1; same as cargo install).
+
     When combined with -J dedicate JOBS CPUs to each cargo install,
     and do not forward. This means that at most around R_JOBS/JOBS crates
     will be built in parallel, so that each one can get around JOBS CPUs at once.
@@ -115,8 +118,9 @@ Exit values and possible errors:
     By default (and with -j JOBS), each "cargo install" invocation runs serially,
     on as many CPUs as are installed on the system (on R_JOBS CPUs).
 
-    With -J (-J R_JOBS), cargo install-update creates a make jobserver with
+    With -J (-J R_JOBS) (-J -R_JOBS), cargo install-update creates a make jobserver with
     as many job slots as CPUs are installed on the system (R_JOBS job slots)
+    (as many job slots as CPUs are installed on the system minus R_JOBS but at least 1)
     and passes it to "cargo install"s via $CARGO_MAKEFLAGS/$MAKEFLAGS/$MFLAGS.
 
     Building a crate consists of several build steps, which can be,
