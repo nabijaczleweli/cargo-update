@@ -17,7 +17,7 @@ use windows::Win32::Security::Credentials as WinCred;
 use std::io::{self, ErrorKind as IoErrorKind, BufWriter, BufReader, BufRead, Write};
 use std::collections::{BTreeMap, BTreeSet};
 use std::{slice, cmp, env, mem, str, fs};
-use curl::multi::Multi as CurlMulti;
+use curl::multi::{Multi as CurlMulti, Easy2Handle as CurlEasyHandle};
 use std::process::{Command, Stdio};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
@@ -1726,65 +1726,106 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
 
             let writussy = Mutex::new(&mut *out);
             let mut conns: Vec<_> = Result::from_iter(packages.map(|pkg| {
-                let mut conn = CurlEasy::new(SparseHandler(pkg.as_ref().to_string(), vec![], Some(&writussy)));
-                conn.url(&split_package_path(pkg.as_ref()).into_iter().fold(repo_url.to_string(), |mut u, s| {
-                        if !u.ends_with('/') {
-                            u.push('/');
-                        }
-                        u.push_str(&s);
-                        u
-                    }))
-                    .map_err(|e| format!("url: {}", e))?;
-                if let Some(auth_token) = auth_token.as_ref() {
-                    let mut headers = CurlList::new();
-                    headers.append(&format!("Authorization: {}", auth_token)).map_err(|e| format!("append: {}", e))?;
-                    conn.http_headers(headers).map_err(|e| format!("http_headers: {}", e))?;
-                }
-                if let Some(http_proxy) = http_proxy {
-                    conn.proxy(http_proxy).map_err(|e| format!("proxy: {}", e))?;
-                }
-                conn.pipewait(true).map_err(|e| format!("pipewait: {}", e))?;
-                conn.progress(true).map_err(|e| format!("progress: {}", e))?;
-                if let Some(cainfo) = http.cainfo.as_ref() {
-                    conn.cainfo(cainfo).map_err(|e| format!("cainfo: {}", e))?;
-                }
-                conn.ssl_options(CurlSslOpt::new().no_revoke(!http.check_revoke)).map_err(|e| format!("ssl_options: {}", e))?;
-                sucker.add2(conn).map(|h| (h, Ok(()))).map_err(|e| format!("add2: {}", e))
+                sucker.add2(CurlEasy::new(SparseHandler(pkg.as_ref().to_string(), vec![], &writussy, Some(b'.'))))
+                    .map(|h| (Some(h), Ok(())))
+                    .map_err(|e| format!("add2: {}", e))
             }))?;
+            const ATTEMPTS: u8 = 4;
+            for attempt in 0..ATTEMPTS {
+                if conns.is_empty() {
+                    break;
+                }
+                std::thread::sleep(Duration::from_secs((1 << attempt) - 1));
 
-            while sucker.perform().map_err(|e| format!("perform: {}", e))? > 0 {
-                sucker.wait(&mut [], Duration::from_millis(200)).map_err(|e| format!("wait: {}", e))?;
-            }
-
-            writussy.lock()
-                .map_err(|e| e.to_string())
-                .and_then(|mut out| writeln!(out).map_err(|e| e.to_string()))
-                .map_err(|e| format!("failed to write post-update newline: {}", e))?;
-
-            sucker.messages(|m| {
                 for c in &mut conns {
-                    // Yes, a linear search; this is much faster than adding 2+n sets of CURLINFO_PRIVATE calls
-                    if let Some(err) = m.result_for2(&c.0) {
-                        c.1 = err;
-                    }
-                }
-            });
+                    let mut conn = sucker.remove2(c.0.take().unwrap()).map_err(|e| format!("remove2: {}", e))?;
+                    conn.get_mut().1.clear();
+                    conn.get_mut().3.get_or_insert(b'0' + attempt);
+                    conn.reset();
 
-            for mut c in conns {
-                let pkg = mem::take(&mut c.0.get_mut().0);
-                if let Err(e) = c.1 {
-                    return Err(format!("package {}: {}", pkg, e));
-                }
-                match c.0.response_code().map_err(|e| format!("response_code: {}", e))? {
-                    200 => {
-                        let mut resp = crate_versions(&c.0.get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
-                        resp.sort();
-                        registry.insert(pkg, resp);
+                    conn.url(&split_package_path(&conn.get_ref().0).into_iter().fold(repo_url.to_string(), |mut u, s| {
+                            if !u.ends_with('/') {
+                                u.push('/');
+                            }
+                            u.push_str(&s);
+                            u
+                        }))
+                        .map_err(|e| format!("url: {}", e))?;
+                    if let Some(auth_token) = auth_token.as_ref() {
+                        let mut headers = CurlList::new();
+                        headers.append(&format!("Authorization: {}", auth_token)).map_err(|e| format!("append: {}", e))?;
+                        conn.http_headers(headers).map_err(|e| format!("http_headers: {}", e))?;
                     }
-                    rc @ 404 | rc @ 410 | rc @ 451 => return Err(format!("package {} doesn't exist: HTTP {}", pkg, rc)),
-                    rc => return Err(format!("package {}: HTTP {}", pkg, rc)),
+                    if let Some(http_proxy) = http_proxy {
+                        conn.proxy(http_proxy).map_err(|e| format!("proxy: {}", e))?;
+                    }
+                    conn.pipewait(true).map_err(|e| format!("pipewait: {}", e))?;
+                    conn.progress(true).map_err(|e| format!("progress: {}", e))?;
+                    if let Some(cainfo) = http.cainfo.as_ref() {
+                        conn.cainfo(cainfo).map_err(|e| format!("cainfo: {}", e))?;
+                    }
+                    conn.ssl_options(CurlSslOpt::new().no_revoke(!http.check_revoke)).map_err(|e| format!("ssl_options: {}", e))?;
+                    c.0 = Some(sucker.add2(conn).map_err(|e| format!("add2: {}", e))?);
                 }
+                while sucker.perform().map_err(|e| format!("perform: {}", e))? > 0 {
+                    sucker.wait(&mut [], Duration::from_millis(200)).map_err(|e| format!("wait: {}", e))?;
+                }
+
+                sucker.messages(|m| {
+                    for c in &mut conns {
+                        // Yes, a linear search; this is much faster than adding 2+n sets of CURLINFO_PRIVATE calls
+                        if let Some(err) = m.result_for2(&c.0.as_ref().unwrap()) {
+                            c.1 = err;
+                        }
+                    }
+                });
+
+                let mut retainer = |c: &mut (Option<CurlEasyHandle<SparseHandler<'_, '_, _>>>, Result<(), _>)| {
+                    let pkg = mem::take(&mut c.0.as_mut().unwrap().get_mut().0);
+                    if let Err(e) = mem::replace(&mut c.1, Ok(())) {
+                        return Err(format!("package {}: {}", pkg, e));
+                    }
+                    match c.0.as_mut().unwrap().response_code().map_err(|e| format!("response_code: {}", e))? {
+                        200 => {
+                            let mut resp = crate_versions(&c.0.as_ref().unwrap().get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
+                            resp.sort();
+                            sucker.remove2(c.0.take().unwrap()).map_err(|e| format!("remove2: {}", e))?;
+                            registry.insert(pkg, resp);
+                            Ok(false)
+                        }
+                        rc @ 404 | rc @ 410 | rc @ 451 => Err(format!("package {} doesn't exist: HTTP {}", pkg, rc)),
+                        rc @ 408 | rc @ 429 | rc @ 503 | rc @ 504 => {
+                            if attempt == ATTEMPTS - 1 {
+                                Err(format!("package {}: HTTP {} after {} attempts", pkg, rc, ATTEMPTS))
+                            } else {
+                                c.0.as_mut().unwrap().get_mut().0 = pkg;
+                                Ok(true)
+                            }
+                        }
+                        rc => Err(format!("package {}: HTTP {}", pkg, rc)),
+                    }
+                };
+                let mut err = Ok(());
+                conns.retain_mut(|c| {
+                    if err.is_err() {
+                        return false;
+                    }
+                    match retainer(c) {
+                        Ok(r) => r,
+                        Err(e) => {
+                            if let Ok(mut out) = writussy.lock() {
+                                let _ = writeln!(out);
+                            }
+                            err = Err(e);
+                            false
+                        }
+                    }
+                });
+                err?;
             }
+            if let Ok(mut out) = writussy.lock() {
+                let _ = writeln!(out);
+            };
         }
     }
     writeln!(out).map_err(|e| format!("failed to write post-update newline: {}", e))?;
@@ -1795,7 +1836,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
 // Could we theoretically parse the semvers on the fly? Yes. Is it more trouble than it's worth? Also probably yes; there
 // doesn't appear to be a good way to bubble errors.
 // Same applies to just waiting instead of processing via .messages()
-struct SparseHandler<'m, 'w: 'm, W: Write>(String, Vec<u8>, Option<&'m Mutex<&'w mut W>>);
+struct SparseHandler<'m, 'w: 'm, W: Write>(String, Vec<u8>, &'m Mutex<&'w mut W>, Option<u8>); // TODO: Mutex wants to be nonpoison
 
 impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
     fn write(&mut self, data: &[u8]) -> Result<usize, CurlWriteError> {
@@ -1804,8 +1845,10 @@ impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
     }
     fn progress(&mut self, dltotal: f64, dlnow: f64, _: f64, _: f64) -> bool {
         if dltotal != 0.0 && dltotal == dlnow {
-            if let Some(mut out) = self.2.take().and_then(|m| m.lock().ok()) {
-                let _ = out.write_all(b".").and_then(|_| out.flush());
+            if let Some(status) = self.3.take() {
+                if let Ok(mut out) = self.2.lock() {
+                    let _ = out.write_all(&[status]).and_then(|_| out.flush());
+                }
             }
         }
         true
