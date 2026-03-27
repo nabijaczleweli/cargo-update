@@ -7,7 +7,7 @@
 
 
 use git2::{self, ErrorCode as GitErrorCode, Config as GitConfig, Error as GitError, Cred as GitCred, RemoteCallbacks, CredentialType, FetchOptions,
-           ProxyOptions, Repository, Tree, Oid};
+           ProxyOptions, Repository, Blob, Tree, Oid};
 use curl::easy::{WriteError as CurlWriteError, Handler as CurlHandler, SslOpt as CurlSslOpt, Easy2 as CurlEasy, List as CurlList};
 use semver::{VersionReq as SemverReq, Version as Semver};
 #[cfg(target_vendor = "apple")]
@@ -286,7 +286,7 @@ impl RegistryPackage {
             (RegistryTree::Git(registry), Registry::Git(registry_parent)) => {
                 vers_git = find_package_data(&self.name, registry, registry_parent)
                     .ok_or_else(|| format!("package {} not found", self.name))
-                    .and_then(|pd| crate_versions(&pd).map_err(|e| format!("package {}: {}", self.name, e)))
+                    .and_then(|pd| crate_versions(pd.content()).map_err(|e| format!("package {}: {}", self.name, e)))
                     .unwrap();
                 vers_git.sort();
                 &vers_git
@@ -2156,20 +2156,20 @@ fn lcase(s: &str) -> Cow<'_, str> {
 }
 
 /// Find package data in the specified cargo git index tree.
-pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Vec<u8>> {
+pub fn find_package_data<'t>(cratename: &str, registry: &Tree<'t>, registry_parent: &'t Repository) -> Option<Blob<'t>> {
     let elems = split_package_path(cratename);
 
     let ent = registry.get_name(&elems[0])?;
     let obj = ent.to_object(registry_parent).ok()?;
     let ent = obj.as_tree()?.get_name(&elems[1])?;
     let obj = ent.to_object(registry_parent).ok()?;
-    if elems.len() == 3 {
+    let obj = if elems.len() == 3 {
         let ent = obj.as_tree()?.get_name(&elems[2])?;
-        let obj = ent.to_object(registry_parent).ok()?;
-        Some(obj.as_blob()?.content().into())
+        ent.to_object(registry_parent).ok()?
     } else {
-        Some(obj.as_blob()?.content().into())
-    }
+        obj
+    };
+    obj.into_blob().ok()
 }
 
 /// Check if there's a proxy specified to be used.
