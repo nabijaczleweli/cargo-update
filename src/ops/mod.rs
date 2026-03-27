@@ -1302,18 +1302,24 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
 /// }
 /// ```
 pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
-    buf.split(|&b| b == b'\n').filter(|l| !l.is_empty()).try_fold(vec![], |mut acc, p| match json::from_slice(p).map_err(|e| e.to_string())? {
+    buf.split(|&b| b == b'\n').filter(|l| !l.is_empty()).try_fold(vec![], |mut acc, p| {
+        crate_version_line(p, &mut acc)?;
+        Ok(acc)
+    })
+}
+fn crate_version_line(line: &[u8], into: &mut Vec<Semver>) -> Result<(), Cow<'static, str>> {
+    match json::from_slice(line).map_err(|e| e.to_string())? {
         json::Value::Object(o) => {
             if !matches!(o.get("yanked"), Some(&json::Value::Bool(true))) {
                 match o.get("vers").ok_or("no \"vers\" key")? {
-                    json::Value::String(ref v) => acc.push(Semver::parse(&v).map_err(|e| e.to_string())?),
+                    json::Value::String(ref v) => into.push(Semver::parse(&v).map_err(|e| e.to_string())?),
                     _ => Err("\"vers\" not string")?,
                 }
             }
-            Ok(acc)
+            Ok(())
         }
         _ => Err(Cow::from("line not object")),
-    })
+    }
 }
 
 /// Get the location of the registry index corresponding ot the given URL; if not present – make it and its parents.
@@ -1726,7 +1732,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
 
             let writussy = Mutex::new(&mut *out);
             let mut conns: Vec<_> = Result::from_iter(packages.map(|pkg| {
-                sucker.add2(CurlEasy::new(SparseHandler(pkg.as_ref().to_string(), vec![], &writussy, Some(b'.'))))
+                sucker.add2(CurlEasy::new(SparseHandler(pkg.as_ref().to_string(), Err("init".into()), &writussy, Some(b'.'))))
                     .map(|h| (Some(h), Ok(())))
                     .map_err(|e| format!("add2: {}", e))
             }))?;
@@ -1739,7 +1745,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
 
                 for c in &mut conns {
                     let mut conn = sucker.remove2(c.0.take().unwrap()).map_err(|e| format!("remove2: {}", e))?;
-                    conn.get_mut().1.clear();
+                    conn.get_mut().1 = Ok((vec![], vec![]));
                     conn.get_mut().3.get_or_insert(b'0' + attempt);
                     conn.reset();
 
@@ -1782,12 +1788,14 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
 
                 let mut retainer = |c: &mut (Option<CurlEasyHandle<SparseHandler<'_, '_, _>>>, Result<(), _>)| {
                     let pkg = mem::take(&mut c.0.as_mut().unwrap().get_mut().0);
-                    if let Err(e) = mem::replace(&mut c.1, Ok(())) {
-                        return Err(format!("package {}: {}", pkg, e));
-                    }
                     match c.0.as_mut().unwrap().response_code().map_err(|e| format!("response_code: {}", e))? {
                         200 => {
-                            let mut resp = crate_versions(&c.0.as_ref().unwrap().get_ref().1).map_err(|e| format!("package {}: {}", pkg, e))?;
+                            let (mut resp, buf) =
+                                mem::replace(&mut c.0.as_mut().unwrap().get_mut().1, Err("taken".into())).map_err(|e| format!("package {}: {}", pkg, e))?;
+                            mem::replace(&mut c.1, Ok(())).map_err(|e| format!("package {}: {}", pkg, e))?;
+                            if !buf.is_empty() {
+                                return Err(format!("package {}: {} bytes of trailing garbage", pkg, buf.len()))?;
+                            }
                             resp.sort();
                             sucker.remove2(c.0.take().unwrap()).map_err(|e| format!("remove2: {}", e))?;
                             registry.insert(pkg, resp);
@@ -1833,16 +1841,35 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
     Ok(())
 }
 
-// Could we theoretically parse the semvers on the fly? Yes. Is it more trouble than it's worth? Also probably yes; there
-// doesn't appear to be a good way to bubble errors.
-// Same applies to just waiting instead of processing via .messages()
-struct SparseHandler<'m, 'w: 'm, W: Write>(String, Vec<u8>, &'m Mutex<&'w mut W>, Option<u8>); // TODO: Mutex wants to be nonpoison
+// TODO: Mutex wants to be nonpoison
+struct SparseHandler<'m, 'w: 'm, W: Write>(String, Result<(Vec<Semver>, Vec<u8>), Cow<'static, str>>, &'m Mutex<&'w mut W>, Option<u8>);
 
 impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
     fn write(&mut self, data: &[u8]) -> Result<usize, CurlWriteError> {
-        self.1.extend(data);
-        Ok(data.len())
+        let mut consumed = 0;
+        self.1 = mem::replace(&mut self.1, Err("write".into())).and_then(|(mut vers, mut buf)| {
+            for l in data.split_inclusive(|&b| b == b'\n').filter(|l| l != b"\n") {
+                if !l.ends_with(b"\n") {
+                    buf.extend(l);
+                    consumed += l.len();
+                    continue;
+                }
+
+                let line = if buf.is_empty() {
+                    l
+                } else {
+                    buf.extend(l);
+                    &buf[..]
+                };
+                crate_version_line(line, &mut vers)?;
+                buf.clear();
+                consumed += l.len();
+            }
+            Ok((vers, buf))
+        });
+        Ok(consumed)
     }
+
     fn progress(&mut self, dltotal: f64, dlnow: f64, _: f64, _: f64) -> bool {
         if dltotal != 0.0 && dltotal == dlnow {
             if let Some(status) = self.3.take() {
