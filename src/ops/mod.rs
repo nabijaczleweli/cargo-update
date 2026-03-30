@@ -1848,7 +1848,7 @@ impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
     fn write(&mut self, data: &[u8]) -> Result<usize, CurlWriteError> {
         let mut consumed = 0;
         self.1 = mem::replace(&mut self.1, Err("write".into())).and_then(|(mut vers, mut buf)| {
-            for l in data.split_inclusive(|&b| b == b'\n').filter(|l| l != b"\n") {
+            for l in data.split_inclusive(|&b| b == b'\n') {
                 if !l.ends_with(b"\n") {
                     buf.extend(l);
                     consumed += l.len();
@@ -1861,7 +1861,9 @@ impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
                     buf.extend(l);
                     &buf[..]
                 };
-                crate_version_line(line, &mut vers)?;
+                if line != b"\n" {
+                    crate_version_line(line, &mut vers)?;
+                }
                 buf.clear();
                 consumed += l.len();
             }
