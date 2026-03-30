@@ -1302,12 +1302,15 @@ pub fn intersect_packages(installed: &[RegistryPackage], to_update: &[(String, O
 /// }
 /// ```
 pub fn crate_versions(buf: &[u8]) -> Result<Vec<Semver>, Cow<'static, str>> {
-    buf.split(|&b| b == b'\n').filter(|l| !l.is_empty()).try_fold(vec![], |mut acc, p| {
+    buf.split_inclusive(|&b| b == b'\n').try_fold(vec![], |mut acc, p| {
         crate_version_line(p, &mut acc)?;
         Ok(acc)
     })
 }
 fn crate_version_line(line: &[u8], into: &mut Vec<Semver>) -> Result<(), Cow<'static, str>> {
+    if line == b"\n" {
+        return Ok(());
+    }
     match json::from_slice(line).map_err(|e| e.to_string())? {
         json::Value::Object(o) => {
             if !matches!(o.get("yanked"), Some(&json::Value::Bool(true))) {
@@ -1861,9 +1864,7 @@ impl<'m, 'w: 'm, W: Write> CurlHandler for SparseHandler<'m, 'w, W> {
                     buf.extend(l);
                     &buf[..]
                 };
-                if line != b"\n" {
-                    crate_version_line(line, &mut vers)?;
-                }
+                crate_version_line(line, &mut vers)?;
                 buf.clear();
                 consumed += l.len();
             }
