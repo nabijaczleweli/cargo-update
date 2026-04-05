@@ -95,6 +95,24 @@ Exit values and possible errors:
     and cargo-install-update-config(1) --enforce-lock (per package)
     except it doesn't disable cargo-binstall.
 
+  --cooldown <TIME>[s|m|h|d|w|y]
+
+    Only consider versions published at least TIME ago.
+
+    TIME is a floating-point amount of seconds,
+    optionally suffixed with one of the following cumulative multipliers:
+      s(econds)  1
+      m(inutes)  60
+      h(hours)   60
+      d(ays)     24
+      w(eeks)    7
+      y(ears)    365.25 / 7
+
+    If the registry doesn't provide the "pubtime" key for some versions
+    and any TIME was specified, these versions will never be considered.
+    (The crates.io registry provides publication times for all versions,
+     even historical ones.)
+
   -j --jobs <JOBS>
   -j --jobs default
 
