@@ -12,7 +12,6 @@ use serde::de;
 use std::fs;
 use toml;
 
-
 /// A single operation to be executed upon configuration of a package.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum ConfigOperation {
@@ -26,7 +25,8 @@ pub enum ConfigOperation {
     AddFeature(String),
     /// Remove the feature from the list of features to compile with.
     RemoveFeature(String),
-    /// Set build profile (`dev`/`release`/*~/.cargo/config.toml* `[profile.gaming]`/&c.)
+    /// Set build profile (`dev`/`release`/*~/.cargo/config.toml*
+    /// `[profile.gaming]`/&c.)
     SetBuildProfile(Cow<'static, str>),
     /// Set allowing to install prereleases to the specified value.
     SetInstallPrereleases(bool),
@@ -47,7 +47,6 @@ pub enum ConfigOperation {
     /// Reset configuration to default values.
     ResetConfig,
 }
-
 
 /// Compilation configuration for one crate.
 ///
@@ -78,8 +77,9 @@ pub struct PackageConfig {
     pub features: BTreeSet<String>,
     /// Equivalent to `build_profile = Some("dev")` but binds stronger
     pub debug: Option<bool>,
-    /// The build profile (`test` or `bench` or one from *~/.cargo/config.toml* `[profile.gaming]`); CANNOT be `dev` (`debug =
-    /// Some(true)`) or `release` (`debug = build_profile = None`)
+    /// The build profile (`test` or `bench` or one from *~/.cargo/config.toml*
+    /// `[profile.gaming]`); CANNOT be `dev` (`debug = Some(true)`) or
+    /// `release` (`debug = build_profile = None`)
     pub build_profile: Option<Cow<'static, str>>,
     /// Whether to install pre-release versions.
     pub install_prereleases: Option<bool>,
@@ -95,6 +95,7 @@ pub struct PackageConfig {
     #[serde(skip)]
     pub from_transient: bool,
 }
+
 impl PartialEq for PackageConfig {
     fn eq(&self, other: &Self) -> bool {
         self.toolchain /************/ == other.toolchain && // !
@@ -111,9 +112,9 @@ impl PartialEq for PackageConfig {
     }
 }
 
-
 impl PackageConfig {
-    /// Create a package config based on the default settings and modified according to the specified operations.
+    /// Create a package config based on the default settings and modified
+    /// according to the specified operations.
     ///
     /// # Examples
     ///
@@ -239,7 +240,8 @@ impl PackageConfig {
 
     /// Modify `self` according to the specified set of operations.
     ///
-    /// If this config was transient (read in from `.crates2.json`), it is made real and will be saved.
+    /// If this config was transient (read in from `.crates2.json`), it is made
+    /// real and will be saved.
     ///
     /// # Examples
     ///
@@ -322,10 +324,14 @@ impl PackageConfig {
             ConfigOperation::SetTargetVersion(ref vr) => self.target_version = Some(vr.clone()),
             ConfigOperation::RemoveTargetVersion => self.target_version = None,
             ConfigOperation::SetEnvironment(ref var, ref val) => {
-                self.environment.get_or_insert(Default::default()).insert(var.clone(), EnvironmentOverride(Some(val.clone())));
+                self.environment
+                    .get_or_insert(Default::default())
+                    .insert(var.clone(), EnvironmentOverride(Some(val.clone())));
             }
             ConfigOperation::ClearEnvironment(ref var) => {
-                self.environment.get_or_insert(Default::default()).insert(var.clone(), EnvironmentOverride(None));
+                self.environment
+                    .get_or_insert(Default::default())
+                    .insert(var.clone(), EnvironmentOverride(None));
             }
             ConfigOperation::InheritEnvironment(ref var) => {
                 self.environment.get_or_insert(Default::default()).remove(var);
@@ -334,10 +340,12 @@ impl PackageConfig {
         }
     }
 
-    /// Read a configset from the specified file, or from the given `.cargo2.json`.
+    /// Read a configset from the specified file, or from the given
+    /// `.cargo2.json`.
     ///
-    /// The first file (usually `.install_config.toml`) is used by default for each package;
-    /// `.cargo2.json`, if any, is used to backfill existing data from cargo.
+    /// The first file (usually `.install_config.toml`) is used by default for
+    /// each package; `.cargo2.json`, if any, is used to backfill existing
+    /// data from cargo.
     ///
     /// If the specified file doesn't exist an empty configset is returned.
     ///
@@ -452,7 +460,8 @@ impl PackageConfig {
             ret.default_features = !ndf;
         }
         if let Some(json::Value::Array(fs)) = blob.remove("features") {
-            ret.features = fs.into_iter()
+            ret.features = fs
+                .into_iter()
                 .filter_map(|f| match f {
                     json::Value::String(s) => Some(s),
                     _ => None,
@@ -466,12 +475,14 @@ impl PackageConfig {
         // Nothing to parse PackageConfig::install_prereleases from
         // Nothing to parse PackageConfig::enforce_lock from
         // "bins" is kinda like PackageConfig::respect_binaries but no really
-        // "version_req" is set by cargo install --version, so we'd lock after the first update if we parsed it like this
-        // Nothing to parse PackageConfig::environment from
+        // "version_req" is set by cargo install --version, so we'd lock after the first
+        // update if we parsed it like this Nothing to parse
+        // PackageConfig::environment from
         ret
     }
 
-    /// Save a configset to the specified file, transient (`.crates2.json`) configs are removed.
+    /// Save a configset to the specified file, transient (`.crates2.json`)
+    /// configs are removed.
     ///
     /// # Examples
     ///
@@ -542,10 +553,10 @@ impl<'a> Serialize for FilteredPackageConfigMap<'a> {
     }
 }
 
-
 /// Wrapper that serialises `None` as a boolean.
 ///
-/// serde's default `BTreeMap<String, Option<String>>` implementation simply loses `None` values.
+/// serde's default `BTreeMap<String, Option<String>>` implementation simply
+/// loses `None` values.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct EnvironmentOverride(pub Option<String>);
 

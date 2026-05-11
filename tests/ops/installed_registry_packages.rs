@@ -3,9 +3,7 @@ use semver::Version as Semver;
 use std::env::temp_dir;
 use std::fs;
 
-
 static CRATES: &[u8] = include_bytes!("../../test-data/.cargo-crates.toml");
-
 
 #[test]
 fn existent() {
@@ -15,43 +13,47 @@ fn existent() {
 
     fs::write(&td, CRATES).unwrap();
 
-    assert_eq!(installed_registry_packages(&td),
-               vec![RegistryPackage {
-                        name: "cargo-outdated".to_string(),
-                        registry: "https://github.com/rust-lang/crates.io-index".into(),
-                        version: Some(Semver::parse("0.2.0").unwrap()),
-                        newest_version: None,
-                        alternative_version: None,
-                        max_version: None,
-                        executables: vec!["cargo-outdated.exe".to_string()],
-                    },
-                    RegistryPackage {
-                        name: "racer".to_string(),
-                        registry: "https://github.com/rust-lang/crates.io-index".into(),
-                        version: Some(Semver::parse("1.2.10").unwrap()),
-                        newest_version: None,
-                        alternative_version: None,
-                        max_version: None,
-                        executables: vec!["racer.exe".to_string()],
-                    },
-                    RegistryPackage {
-                        name: "rustfmt".to_string(),
-                        registry: "file:///usr/local/share/cargo".into(),
-                        version: Some(Semver::parse("0.6.2").unwrap()),
-                        newest_version: None,
-                        alternative_version: None,
-                        max_version: None,
-                        executables: vec!["cargo-fmt.exe".to_string(), "rustfmt.exe".to_string()],
-                    },
-                    RegistryPackage {
-                        name: "ssh-package".to_string(),
-                        registry: "ssh://example.com/private-index".into(),
-                        version: Some(Semver::parse("1.0.0").unwrap()),
-                        newest_version: None,
-                        alternative_version: None,
-                        max_version: None,
-                        executables: vec!["ssh-package.exe".to_string()],
-                    }]);
+    assert_eq!(
+        installed_registry_packages(&td),
+        vec![
+            RegistryPackage {
+                name: "cargo-outdated".to_string(),
+                registry: "https://github.com/rust-lang/crates.io-index".into(),
+                version: Some(Semver::parse("0.2.0").unwrap()),
+                newest_version: None,
+                alternative_version: None,
+                max_version: None,
+                executables: vec!["cargo-outdated.exe".to_string()],
+            },
+            RegistryPackage {
+                name: "racer".to_string(),
+                registry: "https://github.com/rust-lang/crates.io-index".into(),
+                version: Some(Semver::parse("1.2.10").unwrap()),
+                newest_version: None,
+                alternative_version: None,
+                max_version: None,
+                executables: vec!["racer.exe".to_string()],
+            },
+            RegistryPackage {
+                name: "rustfmt".to_string(),
+                registry: "file:///usr/local/share/cargo".into(),
+                version: Some(Semver::parse("0.6.2").unwrap()),
+                newest_version: None,
+                alternative_version: None,
+                max_version: None,
+                executables: vec!["cargo-fmt.exe".to_string(), "rustfmt.exe".to_string()],
+            },
+            RegistryPackage {
+                name: "ssh-package".to_string(),
+                registry: "ssh://example.com/private-index".into(),
+                version: Some(Semver::parse("1.0.0").unwrap()),
+                newest_version: None,
+                alternative_version: None,
+                max_version: None,
+                executables: vec!["ssh-package.exe".to_string()],
+            }
+        ]
+    );
 }
 
 #[test]

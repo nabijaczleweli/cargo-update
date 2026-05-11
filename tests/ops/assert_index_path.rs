@@ -3,12 +3,13 @@ use std::path::{PathBuf, Path};
 use std::fs::{self, File};
 use std::env::temp_dir;
 
-
 #[test]
 fn sparse() {
     let indices = prep_indices("sparse");
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", true),
-               Ok(PathBuf::from("/ENOENT")));
+    assert_eq!(
+        assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", true),
+        Ok(PathBuf::from("/ENOENT"))
+    );
     assert_eq!(assert_index_path(&indices, "dupa", true), Ok(PathBuf::from("/ENOENT")));
 }
 
@@ -16,8 +17,10 @@ fn sparse() {
 fn nonexistent() {
     let indices = prep_indices("nonexistent");
 
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
-               Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
+    assert_eq!(
+        assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
+        Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823"))
+    );
 
     assert!(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823").is_dir());
 }
@@ -29,10 +32,14 @@ fn is_file() {
     prepare_indices(&indices, &[]);
     File::create(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")).unwrap();
 
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
-               Err(format!("{} (index directory for https://github.com/rust-lang/crates.io-index) not a directory",
-                           indices.join("registry").join("index").join("github.com-1ecc6299db9ec823").display())
-                   .into()));
+    assert_eq!(
+        assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
+        Err(format!(
+            "{} (index directory for https://github.com/rust-lang/crates.io-index) not a directory",
+            indices.join("registry").join("index").join("github.com-1ecc6299db9ec823").display()
+        )
+        .into())
+    );
 }
 
 #[test]
@@ -41,8 +48,10 @@ fn single() {
 
     prepare_indices(&indices, &[("github.com", "1ecc6299db9ec823")]);
 
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
-               Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
+    assert_eq!(
+        assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
+        Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823"))
+    );
 }
 
 #[test]
@@ -51,22 +60,30 @@ fn double() {
 
     prepare_indices(&indices, &[("github.com", "1ecc6299db9ec823"), ("github.com", "48ad6e4054423464")]);
 
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
-               Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
+    assert_eq!(
+        assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
+        Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823"))
+    );
 }
 
 #[test]
 fn two() {
     let indices = prep_indices("two");
 
-    prepare_indices(&indices,
-                    &[("github.com", "1ecc6299db9ec823"), ("", "72ffea3e1e10b7e3"), ("github.com", "48ad6e4054423464")]);
+    prepare_indices(
+        &indices,
+        &[("github.com", "1ecc6299db9ec823"), ("", "72ffea3e1e10b7e3"), ("github.com", "48ad6e4054423464")],
+    );
 
-    assert_eq!(assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
-               Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823")));
+    assert_eq!(
+        assert_index_path(&indices, "https://github.com/rust-lang/crates.io-index", false),
+        Ok(indices.join("registry").join("index").join("github.com-1ecc6299db9ec823"))
+    );
 
-    assert_eq!(assert_index_path(&indices, "file:///usr/local/share/cargo", false),
-               Ok(indices.join("registry").join("index").join("-72ffea3e1e10b7e3")));
+    assert_eq!(
+        assert_index_path(&indices, "file:///usr/local/share/cargo", false),
+        Ok(indices.join("registry").join("index").join("-72ffea3e1e10b7e3"))
+    );
 }
 
 fn prep_indices(subname: &str) -> PathBuf {

@@ -5,7 +5,6 @@ use std::io::{Write, stdout};
 use tabwriter::TabWriter;
 use std::process::exit;
 
-
 fn main() {
     let result = actual_main().err().unwrap_or(0);
     exit(result);
@@ -16,20 +15,23 @@ fn actual_main() -> Result<(), i32> {
     let config_file = cargo_update::ops::crates_file_in(&opts.cargo_dir).with_file_name(".install_config.toml");
 
     let mut configuration = cargo_update::ops::PackageConfig::read(&config_file, &config_file.with_file_name(".crates2.json")).map_err(|(e, r)| {
-            eprintln!("Reading config: {}", e);
-            r
-        })?;
+        eprintln!("Reading config: {}", e);
+        r
+    })?;
     if !opts.ops.is_empty() {
-        if *configuration.entry(opts.package.clone())
+        if *configuration
+            .entry(opts.package.clone())
             .and_modify(|cfg| cfg.execute_operations(&opts.ops))
-            .or_insert_with(|| cargo_update::ops::PackageConfig::from(&opts.ops)) == Default::default() {
+            .or_insert_with(|| cargo_update::ops::PackageConfig::from(&opts.ops))
+            == Default::default()
+        {
             configuration.remove(&opts.package);
         }
 
         cargo_update::ops::PackageConfig::write(&configuration, &config_file).map_err(|(e, r)| {
-                eprintln!("Writing config: {}", e);
-                r
-            })?;
+            eprintln!("Writing config: {}", e);
+            r
+        })?;
     }
 
     if let Some(cfg) = configuration.get(&opts.package) {
@@ -37,7 +39,11 @@ fn actual_main() -> Result<(), i32> {
         if let Some(ref t) = cfg.toolchain {
             writeln!(out, "Toolchain\t{}", t).unwrap();
         }
-        if let Some(p) = cfg.build_profile.as_deref().or_else(|| cfg.debug.and_then(|d| if d { Some("dev") } else { None })) {
+        if let Some(p) = cfg
+            .build_profile
+            .as_deref()
+            .or_else(|| cfg.debug.and_then(|d| if d { Some("dev") } else { None }))
+        {
             writeln!(out, "Build profile\t{}", p).unwrap();
         }
         if let Some(ip) = cfg.install_prereleases {

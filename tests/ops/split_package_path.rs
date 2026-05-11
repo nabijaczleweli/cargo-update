@@ -1,6 +1,5 @@
 use cargo_update::ops;
 
-
 #[test]
 #[should_panic = "0-length cratename"]
 fn empty() {

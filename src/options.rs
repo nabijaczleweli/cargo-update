@@ -11,7 +11,6 @@
 //! println!("{:#?}", opts);
 //! ```
 
-
 use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
 use clap::{AppSettings, SubCommand, App, Arg};
@@ -26,7 +25,6 @@ use std::str::FromStr;
 use std::borrow::Cow;
 use std::{env, fs};
 use home;
-
 
 /// Representation of the application's all configurable values.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -45,21 +43,25 @@ pub struct Options {
     pub downdate: bool,
     /// Update git packages too (it's expensive). Default: `false`
     pub update_git: bool,
-    /// Don't output messages and pass --quiet to `cargo` subprocesses. Default: `false`
+    /// Don't output messages and pass --quiet to `cargo` subprocesses. Default:
+    /// `false`
     pub quiet: bool,
-    /// Enforce packages' embedded `Cargo.lock`. Exactly like `CARGO_INSTALL_OPTS=--locked` (or `--enforce-lock` per package)
+    /// Enforce packages' embedded `Cargo.lock`. Exactly like
+    /// `CARGO_INSTALL_OPTS=--locked` (or `--enforce-lock` per package)
     /// except doesn't disable cargo-binstall. Default: `false`
     pub locked: bool,
     /// Only install versions released after this time. Default: `None`
     pub released_after: Option<DateTime<Utc>>,
     /// Update all packages. Default: empty
     pub filter: Vec<PackageFilterElement>,
-    /// The `cargo` home directory; (original, canonicalised). Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`,
-    /// then `"$HOME/.cargo"`
+    /// The `cargo` home directory; (original, canonicalised). Default:
+    /// `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub cargo_dir: (PathBuf, PathBuf),
-    /// The temporary directory to clone git repositories to. Default: `"$TEMP/cargo-update"`
+    /// The temporary directory to clone git repositories to. Default:
+    /// `"$TEMP/cargo-update"`
     pub temp_dir: PathBuf,
-    /// Arbitrary arguments to forward to `cargo install`, acquired from `$CARGO_INSTALL_OPTS`. Default: `[]`
+    /// Arbitrary arguments to forward to `cargo install`, acquired from
+    /// `$CARGO_INSTALL_OPTS`. Default: `[]`
     pub cargo_install_args: Vec<OsString>,
     /// The cargo to run for installations. Default: `None` (use "cargo")
     pub install_cargo: Option<OsString>,
@@ -74,14 +76,14 @@ pub struct Options {
 /// Representation of the config application's all configurable values.
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct ConfigOptions {
-    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then `"$CARGO_HOME"`, then `"$HOME/.cargo"`
+    /// The `cargo` home directory. Default: `"$CARGO_INSTALL_ROOT"`, then
+    /// `"$CARGO_HOME"`, then `"$HOME/.cargo"`
     pub cargo_dir: PathBuf,
     /// Crate to modify config for
     pub package: String,
     /// What to do to the config, or display with empty
     pub ops: Vec<ConfigOperation>,
 }
-
 
 impl Options {
     /// Parse `env`-wide command-line arguments into an `Options` instance
@@ -90,12 +92,19 @@ impl Options {
         let matches = App::new("cargo")
             .bin_name("cargo")
             .version(crate_version!())
-            .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
-            .subcommand(SubCommand::with_name("install-update")
-                .version(crate_version!())
-                .author("https://github.com/nabijaczleweli/cargo-update")
-                .about("A cargo subcommand for checking and applying updates to installed executables")
-                .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
+            .settings(&[
+                AppSettings::ColoredHelp,
+                AppSettings::ArgRequiredElseHelp,
+                AppSettings::GlobalVersion,
+                AppSettings::SubcommandRequired,
+            ])
+            .subcommand(
+                SubCommand::with_name("install-update")
+                    .version(crate_version!())
+                    .author("https://github.com/nabijaczleweli/cargo-update")
+                    .about("A cargo subcommand for checking and applying updates to installed executables")
+                    .args(&[
+                        Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .visible_alias("root")
                             .allow_invalid_utf8(true)
                             .validator(|s| existing_dir_validator("Cargo", &s)),
@@ -121,12 +130,14 @@ impl Options {
                         Arg::from_usage(&format!("-j --jobs=[JOBS] 'Limit number of parallel jobs or \"default\" for {}'", nproc))
                             .number_of_values(1)
                             .validator(|s| jobs_parse(s, "default", nproc)),
-                        Arg::from_usage(&format!("-J --recursive-jobs=[JOBS] 'Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.'",
-                                                 nproc))
-                            .number_of_values(1)
-                            .forbid_empty_values(false)
-                            .default_missing_value("")
-                            .validator(|s| jobs_parse(s, "", nproc)),
+                        Arg::from_usage(&format!(
+                            "-J --recursive-jobs=[JOBS] 'Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.'",
+                            nproc
+                        ))
+                        .number_of_values(1)
+                        .forbid_empty_values(false)
+                        .default_missing_value("")
+                        .validator(|s| jobs_parse(s, "", nproc)),
                         Arg::with_name("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
@@ -138,7 +149,9 @@ impl Options {
                         Arg::from_usage("[PACKAGE]... 'Packages to update'")
                             .empty_values(false)
                             .min_values(1)
-                            .validator(|s| package_parse(s).map(|_| ()))]))
+                            .validator(|s| package_parse(s).map(|_| ())),
+                    ]),
+            )
             .get_matches();
         let matches = matches.subcommand_matches("install-update").unwrap();
 
@@ -149,12 +162,18 @@ impl Options {
         Options {
             to_update: match (all || !update, matches.values_of("PACKAGE")) {
                 (_, Some(pkgs)) => {
-                    let mut packages: Vec<_> = pkgs.map(package_parse)
+                    let mut packages: Vec<_> = pkgs
+                        .map(package_parse)
                         .map(Result::unwrap)
                         .map(|(package, version, registry)| {
-                            (package.to_string(),
-                             version,
-                             registry.map(str::to_string).map(Cow::from).unwrap_or("https://github.com/rust-lang/crates.io-index".into()))
+                            (
+                                package.to_string(),
+                                version,
+                                registry
+                                    .map(str::to_string)
+                                    .map(Cow::from)
+                                    .unwrap_or("https://github.com/rust-lang/crates.io-index".into()),
+                            )
                         })
                         .collect();
                     packages.sort_by(|l, r| l.0.cmp(&r.0));
@@ -171,30 +190,38 @@ impl Options {
             downdate: matches.is_present("downdate"),
             update_git: matches.is_present("git"),
             quiet: matches.is_present("quiet"),
-            released_after: matches.value_of("cooldown")
+            released_after: matches
+                .value_of("cooldown")
                 .map(|cd| duration_parse(cd).unwrap())
                 .map(|td| match Utc::now().checked_sub_signed(td) {
                     Some(ra) => ra,
-                    None => clerror(format_args!("--cooldown {}: (now - {}) out of range", matches.value_of("cooldown").unwrap(), td)),
+                    None => clerror(format_args!(
+                        "--cooldown {}: (now - {}) out of range",
+                        matches.value_of("cooldown").unwrap(),
+                        td
+                    )),
                 }),
             locked: matches.is_present("locked"),
-            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_default(),
+            filter: matches
+                .values_of("filter")
+                .map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect())
+                .unwrap_or_default(),
             cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
             temp_dir: {
                 if let Some(tmpdir) = matches.value_of("temp-dir") {
-                        fs::canonicalize(tmpdir).unwrap()
-                    } else {
-                        env::temp_dir()
-                    }
-                    .join(Path::new("cargo-update").with_extension(username_os()))
+                    fs::canonicalize(tmpdir).unwrap()
+                } else {
+                    env::temp_dir()
+                }
+                .join(Path::new("cargo-update").with_extension(username_os()))
             },
-            cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
+            cargo_install_args: matches
+                .values_of_os("cargo_install_opts")
+                .into_iter()
+                .flat_map(|cio| cio.map(OsStr::to_os_string))
+                .collect(),
             install_cargo: matches.value_of_os("install-cargo").map(OsStr::to_os_string),
-            jobs: if recursive_jobs.is_some() {
-                None
-            } else {
-                jobs_arg
-            },
+            jobs: if recursive_jobs.is_some() { None } else { jobs_arg },
             recursive_jobs: recursive_jobs,
             concurrent_cargos: match (jobs_arg, recursive_jobs) {
                 (Some(j), Some(rj)) => Some(NonZero::new((rj.get() + (j.get() - 1)) / j).unwrap_or(NonZero::new(1).unwrap())),
@@ -210,12 +237,19 @@ impl ConfigOptions {
         let matches = App::new("cargo")
             .bin_name("cargo")
             .version(crate_version!())
-            .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
-            .subcommand(SubCommand::with_name("install-update-config")
-                .version(crate_version!())
-                .author("https://github.com/nabijaczleweli/cargo-update")
-                .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
-                .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
+            .settings(&[
+                AppSettings::ColoredHelp,
+                AppSettings::ArgRequiredElseHelp,
+                AppSettings::GlobalVersion,
+                AppSettings::SubcommandRequired,
+            ])
+            .subcommand(
+                SubCommand::with_name("install-update-config")
+                    .version(crate_version!())
+                    .author("https://github.com/nabijaczleweli/cargo-update")
+                    .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
+                    .args(&[
+                        Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
                             .validator(|s| existing_dir_validator("Cargo", &s)),
                         Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
                         Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'").number_of_values(1),
@@ -223,8 +257,12 @@ impl ConfigOptions {
                         Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
                             .possible_values(&["1", "yes", "true", "0", "no", "false"])
                             .hide_possible_values(true),
-                        Arg::from_usage("--debug 'Compile the package in debug (\"dev\") mode'").conflicts_with("release").conflicts_with("build-profile"),
-                        Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug").conflicts_with("build-profile"),
+                        Arg::from_usage("--debug 'Compile the package in debug (\"dev\") mode'")
+                            .conflicts_with("release")
+                            .conflicts_with("build-profile"),
+                        Arg::from_usage("--release 'Compile the package in release mode'")
+                            .conflicts_with("debug")
+                            .conflicts_with("build-profile"),
                         Arg::from_usage("--build-profile=[PROFILE] 'Compile the package in the given profile'")
                             .conflicts_with("debug")
                             .conflicts_with("release"),
@@ -240,54 +278,71 @@ impl ConfigOptions {
                         Arg::from_usage("-a --any-version 'Allow any version'").conflicts_with("version"),
                         Arg::from_usage("-e --environment=[VARIABLE=VALUE]... 'Environment variable to set'")
                             .number_of_values(1)
-                            .validator(|s| if s.contains('=') {
-                                Ok(())
-                            } else {
-                                Err("Missing VALUE")
-                            }),
+                            .validator(|s| if s.contains('=') { Ok(()) } else { Err("Missing VALUE") }),
                         Arg::from_usage("-E --clear-environment=[VARIABLE]... 'Environment variable to clear'")
                             .number_of_values(1)
-                            .validator(|s| if s.contains('=') {
-                                Err("VARIABLE can't contain a =")
-                            } else {
-                                Ok(())
-                            }),
+                            .validator(|s| if s.contains('=') { Err("VARIABLE can't contain a =") } else { Ok(()) }),
                         Arg::from_usage("--inherit-environment=[VARIABLE]... 'Environment variable to use from the environment'")
                             .number_of_values(1)
-                            .validator(|s| if s.contains('=') {
-                                Err("VARIABLE can't contain a =")
-                            } else {
-                                Ok(())
-                            }),
+                            .validator(|s| if s.contains('=') { Err("VARIABLE can't contain a =") } else { Ok(()) }),
                         Arg::from_usage("-r --reset 'Roll back the configuration to the defaults.'"),
-                        Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
+                        Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false),
+                    ]),
+            )
             .get_matches();
         let matches = matches.subcommand_matches("install-update-config").unwrap();
 
         ConfigOptions {
             cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")).1,
             package: matches.value_of("PACKAGE").unwrap().to_string(),
-            ops: matches.value_of("toolchain")
-                .map(|t| if t.is_empty() {
-                    ConfigOperation::RemoveToolchain
-                } else {
-                    ConfigOperation::SetToolchain(t.to_string())
+            ops: matches
+                .value_of("toolchain")
+                .map(|t| {
+                    if t.is_empty() {
+                        ConfigOperation::RemoveToolchain
+                    } else {
+                        ConfigOperation::SetToolchain(t.to_string())
+                    }
                 })
                 .into_iter()
-                .chain(matches.values_of("feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::AddFeature))
-                .chain(matches.values_of("no-feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::RemoveFeature))
-                .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
-                .chain(match (matches.is_present("debug"), matches.is_present("release"), matches.value_of("build-profile")) {
-                    (true, _, _) => Some(ConfigOperation::SetBuildProfile("dev".into())),
-                    (_, true, _) => Some(ConfigOperation::SetBuildProfile("release".into())),
-                    (_, _, Some(prof)) => Some(ConfigOperation::SetBuildProfile(prof.to_string().into())),
-                    _ => None,
-                })
-                .chain(match (matches.is_present("install-prereleases"), matches.is_present("no-install-prereleases")) {
-                    (true, _) => Some(ConfigOperation::SetInstallPrereleases(true)),
-                    (_, true) => Some(ConfigOperation::SetInstallPrereleases(false)),
-                    _ => None,
-                })
+                .chain(
+                    matches
+                        .values_of("feature")
+                        .into_iter()
+                        .flatten()
+                        .map(str::to_string)
+                        .map(ConfigOperation::AddFeature),
+                )
+                .chain(
+                    matches
+                        .values_of("no-feature")
+                        .into_iter()
+                        .flatten()
+                        .map(str::to_string)
+                        .map(ConfigOperation::RemoveFeature),
+                )
+                .chain(
+                    matches
+                        .value_of("default-features")
+                        .map(|d| ["1", "yes", "true"].contains(&d))
+                        .map(ConfigOperation::DefaultFeatures)
+                        .into_iter(),
+                )
+                .chain(
+                    match (matches.is_present("debug"), matches.is_present("release"), matches.value_of("build-profile")) {
+                        (true, _, _) => Some(ConfigOperation::SetBuildProfile("dev".into())),
+                        (_, true, _) => Some(ConfigOperation::SetBuildProfile("release".into())),
+                        (_, _, Some(prof)) => Some(ConfigOperation::SetBuildProfile(prof.to_string().into())),
+                        _ => None,
+                    },
+                )
+                .chain(
+                    match (matches.is_present("install-prereleases"), matches.is_present("no-install-prereleases")) {
+                        (true, _) => Some(ConfigOperation::SetInstallPrereleases(true)),
+                        (_, true) => Some(ConfigOperation::SetInstallPrereleases(false)),
+                        _ => None,
+                    },
+                )
                 .chain(match (matches.is_present("enforce-lock"), matches.is_present("no-enforce-lock")) {
                     (true, _) => Some(ConfigOperation::SetEnforceLock(true)),
                     (_, true) => Some(ConfigOperation::SetEnforceLock(false)),
@@ -303,13 +358,30 @@ impl ConfigOptions {
                     (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
                     _ => None,
                 })
-                .chain(matches.values_of("environment")
-                    .into_iter()
-                    .flatten()
-                    .map(|s| s.split_once('=').unwrap())
-                    .map(|(k, v)| ConfigOperation::SetEnvironment(k.to_string(), v.to_string())))
-                .chain(matches.values_of("clear-environment").into_iter().flatten().map(str::to_string).map(ConfigOperation::ClearEnvironment))
-                .chain(matches.values_of("inherit-environment").into_iter().flatten().map(str::to_string).map(ConfigOperation::InheritEnvironment))
+                .chain(
+                    matches
+                        .values_of("environment")
+                        .into_iter()
+                        .flatten()
+                        .map(|s| s.split_once('=').unwrap())
+                        .map(|(k, v)| ConfigOperation::SetEnvironment(k.to_string(), v.to_string())),
+                )
+                .chain(
+                    matches
+                        .values_of("clear-environment")
+                        .into_iter()
+                        .flatten()
+                        .map(str::to_string)
+                        .map(ConfigOperation::ClearEnvironment),
+                )
+                .chain(
+                    matches
+                        .values_of("inherit-environment")
+                        .into_iter()
+                        .flatten()
+                        .map(str::to_string)
+                        .map(ConfigOperation::InheritEnvironment),
+                )
                 .chain(matches.index_of("reset").map(|_| ConfigOperation::ResetConfig))
                 .collect(),
         }
@@ -326,12 +398,13 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> (PathBuf, PathBuf) {
         match env::var_os("CARGO_INSTALL_ROOT")
             .map(PathBuf::from)
             .or_else(|| home::cargo_home().ok())
-            .and_then(|ch| fs::canonicalize(&ch).map(|can| (ch, can)).ok()) {
+            .and_then(|ch| fs::canonicalize(&ch).map(|can| (ch, can)).ok())
+        {
             Some(cd) => cd,
-            None => {
-                clerror(format_args!("$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, please specify the cargo home directory with the -c \
-                                      option"))
-            }
+            None => clerror(format_args!(
+                "$CARGO_INSTALL_ROOT, $CARGO_HOME, and home directory invalid, please specify the cargo home directory with the -c \
+                                      option"
+            )),
         }
     }
 }
@@ -350,9 +423,11 @@ fn package_parse(mut s: &str) -> Result<(&str, Option<Semver>, Option<&str>), St
     }
 
     if let Some(idx) = s.find(':') {
-        Ok((&s[0..idx],
+        Ok((
+            &s[0..idx],
             Some(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))?),
-            registry_url))
+            registry_url,
+        ))
     } else {
         Ok((s, None, registry_url))
     }
@@ -361,7 +436,10 @@ fn package_parse(mut s: &str) -> Result<(&str, Option<Semver>, Option<&str>), St
 fn duration_parse(s: &str) -> Result<TimeDelta, String> {
     const MULS_S: [char; 6] = ['y', 'w', 'd', 'h', 'm', 's'];
     const MULS_V: [f64; 6] = [365.25 / 7., 7., 24., 60., 60., 1.];
-    let (base, mul) = s.strip_suffix(MULS_S).map(|stripped| (stripped, *s.as_bytes().last().unwrap() as _)).unwrap_or((s, 's'));
+    let (base, mul) = s
+        .strip_suffix(MULS_S)
+        .map(|stripped| (stripped, *s.as_bytes().last().unwrap() as _))
+        .unwrap_or((s, 's'));
     let base = f64::from_str(base).map_err(|e| e.to_string())?;
     let val = MULS_V[MULS_S.iter().position(|&c| c == mul).unwrap()..].iter().fold(base, |a, e| a * e);
     let (s, ns) = (val.trunc() as i64, (val.fract() * 1_000_000_000.0) as u32);
@@ -371,10 +449,12 @@ fn duration_parse(s: &str) -> Result<TimeDelta, String> {
 fn jobs_parse(s: &str, special: &str, default: NonZero<usize>) -> Result<NonZero<usize>, ParseIntError> {
     if s != special {
         if s.starts_with("-") {
-            NonZero::<usize>::from_str(&s[1..]).map(|sub| if sub >= default {
-                NonZero::new(1).unwrap()
-            } else {
-                NonZero::new(default.get() - sub.get()).unwrap()
+            NonZero::<usize>::from_str(&s[1..]).map(|sub| {
+                if sub >= default {
+                    NonZero::new(1).unwrap()
+                } else {
+                    NonZero::new(default.get() - sub.get()).unwrap()
+                }
             })
         } else {
             NonZero::<usize>::from_str(s)
@@ -383,7 +463,6 @@ fn jobs_parse(s: &str, special: &str, default: NonZero<usize>) -> Result<NonZero
         Ok(default)
     }
 }
-
 
 fn clerror(f: Arguments) -> ! {
     eprintln!("{}", f);

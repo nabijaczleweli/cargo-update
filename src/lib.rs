@@ -12,7 +12,8 @@
 //!
 //! # Library doc
 //!
-//! This library is used by `cargo-update` itself for all its function and is therefore contains all necessary functions.
+//! This library is used by `cargo-update` itself for all its function and is
+//! therefore contains all necessary functions.
 //!
 //! ## Example
 //!
@@ -382,7 +383,6 @@
 //!
 //!   Updated 1 package.
 //! ```
-
 
 #[cfg(target_vendor = "apple")]
 extern crate security_framework;
