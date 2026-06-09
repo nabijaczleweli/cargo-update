@@ -157,7 +157,7 @@ impl Options {
             .get_matches_mut();
         let (_, mut matches) = matches.remove_subcommand().unwrap();
 
-        let all = dbg!(matches.remove_one("all")).unwrap_or(false);
+        let all = matches.remove_one("all").unwrap_or(false);
         let update = !matches.remove_one("list").unwrap_or(false);
         let jobs_arg = matches.remove_one("jobs");
         let recursive_jobs = matches.remove_one("recursive-jobs");
@@ -181,7 +181,7 @@ impl Options {
             force: matches.remove_one("force").unwrap_or(false),
             downdate: matches.remove_one("downdate").unwrap_or(false),
             update_git: matches.remove_one("git").unwrap_or(false),
-            quiet: dbg!(matches.remove_one("quiet")).unwrap_or(false),
+            quiet: matches.remove_one("quiet").unwrap_or(false),
             released_after: matches.get_one::<TimeDelta>("cooldown")
                 .map(|&td| {
                     Utc::now().checked_sub_signed(td).unwrap_or_else(|| {
