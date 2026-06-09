@@ -12,17 +12,19 @@
 //! ```
 
 
+use clap::builder::{ValueParser, TypedValueParser, NonEmptyStringValueParser, PossibleValue};
+use clap::error::{Error as ClapError, ErrorKind as ClapErrorKind};
 use self::super::ops::{PackageFilterElement, ConfigOperation};
 use semver::{VersionReq as SemverReq, Version as Semver};
-use clap::{AppSettings, SubCommand, App, Arg};
-use std::num::{ParseIntError, NonZero};
 use chrono::{TimeDelta, DateTime, Utc};
+use clap::{Command, Arg, ArgAction};
 use std::ffi::{OsString, OsStr};
 use std::path::{PathBuf, Path};
 use std::fmt::Arguments;
 use whoami::username_os;
 use std::process::exit;
 use std::str::FromStr;
+use std::num::NonZero;
 use std::borrow::Cow;
 use std::{env, fs};
 use home;
@@ -87,74 +89,83 @@ impl Options {
     /// Parse `env`-wide command-line arguments into an `Options` instance
     pub fn parse() -> Options {
         let nproc = std::thread::available_parallelism().unwrap_or(NonZero::new(1).unwrap());
-        let matches = App::new("cargo")
+        let mut matches = Command::new("cargo")
             .bin_name("cargo")
             .version(crate_version!())
-            .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
-            .subcommand(SubCommand::with_name("install-update")
+            .arg_required_else_help(true)
+            .subcommand_required(true)
+            .args_override_self(true)
+            .subcommand(Command::new("install-update")
                 .version(crate_version!())
                 .author("https://github.com/nabijaczleweli/cargo-update")
                 .about("A cargo subcommand for checking and applying updates to installed executables")
-                .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
+                .args(&[arg!(-c --"cargo-dir" <CARGO_DIR> "The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo")
+                            .required(false)
+                            .action(ArgAction::Set)
                             .visible_alias("root")
-                            .allow_invalid_utf8(true)
-                            .validator(|s| existing_dir_validator("Cargo", &s)),
-                        Arg::from_usage("-t --temp-dir=[TEMP_DIR] 'The temporary directory. Default: $TEMP/cargo-update'")
-                            .validator(|s| existing_dir_validator("Temporary", &s)),
-                        Arg::from_usage("-a --all 'Update all packages'"),
-                        Arg::from_usage("-l --list 'Don't update packages, only list and check if they need an update (all packages by default)'"),
-                        Arg::from_usage("-f --force 'Update all packages regardless if they need updating'"),
-                        Arg::from_usage("-d --downdate 'Downdate packages to match latest unyanked registry version'"),
-                        Arg::from_usage("-i --allow-no-update 'Allow for fresh-installing packages'"),
-                        Arg::from_usage("-g --git 'Also update git packages'"),
-                        Arg::from_usage("-q --quiet 'No output printed to stdout'"),
-                        Arg::from_usage("--locked 'Enforce packages' embedded Cargo.lock'"),
-                        Arg::from_usage("--cooldown=[TIME] 'Only consider versions released before (now - TIME). Seconds, [smhdwy] suffix.'")
-                            .number_of_values(1)
-                            .validator(|s| duration_parse(&s).map(|_| ())),
-                        Arg::from_usage("-s --filter=[PACKAGE_FILTER]... 'Specify a filter a package must match to be considered'")
-                            .number_of_values(1)
-                            .validator(|s| PackageFilterElement::parse(&s).map(|_| ())),
-                        Arg::from_usage("-r --install-cargo=[EXECUTABLE] 'Specify an alternative cargo to run for installations'")
-                            .number_of_values(1)
-                            .allow_invalid_utf8(true),
-                        Arg::from_usage(&format!("-j --jobs=[JOBS] 'Limit number of parallel jobs or \"default\" for {}'", nproc))
-                            .number_of_values(1)
-                            .validator(|s| jobs_parse(s, "default", nproc)),
-                        Arg::from_usage(&format!("-J --recursive-jobs=[JOBS] 'Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.'",
-                                                 nproc))
-                            .number_of_values(1)
-                            .forbid_empty_values(false)
-                            .default_missing_value("")
-                            .validator(|s| jobs_parse(s, "", nproc)),
-                        Arg::with_name("cargo_install_opts")
+                            .value_parser(ExistingDirParser("Cargo")),
+                        arg!(-t --"temp-dir" <TEMP_DIR> "The temporary directory. Default: $TEMP/cargo-update")
+                            .required(false)
+                            .action(ArgAction::Set)
+                            .value_parser(ExistingDirParser("Temporary")),
+                        arg!(-a --"all" "Update all packages").action(ArgAction::SetTrue),
+                        arg!(-l --"list" "Don't update packages, only list and check if they need an update (all packages by default)")
+                            .action(ArgAction::SetTrue),
+                        arg!(-f --"force" "Update all packages regardless if they need updating").action(ArgAction::SetTrue),
+                        arg!(-d --"downdate" "Downdate packages to match latest unyanked registry version").action(ArgAction::SetTrue),
+                        arg!(-i --"allow-no-update" "Allow for fresh-installing packages").action(ArgAction::SetTrue),
+                        arg!(-g --"git" "Also update git packages").action(ArgAction::SetTrue),
+                        arg!(-q --"quiet" "No output printed to stdout").action(ArgAction::SetTrue),
+                        arg!(--"locked" "Enforce packages' embedded Cargo.lock").action(ArgAction::SetTrue),
+                        arg!(--"cooldown" <TIME> "Only consider versions released before (now - TIME). Seconds, [smhdwy] suffix.")
+                            .required(false)
+                            .action(ArgAction::Set)
+                            .num_args(1)
+                            .value_parser(duration_parse),
+                        arg!(-s --"filter" <PACKAGE_FILTER>... "Specify a filter a package must match to be considered")
+                            .required(false)
+                            .action(ArgAction::Append)
+                            .num_args(1)
+                            .value_parser(PackageFilterElement::parse),
+                        arg!(-r --"install-cargo" <EXECUTABLE> "Specify an alternative cargo to run for installations")
+                            .required(false)
+                            .action(ArgAction::Set)
+                            .num_args(1)
+                            .value_parser(ValueParser::os_string()),
+                        arg!(-j --"jobs" <JOBS>)
+                            .help(format!("Limit number of parallel jobs or \"default\" for {}", nproc))
+                            .required(false)
+                            .num_args(1)
+                            .value_parser(JobsParser("default", nproc)),
+                        arg!(-J --"recursive-jobs" <JOBS>)
+                            .help(format!("Build up to JOBS crates at once on up to JOBS CPUs. {} if empty.", nproc))
+                            .required(false)
+                            .num_args(1)
+                            .default_value("")
+                            .value_parser(JobsParser("", nproc)),
+                        Arg::new("cargo_install_opts")
                             .long("__cargo_install_opts")
                             .env("CARGO_INSTALL_OPTS")
-                            .allow_invalid_utf8(true)
-                            .empty_values(false)
-                            .multiple(true)
+                            .action(ArgAction::Set)
+                            .value_parser(ValueParser::os_string())
                             .value_delimiter(' ')
-                            .hidden(true),
-                        Arg::from_usage("[PACKAGE]... 'Packages to update'")
-                            .empty_values(false)
-                            .min_values(1)
-                            .validator(|s| package_parse(s).map(|_| ()))]))
-            .get_matches();
-        let matches = matches.subcommand_matches("install-update").unwrap();
+                            .hide(true),
+                        arg!(<PACKAGE>... "Packages to update")
+                            .action(ArgAction::Append)
+                            .required(false)
+                            .value_parser(package_parse)]))
+            .get_matches_mut();
+        let (_, mut matches) = matches.remove_subcommand().unwrap();
 
-        let all = matches.is_present("all");
-        let update = !matches.is_present("list");
-        let jobs_arg = matches.value_of("jobs").map(|j| jobs_parse(j, "default", nproc).unwrap());
-        let recursive_jobs = matches.value_of("recursive-jobs").map(|rj| jobs_parse(rj, "", nproc).unwrap());
+        let all = dbg!(matches.remove_one("all")).unwrap_or(false);
+        let update = !matches.remove_one("list").unwrap_or(false);
+        let jobs_arg = matches.remove_one("jobs");
+        let recursive_jobs = matches.remove_one("recursive-jobs");
         Options {
-            to_update: match (all || !update, matches.values_of("PACKAGE")) {
+            to_update: match (all || !update, matches.remove_many::<(String, Option<Semver>, Option<String>)>("PACKAGE")) {
                 (_, Some(pkgs)) => {
-                    let mut packages: Vec<_> = pkgs.map(package_parse)
-                        .map(Result::unwrap)
-                        .map(|(package, version, registry)| {
-                            (package.to_string(),
-                             version,
-                             registry.map(str::to_string).map(Cow::from).unwrap_or("https://github.com/rust-lang/crates.io-index".into()))
+                    let mut packages: Vec<_> = pkgs.map(|(package, version, registry)| {
+                            (package, version, registry.map(Cow::from).unwrap_or("https://github.com/rust-lang/crates.io-index".into()))
                         })
                         .collect();
                     packages.sort_by(|l, r| l.0.cmp(&r.0));
@@ -166,30 +177,24 @@ impl Options {
             },
             all: all,
             update: update,
-            install: matches.is_present("allow-no-update"),
-            force: matches.is_present("force"),
-            downdate: matches.is_present("downdate"),
-            update_git: matches.is_present("git"),
-            quiet: matches.is_present("quiet"),
-            released_after: matches.value_of("cooldown")
-                .map(|cd| duration_parse(cd).unwrap())
-                .map(|td| match Utc::now().checked_sub_signed(td) {
-                    Some(ra) => ra,
-                    None => clerror(format_args!("--cooldown {}: (now - {}) out of range", matches.value_of("cooldown").unwrap(), td)),
+            install: matches.remove_one("allow-no-update").unwrap_or(false),
+            force: matches.remove_one("force").unwrap_or(false),
+            downdate: matches.remove_one("downdate").unwrap_or(false),
+            update_git: matches.remove_one("git").unwrap_or(false),
+            quiet: dbg!(matches.remove_one("quiet")).unwrap_or(false),
+            released_after: matches.get_one::<TimeDelta>("cooldown")
+                .map(|&td| {
+                    Utc::now().checked_sub_signed(td).unwrap_or_else(|| {
+                        let raw = matches.get_raw("cooldown").unwrap_or_default().last().unwrap();
+                        clerror(format_args!("--cooldown {}: (now - {}) out of range", raw.display(), td))
+                    })
                 }),
-            locked: matches.is_present("locked"),
-            filter: matches.values_of("filter").map(|pfs| pfs.flat_map(PackageFilterElement::parse).collect()).unwrap_or_default(),
-            cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")),
-            temp_dir: {
-                if let Some(tmpdir) = matches.value_of("temp-dir") {
-                        fs::canonicalize(tmpdir).unwrap()
-                    } else {
-                        env::temp_dir()
-                    }
-                    .join(Path::new("cargo-update").with_extension(username_os()))
-            },
-            cargo_install_args: matches.values_of_os("cargo_install_opts").into_iter().flat_map(|cio| cio.map(OsStr::to_os_string)).collect(),
-            install_cargo: matches.value_of_os("install-cargo").map(OsStr::to_os_string),
+            locked: matches.remove_one("locked").unwrap_or(false),
+            filter: matches.remove_many("filter").into_iter().flatten().collect(),
+            cargo_dir: cargo_dir(matches.remove_one("cargo-dir")),
+            temp_dir: matches.remove_one("temp-dir").unwrap_or_else(env::temp_dir).join(Path::new("cargo-update").with_extension(username_os())),
+            cargo_install_args: matches.remove_many("cargo_install_opts").into_iter().flatten().filter(|a: &OsString| !a.is_empty()).collect(),
+            install_cargo: matches.remove_one("install-cargo"),
             jobs: if recursive_jobs.is_some() {
                 None
             } else {
@@ -207,116 +212,128 @@ impl Options {
 impl ConfigOptions {
     /// Parse `env`-wide command-line arguments into a `ConfigOptions` instance
     pub fn parse() -> ConfigOptions {
-        let matches = App::new("cargo")
+        let mut matches = Command::new("cargo")
             .bin_name("cargo")
             .version(crate_version!())
-            .settings(&[AppSettings::ColoredHelp, AppSettings::ArgRequiredElseHelp, AppSettings::GlobalVersion, AppSettings::SubcommandRequired])
-            .subcommand(SubCommand::with_name("install-update-config")
+            // .settings(&[ /* AppSettings::GlobalVersion*/ ])
+            .arg_required_else_help(true)
+            .subcommand_required(true)
+            .subcommand(Command::new("install-update-config")
+                .disable_version_flag(true)
                 .version(crate_version!())
                 .author("https://github.com/nabijaczleweli/cargo-update")
                 .about("A cargo subcommand for checking and applying updates to installed executables -- configuration")
-                .args(&[Arg::from_usage("-c --cargo-dir=[CARGO_DIR] 'The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo'")
-                            .validator(|s| existing_dir_validator("Cargo", &s)),
-                        Arg::from_usage("-t --toolchain=[TOOLCHAIN] 'Toolchain to use or empty for default'"),
-                        Arg::from_usage("-f --feature=[FEATURE]... 'Feature to enable'").number_of_values(1),
-                        Arg::from_usage("-n --no-feature=[DISABLED_FEATURE]... 'Feature to disable'").number_of_values(1),
-                        Arg::from_usage("-d --default-features=[DEFAULT_FEATURES] 'Whether to allow default features'")
-                            .possible_values(&["1", "yes", "true", "0", "no", "false"])
+                .args(&[arg!(-c --"cargo-dir" <CARGO_DIR> "The cargo home directory. Default: $CARGO_HOME or $HOME/.cargo").required(false)
+                            .value_parser(ExistingDirParser("Cargo")),
+                        arg!(-t --"toolchain" <TOOLCHAIN> "Toolchain to use or empty for default")
+                        .num_args(1).required(false).value_parser(ValueParser::string()),
+                        arg!(-f --"feature" <FEATURE>... "Feature to enable").num_args(1).required(false).value_parser(ValueParser::string()),
+                        arg!(-n --"no-feature" <DISABLED_FEATURE>... "Feature to disable").num_args(1).required(false).value_parser(ValueParser::string()),
+                        arg!(-d --"default-features" <DEFAULT_FEATURES> "Whether to allow default features").num_args(1).required(false)
+                            .value_parser(DefaultFeaturesBoolParser)
                             .hide_possible_values(true),
-                        Arg::from_usage("--debug 'Compile the package in debug (\"dev\") mode'").conflicts_with("release").conflicts_with("build-profile"),
-                        Arg::from_usage("--release 'Compile the package in release mode'").conflicts_with("debug").conflicts_with("build-profile"),
-                        Arg::from_usage("--build-profile=[PROFILE] 'Compile the package in the given profile'")
+                        arg!(--"debug" "Compile the package in debug (\"dev\") mode")
+                        .action(ArgAction::SetTrue).conflicts_with("release").conflicts_with("build-profile"),
+                        arg!(--"release" "Compile the package in release mode")
+                        .action(ArgAction::SetTrue).conflicts_with("debug").conflicts_with("build-profile"),
+                        arg!(--"build-profile" <PROFILE> "Compile the package in the given profile").num_args(1).required(false)
                             .conflicts_with("debug")
-                            .conflicts_with("release"),
-                        Arg::from_usage("--install-prereleases 'Install prerelease versions'").conflicts_with("no-install-prereleases"),
-                        Arg::from_usage("--no-install-prereleases 'Filter out prerelease versions'").conflicts_with("install-prereleases"),
-                        Arg::from_usage("--enforce-lock 'Require Cargo.lock to be up to date'").conflicts_with("no-enforce-lock"),
-                        Arg::from_usage("--no-enforce-lock 'Don't enforce Cargo.lock'").conflicts_with("enforce-lock"),
-                        Arg::from_usage("--respect-binaries 'Only install already installed binaries'").conflicts_with("no-respect-binaries"),
-                        Arg::from_usage("--no-respect-binaries 'Install all binaries'").conflicts_with("respect-binaries"),
-                        Arg::from_usage("-v --version=[VERSION_REQ] 'Require a cargo-compatible version range'")
-                            .validator(|s| SemverReq::from_str(&s).map(|_| ()).map_err(|e| e.to_string()))
+                            .conflicts_with("release").value_parser(ValueParser::string()),
+                        arg!(--"install-prereleases" "Install prerelease versions").action(ArgAction::SetTrue).conflicts_with("no-install-prereleases"),
+                        arg!(--"no-install-prereleases" "Filter out prerelease versions").action(ArgAction::SetTrue).conflicts_with("install-prereleases"),
+                        arg!(--"enforce-lock" "Require Cargo.lock to be up to date").action(ArgAction::SetTrue).conflicts_with("no-enforce-lock"),
+                        arg!(--"no-enforce-lock" "Don't enforce Cargo.lock").action(ArgAction::SetTrue).conflicts_with("enforce-lock"),
+                        arg!(--"respect-binaries" "Only install already installed binaries").action(ArgAction::SetTrue).conflicts_with("no-respect-binaries"),
+                        arg!(--"no-respect-binaries" "Install all binaries").action(ArgAction::SetTrue).conflicts_with("respect-binaries"),
+                        arg!(-v --"version" <VERSION_REQ> "Require a cargo-compatible version range").num_args(1).required(false)
+                            .value_parser(SemverReq::from_str)
                             .conflicts_with("any-version"),
-                        Arg::from_usage("-a --any-version 'Allow any version'").conflicts_with("version"),
-                        Arg::from_usage("-e --environment=[VARIABLE=VALUE]... 'Environment variable to set'")
-                            .number_of_values(1)
-                            .validator(|s| if s.contains('=') {
-                                Ok(())
+                        arg!(-a --"any-version" "Allow any version").action(ArgAction::SetTrue).conflicts_with("version"),
+                        arg!(-e --"environment" <VARIABLE_EQ_TODO_VALUE>... "Environment variable to set").required(false)
+                            .num_args(1)
+                            .value_parser(|s: &str| if let Some((k,v)) = s.split_once('=') {
+                                Ok((k.to_string(), v.to_string()))
                             } else {
                                 Err("Missing VALUE")
                             }),
-                        Arg::from_usage("-E --clear-environment=[VARIABLE]... 'Environment variable to clear'")
-                            .number_of_values(1)
-                            .validator(|s| if s.contains('=') {
+                        arg!(-E --"clear-environment" <VARIABLE>... "Environment variable to clear").required(false)
+                            .num_args(1)
+                            .value_parser(|s: &str| if s.contains('=') {
                                 Err("VARIABLE can't contain a =")
                             } else {
-                                Ok(())
+                                Ok(s.to_string())
                             }),
-                        Arg::from_usage("--inherit-environment=[VARIABLE]... 'Environment variable to use from the environment'")
-                            .number_of_values(1)
-                            .validator(|s| if s.contains('=') {
+                        arg!(--"inherit-environment" <VARIABLE>... "Environment variable to use from the environment").required(false)
+                            .num_args(1)
+                            .value_parser(|s: &str| if s.contains('=') {
                                 Err("VARIABLE can't contain a =")
                             } else {
-                                Ok(())
+                                Ok(s.to_string())
                             }),
-                        Arg::from_usage("-r --reset 'Roll back the configuration to the defaults.'"),
-                        Arg::from_usage("<PACKAGE> 'Package to configure'").empty_values(false)]))
-            .get_matches();
-        let matches = matches.subcommand_matches("install-update-config").unwrap();
+                        arg!(-r --"reset" "Roll back the configuration to the defaults.").action(ArgAction::SetTrue),
+                        arg!(<PACKAGE> "Package to configure").value_parser(NonEmptyStringValueParser ::new())
+                        ]))
+            .get_matches_mut();
+        let (_, mut matches) = matches.remove_subcommand().unwrap();
 
         ConfigOptions {
-            cargo_dir: cargo_dir(matches.value_of_os("cargo-dir")).1,
-            package: matches.value_of("PACKAGE").unwrap().to_string(),
-            ops: matches.value_of("toolchain")
-                .map(|t| if t.is_empty() {
+            cargo_dir: cargo_dir(matches.get_one("cargo-dir")).1,
+            package: matches.remove_one("PACKAGE").unwrap(),
+            ops: matches.remove_one("toolchain")
+                .map(|t: String| if t.is_empty() {
                     ConfigOperation::RemoveToolchain
                 } else {
-                    ConfigOperation::SetToolchain(t.to_string())
+                    ConfigOperation::SetToolchain(t)
                 })
                 .into_iter()
-                .chain(matches.values_of("feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::AddFeature))
-                .chain(matches.values_of("no-feature").into_iter().flatten().map(str::to_string).map(ConfigOperation::RemoveFeature))
-                .chain(matches.value_of("default-features").map(|d| ["1", "yes", "true"].contains(&d)).map(ConfigOperation::DefaultFeatures).into_iter())
-                .chain(match (matches.is_present("debug"), matches.is_present("release"), matches.value_of("build-profile")) {
+                .chain(matches.remove_many("feature").into_iter().flatten().map(ConfigOperation::AddFeature))
+                .chain(matches.remove_many("no-feature").into_iter().flatten().map(ConfigOperation::RemoveFeature))
+                .chain(matches.remove_one("default-features").map(ConfigOperation::DefaultFeatures))
+                .chain(match (matches.remove_one("debug").unwrap_or(false),
+                              matches.remove_one("release").unwrap_or(false),
+                              matches.remove_one::<String>("build-profile")) {
                     (true, _, _) => Some(ConfigOperation::SetBuildProfile("dev".into())),
                     (_, true, _) => Some(ConfigOperation::SetBuildProfile("release".into())),
-                    (_, _, Some(prof)) => Some(ConfigOperation::SetBuildProfile(prof.to_string().into())),
+                    (_, _, Some(prof)) => Some(ConfigOperation::SetBuildProfile(prof.into())),
                     _ => None,
                 })
-                .chain(match (matches.is_present("install-prereleases"), matches.is_present("no-install-prereleases")) {
+                .chain(match (matches.remove_one("install-prereleases").unwrap_or(false), matches.remove_one("no-install-prereleases").unwrap_or(false)) {
                     (true, _) => Some(ConfigOperation::SetInstallPrereleases(true)),
                     (_, true) => Some(ConfigOperation::SetInstallPrereleases(false)),
                     _ => None,
                 })
-                .chain(match (matches.is_present("enforce-lock"), matches.is_present("no-enforce-lock")) {
+                .chain(match (matches.remove_one("enforce-lock").unwrap_or(false), matches.remove_one("no-enforce-lock").unwrap_or(false)) {
                     (true, _) => Some(ConfigOperation::SetEnforceLock(true)),
                     (_, true) => Some(ConfigOperation::SetEnforceLock(false)),
                     _ => None,
                 })
-                .chain(match (matches.is_present("respect-binaries"), matches.is_present("no-respect-binaries")) {
+                .chain(match (matches.remove_one("respect-binaries").unwrap_or(false), matches.remove_one("no-respect-binaries").unwrap_or(false)) {
                     (true, _) => Some(ConfigOperation::SetRespectBinaries(true)),
                     (_, true) => Some(ConfigOperation::SetRespectBinaries(false)),
                     _ => None,
                 })
-                .chain(match (matches.is_present("any-version"), matches.value_of("version")) {
+                .chain(match (matches.remove_one("any-version").unwrap_or(false), matches.remove_one("version")) {
                     (true, _) => Some(ConfigOperation::RemoveTargetVersion),
-                    (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(SemverReq::from_str(vr).unwrap())),
+                    (false, Some(vr)) => Some(ConfigOperation::SetTargetVersion(vr)),
                     _ => None,
                 })
-                .chain(matches.values_of("environment")
+                .chain(matches.remove_many("environment")
                     .into_iter()
                     .flatten()
-                    .map(|s| s.split_once('=').unwrap())
-                    .map(|(k, v)| ConfigOperation::SetEnvironment(k.to_string(), v.to_string())))
-                .chain(matches.values_of("clear-environment").into_iter().flatten().map(str::to_string).map(ConfigOperation::ClearEnvironment))
-                .chain(matches.values_of("inherit-environment").into_iter().flatten().map(str::to_string).map(ConfigOperation::InheritEnvironment))
-                .chain(matches.index_of("reset").map(|_| ConfigOperation::ResetConfig))
+                    .map(|(k, v)| ConfigOperation::SetEnvironment(k, v)))
+                .chain(matches.remove_many("clear-environment").into_iter().flatten().map(ConfigOperation::ClearEnvironment))
+                .chain(matches.remove_many("inherit-environment").into_iter().flatten().map(ConfigOperation::InheritEnvironment))
+                .chain(if matches.remove_one("reset").unwrap_or(false) {
+                    Some(ConfigOperation::ResetConfig)
+                } else {
+                    None
+                })
                 .collect(),
         }
     }
 }
 
-fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> (PathBuf, PathBuf) {
+fn cargo_dir(opt_cargo_dir: Option<&PathBuf>) -> (PathBuf, PathBuf) {
     if let Some(dir) = opt_cargo_dir {
         match fs::canonicalize(&dir) {
             Ok(cdir) => (dir.into(), cdir),
@@ -336,11 +353,21 @@ fn cargo_dir(opt_cargo_dir: Option<&OsStr>) -> (PathBuf, PathBuf) {
     }
 }
 
-fn existing_dir_validator(label: &str, s: &str) -> Result<(), String> {
-    fs::canonicalize(s).map(|_| ()).map_err(|_| format!("{} directory \"{}\" not found", label, s))
+#[derive(Copy, Clone)]
+struct ExistingDirParser(&'static str);
+impl TypedValueParser for ExistingDirParser {
+    type Value = PathBuf;
+
+    fn parse_ref(&self, cmd: &Command, arg: Option<&Arg>, value: &OsStr) -> Result<Self::Value, ClapError> {
+        fs::canonicalize(value).map_err(|_| {
+            ClapError::raw(ClapErrorKind::InvalidValue,
+                           format_args!("{}: {} directory \"{}\" not found", arg.unwrap(), self.0, value.display()))
+                .with_cmd(cmd)
+        })
+    }
 }
 
-fn package_parse(mut s: &str) -> Result<(&str, Option<Semver>, Option<&str>), String> {
+fn package_parse(mut s: &str) -> Result<(String, Option<Semver>, Option<String>), String> {
     let mut registry_url = None;
     if s.starts_with('(') {
         if let Some(idx) = s.find("):") {
@@ -350,11 +377,11 @@ fn package_parse(mut s: &str) -> Result<(&str, Option<Semver>, Option<&str>), St
     }
 
     if let Some(idx) = s.find(':') {
-        Ok((&s[0..idx],
+        Ok((s[0..idx].to_string(),
             Some(Semver::parse(&s[idx + 1..]).map_err(|e| format!("Version {} provided for package {} invalid: {}", &s[idx + 1..], &s[0..idx], e))?),
-            registry_url))
+            registry_url.map(str::to_string)))
     } else {
-        Ok((s, None, registry_url))
+        Ok((s.to_string(), None, registry_url.map(str::to_string)))
     }
 }
 
@@ -368,19 +395,50 @@ fn duration_parse(s: &str) -> Result<TimeDelta, String> {
     TimeDelta::new(s, ns).ok_or_else(|| format!("{}.{:09} too big", s, ns))
 }
 
-fn jobs_parse(s: &str, special: &str, default: NonZero<usize>) -> Result<NonZero<usize>, ParseIntError> {
-    if s != special {
-        if s.starts_with("-") {
-            NonZero::<usize>::from_str(&s[1..]).map(|sub| if sub >= default {
-                NonZero::new(1).unwrap()
-            } else {
-                NonZero::new(default.get() - sub.get()).unwrap()
-            })
+#[derive(Copy, Clone)]
+struct JobsParser(&'static str, NonZero<usize>);
+impl TypedValueParser for JobsParser {
+    type Value = NonZero<usize>;
+    fn parse_ref(&self, cmd: &Command, arg: Option<&Arg>, value: &OsStr) -> Result<Self::Value, ClapError> {
+        let value = value.to_str().ok_or(ClapError::new(ClapErrorKind::InvalidValue).with_cmd(cmd))?;
+        let Self(special, default) = *self;
+
+        if value != special {
+            if value.starts_with("-") {
+                    NonZero::from_str(&value[1..]).map(|sub| if sub >= default {
+                        NonZero::new(1).unwrap()
+                    } else {
+                        NonZero::new(default.get() - sub.get()).unwrap()
+                    })
+                } else {
+                    NonZero::from_str(value)
+                }
+                .map_err(|e| ClapError::raw(ClapErrorKind::InvalidValue, format_args!("{}: {}", arg.unwrap(), e)).with_cmd(cmd))
         } else {
-            NonZero::<usize>::from_str(s)
+            Ok(default)
         }
-    } else {
-        Ok(default)
+    }
+}
+
+#[derive(Copy, Clone)]
+struct DefaultFeaturesBoolParser;
+impl TypedValueParser for DefaultFeaturesBoolParser {
+    type Value = bool;
+
+    fn parse_ref(&self, cmd: &Command, arg: Option<&Arg>, value: &OsStr) -> Result<Self::Value, ClapError> {
+        match value.to_str().ok_or(ClapError::new(ClapErrorKind::InvalidValue).with_cmd(cmd))? {
+            "1" | "yes" | "true" => Ok(true),
+            "0" | "no" | "false" => Ok(false),
+            value => {
+                Err(ClapError::raw(ClapErrorKind::InvalidValue,
+                                   format_args!("{}: {} not 1|yes|true or 0|no|false", arg.unwrap(), value))
+                    .with_cmd(cmd))
+            }
+        }
+    }
+
+    fn possible_values(&self) -> Option<Box<dyn Iterator<Item = PossibleValue> + '_>> {
+        Some(Box::new(["1", "yes", "true", "0", "no", "false"].iter().map(PossibleValue::new)))
     }
 }
 
