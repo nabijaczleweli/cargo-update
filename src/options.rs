@@ -186,7 +186,7 @@ impl Options {
                 .map(|&td| {
                     Utc::now().checked_sub_signed(td).unwrap_or_else(|| {
                         let raw = matches.get_raw("cooldown").unwrap_or_default().last().unwrap();
-                        clerror(format_args!("--cooldown {}: (now - {}) out of range", raw.display(), td))
+                        clerror(format_args!("--cooldown {}: (now - {}) out of range", Path::new(raw).display(), td)) // TODO: MSRV 1.87 OsStr::display()
                     })
                 }),
             locked: matches.remove_one("locked").unwrap_or(false),
@@ -361,7 +361,7 @@ impl TypedValueParser for ExistingDirParser {
     fn parse_ref(&self, cmd: &Command, arg: Option<&Arg>, value: &OsStr) -> Result<Self::Value, ClapError> {
         fs::canonicalize(value).map_err(|_| {
             ClapError::raw(ClapErrorKind::InvalidValue,
-                           format_args!("{}: {} directory \"{}\" not found", arg.unwrap(), self.0, value.display()))
+                           format_args!("{}: {} directory \"{}\" not found", arg.unwrap(), self.0, Path::new(value).display())) // TODO: MSRV 1.87 OsStr::display()
                 .with_cmd(cmd)
         })
     }
