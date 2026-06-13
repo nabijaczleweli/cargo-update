@@ -277,7 +277,7 @@ impl ConfigOptions {
         let (_, mut matches) = matches.remove_subcommand().unwrap();
 
         ConfigOptions {
-            cargo_dir: cargo_dir(matches.get_one("cargo-dir")).1,
+            cargo_dir: cargo_dir(matches.get_one("cargo-dir").cloned()).1,
             package: matches.remove_one("PACKAGE").unwrap(),
             ops: matches.remove_one("toolchain")
                 .map(|t: String| if t.is_empty() {
@@ -333,7 +333,7 @@ impl ConfigOptions {
     }
 }
 
-fn cargo_dir(opt_cargo_dir: Option<&PathBuf>) -> (PathBuf, PathBuf) {
+fn cargo_dir(opt_cargo_dir: Option<PathBuf>) -> (PathBuf, PathBuf) {
     if let Some(dir) = opt_cargo_dir {
         match fs::canonicalize(&dir) {
             Ok(cdir) => (dir.into(), cdir),
