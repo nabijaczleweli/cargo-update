@@ -51,6 +51,9 @@ fn actual_main() -> Result<(), i32> {
     if !opts.filter.is_empty() {
         packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
     }
+    if !opts.to_ignore.is_empty() {
+        packages.retain(|p| !opts.to_ignore.contains(&p.name));
+    }
     match (opts.all, opts.to_update.is_empty()) {
         (true, true) => {}
         (true, false) => {
