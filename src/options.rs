@@ -181,7 +181,7 @@ impl Options {
                 (true, None) => vec![],
                 (false, None) => clerror(format_args!("Need at least one PACKAGE without --all")),
             },
-            to_excldude,
+            to_exclude,
             all: all,
             update: update,
             install: matches.remove_one("allow-no-update").unwrap_or(false),
