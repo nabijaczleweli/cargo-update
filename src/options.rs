@@ -35,8 +35,8 @@ use home;
 pub struct Options {
     /// (Additional) packages to update. Default: `[]`
     pub to_update: Vec<(String, Option<Semver>, Cow<'static, str>)>,
-    /// Packages to ignore
-    pub to_ignore: Vec<String>,
+    /// Packages to exclude
+    pub to_exclude: Vec<String>,
     /// Whether to update all packages. Default: `false`
     pub all: bool,
     /// Whether to update packages or just list them. Default: `true`
@@ -129,7 +129,7 @@ impl Options {
                             .action(ArgAction::Append)
                             .num_args(1)
                             .value_parser(PackageFilterElement::parse),
-                        arg!(-x --"ignore" <PACKAGE_NAME>... "Specify package name to ignore")
+                        arg!(-x --"exclude" <PACKAGE_NAME>... "Specify package name to exclude")
                             .required(false)
                             .action(ArgAction::Append),
                         arg!(-r --"install-cargo" <EXECUTABLE> "Specify an alternative cargo to run for installations")
@@ -165,7 +165,7 @@ impl Options {
         let all = matches.remove_one("all").unwrap_or(false);
         let update = !matches.remove_one("list").unwrap_or(false);
         let jobs_arg = matches.remove_one("jobs");
-        let to_ignore: Vec<String> = matches.get_many::<String>("ignore").unwrap_or_default().cloned().collect();
+        let to_exclude: Vec<String> = matches.get_many::<String>("exclude").unwrap_or_default().cloned().collect();
         let recursive_jobs = matches.remove_one("recursive-jobs");
         Options {
             to_update: match (all || !update, matches.remove_many::<(String, Option<Semver>, Option<String>)>("PACKAGE")) {
@@ -181,7 +181,7 @@ impl Options {
                 (true, None) => vec![],
                 (false, None) => clerror(format_args!("Need at least one PACKAGE without --all")),
             },
-            to_ignore,
+            to_excldude,
             all: all,
             update: update,
             install: matches.remove_one("allow-no-update").unwrap_or(false),
