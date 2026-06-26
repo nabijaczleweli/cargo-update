@@ -49,7 +49,7 @@ fn actual_main() -> Result<(), i32> {
     };
 
     if !opts.filter.is_empty() {
-        packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
+        packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(&p.name, p_cfg))).unwrap_or(false));
     }
     match (opts.all, opts.to_update.is_empty()) {
         (true, true) => {}
@@ -163,7 +163,10 @@ fn actual_main() -> Result<(), i32> {
         };
 
         let install_prereleases = configuration.get(&package.name).and_then(|c| c.install_prereleases);
-        package.pull_version(&latest_registries[registry_idx], &registry_repos[registry_idx], install_prereleases, opts.released_after);
+        package.pull_version(&latest_registries[registry_idx],
+                             &registry_repos[registry_idx],
+                             install_prereleases,
+                             opts.released_after);
     }
 
     if !opts.quiet {
@@ -358,7 +361,7 @@ fn actual_main() -> Result<(), i32> {
             let mut packages = installed_git_packages;
 
             if !opts.filter.is_empty() {
-                packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(p_cfg))).unwrap_or(false));
+                packages.retain(|p| configuration.get(&p.name).map(|p_cfg| opts.filter.iter().all(|f| f.matches(&p.name, p_cfg))).unwrap_or(false));
             }
             if opts.update && !opts.all {
                 packages.retain(|p| opts.to_update.iter().any(|u| p.name == u.0));

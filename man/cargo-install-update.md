@@ -166,6 +166,8 @@ Exit values and possible errors:
     where key is any of:
       - "toolchain": the package must be configured to be compiled with
                      the specified toolchain via cargo-install-update-config(1).
+      - "name":      the package name must match the given glob
+                     ("package" — literal "package"; "*kage" — ends with "kage"; &c.)
 
   -r --install-cargo <CARGO_EXECUTABLE>
 

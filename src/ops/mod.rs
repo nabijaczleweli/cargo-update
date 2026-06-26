@@ -772,6 +772,10 @@ pub enum PackageFilterElementValue {
     ///
     /// Parsed name: `"toolchain"`.
     Toolchain(String),
+    /// Matches package with name matching this glob.
+    ///
+    /// Parsed name: `"name"`. Glob parsed with `str::split('*')`.
+    Name(Vec<String>),
 }
 
 impl PackageFilterElement {
@@ -783,6 +787,8 @@ impl PackageFilterElement {
     /// # use cargo_update::ops::{PackageFilterElement, PackageFilterElementValue};
     /// assert_eq!(PackageFilterElement::parse("toolchain=nightly"),
     ///            Ok(PackageFilterElement(false, PackageFilterElementValue::Toolchain("nightly".to_string()))));
+    /// assert_eq!(PackageFilterElement::parse("!name=cargo*"),
+    ///            Ok(PackageFilterElement(true, PackageFilterElementValue::Name(vec!["cargo".to_string(), "".to_string()]))));
     ///
     /// assert!(PackageFilterElement::parse("capitalism").is_err());
     /// assert!(PackageFilterElement::parse("communism=good").is_err());
@@ -798,6 +804,7 @@ impl PackageFilterElement {
         Ok(PackageFilterElement(negate,
                                 match key {
                                     "toolchain" => PackageFilterElementValue::Toolchain(value.to_string()),
+                                    "name" => PackageFilterElementValue::Name(value.split('*').map(str::to_string).collect()),
                                     _ => return Err(format!(r#"Unrecognised filter key "{}""#, key)),
                                 }))
     }
@@ -809,19 +816,38 @@ impl PackageFilterElement {
     /// ```
     /// # use cargo_update::ops::{PackageFilterElement, PackageFilterElementValue, ConfigOperation, PackageConfig};
     /// assert!(PackageFilterElement(false, PackageFilterElementValue::Toolchain("nightly".to_string()))
-    ///     .matches(&PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string())])));
+    ///     .matches("treesize", &PackageConfig::from(&[ConfigOperation::SetToolchain("nightly".to_string())])));
     ///
     /// assert!(!PackageFilterElement(false, PackageFilterElementValue::Toolchain("nightly".to_string()))
-    ///     .matches(&PackageConfig::from(&[])));
+    ///     .matches("treesize", &PackageConfig::from(&[])));
+    ///
+    /// let notcargo = PackageFilterElement::parse("!name=cargo*").unwrap();
+    /// assert!(notcargo.matches("treesize", &PackageConfig::from(&[])));
+    /// assert!(!notcargo.matches("cargo-update", &PackageConfig::from(&[])));
     /// ```
-    pub fn matches(&self, cfg: &PackageConfig) -> bool {
+    pub fn matches(&self, name: &str, cfg: &PackageConfig) -> bool {
         self.0 ^
         match self.1 {
             PackageFilterElementValue::Toolchain(ref chain) => Some(chain) == cfg.toolchain.as_ref(),
+            PackageFilterElementValue::Name(ref glob) => match &glob[..] {
+                [] => false,
+                [exact] => exact == name,
+                [front, back] => name.starts_with(front) && name.ends_with(back),
+                [front, chunks @ .., back] => matchglob(name, front, chunks , back),
+            },
         }
     }
 }
 
+fn matchglob(name: &str, front: &str, glob: &[String], back: &str) -> bool {
+    let Some(name) = name.strip_prefix(front) else { return false };
+    let Some(mut name) = name.strip_suffix(back) else { return false };
+    for chunk in glob {
+        let Some(idx) = name.find(chunk) else { return false };
+        name = &name[idx + chunk.len()..];
+    }
+    true
+}
 
 /// `cargo` configuration, as obtained from `.cargo/config[.toml]`
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
