@@ -23,7 +23,7 @@ argument lists.
 Note, that cargo-install-update-config(1) is preferred in the general case.
 
 If `cargo-binstall` (>=0.13.1) is available in the `PATH`,
-`-r` was not overriden, `CARGO_INSTALL_OPTS` is empty,
+`-r` was not given, `CARGO_INSTALL_OPTS` is empty,
 the package is in the default registry, and has no non-default configuration,
 it will be used to install the package instead.
 
@@ -177,7 +177,7 @@ Exit values and possible errors:
     with regards to on-disk state ("$CARGO_DIR/.crates.toml"
     and installed executables) and the arguments it accepts.
 
-    Required. Default: "cargo"
+    Default: $CARGO, if set, otherwise "cargo"
 
   -c --cargo-dir <CARGO_DIR>
      --root      <CARGO_DIR>
@@ -223,6 +223,11 @@ Exit values and possible errors:
   `$CARGO_HTTP_CHECK_REVOKE`
 
     Overrides the http.check-revoke Cargo configuration key.
+
+  `$CARGO`
+
+    cargo-install-update will run `${CARGO-cargo} install ...`,
+    unless overridden with -r.
 
 ## EXAMPLES
 
