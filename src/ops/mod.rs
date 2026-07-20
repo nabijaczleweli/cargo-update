@@ -1849,7 +1849,7 @@ pub fn update_index<W: Write, A: AsRef<str>, I: Iterator<Item = A>>(index_repo: 
                                 mem::replace(&mut c.0.as_mut().unwrap().get_mut().1, Err("taken".into())).map_err(|e| format!("package {}: {}", pkg, e))?;
                             mem::replace(&mut c.1, Ok(())).map_err(|e| format!("package {}: {}", pkg, e))?;
                             if !buf.is_empty() {
-                                return Err(format!("package {}: {} bytes of trailing garbage", pkg, buf.len()))?;
+                                resp.extend(crate_version_line(&buf).map_err(|e| format!("package {}: {}", pkg, e))?);
                             }
                             resp.sort();
                             sucker.remove2(c.0.take().unwrap()).map_err(|e| format!("remove2: {}", e))?;
