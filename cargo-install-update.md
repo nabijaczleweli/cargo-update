@@ -229,6 +229,8 @@ Exit values and possible errors:
     cargo-install-update will run `${CARGO-cargo} install ...`,
     unless overridden with -r.
 
+    Set automatically by cargo when running like "cargo install-update"
+
 ## EXAMPLES
 
   `cargo install-update -a`
