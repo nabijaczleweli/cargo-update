@@ -9,6 +9,7 @@ mod split_package_path;
 mod assert_index_path;
 mod registry_package;
 mod package_config;
+mod cargo_config_bool_overrides;
 mod get_index_url;
 mod update_index;
 
