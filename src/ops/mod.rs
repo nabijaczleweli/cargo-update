@@ -958,7 +958,19 @@ impl CargoConfigEnvironmentNormalisedString {
 }
 
 impl CargoConfig {
-    pub fn load(crates_file: &Path) -> CargoConfig {
+    /// Read the cargo configuration relevant to cargo-update from the `config` or `config.toml` next to `crates_file`,
+    /// with the environment variables that override it.
+    ///
+    /// Fails, with cargo's own error message, when a boolean override such as `CARGO_NET_GIT_FETCH_WITH_CLI` holds
+    /// something cargo would reject; see `env_or_config_bool()`.
+    pub fn load(crates_file: &Path) -> Result<CargoConfig, String> {
+        CargoConfig::load_with_bool_env(crates_file, CargoConfig::env_var_exact)
+    }
+
+    /// `load()`, but with the environment variables that override boolean keys (`CARGO_NET_GIT_FETCH_WITH_CLI` and
+    /// `CARGO_HTTP_CHECK_REVOKE`) looked up through `bool_env` instead of in the process environment, so that tests can
+    /// check how they resolve without changing it. Every other environment variable is read from the process.
+    pub fn load_with_bool_env<F: Fn(&str) -> Option<OsString>>(crates_file: &Path, bool_env: F) -> Result<CargoConfig, String> {
         let mut cfg = fs::read_to_string(crates_file.with_file_name("config"))
             .or_else(|_| fs::read_to_string(crates_file.with_file_name("config.toml")))
             .ok()
@@ -993,23 +1005,18 @@ impl CargoConfig {
                 }))
             .collect();
 
-        CargoConfig {
-            net_git_fetch_with_cli: env::var("CARGO_NET_GIT_FETCH_WITH_CLI")
-                .ok()
-                .and_then(|e| if e.is_empty() {
-                    Some(toml::Value::String(String::new()))
-                } else {
-                    e.parse::<toml::Value>().ok()
-                })
-                .or_else(|| {
-                    cfg.as_mut()?
-                        .as_table_mut()?
-                        .get_mut("net")?
-                        .as_table_mut()?
-                        .remove("git-fetch-with-cli")
-                })
-                .map(CargoConfig::truthy)
-                .unwrap_or(false),
+        Ok(CargoConfig {
+            net_git_fetch_with_cli: CargoConfig::env_or_config_bool(&bool_env,
+                                                                    "CARGO_NET_GIT_FETCH_WITH_CLI",
+                                                                    "net.git-fetch-with-cli",
+                                                                    None.or_else(|| {
+                                                                        cfg.as_mut()?
+                                                                            .as_table_mut()?
+                                                                            .get_mut("net")?
+                                                                            .as_table_mut()?
+                                                                            .remove("git-fetch-with-cli")
+                                                                    }),
+                                                                    false)?,
             registries_crates_io_protocol_sparse: env::var("CARGO_REGISTRIES_CRATES_IO_PROTOCOL")
                 .map(|s| s == "sparse")
                 .ok()
@@ -1046,18 +1053,17 @@ impl CargoConfig {
                                 .remove("cainfo")?)
                             .map(PathBuf::from)
                     }),
-                check_revoke: env::var("CARGO_HTTP_CHECK_REVOKE")
-                    .ok()
-                    .map(toml::Value::String)
-                    .or_else(|| {
-                        cfg.as_mut()?
-                            .as_table_mut()?
-                            .get_mut("http")?
-                            .as_table_mut()?
-                            .remove("check-revoke")
-                    })
-                    .map(CargoConfig::truthy)
-                    .unwrap_or(cfg!(target_os = "windows")),
+                check_revoke: CargoConfig::env_or_config_bool(&bool_env,
+                                                              "CARGO_HTTP_CHECK_REVOKE",
+                                                              "http.check-revoke",
+                                                              None.or_else(|| {
+                                                                  cfg.as_mut()?
+                                                                      .as_table_mut()?
+                                                                      .get_mut("http")?
+                                                                      .as_table_mut()?
+                                                                      .remove("check-revoke")
+                                                              }),
+                                                              cfg!(target_os = "windows"))?,
             },
             sparse_registries: SparseRegistryConfig {
                 // Supposedly this is CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS but they don't specify how they serialise arrays so
@@ -1119,7 +1125,38 @@ impl CargoConfig {
                     .collect(),
                 credential_aliases: credential_aliases,
             },
+        })
+    }
+
+    /// Resolve a boolean configuration key that the environment variable `name` can override, reading the variable exactly
+    /// the way cargo does; `key` is the configuration key as cargo spells it in error messages.
+    ///
+    /// Only the variable is read strictly. The configuration file value goes through `truthy()`, which knowingly differs
+    /// from cargo: cargo requires a TOML boolean there, even when the variable overrides the key, and errors out on e.g.
+    /// `"false"` or `1`, which `truthy()` takes as true.
+    fn env_or_config_bool<F: Fn(&str) -> Option<OsString>>(bool_env: &F, name: &str, key: &str, config: Option<toml::Value>, default: bool)
+                                                          -> Result<bool, String> {
+        // This matches how cargo reads the variable, including its error messages:
+        // - Only exactly "true" or "false" is accepted; any other value, even "1", "TRUE", or the empty string, is an error,
+        //   never a fallback to the configuration file.
+        // - A value that is not valid UTF-8 is skipped in favour of the configuration file. If the file does not set the
+        //   key either, that is an error ("missing config key"), not a fallback to the default as for an unset variable.
+        match bool_env(name).as_deref().map(OsStr::to_str) {
+            None => Ok(config.map(CargoConfig::truthy).unwrap_or(default)),
+            Some(Some("true")) => Ok(true),
+            Some(Some("false")) => Ok(false),
+            Some(Some(_)) => Err(format!("error in environment variable `{}`: provided string was not `true` or `false`", name)),
+            Some(None) => config.map(CargoConfig::truthy).ok_or_else(|| format!("missing config key `{}`", key)),
         }
+    }
+
+    /// The value of environment variable `name`, matched by exact name, as cargo matches its configuration variables.
+    ///
+    /// `env::var_os` is case-insensitive on Windows, so it would also pick up e.g. `cargo_http_check_revoke`, which cargo
+    /// ignores on every platform. (Cargo sometimes also warns about such a variable; this does not.)
+    fn env_var_exact(name: &str) -> Option<OsString> {
+        // Scanning is the only way to get a case-sensitive lookup on Windows; `vars_os` returns names as they were set.
+        env::vars_os().find(|(k, _)| k == name).map(|(_, v)| v)
     }
 
     fn truthy(v: toml::Value) -> bool {
