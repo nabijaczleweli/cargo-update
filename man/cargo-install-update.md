@@ -30,7 +30,7 @@ it will be used to install the package instead.
 Exit values and possible errors:
 
     -1 - cargo subprocess was terminated by a signal (Linux-only)
-    1  - option parsing error
+    1  - option parsing or cargo configuration error
     2  - registry repository error
     X  - bubbled-up cargo install exit value
 
@@ -212,6 +212,10 @@ Exit values and possible errors:
 
     Overrides the net.git-fetch-with-cli Cargo configuration key.
 
+    As in Cargo, only "true" and "false" are accepted; any other value is an error.
+    A value that is not valid UTF-8 is ignored in favour of the configuration file,
+    and is an error if that does not set the key either.
+
   `$GIT`
 
     Overrides the git executable in net.git-fetch-with-cli=true mode.
@@ -223,6 +227,10 @@ Exit values and possible errors:
   `$CARGO_HTTP_CHECK_REVOKE`
 
     Overrides the http.check-revoke Cargo configuration key.
+
+    As in Cargo, only "true" and "false" are accepted; any other value is an error.
+    A value that is not valid UTF-8 is ignored in favour of the configuration file,
+    and is an error if that does not set the key either.
 
   `$CARGO`
 

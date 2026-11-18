@@ -39,7 +39,10 @@ fn actual_main() -> Result<(), i32> {
             eprintln!("Reading config: {}", e);
             r
         })?;
-    let cargo_config = cargo_update::ops::CargoConfig::load(&crates_file);
+    let cargo_config = cargo_update::ops::CargoConfig::load(&crates_file).map_err(|e| {
+            eprintln!("{}", e);
+            1
+        })?;
     let mut packages = cargo_update::ops::installed_registry_packages(&crates_file);
     let installed_git_packages = if opts.update_git || (opts.update && opts.install) {
         cargo_update::ops::installed_git_repo_packages(&crates_file)

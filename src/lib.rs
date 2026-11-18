@@ -49,7 +49,7 @@
 //!
 //! ```text
 //! -1 - cargo subprocess was terminated by a signal (Linux-only)
-//! 1  - option parsing error
+//! 1  - option parsing or cargo configuration error
 //! 2  - registry repository error
 //! X  - bubbled-up cargo install exit value
 //! ```
@@ -160,6 +160,10 @@
 //! ##### CARGO_NET_GIT_FETCH_WITH_CLI
 //!
 //! Overrides the `net.git-fetch-with-cli` Cargo configuration key.
+//!
+//! As in Cargo, only `true` and `false` are accepted; any other value is an error.
+//! A value that is not valid UTF-8 is ignored in favour of the configuration file,
+//! and is an error if that does not set the key either.
 //!
 //! ##### GIT
 //!
